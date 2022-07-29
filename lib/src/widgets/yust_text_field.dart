@@ -136,6 +136,8 @@ class _YustTextFieldState extends State<YustTextField> {
     if (textValue != _initValue && textValue != _controller.text) {
       _controller.text = textValue;
       _initValue = textValue;
+      _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: _controller.text.length));
     }
     return Column(
       children: [
