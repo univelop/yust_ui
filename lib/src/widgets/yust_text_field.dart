@@ -76,9 +76,8 @@ class _YustTextFieldState extends State<YustTextField> {
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
 
-  @override
-  void initState() {
-    super.initState();
+  /// This Method resets/initializes the state of the widget
+  void resetState() {
     if (widget.controller != null && widget.value != null) {
       widget.controller!.text = widget.value!;
     }
@@ -107,6 +106,12 @@ class _YustTextFieldState extends State<YustTextField> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    resetState();
+  }
+
+  @override
   void dispose() {
     if (widget.controller == null) {
       _controller.dispose();
@@ -118,11 +123,21 @@ class _YustTextFieldState extends State<YustTextField> {
   }
 
   @override
+  void didUpdateWidget(oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the Text-Fields Label changed, we can assume it's a new/different TextField
+    // (Flutter "reuses" existing Widgets in the tree)
+    if (oldWidget.label != widget.label) resetState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textValue = widget.value ?? '';
     if (textValue != _initValue && textValue != _controller.text) {
       _controller.text = textValue;
       _initValue = textValue;
+      _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: _controller.text.length));
     }
     return Column(
       children: [
