@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -69,10 +68,9 @@ class YustNumberField extends StatelessWidget {
       onEditingComplete: onEditingComplete == null
           ? null
           : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '')),
-      keyboardType: kIsWeb
-          ? null
-          : TextInputType.numberWithOptions(decimal: true, signed: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9\,\-]'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp('[0-9\.\,\-]'))
+      ],
       textInputAction: TextInputAction.next,
       onTap: onTap,
       readOnly: readOnly,
