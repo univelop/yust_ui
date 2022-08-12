@@ -68,7 +68,7 @@ class YustTextField extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _YustTextFieldState createState() => _YustTextFieldState();
+  State<YustTextField> createState() => _YustTextFieldState();
 }
 
 class _YustTextFieldState extends State<YustTextField> {

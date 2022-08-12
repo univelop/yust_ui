@@ -4,9 +4,11 @@ import '../widgets/yust_select.dart';
 import '../widgets/yust_switch.dart';
 
 class YustAlertService {
-  Future<void> showAlert(
-      BuildContext context, String title, String message) async {
-    await showDialog<void>(
+  final BuildContext context;
+  YustAlertService(this.context);
+
+  Future<void> showAlert(String title, String message) {
+    return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -26,7 +28,6 @@ class YustAlertService {
   }
 
   Future<bool?> showConfirmation(
-    BuildContext context,
     String title,
     String action, {
     String cancelText = 'Abbrechen',
@@ -59,7 +60,6 @@ class YustAlertService {
   }
 
   Future<String?> showTextFieldDialog(
-    BuildContext context,
     String title,
     String? placeholder,
     String action, {
@@ -114,7 +114,6 @@ class YustAlertService {
   }
 
   Future<String?> showPickerDialog(
-    BuildContext context,
     String title,
     String action, {
     required List<String> optionLabels,
@@ -160,26 +159,22 @@ class YustAlertService {
     );
   }
 
-  // typedef InnerBuilder = void Function({})
-
-  Future<String?> showCustomDialog({
-    required BuildContext context,
+  Future<T?> showCustomDialog<T>({
     required String title,
     String? actionName,
-    required Widget Function({required void Function(String) onChanged})
-        buildInner,
+    required Widget Function({required void Function(T?) onChanged}) buildInner,
   }) {
-    return showDialog<String>(
+    return showDialog<T?>(
       context: context,
       builder: (BuildContext context) {
-        var returnValue = '';
+        dynamic returnValue;
         return AlertDialog(
           scrollable: true,
           title: Text(title),
           content: StatefulBuilder(
             builder: (context, setState) {
               return buildInner(
-                onChanged: (String value) => returnValue = value,
+                onChanged: (T? value) => returnValue = value,
               );
             },
           ),
@@ -205,7 +200,6 @@ class YustAlertService {
 
   /// Returns newly selected items (only) after confirmation.
   Future<List<String>> showCheckListDialog({
-    required BuildContext context,
     required List<dynamic> choosableItems,
     required List<String> priorItemIds,
     required String? Function(dynamic) getItemLabel,
@@ -278,7 +272,7 @@ class YustAlertService {
     }
   }
 
-  void showToast(BuildContext context, String message) {
+  void showToast(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
     ));

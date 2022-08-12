@@ -1,4 +1,5 @@
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 
 import 'services/yust_alert_service.dart';
@@ -15,23 +16,29 @@ typedef StringCallback = void Function(String?);
 typedef DeleteCallback = Future<void> Function();
 
 class YustUi {
-  static YustAlertService alertService = YustAlertService();
+  static late YustAlertService alertService;
+  // static YustAlertService alertService(context) => YustAlertService(context);
   static YustFileService fileService = YustFileService();
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
-  static YustUiHelpers helpers = YustUiHelpers();
+  static late YustUiHelpers helpers;
   static String? storageUrl;
   static String? imagePlaceholderPath;
 
-  static Future<void> initializeMocked() async {
+  static void initializeMocked() {
     YustUi.fileService = YustFileService.mocked();
   }
 
-  static Future<void> initialize({
+  static void initialize({
     String? storageUrl,
     String? imagePlaceholderPath,
-  }) async {
+  }) {
     YustUi.storageUrl = storageUrl;
     YustUi.imagePlaceholderPath = imagePlaceholderPath;
     FirebaseStorage.instance.setMaxUploadRetryTime(Duration(seconds: 20));
+  }
+
+  static void initContext(BuildContext context) {
+    YustUi.alertService = YustAlertService(context);
+    YustUi.helpers = YustUiHelpers(context);
   }
 }

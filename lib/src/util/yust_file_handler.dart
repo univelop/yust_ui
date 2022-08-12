@@ -42,7 +42,7 @@ class YustFileHandler {
 
   final List<YustFile> _recentlyUploadedFiles = [];
 
-  final List<String> _recentlyDeletedFileurls = [];
+  final List<String> _recentlyDeletedFileUrls = [];
 
   /// gets triggerd after successful upload
   void Function()? onFileUploaded;
@@ -98,17 +98,17 @@ class YustFileHandler {
   }
 
   void _removeLocalDeletedFiles(List<YustFile> onlineFiles) {
-    var _copyRecentlyDeletedFiles = _recentlyDeletedFileurls;
+    final copyRecentlyDeletedFiles = _recentlyDeletedFileUrls;
     onlineFiles.removeWhere((f) {
-      if (_recentlyDeletedFileurls
+      if (_recentlyDeletedFileUrls
           .any((deletedFileurl) => deletedFileurl == f.url)) {
-        _copyRecentlyDeletedFiles.remove(f);
+        copyRecentlyDeletedFiles.remove(f.url);
         return true;
       }
       return false;
     });
-    _recentlyDeletedFileurls
-        .removeWhere((f) => !_copyRecentlyDeletedFiles.contains(f));
+    _recentlyDeletedFileUrls
+        .removeWhere((f) => !copyRecentlyDeletedFiles.contains(f));
   }
 
   void _loadFiles() {
@@ -121,7 +121,9 @@ class YustFileHandler {
 
   void _mergeOnlineFiles(List<YustFile> yustFiles, List<YustFile> onlineFiles,
       String storageFolderPath) async {
-    onlineFiles.forEach((f) => f.storageFolderPath = storageFolderPath);
+    for (var f in onlineFiles) {
+      f.storageFolderPath = storageFolderPath;
+    }
     _mergeIntoYustFiles(yustFiles, onlineFiles);
   }
 
@@ -164,7 +166,7 @@ class YustFileHandler {
       }
       try {
         await _deleteFileFromStorage(yustFile);
-        _recentlyDeletedFileurls.add(yustFile.url!);
+        _recentlyDeletedFileUrls.add(yustFile.url!);
         // ignore: empty_catches
       } catch (e) {}
     }
@@ -228,7 +230,7 @@ class YustFileHandler {
           throw YustException('Die Datei existiert nicht.');
         } else {
           await EasyLoading.show(status: 'Datei laden...');
-          filePath = await _getDirectory(yustFile) + '${yustFile.name}';
+          filePath = '${await _getDirectory(yustFile)}${yustFile.name}';
 
           await Dio().download(yustFile.url!, filePath);
           await EasyLoading.dismiss();
@@ -243,8 +245,8 @@ class YustFileHandler {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(context, 'Ups',
-          'Die Datei kann nicht geöffnet werden. ${e.toString()}');
+      await YustUi.alertService.showAlert(
+          'Ups', 'Die Datei kann nicht geöffnet werden. ${e.toString()}');
     }
   }
 
@@ -277,7 +279,7 @@ class YustFileHandler {
   Future<void> _saveFileOnDevice(YustFile yustFile) async {
     var devicePath = await _getDirectory(yustFile);
 
-    yustFile.devicePath = devicePath + '${yustFile.name}';
+    yustFile.devicePath = '$devicePath${yustFile.name}';
 
     if (yustFile.bytes != null) {
       yustFile.file =
@@ -391,7 +393,7 @@ class YustFileHandler {
 
   Future<dynamic> _getDocAttribute(YustFile yustFile) async {
     // ignore: inference_failure_on_uninitialized_variable
-    var attribute;
+    dynamic attribute;
     final doc = await getFirebaseDoc(yustFile.linkedDocPath!);
 
     if (existsDocData(doc)) {

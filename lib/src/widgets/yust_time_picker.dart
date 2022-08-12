@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-import '../util/yust_ui_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_date_picker.dart';
 
@@ -35,7 +34,7 @@ class YustTimePicker extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _YustTimePickerState createState() => _YustTimePickerState();
+  State<YustTimePicker> createState() => _YustTimePickerState();
 }
 
 class _YustTimePickerState extends State<YustTimePicker> {
@@ -125,7 +124,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
   }
 
   void _pickTime(BuildContext context, String title) async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     final now = DateTime.now();
     var dateTime = DateTime(1970, 1, 1, now.hour, now.minute, 0, 0, 0);
     final initialTime = TimeOfDay.fromDateTime(dateTime);

@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class YustUiHelpers {
+  final BuildContext context;
+  YustUiHelpers(this.context);
+
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
   final connectivityStream =
       Connectivity().onConnectivityChanged.asBroadcastStream();
 
   /// Does unfocus the current focus node.
-  void unfocusCurrent(BuildContext context) {
+  void unfocusCurrent() {
     final currentFocus = FocusScope.of(context);
     if (!currentFocus.hasPrimaryFocus) {
       currentFocus.unfocus();

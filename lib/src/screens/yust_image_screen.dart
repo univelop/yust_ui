@@ -21,7 +21,7 @@ class YustImageScreen extends StatefulWidget {
   static const String routeName = '/imageScreen';
 
   @override
-  _YustImageScreenState createState() => _YustImageScreenState();
+  State<YustImageScreen> createState() => _YustImageScreenState();
 }
 
 class _YustImageScreenState extends State<YustImageScreen> {

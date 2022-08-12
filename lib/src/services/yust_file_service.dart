@@ -53,7 +53,7 @@ class YustFileService {
       await uploadTask;
       return await storageReference.getDownloadURL();
     } catch (error) {
-      throw YustException('Fehler beim Upload: ' + error.toString());
+      throw YustException('Fehler beim Upload: ${error.toString()}');
     }
   }
 
@@ -155,8 +155,8 @@ class YustFileService {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(context, 'Ups',
-          'Die Datei kann nicht geöffnet werden. ${e.toString()}');
+      await YustUi.alertService.showAlert(
+          'Ups', 'Die Datei kann nicht geöffnet werden. ${e.toString()}');
     }
   }
 
