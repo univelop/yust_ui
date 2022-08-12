@@ -28,6 +28,7 @@ export 'src/widgets/yust_number_field.dart';
 export 'src/widgets/yust_paginated_list_view.dart';
 export 'src/widgets/yust_progress_button.dart';
 export 'src/widgets/yust_select.dart';
+export 'src/widgets/yust_select_multiple.dart';
 export 'src/widgets/yust_switch.dart';
 export 'src/widgets/yust_text_field.dart';
 export 'src/widgets/yust_time_picker.dart';
