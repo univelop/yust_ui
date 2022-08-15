@@ -71,9 +71,7 @@ class YustNumberField extends StatelessWidget {
       // keyboardType: Platform.isIOS
       //     ? TextInputType.numberWithOptions(decimal: true, signed: true)
       //     : null,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp('[0-9\.\,\-]'))
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
       textInputAction: TextInputAction.next,
       onTap: onTap,
       readOnly: readOnly,

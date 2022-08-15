@@ -468,8 +468,9 @@ class YustFileHandler {
   }
 
   Future<void> _launchBrowser(YustFile file) async {
-    if (await canLaunch(file.url ?? '')) {
-      await launch(file.url ?? '');
+    final uri = Uri.parse(file.url ?? '');
+    if (file.url != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
       throw YustException('Die Datei kann nicht geöffnet werden.');
     }

@@ -17,7 +17,6 @@ typedef DeleteCallback = Future<void> Function();
 
 class YustUi {
   static late YustAlertService alertService;
-  // static YustAlertService alertService(context) => YustAlertService(context);
   static YustFileService fileService = YustFileService();
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
   static late YustUiHelpers helpers;
