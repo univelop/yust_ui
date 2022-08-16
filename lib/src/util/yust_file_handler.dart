@@ -320,7 +320,7 @@ class YustFileHandler {
       }
     }
 
-    final url = await YustUi.fileService.uploadFile(
+    final url = await Yust.fileService.uploadFile(
       path: yustFile.storageFolderPath!,
       name: yustFile.name!,
       file: yustFile.file,
@@ -418,7 +418,7 @@ class YustFileHandler {
 
   Future<void> _deleteFileFromStorage(YustFile yustFile) async {
     if (yustFile.storageFolderPath != null) {
-      await YustUi.fileService
+      await Yust.fileService
           .deleteFile(path: yustFile.storageFolderPath!, name: yustFile.name!);
     }
   }

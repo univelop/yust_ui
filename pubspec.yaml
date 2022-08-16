@@ -9,7 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  yust: ^3.0.0
+  # yust: ^3.0.0
+  yust:
+    git:
+      url: https://github.com/univelop/yust
+      ref: master
   firebase_storage: ^10.2.6
   firebase_storage_mocks: ^0.5.0
   cloud_firestore: ^3.1.7
