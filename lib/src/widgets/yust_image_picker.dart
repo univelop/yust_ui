@@ -9,7 +9,11 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
 
-import '../../yust_ui.dart';
+import '../screens/yust_image_screen.dart';
+import '../util/yust_file_handler.dart';
+import '../yust_ui.dart';
+import 'yust_cached_image.dart';
+import 'yust_list_tile.dart';
 
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
@@ -435,9 +439,9 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
-        file = await YustUi.fileService.resizeImage(file: file, maxWidth: size);
+        file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
-        bytes = await YustUi.fileService
+        bytes = await YustUi.fileHelpers
             .resizeImageBytes(name: path, bytes: bytes!, maxWidth: size);
       }
     }

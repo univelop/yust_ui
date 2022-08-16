@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yust/yust.dart';
 
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
@@ -30,7 +31,7 @@ class YustDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return YustInputTile(
       label: label ?? '',
-      text: YustUi.helpers.formatDate(value),
+      text: Yust.helpers.formatDate(value),
       style: style,
       prefixIcon: prefixIcon,
       onTap: (onChanged == null || readOnly) ? null : () => pickDate(context),

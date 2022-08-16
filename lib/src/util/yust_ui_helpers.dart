@@ -20,6 +20,7 @@ class YustUiHelpers {
   }
 
   /// Does not return null.
+  @Deprecated('Use YustHelper.formatDate instead')
   String formatDate(DateTime? dateTime, {String? format}) {
     if (dateTime == null) return '';
 
@@ -28,6 +29,7 @@ class YustUiHelpers {
   }
 
   /// Does not return null.
+  @Deprecated('Use YustHelper.formatTime instead')
   String formatTime(DateTime? dateTime, {String? format}) {
     if (dateTime == null) return '';
 
