@@ -44,7 +44,7 @@ class YustDatePicker extends StatelessWidget {
   }
 
   void pickDate(BuildContext context) async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     var dateTime = value;
     if (dateTime == null) {
       final now = DateTime.now();

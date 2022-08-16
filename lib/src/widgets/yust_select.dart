@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../util/yust_ui_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
@@ -53,7 +51,7 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   void _selectValue(BuildContext context) async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     if (onSelected != null) {
       var selectedValue = await showDialog<T>(
           context: context,

@@ -9,7 +9,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:yust/yust.dart';
 
 import '../util/yust_file_handler.dart';
-import '../util/yust_ui_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_list_tile.dart';
 
@@ -98,7 +97,6 @@ class YustFilePickerState extends State<YustFilePicker> {
   }
 
   Widget _buildDropzone(BuildContext context) {
-    final _files = _fileHandler.getFiles();
     return Stack(
       children: [
         Positioned.fill(
@@ -121,8 +119,8 @@ class YustFilePickerState extends State<YustFilePicker> {
           operation: DragOperation.copy,
           cursor: CursorType.grab,
           onCreated: (ctrl) => controller = ctrl,
-          onLoaded: () => null,
-          onError: (ev) => null,
+          onLoaded: () {},
+          onError: (ev) {},
           onHover: () {
             setState(() {
               isDragging = true;
@@ -142,7 +140,6 @@ class YustFilePickerState extends State<YustFilePicker> {
               final bytes = await controller.getFileData(file);
               await uploadFile(name: file.name, file: null, bytes: bytes);
             }
-            ;
           },
         ),
       );
@@ -198,10 +195,10 @@ class YustFilePickerState extends State<YustFilePicker> {
   }
 
   Widget _buildFiles(BuildContext context) {
-    var _files = _fileHandler.getFiles();
-    _files.sort((a, b) => (a.name!).compareTo(b.name!));
+    var files = _fileHandler.getFiles();
+    files.sort((a, b) => (a.name!).compareTo(b.name!));
     return Column(
-      children: _files.map((file) => _buildFile(context, file)).toList(),
+      children: files.map((file) => _buildFile(context, file)).toList(),
     );
   }
 
@@ -224,7 +221,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       ),
       trailing: _buildDeleteButton(file),
       onTap: () {
-        YustUi.helpers.unfocusCurrent(context);
+        YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
           _fileHandler.showFile(context, file);
         }
@@ -259,14 +256,14 @@ class YustFilePickerState extends State<YustFilePicker> {
       icon: Icon(Icons.cloud_upload_outlined),
       color: Colors.black,
       onPressed: () async {
-        await YustUi.alertService.showAlert(context, 'Lokal gespeicherte Datei',
+        await YustUi.alertService.showAlert('Lokal gespeicherte Datei',
             'Diese Datei ist noch nicht hochgeladen.');
       },
     );
   }
 
   Future<void> _pickFiles() async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     final result = await FilePicker.platform.pickFiles(allowMultiple: true);
     if (result != null) {
       for (final platformFile in result.files) {
@@ -295,7 +292,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     _processing[newYustFile.name] = true;
 
     if (_fileHandler.getFiles().any((file) => file.name == newYustFile.name)) {
-      await YustUi.alertService.showAlert(context, 'Nicht möglich',
+      await YustUi.alertService.showAlert('Nicht möglich',
           'Eine Datei mit dem Namen ${newYustFile.name} existiert bereits.');
     } else {
       await _createDatebaseEntry();
@@ -322,9 +319,9 @@ class YustFilePickerState extends State<YustFilePicker> {
   }
 
   Future<void> _deleteFile(YustFile yustFile) async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService
-        .showConfirmation(context, 'Wirklich löschen?', 'Löschen');
+        .showConfirmation('Wirklich löschen?', 'Löschen');
     if (confirmed == true) {
       try {
         await _fileHandler.deleteFile(yustFile);
@@ -335,8 +332,8 @@ class YustFilePickerState extends State<YustFilePicker> {
           setState(() {});
         }
       } catch (e) {
-        await YustUi.alertService.showAlert(context, 'Ups',
-            'Die Datei kann nicht gelöscht werden. ${e.toString()}');
+        await YustUi.alertService.showAlert(
+            'Ups', 'Die Datei kann nicht gelöscht werden. ${e.toString()}');
       }
     }
   }
@@ -345,7 +342,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     var name = platformFile.name.split('/').last;
     final ext = platformFile.extension;
     if (ext != null && name.split('.').last != ext) {
-      name += '.' + ext;
+      name += '.$ext';
     }
     return name;
   }

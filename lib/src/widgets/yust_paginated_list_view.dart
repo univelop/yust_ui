@@ -13,7 +13,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final ScrollController? scrollController;
   final Widget? header;
   final Widget? footer;
-  final Widget emptyInfo;
+  final Widget? emptyInfo;
 
   YustPaginatedListView({
     Key? key,
@@ -37,7 +37,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       scrollController: scrollController,
       header: header,
       footer: footer,
-      onEmpty: emptyInfo,
+      onEmpty: emptyInfo!,
       itemBuilderType: PaginateBuilderType.listView,
       itemBuilder: (context, documentSnapshot, index) =>
           _itemBuilder(index, context, documentSnapshot[index]),
