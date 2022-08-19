@@ -200,6 +200,7 @@ class YustAlertService {
 
   /// Returns newly selected items (only) after confirmation.
   Future<List<String>> showCheckListDialog({
+    required BuildContext context,
     required List<dynamic> choosableItems,
     required List<String> priorItemIds,
     required String? Function(dynamic) getItemLabel,
