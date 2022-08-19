@@ -73,9 +73,7 @@ class YustNumberField extends StatelessWidget {
       keyboardType: Platform.isIOS
           ? TextInputType.numberWithOptions(decimal: true, signed: true)
           : null,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp('[0-9\.\,\-]'))
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
       textInputAction: TextInputAction.next,
       onTap: onTap,
       readOnly: readOnly,
@@ -97,9 +95,7 @@ class YustNumberField extends StatelessWidget {
     }
     decimalCount ??= 0;
     final format = NumberFormat(
-        (thousandsSeparator ? '#,##0' : '0') +
-            '.' +
-            (decimalCount > 0 ? '0' * decimalCount : '#####'),
+        '${thousandsSeparator ? '#,##0' : '0'}.${decimalCount > 0 ? '0' * decimalCount : '#####'}',
         'de-DE');
     return value != null ? format.format(value) : null;
   }

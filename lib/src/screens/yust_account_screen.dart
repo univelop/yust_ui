@@ -35,7 +35,7 @@ class YustAccountScreen extends StatelessWidget {
                       color: Theme.of(context).colorScheme.secondary,
                       size: 100.0,
                     ),
-                    Text((user.firstName) + ' ' + (user.lastName),
+                    Text('${user.firstName} ${user.lastName}',
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.secondary,
                             fontSize: 20.0)),

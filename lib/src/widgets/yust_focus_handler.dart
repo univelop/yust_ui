@@ -11,7 +11,7 @@ class YustFocusHandler extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        YustUi.helpers.unfocusCurrent(context);
+        YustUi.helpers.unfocusCurrent();
       },
       child: child,
     );

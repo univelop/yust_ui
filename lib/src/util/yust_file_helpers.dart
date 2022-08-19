@@ -92,8 +92,8 @@ class YustFileHelpers {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(context, 'Ups',
-          'Die Datei kann nicht geöffnet werden. ${e.toString()}');
+      await YustUi.alertService.showAlert(
+          'Ups', 'Die Datei kann nicht geöffnet werden. ${e.toString()}');
     }
   }
 

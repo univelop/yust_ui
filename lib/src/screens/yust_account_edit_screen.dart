@@ -154,20 +154,18 @@ class YustAccountEditScreen extends StatelessWidget {
                       await Yust.authService.changeEmail(email!, password!);
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
-                      await YustUi.alertService.showAlert(
-                          context,
-                          'E-Mail geändert',
+                      await YustUi.alertService.showAlert('E-Mail geändert',
                           'Deine E-Mail wurde erfolgreich geändert.');
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
                       await YustUi.alertService
-                          .showAlert(context, 'Fehler', err.message!);
+                          .showAlert('Fehler', err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
                       await YustUi.alertService
-                          .showAlert(context, 'Fehler', err.toString());
+                          .showAlert('Fehler', err.toString());
                     }
                   },
                 ),
@@ -228,20 +226,18 @@ class YustAccountEditScreen extends StatelessWidget {
                           .changePassword(newPassword!, oldPassword!);
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
-                      await YustUi.alertService.showAlert(
-                          context,
-                          'Passwort geändert',
+                      await YustUi.alertService.showAlert('Passwort geändert',
                           'Dein Passwort wurde erfolgreich geändert.');
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
                       await YustUi.alertService
-                          .showAlert(context, 'Fehler', err.message!);
+                          .showAlert('Fehler', err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       Navigator.of(context).pop();
                       await YustUi.alertService
-                          .showAlert(context, 'Fehler', err.toString());
+                          .showAlert('Fehler', err.toString());
                     }
                   },
                 ),
