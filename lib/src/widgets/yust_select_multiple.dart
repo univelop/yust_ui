@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../util/yust_ui_helpers.dart';
 import 'package:collection/collection.dart';
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
@@ -53,11 +52,11 @@ class YustSelectMultiple<T> extends StatelessWidget {
     return validEntryIndexes
         .map((optionIndex) => optionLabels[optionIndex])
         .toList()
-        .join(", ");
+        .join(', ');
   }
 
   void _selectValue(BuildContext context) async {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     if (onSelected == null) return;
 
     final selectedValues = values.toSet();

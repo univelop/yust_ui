@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:universal_html/js.dart';
 
 import '../widgets/yust_select.dart';
 import '../widgets/yust_switch.dart';
