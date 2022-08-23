@@ -30,8 +30,8 @@ class YustUi {
     YustUi.imagePlaceholderPath = imagePlaceholderPath;
   }
 
-  static void initContext(BuildContext context) {
-    YustUi.alertService = YustAlertService(context);
-    YustUi.helpers = YustUiHelpers(context);
+  static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {
+    YustUi.alertService = YustAlertService(navStateKey);
+    YustUi.helpers = YustUiHelpers(navStateKey);
   }
 }
