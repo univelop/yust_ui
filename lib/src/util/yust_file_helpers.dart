@@ -1,87 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as image_lib;
-import 'package:mime/mime.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
-import 'package:yust/yust.dart';
 
 import '../yust_ui.dart';
 
-class YustFileService {
-  firebase_storage.FirebaseStorage fireStorage;
-
-  YustFileService() : fireStorage = firebase_storage.FirebaseStorage.instance;
-
-  YustFileService.mocked() : fireStorage = MockFirebaseStorage();
-
-  Future<String> uploadFile(
-      {required String path,
-      required String name,
-      File? file,
-      Uint8List? bytes}) async {
-    try {
-      final storageReference = fireStorage.ref().child(path).child(name);
-
-      var size = _calcMaxUploadRetryTime(bytes, file);
-      firebase_storage.FirebaseStorage.instance
-          .setMaxUploadRetryTime(Duration(seconds: size * 30));
-
-      firebase_storage.UploadTask uploadTask;
-      if (file != null) {
-        uploadTask = storageReference.putFile(file);
-      } else {
-        var metadata = firebase_storage.SettableMetadata(
-          contentType: lookupMimeType(name),
-        );
-        uploadTask = storageReference.putData(bytes!, metadata);
-      }
-      await uploadTask;
-      return await storageReference.getDownloadURL();
-    } catch (error) {
-      throw YustException('Fehler beim Upload: ' + error.toString());
-    }
-  }
-
-  int _calcMaxUploadRetryTime(Uint8List? bytes, File? file) {
-    var size = 0;
-    if (bytes != null) {
-      size = bytes.lengthInBytes;
-    }
-    if (file != null) {
-      size = file.lengthSync();
-    }
-
-    // MaxUploadRetryTime is at minimum 30 seconds - therefore '+1'
-    return (size / pow(10, 6)).round() + 1;
-  }
-
-  Future<Uint8List?> downloadFile(
-      {required String path, required String name, int? maxSize}) async {
-    try {
-      return await fireStorage
-          .ref()
-          .child(path)
-          .child(name)
-          .getData(maxSize ?? 5 * 1024 * 1024);
-    } catch (e) {
-      return Uint8List(0);
-    }
-  }
+class YustFileHelpers {
+  YustFileHelpers();
 
   /// Shares or downloads a file.
   /// On iOS and Android shows Share-Popup afterwards.
@@ -155,32 +92,9 @@ class YustFileService {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(context, 'Ups',
-          'Die Datei kann nicht geöffnet werden. ${e.toString()}');
+      await YustUi.alertService.showAlert(
+          'Ups', 'Die Datei kann nicht geöffnet werden. ${e.toString()}');
     }
-  }
-
-  Future<void> deleteFile({required String path, String? name}) async {
-    if (name == null) return;
-    try {
-      await fireStorage.ref().child(path).child(name).delete();
-    } catch (e) {
-      throw YustException(e.toString());
-    }
-  }
-
-  Future<bool> fileExist({required String path, required String name}) async {
-    try {
-      await fireStorage.ref().child(path).child(name).getDownloadURL();
-    } on firebase_storage.FirebaseException catch (_) {
-      return false;
-    }
-    return true;
-  }
-
-  Future<String> getFileDownloadUrl(
-      {required String path, required String name}) async {
-    return await fireStorage.ref().child(path).child(name).getDownloadURL();
   }
 
   Future<File> resizeImage({required File file, int maxWidth = 1024}) async {

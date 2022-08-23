@@ -9,14 +9,13 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
 
-import '../../yust_ui.dart';
 import '../screens/yust_image_screen.dart';
 import '../util/yust_file_handler.dart';
-import '../util/yust_ui_helpers.dart';
+import '../yust_ui.dart';
 import 'yust_cached_image.dart';
 import 'yust_list_tile.dart';
 
-final Map<String, Map<String, int>> YustImageQuality = {
+final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
   'high': {'quality': 100, 'size': 2000},
   'medium': {'quality': 90, 'size': 1200},
@@ -225,8 +224,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (file == null) {
       return SizedBox.shrink();
     }
-    // ignore: inference_failure_on_uninitialized_variable
-    var cacheKey;
+    dynamic cacheKey;
     if (file.key != null) {
       cacheKey = file.key.toString();
     } else if (file.url != null) {
@@ -309,9 +307,9 @@ class YustImagePickerState extends State<YustImagePicker> {
           icon: Icon(Icons.delete),
           color: Colors.black,
           onPressed: () async {
-            YustUi.helpers.unfocusCurrent(context);
+            YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService
-                .showConfirmation(context, 'Wirklich löschen?', 'Löschen');
+                .showConfirmation('Wirklich löschen?', 'Löschen');
             if (confirmed == true) {
               try {
                 await _fileHandler.deleteFile(yustFile);
@@ -322,7 +320,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   setState(() {});
                 }
               } catch (e) {
-                await YustUi.alertService.showAlert(context, 'Ups',
+                await YustUi.alertService.showAlert('Ups',
                     'Das Bild kann gerade nicht gelöscht werden: \n${e.toString()}');
               }
             }
@@ -343,9 +341,7 @@ class YustImagePickerState extends State<YustImagePicker> {
         icon: Icon(Icons.cloud_upload_outlined),
         color: Colors.white,
         onPressed: () async {
-          await YustUi.alertService.showAlert(
-              context,
-              'Lokal gespeichertes Bild',
+          await YustUi.alertService.showAlert('Lokal gespeichertes Bild',
               'Dieses Bild ist noch nicht hochgeladen.');
         },
       ),
@@ -353,13 +349,12 @@ class YustImagePickerState extends State<YustImagePicker> {
   }
 
   Future<void> _pickImages(ImageSource imageSource) async {
-    YustUi.helpers.unfocusCurrent(context);
-    final size = YustImageQuality[widget.yustQuality]!['size']!.toDouble();
-    final quality = YustImageQuality[widget.yustQuality]!['quality']!;
+    YustUi.helpers.unfocusCurrent();
+    final quality = yustImageQuality[widget.yustQuality]!['quality']!;
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
-      await YustUi.alertService.showAlert(context, 'Kein Internet',
+      await YustUi.alertService.showAlert('Kein Internet',
           'Für das Hinzufügen von Bildern ist eine Internetverbindung erforderlich.');
     } else {
       if (!kIsWeb) {
@@ -440,13 +435,13 @@ class YustImagePickerState extends State<YustImagePicker> {
     bool resize = false,
   }) async {
     final imageName =
-        Yust.helpers.randomString(length: 16) + '.' + path.split('.').last;
+        '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
     if (resize) {
-      final size = YustImageQuality[widget.yustQuality]!['size']!;
+      final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
-        file = await YustUi.fileService.resizeImage(file: file, maxWidth: size);
+        file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
-        bytes = await YustUi.fileService
+        bytes = await YustUi.fileHelpers
             .resizeImageBytes(name: path, bytes: bytes!, maxWidth: size);
       }
     }
@@ -486,7 +481,7 @@ class YustImagePickerState extends State<YustImagePicker> {
   }
 
   void _showImages(YustFile activeFile) {
-    YustUi.helpers.unfocusCurrent(context);
+    YustUi.helpers.unfocusCurrent();
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (context) => YustImageScreen(
         files: _fileHandler.getFiles(),

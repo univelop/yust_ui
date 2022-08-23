@@ -1,8 +1,8 @@
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 
 import 'services/yust_alert_service.dart';
-import 'services/yust_file_service.dart';
+import 'util/yust_file_helpers.dart';
 import 'util/yust_file_handler_manager.dart';
 
 enum YustInputStyle {
@@ -15,23 +15,23 @@ typedef StringCallback = void Function(String?);
 typedef DeleteCallback = Future<void> Function();
 
 class YustUi {
-  static YustAlertService alertService = YustAlertService();
-  static YustFileService fileService = YustFileService();
+  static late YustAlertService alertService;
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
-  static YustUiHelpers helpers = YustUiHelpers();
+  static late YustUiHelpers helpers;
+  static YustFileHelpers fileHelpers = YustFileHelpers();
   static String? storageUrl;
   static String? imagePlaceholderPath;
 
-  static Future<void> initializeMocked() async {
-    YustUi.fileService = YustFileService.mocked();
-  }
-
-  static Future<void> initialize({
+  static void initialize({
     String? storageUrl,
     String? imagePlaceholderPath,
-  }) async {
+  }) {
     YustUi.storageUrl = storageUrl;
     YustUi.imagePlaceholderPath = imagePlaceholderPath;
-    FirebaseStorage.instance.setMaxUploadRetryTime(Duration(seconds: 20));
+  }
+
+  static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {
+    YustUi.alertService = YustAlertService(navStateKey);
+    YustUi.helpers = YustUiHelpers(navStateKey);
   }
 }

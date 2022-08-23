@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class YustUiHelpers {
+  final GlobalKey<NavigatorState> navStateKey;
+  YustUiHelpers(this.navStateKey);
+
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
   final connectivityStream =
       Connectivity().onConnectivityChanged.asBroadcastStream();
 
   /// Does unfocus the current focus node.
-  void unfocusCurrent(BuildContext context) {
+  void unfocusCurrent() {
+    final context = navStateKey.currentContext;
+    if (context == null) return;
     final currentFocus = FocusScope.of(context);
     if (!currentFocus.hasPrimaryFocus) {
       currentFocus.unfocus();
@@ -17,6 +22,7 @@ class YustUiHelpers {
   }
 
   /// Does not return null.
+  @Deprecated('Use YustHelper.formatDate instead')
   String formatDate(DateTime? dateTime, {String? format}) {
     if (dateTime == null) return '';
 
@@ -25,6 +31,7 @@ class YustUiHelpers {
   }
 
   /// Does not return null.
+  @Deprecated('Use YustHelper.formatTime instead')
   String formatTime(DateTime? dateTime, {String? format}) {
     if (dateTime == null) return '';
 
