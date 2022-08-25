@@ -106,7 +106,10 @@ class YustNumberField extends StatelessWidget {
       return null;
     } else {
       final format = NumberFormat.decimalPattern('de-DE');
-      final numValue = format.parse(value);
+      var numValue = format.parse(value);
+      if (numValue % 1 == 0) {
+        numValue = numValue.toInt();
+      }
       return numValue;
     }
   }
