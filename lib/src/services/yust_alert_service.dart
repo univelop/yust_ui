@@ -4,10 +4,12 @@ import '../widgets/yust_select.dart';
 import '../widgets/yust_switch.dart';
 
 class YustAlertService {
-  final BuildContext context;
-  YustAlertService(this.context);
+  final GlobalKey<NavigatorState> navStateKey;
+  YustAlertService(this.navStateKey);
 
   Future<void> showAlert(String title, String message) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -33,6 +35,8 @@ class YustAlertService {
     String cancelText = 'Abbrechen',
     String? description,
   }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -70,6 +74,9 @@ class YustAlertService {
   }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
+
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -120,6 +127,8 @@ class YustAlertService {
     required List<String> optionValues,
     String initialText = '',
   }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -164,6 +173,8 @@ class YustAlertService {
     String? actionName,
     required Widget Function({required void Function(T?) onChanged}) buildInner,
   }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<T?>(
       context: context,
       builder: (BuildContext context) {
@@ -274,6 +285,9 @@ class YustAlertService {
   }
 
   void showToast(String message) {
+    final context = navStateKey.currentContext;
+    if (context == null) return;
+
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
     ));

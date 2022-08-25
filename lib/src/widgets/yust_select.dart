@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
@@ -52,25 +53,25 @@ class YustSelect<T> extends StatelessWidget {
 
   void _selectValue(BuildContext context) async {
     YustUi.helpers.unfocusCurrent();
-    if (onSelected != null) {
-      var selectedValue = await showDialog<T>(
-          context: context,
-          builder: (BuildContext context) {
-            return SimpleDialog(
-              title: (label == null) ? null : Text('$label wählen'),
-              children: optionValues.map((optionValue) {
-                return SimpleDialogOption(
-                  onPressed: () {
-                    Navigator.pop(context, optionValue);
-                  },
-                  child: Text(_valueCaption(optionValue)),
-                );
-              }).toList(),
-            );
-          });
-      if (selectedValue != null) {
-        onSelected!(selectedValue);
-      }
+    if (onSelected == null) return;
+
+    var selectedValue = await showDialog<T>(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: (label == null) ? null : Text('$label wählen'),
+            children: optionValues.map((optionValue) {
+              return SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, optionValue);
+                },
+                child: Text(_valueCaption(optionValue)),
+              );
+            }).toList(),
+          );
+        });
+    if (selectedValue != null) {
+      onSelected!(selectedValue);
     }
   }
 }

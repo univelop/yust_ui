@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class YustUiHelpers {
-  final BuildContext context;
-  YustUiHelpers(this.context);
+  final GlobalKey<NavigatorState> navStateKey;
+  YustUiHelpers(this.navStateKey);
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
@@ -13,6 +13,8 @@ class YustUiHelpers {
 
   /// Does unfocus the current focus node.
   void unfocusCurrent() {
+    final context = navStateKey.currentContext;
+    if (context == null) return;
     final currentFocus = FocusScope.of(context);
     if (!currentFocus.hasPrimaryFocus) {
       currentFocus.unfocus();
