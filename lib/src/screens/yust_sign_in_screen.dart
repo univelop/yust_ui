@@ -23,7 +23,7 @@ class YustSignInScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _YustSignInScreenState createState() => _YustSignInScreenState();
+  State<YustSignInScreen> createState() => _YustSignInScreenState();
 }
 
 class _YustSignInScreenState extends State<YustSignInScreen> {
@@ -209,17 +209,16 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
             .timeout(Duration(seconds: 10));
         if (_onSignedIn != null) _onSignedIn!();
       } on YustException catch (err) {
-        await YustUi.alertService.showAlert(context, 'Fehler', err.message);
+        await YustUi.alertService.showAlert('Fehler', err.message);
       } on PlatformException catch (err) {
-        await YustUi.alertService.showAlert(context, 'Fehler', err.message!);
+        await YustUi.alertService.showAlert('Fehler', err.message!);
       } on TimeoutException catch (_) {
         await YustUi.alertService.showAlert(
-          context,
           'Fehler',
           'Zeitüberschreitung der Anfrage',
         );
       } catch (err) {
-        await YustUi.alertService.showAlert(context, 'Fehler', err.toString());
+        await YustUi.alertService.showAlert('Fehler', err.toString());
       }
     }
   }

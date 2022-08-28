@@ -4,9 +4,13 @@ import '../widgets/yust_select.dart';
 import '../widgets/yust_switch.dart';
 
 class YustAlertService {
-  Future<void> showAlert(
-      BuildContext context, String title, String message) async {
-    await showDialog<void>(
+  final GlobalKey<NavigatorState> navStateKey;
+  YustAlertService(this.navStateKey);
+
+  Future<void> showAlert(String title, String message) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -26,12 +30,13 @@ class YustAlertService {
   }
 
   Future<bool?> showConfirmation(
-    BuildContext context,
     String title,
     String action, {
     String cancelText = 'Abbrechen',
     String? description,
   }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -59,7 +64,6 @@ class YustAlertService {
   }
 
   Future<String?> showTextFieldDialog(
-    BuildContext context,
     String title,
     String? placeholder,
     String action, {
@@ -70,6 +74,9 @@ class YustAlertService {
   }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
+
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -114,13 +121,14 @@ class YustAlertService {
   }
 
   Future<String?> showPickerDialog(
-    BuildContext context,
     String title,
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
     String initialText = '',
   }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -160,26 +168,24 @@ class YustAlertService {
     );
   }
 
-  // typedef InnerBuilder = void Function({})
-
-  Future<String?> showCustomDialog({
-    required BuildContext context,
+  Future<T?> showCustomDialog<T>({
     required String title,
     String? actionName,
-    required Widget Function({required void Function(String) onChanged})
-        buildInner,
+    required Widget Function({required void Function(T?) onChanged}) buildInner,
   }) {
-    return showDialog<String>(
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<T?>(
       context: context,
       builder: (BuildContext context) {
-        var returnValue = '';
+        dynamic returnValue;
         return AlertDialog(
           scrollable: true,
           title: Text(title),
           content: StatefulBuilder(
             builder: (context, setState) {
               return buildInner(
-                onChanged: (String value) => returnValue = value,
+                onChanged: (T? value) => returnValue = value,
               );
             },
           ),
@@ -278,7 +284,10 @@ class YustAlertService {
     }
   }
 
-  void showToast(BuildContext context, String message) {
+  void showToast(String message) {
+    final context = navStateKey.currentContext;
+    if (context == null) return;
+
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
     ));
