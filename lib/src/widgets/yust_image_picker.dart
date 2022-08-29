@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/yust_ui.dart';
 
 import '../screens/yust_image_screen.dart';
 import '../util/yust_file_handler.dart';
@@ -100,7 +101,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return StreamBuilder<ConnectivityResult>(
-      stream: YustUi.helpers.connectivityStream,
+      stream: YustFileHelpers.ConnectivityStream,
       builder: (context, snapshot) {
         if (snapshot.data != null) {
           _connectivityResult = snapshot.data!;

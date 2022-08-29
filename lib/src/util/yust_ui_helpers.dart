@@ -6,11 +6,6 @@ class YustUiHelpers {
   final GlobalKey<NavigatorState> navStateKey;
   YustUiHelpers(this.navStateKey);
 
-  /// Under Firefox only one BroadcastStream can be used for the
-  /// connectivity result. Therefore, use this stream instance
-  final connectivityStream =
-      Connectivity().onConnectivityChanged.asBroadcastStream();
-
   /// Does unfocus the current focus node.
   void unfocusCurrent() {
     final context = navStateKey.currentContext;
