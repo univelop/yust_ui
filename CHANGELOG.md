@@ -1,3 +1,7 @@
+## 3.1.2 - 2022-08-29
+
+-   Fix issues.
+
 ## 3.1.0 - 2022-08-28
 
 -   Improve number field.
