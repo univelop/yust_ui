@@ -296,7 +296,7 @@ packages:
     source: hosted
     version: "4.2.3"
   firebase_core:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       name: firebase_core
       url: "https://pub.dartlang.org"
@@ -1174,10 +1174,10 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "4d47cef8a97a8b695241afaed641ece1fe6de749"
+      resolved-ref: becfe1ef04917768fd50167b0e3fdf1f9e900aa8
       url: "https://github.com/univelop/yust"
     source: git
-    version: "3.0.0"
+    version: "3.1.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
   flutter: ">=3.0.0"
