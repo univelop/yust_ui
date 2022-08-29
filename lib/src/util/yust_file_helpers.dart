@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'dart:typed_data';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,11 @@ import '../yust_ui.dart';
 
 class YustFileHelpers {
   YustFileHelpers();
+
+  /// Under Firefox only one BroadcastStream can be used for the
+  /// connectivity result. Therefore, use this stream instance
+  static final ConnectivityStream =
+      Connectivity().onConnectivityChanged.asBroadcastStream();
 
   /// Shares or downloads a file.
   /// On iOS and Android shows Share-Popup afterwards.
