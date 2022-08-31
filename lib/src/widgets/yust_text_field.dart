@@ -76,6 +76,19 @@ class _YustTextFieldState extends State<YustTextField> {
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
 
+  void onUnfocus() {
+    if (widget.onEditingComplete == null) return;
+
+    final textFieldText = _controller.value.text.trim();
+    final textFieldValue = textFieldText == '' ? null : textFieldText;
+
+    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+      widget.onEditingComplete!(textFieldValue);
+    } else {
+      _controller.text = widget.value ?? '';
+    }
+  }
+
   /// This Method resets/initializes the state of the widget
   void resetState() {
     if (widget.controller != null && widget.value != null) {
@@ -86,16 +99,7 @@ class _YustTextFieldState extends State<YustTextField> {
     _focusNode = widget.focusNode ?? FocusNode();
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
-      if (!_focusNode.hasFocus && widget.onEditingComplete != null) {
-        final textFieldText = _controller.value.text.trim();
-        final textFieldValue = textFieldText == '' ? null : textFieldText;
-        if (widget.validator == null ||
-            widget.validator!(textFieldValue) == null) {
-          widget.onEditingComplete!(textFieldValue);
-        } else {
-          _controller.text = widget.value ?? '';
-        }
-      }
+      if (!_focusNode.hasFocus) onUnfocus();
     });
     if (widget.hideKeyboardOnAutofocus) {
       Future.delayed(
@@ -119,7 +123,14 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
+    onUnfocus();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    onUnfocus();
+    super.deactivate();
   }
 
   @override
@@ -127,7 +138,10 @@ class _YustTextFieldState extends State<YustTextField> {
     super.didUpdateWidget(oldWidget);
     // If the Text-Fields Label changed, we can assume it's a new/different TextField
     // (Flutter "reuses" existing Widgets in the tree)
-    if (oldWidget.label != widget.label) resetState();
+    if (oldWidget.label != widget.label) {
+      onUnfocus();
+      resetState();
+    }
   }
 
   @override
