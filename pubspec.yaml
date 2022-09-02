@@ -9,11 +9,11 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.1.0
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust
-    #         ref: master
+    # yust: ^3.1.0
+    yust:
+        git:
+            url: https://github.com/univelop/yust
+            ref: master
     # yust:
     #   path: ../yust
     firebase_core: ^1.20.1
