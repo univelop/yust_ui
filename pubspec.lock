@@ -1179,9 +1179,11 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      name: yust
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: e73bb09f5fa373ce64c041f39d1fc3ef6bed536e
+      url: "https://github.com/univelop/yust"
+    source: git
     version: "3.1.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
