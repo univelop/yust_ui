@@ -28,7 +28,7 @@ class YustCachedImage extends StatelessWidget {
       height: height ?? 150,
       width: width ?? 150,
       color: Colors.grey,
-      child: Icon(Icons.question_mark),
+      child: const Icon(Icons.question_mark),
     );
 
     if (file.file != null && file.bytes == null) {
@@ -60,7 +60,7 @@ class YustCachedImage extends StatelessWidget {
             placeholder ?? YustUi.imagePlaceholderPath!,
             fit: BoxFit.cover),
         progressIndicatorBuilder: (context, url, downloadProgress) => Container(
-          margin: EdgeInsets.all(50),
+          margin: const EdgeInsets.all(50),
           child: CircularProgressIndicator(
             value: downloadProgress.progress,
           ),

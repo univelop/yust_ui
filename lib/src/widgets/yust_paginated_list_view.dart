@@ -15,7 +15,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final Widget? footer;
   final Widget? emptyInfo;
 
-  YustPaginatedListView({
+  const YustPaginatedListView({
     Key? key,
     required this.modelSetup,
     required this.listItemBuilder,
@@ -37,7 +37,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       scrollController: scrollController,
       header: header,
       footer: footer,
-      onEmpty: emptyInfo ?? EmptyDisplay(),
+      onEmpty: emptyInfo ?? const EmptyDisplay(),
       itemBuilderType: PaginateBuilderType.listView,
       itemBuilder: (context, documentSnapshot, index) =>
           _itemBuilder(index, context, documentSnapshot[index]),
@@ -47,7 +47,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       isLive: true,
       initialLoader: SingleChildScrollView(
         controller: scrollController,
-        child: CircularProgressIndicator(),
+        child: const CircularProgressIndicator(),
       ),
     );
   }
@@ -57,10 +57,10 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     final doc =
         Yust.databaseService.transformDoc<T>(modelSetup, documentSnapshot);
     if (doc == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     if (hideItem != null && hideItem!(doc) == true) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return listItemBuilder(context, doc, index);
   }

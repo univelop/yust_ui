@@ -35,7 +35,7 @@ class YustTextField extends StatefulWidget {
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
 
-  YustTextField({
+  const YustTextField({
     Key? key,
     this.label,
     this.value,
@@ -103,7 +103,7 @@ class _YustTextFieldState extends State<YustTextField> {
     });
     if (widget.hideKeyboardOnAutofocus) {
       Future.delayed(
-        Duration(),
+        const Duration(),
         () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
       );
     }
@@ -170,7 +170,7 @@ class _YustTextFieldState extends State<YustTextField> {
                               Colors.black),
                   contentPadding: const EdgeInsets.all(20.0),
                   border: widget.style == YustInputStyle.outlineBorder
-                      ? OutlineInputBorder()
+                      ? const OutlineInputBorder()
                       : InputBorder.none,
                   prefixIcon: widget.prefixIcon,
                 ),
@@ -205,7 +205,7 @@ class _YustTextFieldState extends State<YustTextField> {
                 autofocus: widget.autofocus,
               ),
             ),
-            widget.suffixIcon ?? SizedBox(),
+            widget.suffixIcon ?? const SizedBox(),
             if (widget.onDelete != null && widget.value != '')
               IconButton(
                   onPressed: widget.onDelete!,
@@ -216,7 +216,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ],
         ),
         if (widget.style == YustInputStyle.normal && widget.divider)
-          Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
   }

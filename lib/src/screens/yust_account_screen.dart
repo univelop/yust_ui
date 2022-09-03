@@ -5,6 +5,8 @@ import '../widgets/yust_doc_builder.dart';
 import 'yust_account_edit_screen.dart';
 
 class YustAccountScreen extends StatelessWidget {
+  const YustAccountScreen({Key? key}) : super(key: key);
+
   static const String routeName = '/account';
   static const bool signInRequired = true;
 
@@ -15,14 +17,14 @@ class YustAccountScreen extends StatelessWidget {
       id: Yust.authService.currUserId,
       builder: (user, insights, context) {
         if (user == null) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: Text('In Arbeit...'),
             ),
           );
         }
         return Scaffold(
-          appBar: AppBar(title: Text('Account')),
+          appBar: AppBar(title: const Text('Account')),
           body: ListView(
             padding: const EdgeInsets.only(top: 20.0),
             children: <Widget>[
@@ -42,7 +44,7 @@ class YustAccountScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Divider(thickness: 1.0),
+              const Divider(thickness: 1.0),
               ListTile(
                 leading: Icon(
                   Icons.person,
@@ -58,7 +60,7 @@ class YustAccountScreen extends StatelessWidget {
                   Navigator.pushNamed(context, YustAccountEditScreen.routeName);
                 },
               ),
-              Divider(thickness: 1.0),
+              const Divider(thickness: 1.0),
               ListTile(
                 leading: Icon(
                   Icons.power_settings_new,
@@ -74,7 +76,7 @@ class YustAccountScreen extends StatelessWidget {
                   Yust.authService.signOut();
                 },
               ),
-              Divider(thickness: 1.0),
+              const Divider(thickness: 1.0),
             ],
           ),
         );

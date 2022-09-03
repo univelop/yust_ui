@@ -15,7 +15,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   /// There will never be a null for the list given.
   final Widget Function(List<T>, YustBuilderInsights, BuildContext) builder;
 
-  YustDocsBuilder({
+  const YustDocsBuilder({
     Key? key,
     required this.modelSetup,
     this.filters,
@@ -46,8 +46,8 @@ class YustDocsBuilderState<T extends YustDoc>
 
   void updateStreamConditionally(YustDocsBuilder oldWidget) {
     if (widget.modelSetup != oldWidget.modelSetup ||
-        !ListEquality<YustFilter>().equals(widget.filters, oldWidget.filters) ||
-        !ListEquality<dynamic>().equals(widget.orderBy, oldWidget.orderBy)) {
+        !const ListEquality<YustFilter>().equals(widget.filters, oldWidget.filters) ||
+        !const ListEquality<dynamic>().equals(widget.orderBy, oldWidget.orderBy)) {
       initStream();
     }
   }
@@ -80,7 +80,7 @@ class YustDocsBuilderState<T extends YustDoc>
         if (opts.waiting! && widget.showLoadingSpinner) {
           return widget.loadingIndicator != null
               ? widget.loadingIndicator!
-              : Center(child: CircularProgressIndicator());
+              : const Center(child: CircularProgressIndicator());
         }
         return widget.builder(snapshot.data ?? [], opts, context);
       },

@@ -30,7 +30,7 @@ class YustNumberField extends StatelessWidget {
   final FormFieldValidator<num?>? validator;
   final bool divider;
 
-  YustNumberField({
+  const YustNumberField({
     Key? key,
     this.label,
     this.value,
@@ -72,7 +72,7 @@ class YustNumberField extends StatelessWidget {
           ? null
           : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '')),
       keyboardType: (!kIsWeb && Platform.isIOS)
-          ? TextInputType.numberWithOptions(decimal: true, signed: true)
+          ? const TextInputType.numberWithOptions(decimal: true, signed: true)
           : null,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
       textInputAction: TextInputAction.next,

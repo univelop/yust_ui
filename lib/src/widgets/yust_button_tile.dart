@@ -28,7 +28,7 @@ class YustButtonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        above ?? SizedBox(),
+        above ?? const SizedBox(),
         Padding(
           padding: const EdgeInsets.all(10),
           child: elevated
@@ -38,7 +38,7 @@ class YustButtonTile extends StatelessWidget {
                     primary: color,
                     onPrimary: textColor,
                   ),
-                  icon: icon ?? SizedBox(),
+                  icon: icon ?? const SizedBox(),
                   label: Text(
                     label!,
                     overflow: TextOverflow.ellipsis,
@@ -49,15 +49,15 @@ class YustButtonTile extends StatelessWidget {
                   style: TextButton.styleFrom(
                     primary: color,
                   ),
-                  icon: icon ?? SizedBox(),
+                  icon: icon ?? const SizedBox(),
                   label: Text(
                     label!,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
         ),
-        below ?? SizedBox(),
-        if (divider) Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+        below ?? const SizedBox(),
+        if (divider) const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
   }

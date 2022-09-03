@@ -46,5 +46,5 @@ dependencies:
     mask_text_input_formatter: ^2.0.0
 
 dev_dependencies:
-    lints: ^2.0.0
+    flutter_lints: ^2.0.1
     test: ^1.16.0

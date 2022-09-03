@@ -17,20 +17,20 @@ class YustAccountEditScreen extends StatelessWidget {
 
   final bool askForGender;
 
-  YustAccountEditScreen({Key? key, this.askForGender = false})
+  const YustAccountEditScreen({Key? key, this.askForGender = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return YustFocusHandler(
       child: Scaffold(
-        appBar: AppBar(title: Text('Persönliche Daten')),
+        appBar: AppBar(title: const Text('Persönliche Daten')),
         body: YustDocBuilder<YustUser>(
             modelSetup: Yust.userSetup,
             id: Yust.authService.currUserId,
             builder: (user, insights, context) {
               if (user == null) {
-                return Center(
+                return const Center(
                   child: Text('In Arbeit...'),
                 );
               }
@@ -94,13 +94,13 @@ class YustAccountEditScreen extends StatelessWidget {
 
   Widget _buildGender(BuildContext context, YustUser user) {
     if (!askForGender) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return YustSelect(
       label: 'Anrede',
       value: user.gender,
-      optionValues: [YustGender.male, YustGender.female],
-      optionLabels: ['Herr', 'Frau'],
+      optionValues: const [YustGender.male, YustGender.female],
+      optionLabels: const ['Herr', 'Frau'],
       onSelected: (dynamic value) {
         user.gender = value;
         Yust.databaseService.saveDoc<YustUser>(Yust.userSetup, user);
@@ -115,7 +115,7 @@ class YustAccountEditScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: Text('E-Mail ändern'),
+          title: const Text('E-Mail ändern'),
           children: [
             YustTextField(
               label: 'Neue E-Mail Adresse',
@@ -128,12 +128,12 @@ class YustAccountEditScreen extends StatelessWidget {
               onChanged: (value) => password = value,
               obscureText: true,
             ),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 20.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: Text('Abbrechen'),
+                  child: const Text('Abbrechen'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -145,6 +145,7 @@ class YustAccountEditScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () async {
+                    final navigator = Navigator.of(context);
                     try {
                       if (email == null || password == null) {
                         throw Exception(
@@ -153,12 +154,13 @@ class YustAccountEditScreen extends StatelessWidget {
                       await EasyLoading.show(status: 'E-Mail wird geändert...');
                       await Yust.authService.changeEmail(email!, password!);
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+
+                      navigator.pop();
                       await YustUi.alertService.showAlert('E-Mail geändert',
                           'Deine E-Mail wurde erfolgreich geändert.');
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+                      navigator.pop();
                       await YustUi.alertService
                           .showAlert('Fehler', err.message!);
                     } catch (err) {
@@ -184,7 +186,7 @@ class YustAccountEditScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: Text('Passwort ändern'),
+          title: const Text('Passwort ändern'),
           children: [
             YustTextField(
               label: 'Neues Passwort',
@@ -198,12 +200,12 @@ class YustAccountEditScreen extends StatelessWidget {
               onChanged: (value) => oldPassword = value,
               obscureText: true,
             ),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 20.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: Text('Abbrechen'),
+                  child: const Text('Abbrechen'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -215,6 +217,7 @@ class YustAccountEditScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () async {
+                    final navigator = Navigator.of(context);
                     try {
                       if (newPassword == null || oldPassword == null) {
                         throw Exception(
@@ -225,17 +228,17 @@ class YustAccountEditScreen extends StatelessWidget {
                       await Yust.authService
                           .changePassword(newPassword!, oldPassword!);
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+                      navigator.pop();
                       await YustUi.alertService.showAlert('Passwort geändert',
                           'Dein Passwort wurde erfolgreich geändert.');
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+                      navigator.pop();
                       await YustUi.alertService
                           .showAlert('Fehler', err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+                      navigator.pop();
                       await YustUi.alertService
                           .showAlert('Fehler', err.toString());
                     }

@@ -10,12 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/yust_ui.dart';
 
-import '../screens/yust_image_screen.dart';
-import '../util/yust_file_handler.dart';
-import '../yust_ui.dart';
-import 'yust_cached_image.dart';
-import 'yust_list_tile.dart';
-
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
   'high': {'quality': 100, 'size': 2000},
@@ -48,7 +42,7 @@ class YustImagePicker extends StatefulWidget {
   /// default is 15
   final int imageCount;
 
-  YustImagePicker({
+  const YustImagePicker({
     Key? key,
     this.label,
     required this.storageFolderPath,
@@ -101,7 +95,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return StreamBuilder<ConnectivityResult>(
-      stream: YustFileHelpers.ConnectivityStream,
+      stream: YustFileHelpers.connectivityStream,
       builder: (context, snapshot) {
         if (snapshot.data != null) {
           _connectivityResult = snapshot.data!;
@@ -130,7 +124,7 @@ class YustImagePickerState extends State<YustImagePicker> {
   Widget _buildPickButtons(BuildContext context) {
     if (!_enabled ||
         (!widget.multiple && _fileHandler.getFiles().firstOrNull != null)) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return SizedBox(
@@ -142,14 +136,14 @@ class YustImagePickerState extends State<YustImagePicker> {
             IconButton(
               color: Theme.of(context).colorScheme.primary,
               iconSize: 40,
-              icon: Icon(Icons.camera_alt),
+              icon: const Icon(Icons.camera_alt),
               onPressed:
                   _enabled ? () => _pickImages(ImageSource.camera) : null,
             ),
           IconButton(
             color: Theme.of(context).colorScheme.primary,
             iconSize: 40,
-            icon: Icon(Icons.image),
+            icon: const Icon(Icons.image),
             onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
           ),
         ],
@@ -159,7 +153,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildGallery(BuildContext context) {
     if (_fileHandler.getFiles().isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Column(
@@ -181,11 +175,11 @@ class YustImagePickerState extends State<YustImagePicker> {
                   _buildGallery(context);
                 });
               },
-              icon: Icon(Icons.refresh),
-              label: Text('mehr laden'),
+              icon: const Icon(Icons.refresh),
+              label: const Text('mehr laden'),
             ),
           ),
-        SizedBox(height: 2)
+        const SizedBox(height: 2)
       ],
     );
   }
@@ -223,7 +217,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildImagePreview(BuildContext context, YustFile? file) {
     if (file == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     dynamic cacheKey;
     if (file.key != null) {
@@ -252,7 +246,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       );
     } else {
       return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: 300, maxWidth: 400),
+        constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
         child: GestureDetector(
           onTap: zoomEnabled ? () => _showImages(file) : null,
           child: file.url != null
@@ -268,19 +262,19 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildProgressIndicator(BuildContext context, YustFile? file) {
     if (file?.processing != true) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.black54,
-        borderRadius: BorderRadius.all(const Radius.circular(20)),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          CircularProgressIndicator(),
-          SizedBox(width: 8),
+          const CircularProgressIndicator(),
+          const SizedBox(width: 8),
           Flexible(
             child: Text(
               'Bild hochladen',
@@ -296,7 +290,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildRemoveButton(BuildContext context, YustFile? yustFile) {
     if (yustFile == null || !_enabled) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Positioned(
       top: 10,
@@ -305,7 +299,7 @@ class YustImagePickerState extends State<YustImagePicker> {
         radius: 20,
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: IconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           color: Colors.black,
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
@@ -333,13 +327,13 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildCachedIndicator(BuildContext context, YustFile? yustFile) {
     if (yustFile == null || !yustFile.cached || !_enabled) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Positioned(
       bottom: 5,
       right: 5,
       child: IconButton(
-        icon: Icon(Icons.cloud_upload_outlined),
+        icon: const Icon(Icons.cloud_upload_outlined),
         color: Colors.white,
         onPressed: () async {
           await YustUi.alertService.showAlert('Lokal gespeichertes Bild',
