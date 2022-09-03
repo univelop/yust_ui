@@ -36,7 +36,7 @@ class YustFilePicker extends StatefulWidget {
 
   final bool readOnly;
 
-  YustFilePicker({
+  const YustFilePicker({
     Key? key,
     this.label,
     required this.files,
@@ -147,21 +147,21 @@ class YustFilePickerState extends State<YustFilePicker> {
   /// This Widget is a visual drag and drop indicator. It shows a dotted box, an icon as well as a button to manually upload files
   Widget _buildDropzoneInterface() {
     final dropZoneColor =
-        isDragging ? Colors.blue : Color.fromARGB(255, 116, 116, 116);
+        isDragging ? Colors.blue : const Color.fromARGB(255, 116, 116, 116);
     return Center(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(100, 2, 2, 2),
+        padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
         child: DottedBorder(
           borderType: BorderType.RRect,
-          radius: Radius.circular(12),
-          padding: EdgeInsets.all(6),
-          dashPattern: [6, 5],
+          radius: const Radius.circular(12),
+          padding: const EdgeInsets.all(6),
+          dashPattern: const [6, 5],
           strokeWidth: 3,
           strokeCap: StrokeCap.round,
           color: dropZoneColor,
           child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-            child: Container(
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            child: SizedBox(
               height: 200,
               width: 400,
               child: Row(
@@ -184,7 +184,7 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildAddButton(BuildContext context) {
     if (!_enabled) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return IconButton(
       iconSize: 40,
@@ -211,7 +211,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(isBroken ? 'Fehlerhafte Datei' : file.name!,
                 overflow: TextOverflow.ellipsis),
@@ -233,13 +233,13 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildDeleteButton(YustFile file) {
     if (!_enabled) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     if (_processing[file.name] == true) {
-      return CircularProgressIndicator();
+      return const CircularProgressIndicator();
     }
     return IconButton(
-      icon: Icon(Icons.delete),
+      icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
       onPressed: _enabled ? () => _deleteFile(file) : null,
     );
@@ -247,13 +247,13 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildCachedIndicator(YustFile file) {
     if (!file.cached || !_enabled) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     if (file.processing == true) {
-      return CircularProgressIndicator();
+      return const CircularProgressIndicator();
     }
     return IconButton(
-      icon: Icon(Icons.cloud_upload_outlined),
+      icon: const Icon(Icons.cloud_upload_outlined),
       color: Colors.black,
       onPressed: () async {
         await YustUi.alertService.showAlert('Lokal gespeicherte Datei',

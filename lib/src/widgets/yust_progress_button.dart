@@ -9,7 +9,7 @@ class YustProgressButton extends StatefulWidget {
   final Color spinnerColor;
   final bool inProgress;
 
-  YustProgressButton({
+  const YustProgressButton({
     Key? key,
     this.child,
     required this.onPressed,

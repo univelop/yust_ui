@@ -50,7 +50,6 @@ class YustFileHandlerManager {
   Future<void> uploadCachedFiles() async {
     var cachedFiles = await YustFileHandler.loadCachedFiles();
     while (cachedFiles.isNotEmpty) {
-      print('${cachedFiles.length.toString()} files in upload queue');
       var file = cachedFiles.first;
       var filehandler = createFileHandler(
         storageFolderPath: file.storageFolderPath ?? '',

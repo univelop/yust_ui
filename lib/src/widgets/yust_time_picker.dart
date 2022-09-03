@@ -19,7 +19,7 @@ class YustTimePicker extends StatefulWidget {
   final String popUpTitle;
   final bool readOnly;
 
-  YustTimePicker({
+  const YustTimePicker({
     Key? key,
     this.label,
     this.value,
@@ -78,7 +78,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
               labelText: widget.label,
               contentPadding: const EdgeInsets.all(20.0),
               border: widget.style == YustInputStyle.outlineBorder
-                  ? OutlineInputBorder()
+                  ? const OutlineInputBorder()
                   : null,
               prefixIcon: widget.prefixIcon,
               suffixIcon: _buildTrailing(context),
@@ -96,7 +96,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
             readOnly: widget.readOnly,
             keyboardType: kIsWeb
                 ? null
-                : TextInputType.numberWithOptions(decimal: true, signed: true),
+                : const TextInputType.numberWithOptions(decimal: true, signed: true),
           ),
         ),
         if (_controller!.text != '' &&
@@ -116,12 +116,12 @@ class _YustTimePickerState extends State<YustTimePicker> {
   Widget _buildTrailing(BuildContext context) {
     return (_controller!.text == '')
         ? IconButton(
-            icon: Icon(Icons.access_time),
+            icon: const Icon(Icons.access_time),
             onPressed: widget.onChanged == null
                 ? null
                 : () => _pickTime(context, widget.popUpTitle),
           )
-        : SizedBox();
+        : const SizedBox();
   }
 
   void _pickTime(BuildContext context, String title) async {

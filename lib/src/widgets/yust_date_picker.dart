@@ -16,7 +16,7 @@ class YustDatePicker extends StatelessWidget {
   final Widget? prefixIcon;
   final bool readOnly;
 
-  YustDatePicker({
+  const YustDatePicker({
     Key? key,
     this.label,
     this.value,
@@ -55,7 +55,7 @@ class YustDatePicker extends StatelessWidget {
       initialDate: dateTime,
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
-      locale: Locale('de', 'DE'),
+      locale: const Locale('de', 'DE'),
     );
     if (selectedDate != null) {
       dateTime = DateTime(

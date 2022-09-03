@@ -18,7 +18,7 @@ class YustSignUpScreen extends StatefulWidget {
   final String? logoAssetName;
   final bool askForGender;
 
-  YustSignUpScreen({
+  const YustSignUpScreen({
     Key? key,
     this.homeRouteName = '/',
     this.logoAssetName,
@@ -58,13 +58,13 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
     return YustFocusHandler(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Registrierung'),
+          title: const Text('Registrierung'),
         ),
         body: SingleChildScrollView(
           controller: _scrollController,
           child: Center(
             child: Container(
-              constraints: BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: 600),
               padding: const EdgeInsets.only(top: 40.0),
               child: Form(
                 key: _formKey,
@@ -76,7 +76,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Vorname',
                           border: OutlineInputBorder(),
                         ),
@@ -95,7 +95,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           FocusScope.of(context).requestFocus(_lastNameFocus);
                           _scrollController.animateTo(
                               _scrollController.offset + 80,
-                              duration: Duration(milliseconds: 500),
+                              duration: const Duration(milliseconds: 500),
                               curve: Curves.ease);
                         },
                       ),
@@ -104,7 +104,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Nachname',
                           border: OutlineInputBorder(),
                         ),
@@ -123,7 +123,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           FocusScope.of(context).requestFocus(_emailFocus);
                           _scrollController.animateTo(
                               _scrollController.offset + 80,
-                              duration: Duration(milliseconds: 500),
+                              duration: const Duration(milliseconds: 500),
                               curve: Curves.ease);
                         },
                       ),
@@ -132,7 +132,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'E-Mail',
                           border: OutlineInputBorder(),
                         ),
@@ -152,7 +152,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           FocusScope.of(context).requestFocus(_passwordFocus);
                           _scrollController.animateTo(
                               _scrollController.offset + 80,
-                              duration: Duration(milliseconds: 500),
+                              duration: const Duration(milliseconds: 500),
                               curve: Curves.ease);
                         },
                       ),
@@ -161,7 +161,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Passwort',
                           border: OutlineInputBorder(),
                         ),
@@ -181,7 +181,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                               .requestFocus(_passwordConfirmationFocus);
                           await _scrollController.animateTo(
                               _scrollController.offset + 80,
-                              duration: Duration(milliseconds: 500),
+                              duration: const Duration(milliseconds: 500),
                               curve: Curves.ease);
                         },
                       ),
@@ -190,7 +190,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Passwort bestätigen',
                           border: OutlineInputBorder(),
                         ),
@@ -227,13 +227,13 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                         color: Theme.of(context).colorScheme.secondary,
                         inProgress: _waitingForSignUp,
                         onPressed: () => _signUp(context),
-                        child: Text('Registrieren',
+                        child: const Text('Registrieren',
                             style:
                                 TextStyle(fontSize: 20.0, color: Colors.white)),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
+                    const Padding(
+                      padding: EdgeInsets.only(
                           left: 20.0, top: 40.0, right: 20.0, bottom: 10.0),
                       child: Text('Du hast bereits einen Account?',
                           style: TextStyle(fontSize: 16.0)),
@@ -265,7 +265,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
 
   Widget _buildLogo(BuildContext context) {
     if (widget.logoAssetName == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return SizedBox(
       height: 200,
@@ -277,15 +277,15 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
 
   Widget _buildGender(BuildContext context) {
     if (!widget.askForGender) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: YustSelect(
         label: 'Anrede',
         value: _gender,
-        optionValues: [YustGender.male, YustGender.female],
-        optionLabels: ['Herr', 'Frau'],
+        optionValues: const [YustGender.male, YustGender.female],
+        optionLabels: const ['Herr', 'Frau'],
         onSelected: (dynamic value) {
           setState(() {
             _gender = value;
@@ -308,7 +308,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
               _passwordConfirmation!,
               gender: _gender,
             )
-            .timeout(Duration(seconds: 10));
+            .timeout(const Duration(seconds: 10));
         if (_onSignedIn != null) _onSignedIn!();
       } on YustException catch (err) {
         await YustUi.alertService.showAlert('Fehler', err.message);

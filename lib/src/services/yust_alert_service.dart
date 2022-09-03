@@ -18,7 +18,7 @@ class YustAlertService {
           content: Text(message),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -96,7 +96,7 @@ class YustAlertService {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Abbrechen'),
+                child: const Text('Abbrechen'),
                 onPressed: () {
                   Navigator.of(context).pop(null);
                 },
@@ -151,7 +151,7 @@ class YustAlertService {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Abbrechen'),
+              child: const Text('Abbrechen'),
               onPressed: () {
                 Navigator.of(context).pop(null);
               },
@@ -191,7 +191,7 @@ class YustAlertService {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Abbrechen'),
+              child: const Text('Abbrechen'),
               onPressed: () {
                 Navigator.of(context).pop(null);
               },
@@ -227,7 +227,7 @@ class YustAlertService {
             builder: (context, setState) {
               return AlertDialog(
                 title: Text(title ?? 'Pflichtfelder'),
-                content: Container(
+                content: SizedBox(
                   width: 300,
                   height: 500,
                   child: SingleChildScrollView(
@@ -263,14 +263,14 @@ class YustAlertService {
                       isAborted = false;
                       Navigator.of(context).pop();
                     },
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                   TextButton(
                     onPressed: () {
                       isAborted = true;
                       Navigator.of(context).pop();
                     },
-                    child: Text('Abbrechen'),
+                    child: const Text('Abbrechen'),
                   ),
                 ],
               );

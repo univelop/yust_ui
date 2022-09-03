@@ -35,7 +35,7 @@ class YustFileHandler {
 
   /// Steadily increasing by the [_reuploadFactor]. Indicates the next upload attempt.
   /// [_reuploadTime] is reset for each upload
-  final Duration _reuploadTime = Duration(milliseconds: 250);
+  final Duration _reuploadTime = const Duration(milliseconds: 250);
   final double _reuploadFactor = 1.25;
 
   final List<YustFile> _yustFiles = [];
@@ -194,7 +194,6 @@ class YustFileHandler {
         await _deleteCachedInformations(yustFile);
         if (onFileUploaded != null) onFileUploaded!();
       } catch (error) {
-        print(error.toString());
         yustFile.lastError = error.toString();
         uploadError = true;
       }
@@ -411,7 +410,7 @@ class YustFileHandler {
       String linkedDocPath) async {
     return await FirebaseFirestore.instance
         .doc(linkedDocPath)
-        .get(GetOptions(source: Source.server));
+        .get(const GetOptions(source: Source.server));
   }
 
   bool existsDocData(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -491,8 +490,8 @@ class YustFileHandler {
 
   /// Limits [reuploadTime] to 10 minutes
   Duration _incReuploadTime(Duration reuploadTime) {
-    return (reuploadTime * _reuploadFactor) > Duration(minutes: 10)
-        ? Duration(minutes: 10)
+    return (reuploadTime * _reuploadFactor) > const Duration(minutes: 10)
+        ? const Duration(minutes: 10)
         : reuploadTime * _reuploadFactor;
   }
 

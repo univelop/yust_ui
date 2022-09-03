@@ -12,7 +12,7 @@ class YustImageScreen extends StatefulWidget {
 
   final int activeImageIndex;
 
-  YustImageScreen({
+  const YustImageScreen({
     Key? key,
     required this.files,
     this.activeImageIndex = 0,
@@ -46,23 +46,21 @@ class _YustImageScreenState extends State<YustImageScreen> {
   Widget _buildSingle(BuildContext context) {
     final file = widget.files.first;
     if (file.url == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Stack(children: [
-      Container(
-        child: PhotoView(
-          imageProvider: _getImageOfUrl(file),
-          minScale: PhotoViewComputedScale.contained,
-          heroAttributes: PhotoViewHeroAttributes(tag: file.url!),
-          onTapUp: (context, details, controllerValue) {
-            Navigator.pop(context);
-          },
-          loadingBuilder: (context, event) => Center(
-            child: Container(
-              width: 20.0,
-              height: 20.0,
-              child: CircularProgressIndicator(),
-            ),
+      PhotoView(
+        imageProvider: _getImageOfUrl(file),
+        minScale: PhotoViewComputedScale.contained,
+        heroAttributes: PhotoViewHeroAttributes(tag: file.url!),
+        onTapUp: (context, details, controllerValue) {
+          Navigator.pop(context);
+        },
+        loadingBuilder: (context, event) => const Center(
+          child: SizedBox(
+            width: 20.0,
+            height: 20.0,
+            child: CircularProgressIndicator(),
           ),
         ),
       ),
@@ -74,33 +72,31 @@ class _YustImageScreenState extends State<YustImageScreen> {
   Widget _buildMultiple(BuildContext context) {
     return Stack(
       children: [
-        Container(
-          child: PhotoViewGallery.builder(
-            itemCount: widget.files.length,
-            scrollPhysics: const BouncingScrollPhysics(),
-            pageController: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                activeImageIndex = index;
-              });
-            },
-            builder: (BuildContext context, int index) {
-              return PhotoViewGalleryPageOptions(
-                imageProvider: _getImageOfUrl(widget.files[index]),
-                minScale: PhotoViewComputedScale.contained,
-                heroAttributes:
-                    PhotoViewHeroAttributes(tag: widget.files[index].url ?? ''),
-                onTapUp: (context, details, controllerValue) {
-                  Navigator.pop(context);
-                },
-              );
-            },
-            loadingBuilder: (context, event) => Center(
-              child: Container(
-                width: 20.0,
-                height: 20.0,
-                child: CircularProgressIndicator(),
-              ),
+        PhotoViewGallery.builder(
+          itemCount: widget.files.length,
+          scrollPhysics: const BouncingScrollPhysics(),
+          pageController: _pageController,
+          onPageChanged: (index) {
+            setState(() {
+              activeImageIndex = index;
+            });
+          },
+          builder: (BuildContext context, int index) {
+            return PhotoViewGalleryPageOptions(
+              imageProvider: _getImageOfUrl(widget.files[index]),
+              minScale: PhotoViewComputedScale.contained,
+              heroAttributes:
+                  PhotoViewHeroAttributes(tag: widget.files[index].url ?? ''),
+              onTapUp: (context, details, controllerValue) {
+                Navigator.pop(context);
+              },
+            );
+          },
+          loadingBuilder: (context, event) => const Center(
+            child: SizedBox(
+              width: 20.0,
+              height: 20.0,
+              child: CircularProgressIndicator(),
             ),
           ),
         ),
@@ -114,12 +110,12 @@ class _YustImageScreenState extends State<YustImageScreen> {
               child: IconButton(
                 iconSize: 35,
                 color: Colors.white,
-                icon: Icon(
+                icon: const Icon(
                   Icons.arrow_back_ios_new,
                 ),
                 onPressed: () {
                   _pageController.previousPage(
-                    duration: Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 500),
                     curve: Curves.easeOutSine,
                   );
                 },
@@ -136,10 +132,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
               child: IconButton(
                 iconSize: 35,
                 color: Colors.white,
-                icon: Icon(Icons.arrow_forward_ios),
+                icon: const Icon(Icons.arrow_forward_ios),
                 onPressed: () {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 500),
                     curve: Curves.easeOutSine,
                   );
                 },
@@ -162,7 +158,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         child: IconButton(
             iconSize: 35,
             color: Colors.white,
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
             onPressed: () {
               Navigator.pop(context);
             }),
@@ -175,7 +171,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       right: kIsWeb ? 80.0 : 0.0,
       child: RepaintBoundary(
         child: Container(
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           child: CircleAvatar(
             backgroundColor: Colors.black,
             radius: 25,
@@ -188,7 +184,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
                     YustUi.fileHelpers.downloadAndLaunchFile(
                         context: context, url: file.url!, name: file.name!);
                   },
-                  icon: kIsWeb ? Icon(Icons.download) : Icon(Icons.share),
+                  icon: kIsWeb
+                      ? const Icon(Icons.download)
+                      : const Icon(Icons.share),
                 );
               },
             ),

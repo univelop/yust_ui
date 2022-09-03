@@ -11,7 +11,8 @@ class YustResetPasswordScreen extends StatefulWidget {
 
   final String? logoAssetName;
 
-  YustResetPasswordScreen({Key? key, this.logoAssetName}) : super(key: key);
+  const YustResetPasswordScreen({Key? key, this.logoAssetName})
+      : super(key: key);
 
   @override
   State<YustResetPasswordScreen> createState() =>
@@ -27,12 +28,12 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
     return YustFocusHandler(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Passwort vergessen'),
+          title: const Text('Passwort vergessen'),
         ),
         body: SingleChildScrollView(
           child: Center(
             child: Container(
-              constraints: BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: 600),
               padding: const EdgeInsets.only(top: 40.0),
               child: Form(
                 key: _formKey,
@@ -43,7 +44,7 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'E-Mail',
                           border: OutlineInputBorder(),
                         ),
@@ -63,10 +64,11 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                         color: Theme.of(context).colorScheme.secondary,
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
+                            final navigator = Navigator.of(context);
                             try {
                               await Yust.authService
                                   .sendPasswordResetEmail(_email!);
-                              Navigator.pop(context);
+                              navigator.pop();
                               await YustUi.alertService.showAlert(
                                   'E-Mail verschickt',
                                   'Du erhälst eine E-Mail. Folge den Anweisungen um ein neues Passwort zu erstellen.');
@@ -76,7 +78,7 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                             }
                           }
                         },
-                        child: Text('Passwort vergessen',
+                        child: const Text('Passwort vergessen',
                             style:
                                 TextStyle(fontSize: 20.0, color: Colors.white)),
                       ),
@@ -93,7 +95,7 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
 
   Widget _buildLogo(BuildContext context) {
     if (widget.logoAssetName == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return SizedBox(
       height: 200,

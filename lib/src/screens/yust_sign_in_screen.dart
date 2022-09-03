@@ -17,7 +17,7 @@ class YustSignInScreen extends StatefulWidget {
 
   final String? logoAssetName;
 
-  YustSignInScreen({
+  const YustSignInScreen({
     Key? key,
     this.logoAssetName,
   }) : super(key: key);
@@ -59,12 +59,12 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
     return YustFocusHandler(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Anmeldung'),
+          title: const Text('Anmeldung'),
         ),
         body: SingleChildScrollView(
           child: Center(
             child: Container(
-              constraints: BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: 600),
               padding: const EdgeInsets.only(top: 40.0),
               child: Form(
                 key: _formKey,
@@ -75,9 +75,9 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        key: Key('email'),
+                        key: const Key('email'),
                         controller: _emailController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'E-Mail',
                           border: OutlineInputBorder(),
                         ),
@@ -102,8 +102,8 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        key: Key('password'),
-                        decoration: InputDecoration(
+                        key: const Key('password'),
+                        decoration: const InputDecoration(
                           labelText: 'Passwort',
                           border: OutlineInputBorder(),
                         ),
@@ -133,17 +133,17 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: YustProgressButton(
-                        key: Key('signInButton'),
+                        key: const Key('signInButton'),
                         color: Theme.of(context).colorScheme.secondary,
                         inProgress: _waitingForSignIn,
                         onPressed: () => _signIn(context),
-                        child: Text('Anmelden',
+                        child: const Text('Anmelden',
                             style:
                                 TextStyle(fontSize: 20.0, color: Colors.white)),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
+                    const Padding(
+                      padding: EdgeInsets.only(
                           left: 20.0, top: 40.0, right: 20.0, bottom: 10.0),
                       child: Text('Du hast noch keinen Account?',
                           style: TextStyle(fontSize: 16.0)),
@@ -189,7 +189,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
 
   Widget _buildLogo(BuildContext context) {
     if (widget.logoAssetName == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return SizedBox(
       height: 200,
@@ -206,7 +206,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
       try {
         await Yust.authService
             .signIn(_email!, _password!)
-            .timeout(Duration(seconds: 10));
+            .timeout(const Duration(seconds: 10));
         if (_onSignedIn != null) _onSignedIn!();
       } on YustException catch (err) {
         await YustUi.alertService.showAlert('Fehler', err.message);
