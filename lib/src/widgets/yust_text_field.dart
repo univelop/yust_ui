@@ -77,16 +77,16 @@ class _YustTextFieldState extends State<YustTextField> {
   late String _initValue;
 
   void onUnfocus() {
-    if (widget.onEditingComplete == null) return;
+    // if (widget.onEditingComplete == null) return;
 
-    final textFieldText = _controller.value.text.trim();
-    final textFieldValue = textFieldText == '' ? null : textFieldText;
+    // final textFieldText = _controller.value.text.trim();
+    // final textFieldValue = textFieldText == '' ? null : textFieldText;
 
-    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
-      widget.onEditingComplete!(textFieldValue);
-    } else {
-      _controller.text = widget.value ?? '';
-    }
+    // if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+    //   widget.onEditingComplete!(textFieldValue);
+    // } else {
+    //   _controller.text = widget.value ?? '';
+    // }
   }
 
   /// This Method resets/initializes the state of the widget
@@ -99,7 +99,17 @@ class _YustTextFieldState extends State<YustTextField> {
     _focusNode = widget.focusNode ?? FocusNode();
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) onUnfocus();
+      // if (!_focusNode.hasFocus) onUnfocus();
+      if (!_focusNode.hasFocus && widget.onEditingComplete != null) {
+        final textFieldText = _controller.value.text.trim();
+        final textFieldValue = textFieldText == '' ? null : textFieldText;
+        if (widget.validator == null ||
+            widget.validator!(textFieldValue) == null) {
+          widget.onEditingComplete!(textFieldValue);
+        } else {
+          _controller.text = widget.value ?? '';
+        }
+      }
     });
     if (widget.hideKeyboardOnAutofocus) {
       Future.delayed(
