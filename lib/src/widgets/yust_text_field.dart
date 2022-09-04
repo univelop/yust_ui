@@ -75,18 +75,20 @@ class _YustTextFieldState extends State<YustTextField> {
   late TextEditingController _controller;
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
+  late bool _valueDidChange;
 
   void onUnfocus() {
-    // if (widget.onEditingComplete == null) return;
+    if (_valueDidChange == false) return;
+    if (widget.onEditingComplete == null) return;
 
-    // final textFieldText = _controller.value.text.trim();
-    // final textFieldValue = textFieldText == '' ? null : textFieldText;
+    final textFieldText = _controller.value.text.trim();
+    final textFieldValue = textFieldText == '' ? null : textFieldText;
 
-    // if (widget.validator == null || widget.validator!(textFieldValue) == null) {
-    //   widget.onEditingComplete!(textFieldValue);
-    // } else {
-    //   _controller.text = widget.value ?? '';
-    // }
+    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+      widget.onEditingComplete!(textFieldValue);
+    } else {
+      _controller.text = widget.value ?? '';
+    }
   }
 
   /// This Method resets/initializes the state of the widget
@@ -94,6 +96,7 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.controller != null && widget.value != null) {
       widget.controller!.text = widget.value!;
     }
+    _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
     _focusNode = widget.focusNode ?? FocusNode();
@@ -117,6 +120,9 @@ class _YustTextFieldState extends State<YustTextField> {
         () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
       );
     }
+    _controller.addListener(() {
+      _valueDidChange = true;
+    });
   }
 
   @override
@@ -135,12 +141,6 @@ class _YustTextFieldState extends State<YustTextField> {
     }
     onUnfocus();
     super.dispose();
-  }
-
-  @override
-  void deactivate() {
-    onUnfocus();
-    super.deactivate();
   }
 
   @override
