@@ -150,7 +150,11 @@ class _YustTextFieldState extends State<YustTextField> {
     super.didUpdateWidget(oldWidget);
     // If the Text-Fields Label changed, we can assume it's a new/different TextField
     // (Flutter "reuses" existing Widgets in the tree)
-    if (oldWidget.label != widget.label) {
+
+    // Also because "*" are often used to mark required fields, we remove them beforehand
+    final oldLabel = oldWidget.label?.replaceAll(' *', '');
+    final newLabel = widget.label?.replaceAll(' *', '');
+    if (oldLabel != newLabel) {
       onUnfocus();
       resetState();
     }
