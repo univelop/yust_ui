@@ -139,7 +139,8 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
-    onUnfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) => onUnfocus());
+
     super.dispose();
   }
 
