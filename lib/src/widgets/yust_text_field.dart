@@ -86,6 +86,7 @@ class _YustTextFieldState extends State<YustTextField> {
 
     if (widget.validator == null || widget.validator!(textFieldValue) == null) {
       widget.onEditingComplete!(textFieldValue);
+      _valueDidChange = false;
     } else {
       _controller.text = widget.value ?? '';
     }
