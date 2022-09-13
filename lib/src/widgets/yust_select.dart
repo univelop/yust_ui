@@ -14,6 +14,7 @@ class YustSelect<T> extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixChild;
   final bool readOnly;
+  final bool showUnkownValue;
 
   const YustSelect({
     Key? key,
@@ -27,6 +28,7 @@ class YustSelect<T> extends StatelessWidget {
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
+    this.showUnkownValue = false,
   }) : super(key: key);
 
   @override
@@ -46,7 +48,7 @@ class YustSelect<T> extends StatelessWidget {
   String _valueCaption(T value) {
     final index = optionValues.indexOf(value);
     if (index == -1) {
-      return '';
+      return showUnkownValue ? value.toString() : '';
     }
     return optionLabels[index];
   }
