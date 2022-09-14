@@ -13,6 +13,9 @@ class YustInputTile extends StatelessWidget {
   final DeleteCallback? onDelete;
   final Widget? suffixChild;
   final FormFieldValidator<String>? validator;
+  final bool divider;
+  final int? maxLines;
+  final int? minLines;
 
   const YustInputTile({
     Key? key,
@@ -25,6 +28,9 @@ class YustInputTile extends StatelessWidget {
     this.onDelete,
     this.suffixChild,
     this.validator,
+    this.divider = true,
+    this.maxLines,
+    this.minLines,
   }) : super(key: key);
 
   @override
@@ -36,6 +42,9 @@ class YustInputTile extends StatelessWidget {
       style: style,
       readOnly: true,
       showSelected: false,
+      divider: divider,
+      maxLines: maxLines,
+      minLines: minLines,
       prefixIcon: prefixIcon,
       suffixIcon: suffixChild,
       onTap: onTap,
