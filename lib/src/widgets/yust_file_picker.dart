@@ -36,6 +36,8 @@ class YustFilePicker extends StatefulWidget {
 
   final bool readOnly;
 
+  final List<String?>? newFiles;
+
   const YustFilePicker({
     Key? key,
     this.label,
@@ -47,6 +49,7 @@ class YustFilePicker extends StatefulWidget {
     this.prefixIcon,
     this.enableDropzone = false,
     this.readOnly = false,
+    this.newFiles,
   }) : super(key: key);
 
   @override
@@ -206,10 +209,24 @@ class YustFilePickerState extends State<YustFilePicker> {
     final isBroken = file.name == null ||
         (file.cached && file.bytes == null && file.file == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
+    final badge = widget.newFiles != null && widget.newFiles!.contains(file.name)
+            ? Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  height: 8,
+                  width: 8,
+                ),
+              )
+            : const SizedBox.shrink();
     return ListTile(
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          badge,
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
           const SizedBox(width: 8),
           Expanded(
