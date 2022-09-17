@@ -37,6 +37,7 @@ dependencies:
     cached_network_image: ^3.2.0
     intl: ^0.17.0
     flutter_dropzone: ^3.0.5
+    flutter_painter: ^1.0.1
     file_picker: ^4.2.3
     dotted_border: ^2.0.0+2
     image_picker: ^0.8.4

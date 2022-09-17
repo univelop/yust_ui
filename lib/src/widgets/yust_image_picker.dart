@@ -480,6 +480,18 @@ class YustImagePickerState extends State<YustImagePicker> {
       builder: (context) => YustImageScreen(
         files: _fileHandler.getFiles(),
         activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
+        onSave: ((file, newImage) {
+          file.storageFolderPath = widget.storageFolderPath;
+          file.linkedDocPath = widget.linkedDocPath;
+          file.linkedDocAttribute = widget.linkedDocAttribute;
+          file.key = '${file.key}u';
+
+          _fileHandler.updateFile(file, bytes: newImage);
+
+          if (mounted) {
+            setState(() {});
+          }
+        }),
       ),
     ));
   }

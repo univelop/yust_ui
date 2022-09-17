@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
@@ -147,6 +148,19 @@ class YustFileHandler {
     }
 
     _yustFiles.add(yustFile);
+    await _uploadFile(yustFile);
+  }
+
+  Future<void> updateFile(YustFile yustFile,
+      {Uint8List? bytes, File? file}) async {
+    //TODO: 910 differ between cached and online Files
+    yustFile.bytes = bytes;
+    yustFile.file = file;
+    //TODO: 910 how do we change a file, which is online, but we are currently offline?
+    await _uploadFile(yustFile);
+  }
+
+  Future<void> _uploadFile(YustFile yustFile) async {
     if (!kIsWeb && yustFile.cacheable) {
       await _saveFileOnDevice(yustFile);
       startUploadingCachedFiles();
