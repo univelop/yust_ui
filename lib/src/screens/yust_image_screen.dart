@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 
 import '../yust_ui.dart';
 
@@ -11,10 +13,12 @@ class YustImageScreen extends StatefulWidget {
   final List<YustFile> files;
 
   final int activeImageIndex;
+  final void Function(YustFile file, Uint8List newImage) onSave;
 
   const YustImageScreen({
     Key? key,
     required this.files,
+    required this.onSave,
     this.activeImageIndex = 0,
   }) : super(key: key);
 
@@ -64,6 +68,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
+      _buildDrawButton(context, file),
       if (kIsWeb) _buildCloseButton(context),
       _buildShareButton(context, file),
     ]);
@@ -142,9 +147,56 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
+        _buildDrawButton(context, widget.files[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
         _buildShareButton(context, widget.files[activeImageIndex]),
       ],
+    );
+  }
+
+  Widget _buildDrawButton(BuildContext context, YustFile file) {
+    //TODO: 910 differ between cached and online
+
+    if (file.url == null && file.file == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      right: kIsWeb ? 140.0 : 70.0,
+      child: RepaintBoundary(
+        child: Container(
+          margin: const EdgeInsets.all(20),
+          child: CircleAvatar(
+            backgroundColor: Colors.black,
+            radius: 25,
+            child: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  iconSize: 35,
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (context) => YustImageDrawingScreen(
+                        image: _getImageOfUrl(file),
+                        onSave: (image) {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                          if (image != null) {
+                            setState(() {
+                              widget.onSave(file, image);
+                            });
+                          }
+                        },
+                      ),
+                    ));
+                  },
+                  icon: const Icon(Icons.draw_outlined),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -168,7 +220,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   Widget _buildShareButton(BuildContext context, YustFile file) {
     return Positioned(
-      right: kIsWeb ? 80.0 : 0.0,
+      right: kIsWeb ? 70.0 : 0.0,
       child: RepaintBoundary(
         child: Container(
           margin: const EdgeInsets.all(20),
