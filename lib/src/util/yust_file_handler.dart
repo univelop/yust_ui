@@ -125,7 +125,19 @@ class YustFileHandler {
     for (var f in onlineFiles) {
       f.storageFolderPath = storageFolderPath;
     }
+    _updateCachedFiles(yustFiles, onlineFiles);
     _mergeIntoYustFiles(yustFiles, onlineFiles);
+  }
+
+  void _updateCachedFiles(
+      List<YustFile> yustFiles, List<YustFile> newYustFiles) {
+    for (var newYustFile in newYustFiles) {
+      var matchingFile = yustFiles
+          .firstWhereOrNull((yustFile) => _equalFiles(yustFile, newYustFile));
+      if (matchingFile != null) {
+        matchingFile.update(newYustFile);
+      }
+    }
   }
 
   Future<void> _mergeCachedFiles(List<YustFile> yustFiles,

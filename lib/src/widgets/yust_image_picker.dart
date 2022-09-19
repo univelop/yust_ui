@@ -224,6 +224,9 @@ class YustImagePickerState extends State<YustImagePicker> {
     } else if (file.url != null) {
       cacheKey = Key(file.url! + _connectivityResult.toString()).toString();
     }
+    // TODO: 910 how to choose the key?
+    // to consider: connectionStatus and hash
+
     Widget? preview = YustCachedImage(
       file: file,
       cacheKey: cacheKey,
@@ -483,7 +486,7 @@ class YustImagePickerState extends State<YustImagePicker> {
         onSave: ((file, newImage) {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-          
+
           file.storageFolderPath = widget.storageFolderPath;
           file.linkedDocPath = widget.linkedDocPath;
           file.linkedDocAttribute = widget.linkedDocAttribute;

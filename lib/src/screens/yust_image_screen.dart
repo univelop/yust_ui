@@ -178,11 +178,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
                     Navigator.of(context).push(MaterialPageRoute<void>(
                       builder: (context) => YustImageDrawingScreen(
                         image: _getImageOfUrl(file),
-                        onSave: (image) {        
+                        onSave: (image) {
                           if (image != null) {
-                            setState(() {
-                              widget.onSave(file, image);
-                            });
+                            widget.onSave(file, image);
                           }
                         },
                       ),
