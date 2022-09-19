@@ -147,7 +147,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        _buildDrawButton(context, widget.files[activeImageIndex]),
+        if (!kIsWeb) _buildDrawButton(context, widget.files[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
         _buildShareButton(context, widget.files[activeImageIndex]),
       ],
@@ -162,7 +162,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     }
 
     return Positioned(
-      right: kIsWeb ? 140.0 : 70.0,
+      right: 70.0,
       child: RepaintBoundary(
         child: Container(
           margin: const EdgeInsets.all(20),
@@ -178,9 +178,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                     Navigator.of(context).push(MaterialPageRoute<void>(
                       builder: (context) => YustImageDrawingScreen(
                         image: _getImageOfUrl(file),
-                        onSave: (image) {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
+                        onSave: (image) {        
                           if (image != null) {
                             setState(() {
                               widget.onSave(file, image);
