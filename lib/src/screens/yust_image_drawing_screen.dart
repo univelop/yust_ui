@@ -510,24 +510,12 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     if (backgroundImage == null) return;
     final backgroundImageSize = Size(
         backgroundImage!.width.toDouble(), backgroundImage!.height.toDouble());
-
-    // Render the image
-    // Returns a [ui.Image] object, convert to to byte data and then to Uint8List
+        
     final image = await controller
         .renderImage(backgroundImageSize)
         .then<Uint8List?>((ui.Image image) => image.pngBytes);
 
     widget.onSave(image);
-
-    // From here, you can write the PNG image data a file or do whatever you want with it
-    // For example:
-    // ```dart
-    // final file = File('${(await getTemporaryDirectory()).path}/img.png');
-    // await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-    // ```
-    // I am going to display it using Image.memory
-
-    // Show a dialog with the image
   }
 
   void removeSelectedDrawable() {

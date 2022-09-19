@@ -481,6 +481,9 @@ class YustImagePickerState extends State<YustImagePicker> {
         files: _fileHandler.getFiles(),
         activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
         onSave: ((file, newImage) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          
           file.storageFolderPath = widget.storageFolderPath;
           file.linkedDocPath = widget.linkedDocPath;
           file.linkedDocAttribute = widget.linkedDocAttribute;
