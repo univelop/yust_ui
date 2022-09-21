@@ -75,18 +75,21 @@ class _YustTextFieldState extends State<YustTextField> {
   late TextEditingController _controller;
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
+  late bool _valueDidChange;
 
   void onUnfocus() {
-    // if (widget.onEditingComplete == null) return;
+    if (_valueDidChange == false) return;
+    if (widget.onEditingComplete == null) return;
 
-    // final textFieldText = _controller.value.text.trim();
-    // final textFieldValue = textFieldText == '' ? null : textFieldText;
+    final textFieldText = _controller.value.text.trim();
+    final textFieldValue = textFieldText == '' ? null : textFieldText;
 
-    // if (widget.validator == null || widget.validator!(textFieldValue) == null) {
-    //   widget.onEditingComplete!(textFieldValue);
-    // } else {
-    //   _controller.text = widget.value ?? '';
-    // }
+    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+      widget.onEditingComplete!(textFieldValue);
+      _valueDidChange = false;
+    } else {
+      _controller.text = widget.value ?? '';
+    }
   }
 
   /// This Method resets/initializes the state of the widget
@@ -94,6 +97,7 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.controller != null && widget.value != null) {
       widget.controller!.text = widget.value!;
     }
+    _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
     _focusNode = widget.focusNode ?? FocusNode();
@@ -117,6 +121,9 @@ class _YustTextFieldState extends State<YustTextField> {
         () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
       );
     }
+    _controller.addListener(() {
+      _valueDidChange = true;
+    });
   }
 
   @override
@@ -133,14 +140,9 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
-    onUnfocus();
-    super.dispose();
-  }
+    WidgetsBinding.instance.addPostFrameCallback((_) => onUnfocus());
 
-  @override
-  void deactivate() {
-    onUnfocus();
-    super.deactivate();
+    super.dispose();
   }
 
   @override
@@ -148,7 +150,11 @@ class _YustTextFieldState extends State<YustTextField> {
     super.didUpdateWidget(oldWidget);
     // If the Text-Fields Label changed, we can assume it's a new/different TextField
     // (Flutter "reuses" existing Widgets in the tree)
-    if (oldWidget.label != widget.label) {
+
+    // Also because "*" are often used to mark required fields, we remove them beforehand
+    final oldLabel = oldWidget.label?.replaceAll(' *', '');
+    final newLabel = widget.label?.replaceAll(' *', '');
+    if (oldLabel != newLabel) {
       onUnfocus();
       resetState();
     }
