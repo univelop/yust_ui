@@ -47,7 +47,7 @@ class YustButtonTile extends StatelessWidget {
               : TextButton.icon(
                   onPressed: onPressed,
                   style: TextButton.styleFrom(
-                    backgroundColor: color,
+                    foregroundColor: color,
                   ),
                   icon: icon ?? const SizedBox(),
                   label: Text(
