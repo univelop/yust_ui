@@ -35,8 +35,8 @@ class YustButtonTile extends StatelessWidget {
               ? ElevatedButton.icon(
                   onPressed: onPressed,
                   style: ElevatedButton.styleFrom(
-                    primary: color,
-                    onPrimary: textColor,
+                    backgroundColor: color,
+                    foregroundColor: textColor,
                   ),
                   icon: icon ?? const SizedBox(),
                   label: Text(
@@ -47,7 +47,7 @@ class YustButtonTile extends StatelessWidget {
               : TextButton.icon(
                   onPressed: onPressed,
                   style: TextButton.styleFrom(
-                    primary: color,
+                    backgroundColor: color,
                   ),
                   icon: icon ?? const SizedBox(),
                   label: Text(
@@ -57,7 +57,8 @@ class YustButtonTile extends StatelessWidget {
                 ),
         ),
         below ?? const SizedBox(),
-        if (divider) const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+        if (divider)
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
   }
