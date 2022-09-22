@@ -66,7 +66,6 @@ class YustImagePickerState extends State<YustImagePicker> {
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
-  ConnectivityResult _connectivityResult = ConnectivityResult.none;
 
   @override
   void initState() {
@@ -96,9 +95,6 @@ class YustImagePickerState extends State<YustImagePicker> {
     return StreamBuilder<ConnectivityResult>(
       stream: YustFileHelpers.connectivityStream,
       builder: (context, snapshot) {
-        if (snapshot.data != null) {
-          _connectivityResult = snapshot.data!;
-        }
         return FutureBuilder(
           future: _fileHandler.updateFiles(widget.images, loadFiles: true),
           builder: (context, snapshot) {
@@ -218,21 +214,13 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (file == null) {
       return const SizedBox.shrink();
     }
-    dynamic cacheKey;
-    if (file.key != null) {
-      cacheKey = file.key.toString();
-    } else if (file.url != null) {
-      cacheKey = Key(file.url! + _connectivityResult.toString()).toString();
-    }
-    // TODO: 910 how to choose the key?
-    // to consider: connectionStatus and hash
-
     Widget? preview = YustCachedImage(
       file: file,
-      cacheKey: cacheKey,
       fit: BoxFit.cover,
     );
-    final zoomEnabled = (file.url != null && widget.zoomable);
+    final zoomEnabled =
+        ((file.url != null || file.bytes != null || file.file != null) &&
+            widget.zoomable);
     if (widget.multiple) {
       return AspectRatio(
         aspectRatio: 1,
@@ -490,7 +478,6 @@ class YustImagePickerState extends State<YustImagePicker> {
           file.storageFolderPath = widget.storageFolderPath;
           file.linkedDocPath = widget.linkedDocPath;
           file.linkedDocAttribute = widget.linkedDocAttribute;
-          file.key = '${file.key}u';
 
           _fileHandler.updateFile(file, bytes: newImage);
 
