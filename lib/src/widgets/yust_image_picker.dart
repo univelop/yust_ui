@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -166,8 +165,8 @@ class YustImagePickerState extends State<YustImagePicker> {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).primaryIconTheme.color,
-                onPrimary: Theme.of(context).backgroundColor,
+                backgroundColor: Theme.of(context).primaryIconTheme.color,
+                foregroundColor: Theme.of(context).backgroundColor,
               ),
               onPressed: () {
                 _currentImageNumber += widget.imageCount;
