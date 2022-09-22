@@ -6,7 +6,6 @@ import '../yust_ui.dart';
 
 class YustCachedImage extends StatelessWidget {
   final YustFile file;
-  final String? cacheKey;
   final String? placeholder;
   final BoxFit? fit;
   final double? width;
@@ -14,7 +13,6 @@ class YustCachedImage extends StatelessWidget {
   const YustCachedImage({
     Key? key,
     required this.file,
-    this.cacheKey,
     this.fit,
     this.height,
     this.width,
@@ -44,13 +42,10 @@ class YustCachedImage extends StatelessWidget {
       );
     } else if (file.url != null) {
       preview = CachedNetworkImage(
-        // cacheKey is needed for recognizing switch from offline to online connection
         width: width,
         height: height,
-        cacheKey: cacheKey,
         imageUrl: file.url!,
         imageBuilder: (context, image) {
-          file.key ??= cacheKey;
           return Image(
             image: image,
             fit: fit,

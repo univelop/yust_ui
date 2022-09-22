@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
@@ -60,7 +59,7 @@ class YustFileHandler {
   }
 
   List<YustFile> getOnlineFiles() {
-    return _yustFiles.where((f) => f.cached == false).toList();
+    return _yustFiles.where((f) => f.url != null).toList();
   }
 
   List<YustFile> getCachedFiles() {
@@ -215,11 +214,13 @@ class YustFileHandler {
     for (final yustFile in cachedFiles) {
       yustFile.lastError = null;
       try {
+        _recentlyUploadedFiles.add(yustFile);
         await _uploadFileToStorage(yustFile);
         uploadedFiles++;
         await _deleteCachedInformations(yustFile);
         if (onFileUploaded != null) onFileUploaded!();
       } catch (error) {
+        _recentlyUploadedFiles.remove(yustFile);
         yustFile.lastError = error.toString();
         uploadError = true;
       }
@@ -358,7 +359,6 @@ class YustFileHandler {
     if (yustFile.cached) {
       await _updateDocAttribute(yustFile, url, yustFile.hash);
     }
-    _recentlyUploadedFiles.add(yustFile);
   }
 
   Future<void> _addFileHash(YustFile yustFile) async {
