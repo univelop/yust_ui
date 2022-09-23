@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
@@ -48,14 +49,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   Widget _buildSingle(BuildContext context) {
     final file = widget.files.first;
-    if (file.url == null) {
-      return const SizedBox.shrink();
-    }
     return Stack(children: [
       PhotoView(
         imageProvider: _getImageOfUrl(file),
         minScale: PhotoViewComputedScale.contained,
-        heroAttributes: PhotoViewHeroAttributes(tag: file.url!),
+        heroAttributes: PhotoViewHeroAttributes(tag: file.url ?? ''),
         onTapUp: (context, details, controllerValue) {
           Navigator.pop(context);
         },
@@ -67,7 +65,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
-      _buildDrawButton(context, file),
+      if (!kIsWeb) _buildDrawButton(context, file),
       if (kIsWeb) _buildCloseButton(context),
       _buildShareButton(context, file),
     ]);
@@ -154,9 +152,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildDrawButton(BuildContext context, YustFile file) {
-    //TODO: 910 differ between cached and online
-
-    if (file.url == null && file.file == null) {
+    if (file.url == null && file.devicePath == null) {
       return const SizedBox.shrink();
     }
 
@@ -174,16 +170,23 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   iconSize: 35,
                   color: Colors.white,
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute<void>(
-                      builder: (context) => YustImageDrawingScreen(
-                        image: _getImageOfUrl(file),
-                        onSave: (image) {
-                          if (image != null) {
-                            widget.onSave(file, image);
-                          }
-                        },
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => YustImageDrawingScreen(
+                          image: _getImageOfUrl(file),
+                          onSave: (image) async {
+                            if (image != null) {
+                              file.key = '${file.key}u';
+                              file.hash =
+                                  md5.convert(file.bytes!.toList()).toString();
+                              widget.onSave(file, image);
+                              _pageController.initialPage;
+                              setState(() {});
+                            }
+                          },
+                        ),
                       ),
-                    ));
+                    );
                   },
                   icon: const Icon(Icons.draw_outlined),
                 );
