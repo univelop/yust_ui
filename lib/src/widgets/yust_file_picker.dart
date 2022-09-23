@@ -38,6 +38,12 @@ class YustFilePicker extends StatefulWidget {
 
   final List<String?>? newFiles;
 
+  final bool showDeleteNotification;
+
+  final void Function()? deleteNotification;
+
+  final void Function(String)? deleteSingleNotification;
+
   const YustFilePicker({
     Key? key,
     this.label,
@@ -50,6 +56,9 @@ class YustFilePicker extends StatefulWidget {
     this.enableDropzone = false,
     this.readOnly = false,
     this.newFiles,
+    this.showDeleteNotification = false,
+    this.deleteNotification,
+    this.deleteSingleNotification,
   }) : super(key: key);
 
   @override
@@ -107,7 +116,12 @@ class YustFilePickerState extends State<YustFilePicker> {
         ),
         YustListTile(
           suffixChild:
-              isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
+              Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+            widget.showDeleteNotification
+                ? _buildNotificationDelButton()
+                : const SizedBox.shrink(),
+            isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
+          ]),
           label: widget.label,
           prefixIcon: widget.prefixIcon,
           below: _buildFiles(context),
@@ -241,6 +255,10 @@ class YustFilePickerState extends State<YustFilePicker> {
       onTap: () {
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
+          if (widget.deleteSingleNotification != null) {
+            //TODO Make sure name of file isnt null!
+            widget.deleteSingleNotification!(file.name!);
+          }
           _fileHandler.showFile(context, file);
         }
       },
@@ -347,6 +365,10 @@ class YustFilePickerState extends State<YustFilePicker> {
       try {
         await _fileHandler.deleteFile(yustFile);
         if (!yustFile.cached) {
+          if (widget.deleteSingleNotification != null) {
+            //TODO Make sure name of file isnt null!
+            widget.deleteSingleNotification!(yustFile.name!);
+          }
           widget.onChanged!(_fileHandler.getOnlineFiles());
         }
         if (mounted) {
@@ -372,5 +394,10 @@ class YustFilePickerState extends State<YustFilePicker> {
     return (!kIsWeb && platformFile.path != null)
         ? File(platformFile.path!)
         : null;
+  }
+
+  Widget _buildNotificationDelButton() {
+    return TextButton(
+        onPressed: widget.deleteNotification, child: const Text('Gelesen'));
   }
 }
