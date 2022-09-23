@@ -209,7 +209,8 @@ class YustFilePickerState extends State<YustFilePicker> {
     final isBroken = file.name == null ||
         (file.cached && file.bytes == null && file.file == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
-    final badge = widget.newFiles != null && widget.newFiles!.contains(file.name)
+    final badge =
+        widget.newFiles != null && widget.newFiles!.contains(file.name)
             ? Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: Container(
@@ -290,6 +291,8 @@ class YustFilePickerState extends State<YustFilePicker> {
           bytes: platformFile.bytes,
         );
       }
+      //TODO: Check if connection to server established
+      widget.onChanged!(_fileHandler.getOnlineFiles());
     }
   }
 
@@ -316,9 +319,10 @@ class YustFilePickerState extends State<YustFilePicker> {
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
+    /*TODO: Move onChanged to top when all Files are uploaded!
     if (!newYustFile.cached) {
       widget.onChanged!(_fileHandler.getOnlineFiles());
-    }
+    }*/
     if (mounted) {
       setState(() {});
     }
