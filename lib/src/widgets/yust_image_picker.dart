@@ -92,25 +92,20 @@ class YustImagePickerState extends State<YustImagePicker> {
   Widget build(BuildContext context) {
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
-    return StreamBuilder<ConnectivityResult>(
-      stream: YustFileHelpers.connectivityStream,
+    return FutureBuilder(
+      future: _fileHandler.updateFiles(widget.images, loadFiles: true),
       builder: (context, snapshot) {
-        return FutureBuilder(
-          future: _fileHandler.updateFiles(widget.images, loadFiles: true),
-          builder: (context, snapshot) {
-            return YustListTile(
-              label: widget.label,
-              suffixChild: _buildPickButtons(context),
-              prefixIcon: widget.prefixIcon,
-              below: widget.multiple
-                  ? _buildGallery(context)
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 2.0),
-                      child: _buildSingleImage(
-                          context, _fileHandler.getFiles().firstOrNull),
-                    ),
-            );
-          },
+        return YustListTile(
+          label: widget.label,
+          suffixChild: _buildPickButtons(context),
+          prefixIcon: widget.prefixIcon,
+          below: widget.multiple
+              ? _buildGallery(context)
+              : Padding(
+                  padding: const EdgeInsets.only(bottom: 2.0),
+                  child: _buildSingleImage(
+                      context, _fileHandler.getFiles().firstOrNull),
+                ),
         );
       },
     );
@@ -472,9 +467,6 @@ class YustImagePickerState extends State<YustImagePicker> {
         files: _fileHandler.getFiles(),
         activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
         onSave: ((file, newImage) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-
           file.storageFolderPath = widget.storageFolderPath;
           file.linkedDocPath = widget.linkedDocPath;
           file.linkedDocAttribute = widget.linkedDocAttribute;

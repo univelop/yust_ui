@@ -164,10 +164,8 @@ class YustFileHandler {
 
   Future<void> updateFile(YustFile yustFile,
       {Uint8List? bytes, File? file}) async {
-    //TODO: 910 differ between cached and online Files
     yustFile.bytes = bytes;
     yustFile.file = file;
-    //TODO: 910 how do we change a file, which is online, but we are currently offline?
     await _uploadFile(yustFile);
   }
 
