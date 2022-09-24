@@ -36,7 +36,7 @@ class YustFilePicker extends StatefulWidget {
 
   final bool readOnly;
 
-  final List<String?>? newFiles;
+  final List<String?> newFiles;
 
   final bool showDeleteNotification;
 
@@ -55,7 +55,7 @@ class YustFilePicker extends StatefulWidget {
     this.prefixIcon,
     this.enableDropzone = false,
     this.readOnly = false,
-    this.newFiles,
+    this.newFiles = const [],
     this.showDeleteNotification = false,
     this.deleteNotification,
     this.deleteSingleNotification,
@@ -117,7 +117,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         YustListTile(
           suffixChild:
               Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-            widget.showDeleteNotification
+            widget.showDeleteNotification && widget.newFiles.isNotEmpty
                 ? _buildNotificationDelButton()
                 : const SizedBox.shrink(),
             isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
@@ -223,8 +223,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     final isBroken = file.name == null ||
         (file.cached && file.bytes == null && file.file == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
-    final badge =
-        widget.newFiles != null && widget.newFiles!.contains(file.name)
+    final badge = widget.newFiles.contains(file.name)
             ? Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: Container(
