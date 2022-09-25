@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
@@ -176,11 +175,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                           image: _getImageOfUrl(file),
                           onSave: (image) async {
                             if (image != null) {
-                              file.key = '${file.key}u';
-                              file.hash =
-                                  md5.convert(file.bytes!.toList()).toString();
                               widget.onSave(file, image);
-                              _pageController.initialPage;
                               setState(() {});
                             }
                           },
@@ -249,7 +244,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
   /// because of the offline cache the file could be a stored online or on device
   ImageProvider<Object> _getImageOfUrl(YustFile file) {
     if (file.cached) {
-      return FileImage(File(file.devicePath!));
+      var imageFile = File(file.devicePath!);
+      return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
       return NetworkImage(file.url!);
     }
