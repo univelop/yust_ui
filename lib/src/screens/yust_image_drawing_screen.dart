@@ -32,7 +32,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   bool showSettings = false;
   StrokeWidth strokeWidth = StrokeWidth.medium;
   StrokeColor strokeColor = StrokeColor.red;
-  StyleMode styleMode = StyleMode.none;
+  StyleMode styleMode = StyleMode.draw;
 
   @override
   void initState() {
@@ -57,9 +57,8 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
               minScale: 1,
               maxScale: 5,
             )));
-    // Listen to focus events of the text field
+    controller.freeStyleMode = FreeStyleMode.draw;
     textFocusNode.addListener(onFocus);
-    // Initialize background
     initBackground();
   }
 
