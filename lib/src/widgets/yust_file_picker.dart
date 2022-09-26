@@ -36,7 +36,7 @@ class YustFilePicker extends StatefulWidget {
 
   final bool readOnly;
 
-  final List<String?> newFiles;
+  final List<String> newFiles;
 
   final bool showDeleteNotification;
 
@@ -71,6 +71,7 @@ class YustFilePickerState extends State<YustFilePicker> {
   late DropzoneViewController controller;
   var isDragging = false;
   late bool _enabled;
+  var namelessCnt = 0;
 
   @override
   void initState() {
@@ -223,7 +224,8 @@ class YustFilePickerState extends State<YustFilePicker> {
     final isBroken = file.name == null ||
         (file.cached && file.bytes == null && file.file == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
-    final badge = widget.newFiles.contains(file.name)
+    namelessCnt++;    
+    final badge = widget.newFiles.contains(file.name ?? 'missing_$namelessCnt')
             ? Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: Container(
@@ -255,8 +257,8 @@ class YustFilePickerState extends State<YustFilePicker> {
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
           if (widget.deleteSingleNotification != null) {
-            //TODO Make sure name of file isnt null!
-            widget.deleteSingleNotification!(file.name!);
+
+            widget.deleteSingleNotification!(file.name ?? 'missing_$namelessCnt');
           }
           _fileHandler.showFile(context, file);
         }
