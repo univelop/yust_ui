@@ -367,8 +367,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         await _fileHandler.deleteFile(yustFile);
         if (!yustFile.cached) {
           if (widget.deleteSingleNotification != null) {
-            //TODO Make sure name of file isnt null!
-            widget.deleteSingleNotification!(yustFile.name!);
+            widget.deleteSingleNotification!(yustFile.name ?? 'missing_$namelessCnt');
           }
           widget.onChanged!(_fileHandler.getOnlineFiles());
         }
