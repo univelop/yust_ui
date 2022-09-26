@@ -1,8 +1,7 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
-
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
 
 class YustImageDrawingScreen extends StatefulWidget {
@@ -38,25 +37,30 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   void initState() {
     super.initState();
     controller = PainterController(
-        settings: PainterSettings(
-            text: TextSettings(
-              focusNode: textFocusNode,
-              textStyle: const TextStyle(
-                  fontWeight: FontWeight.bold, color: red, fontSize: 18),
-            ),
-            freeStyle: const FreeStyleSettings(
-              color: red,
-              strokeWidth: 5,
-            ),
-            shape: ShapeSettings(
-              paint: shapePaint,
-              drawOnce: false,
-            ),
-            scale: const ScaleSettings(
-              enabled: true,
-              minScale: 1,
-              maxScale: 5,
-            )));
+      settings: PainterSettings(
+        text: TextSettings(
+          focusNode: textFocusNode,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: red,
+            fontSize: 18,
+          ),
+        ),
+        freeStyle: const FreeStyleSettings(
+          color: red,
+          strokeWidth: 5,
+        ),
+        shape: ShapeSettings(
+          paint: shapePaint,
+          drawOnce: false,
+        ),
+        scale: const ScaleSettings(
+          enabled: true,
+          minScale: 1,
+          maxScale: 5,
+        ),
+      ),
+    );
     controller.freeStyleMode = FreeStyleMode.draw;
     textFocusNode.addListener(onFocus);
     initBackground();
@@ -228,7 +232,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         foregroundColor: Theme.of(context).primaryColor,
       ),
       onPressed: () async {
-        Navigator.pop(context);
+        Navigator.of(context).pop();
       },
     );
   }
