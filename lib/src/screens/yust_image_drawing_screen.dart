@@ -19,37 +19,34 @@ class YustImageDrawingScreen extends StatefulWidget {
 }
 
 class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
-  static const Color red = Color(0xFFFF0000);
   FocusNode textFocusNode = FocusNode();
   late PainterController controller;
   ui.Image? backgroundImage;
-  Paint shapePaint = Paint()
-    ..strokeWidth = 5
-    ..color = Colors.red
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.round;
-  bool showSettings = false;
   StrokeWidth strokeWidth = StrokeWidth.medium;
-  StrokeColor strokeColor = StrokeColor.red;
-  StyleMode styleMode = StyleMode.draw;
+  StrokeColor strokeColor = StrokeColor.black;
+  StyleMode styleMode = StyleMode.none;
+  Shapes? shape;
+  late Paint shapePaint;
+  bool showSettings = false;
 
   @override
   void initState() {
     super.initState();
+    shapePaint = Paint()
+      ..strokeWidth = 5
+      ..color = strokeColor.color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
     controller = PainterController(
       settings: PainterSettings(
         text: TextSettings(
           focusNode: textFocusNode,
           textStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: red,
-            fontSize: 18,
           ),
         ),
-        freeStyle: const FreeStyleSettings(
-          color: red,
-          strokeWidth: 5,
-        ),
+        freeStyle: const FreeStyleSettings(),
         shape: ShapeSettings(
           paint: shapePaint,
           drawOnce: false,
@@ -61,7 +58,9 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         ),
       ),
     );
-    controller.freeStyleMode = FreeStyleMode.draw;
+    controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
+    _setColor(strokeColor);
+    _setWidth(strokeWidth);
     textFocusNode.addListener(onFocus);
     initBackground();
   }
@@ -110,13 +109,14 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
           children: [
             if (backgroundImage != null)
               // Enforces constraints
-              Positioned.fill(
+              InteractiveViewer(
                 child: Center(
                   child: AspectRatio(
                     aspectRatio:
                         backgroundImage!.width / backgroundImage!.height,
                     child: FlutterPainter(
                       controller: controller,
+                      onDrawableCreated: ((drawable) => showSettings = false),
                     ),
                   ),
                 ),
@@ -197,7 +197,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       icon: const Icon(
         Icons.undo_sharp,
       ),
-      onPressed: controller.canUndo ? undo : null,
+      onPressed: controller.canUndo ? _undo : null,
     );
   }
 
@@ -206,7 +206,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       icon: const Icon(
         Icons.redo_sharp,
       ),
-      onPressed: controller.canRedo ? redo : null,
+      onPressed: controller.canRedo ? _redo : null,
     );
   }
 
@@ -219,7 +219,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       ),
       onPressed: () {
         Navigator.of(context).pop();
-        renderAndDisplayImage();
+        _renderAndDisplayImage();
       },
     );
   }
@@ -245,7 +245,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
             ? Theme.of(context).colorScheme.secondary
             : null,
       ),
-      onPressed: toggleFreeStyleErase,
+      onPressed: _toggleFreeStyleErase,
     );
   }
 
@@ -257,7 +257,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
             ? Theme.of(context).colorScheme.secondary
             : null,
       ),
-      onPressed: toggleFreeStyleDraw,
+      onPressed: _toggleFreeStyleDraw,
     );
   }
 
@@ -269,63 +269,43 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
             ? Theme.of(context).colorScheme.secondary
             : null,
       ),
-      onPressed: toggleText,
+      onPressed: _toggleText,
     );
   }
 
   Widget _buildAddShapes(BuildContext context) {
-    if (controller.shapeFactory == null) {
-      return PopupMenuButton<ShapeFactory?>(
-        itemBuilder: (context) => <ShapeFactory, String>{
-          LineFactory(): 'Linie',
-          ArrowFactory(): 'Pfeil',
-          DoubleArrowFactory(): 'Doppelpfeil',
-          RectangleFactory(): 'Rechteck',
-          OvalFactory(): 'Oval',
-        }
-            .entries
-            .map((e) => PopupMenuItem(
-                value: e.key,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(
-                      getShapeIcon(e.key),
-                      color: Colors.black,
-                    ),
-                    Text(' ${e.value}')
-                  ],
-                )))
-            .toList(),
-        onSelected: selectShape,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(
-            getShapeIcon(controller.shapeFactory),
-            color: controller.shapeFactory != null
-                ? Theme.of(context).colorScheme.secondary
-                : null,
-          ),
+    return PopupMenuButton<Shapes>(
+      itemBuilder: (context) => Shapes.values
+          .map((e) => PopupMenuItem(
+              value: e,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    e.icon,
+                    color: Colors.black,
+                  ),
+                  Text(' ${e.title}')
+                ],
+              )))
+          .toList(),
+      onSelected: _selectShape,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Icon(
+          shape != null ? shape!.icon : Icons.square_foot,
+          color: shape != null ? Theme.of(context).colorScheme.secondary : null,
         ),
-      );
-    } else {
-      return IconButton(
-        icon: Icon(
-          getShapeIcon(controller.shapeFactory),
-          color: Theme.of(context).colorScheme.secondary,
-        ),
-        onPressed: () => selectShape(null),
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildSettings(BuildContext context) {
     return IconButton(
-      icon: const Icon(
-        Icons.settings,
-      ),
-      color: showSettings ? Theme.of(context).colorScheme.secondary : null,
-      onPressed: toggleSettings,
+      icon: const Icon(Icons.lens),
+      color: strokeColor.color,
+      iconSize: 35,
+      onPressed: _toggleSettings,
     );
   }
 
@@ -351,7 +331,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         color: strokeWidthValue == strokeWidth
             ? Theme.of(context).colorScheme.secondary
             : null,
-        onPressed: () => setWidth(strokeWidthValue),
+        onPressed: () => _setWidth(strokeWidthValue),
       ),
     );
   }
@@ -364,149 +344,108 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
             ? const Icon(Icons.check_circle)
             : const Icon(Icons.lens),
         iconSize: 35,
-        color: _getStrokeColor(strokeColorValue),
-        onPressed: () => setColor(strokeColorValue),
+        color: strokeColorValue.color,
+        onPressed: () => _setColor(strokeColorValue),
       ),
     );
   }
 
-  Color _getStrokeColor(StrokeColor strokeColorValue) {
-    switch (strokeColorValue) {
-      case StrokeColor.black:
-        return const Color.fromARGB(255, 0, 0, 0);
-      case StrokeColor.red:
-        return Colors.red;
-      case StrokeColor.blue:
-        return Colors.blue;
-      case StrokeColor.yellow:
-        return Colors.yellow;
-      case StrokeColor.green:
-        return Colors.green;
-      default:
-        return Colors.red;
-    }
-  }
-
-  double _getStrokeWidth(StrokeWidth strokeWidthValue) {
-    switch (strokeWidthValue) {
-      case StrokeWidth.small:
-        return 2;
-      case StrokeWidth.medium:
-        return 12;
-      case StrokeWidth.large:
-        return 25;
-    }
-  }
-
-  double _getTextWidth(StrokeWidth strokeWidthValue) {
-    switch (strokeWidthValue) {
-      case StrokeWidth.small:
-        return 11;
-      case StrokeWidth.medium:
-        return 20;
-      case StrokeWidth.large:
-        return 50;
-    }
-  }
-
-  static IconData getShapeIcon(ShapeFactory? shapeFactory) {
-    if (shapeFactory is LineFactory) return Icons.horizontal_rule;
-    if (shapeFactory is ArrowFactory) return Icons.trending_flat;
-    if (shapeFactory is DoubleArrowFactory) {
-      return Icons.open_in_full;
-    }
-    if (shapeFactory is RectangleFactory) return Icons.rectangle;
-    if (shapeFactory is OvalFactory) return Icons.circle;
-    return Icons.square_foot;
-  }
-
-  void undo() {
+  void _undo() {
     controller.undo();
   }
 
-  void redo() {
+  void _redo() {
     controller.redo();
   }
 
-  void toggleFreeStyleDraw() {
-    selectShape(null);
+  void _toggleFreeStyleDraw() {
+    _selectShape(null);
     styleMode = styleMode == StyleMode.draw ? StyleMode.none : StyleMode.draw;
-    controller.freeStyleMode = styleModeToFreeStyleMode(styleMode);
+    controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
   }
 
-  void toggleFreeStyleErase() {
-    selectShape(null);
+  void _toggleFreeStyleErase() {
+    _selectShape(null);
     styleMode = styleMode == StyleMode.erase ? StyleMode.none : StyleMode.erase;
-    controller.freeStyleMode = styleModeToFreeStyleMode(styleMode);
+    controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
   }
 
-  void toggleSettings() {
+  void _toggleSettings() {
     setState(() {
       showSettings = !showSettings;
     });
   }
 
-  void toggleText() {
-    selectShape(null);
-    styleMode = styleMode == StyleMode.draw ? StyleMode.none : StyleMode.draw;
-    controller.freeStyleMode = styleModeToFreeStyleMode(styleMode);
+  void _toggleText() {
+    _selectShape(null);
+    showSettings = false;
+    styleMode = styleMode == StyleMode.text ? StyleMode.none : StyleMode.text;
+    controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
     controller.addText();
   }
 
-  void setWidth(StrokeWidth value) {
+  void _setWidth(StrokeWidth value) {
     setState(() {
       strokeWidth = value;
     });
 
-    var width = _getStrokeWidth(value);
-    controller.freeStyleStrokeWidth = width;
-    setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
-      strokeWidth: width,
+    controller.freeStyleStrokeWidth = value.width;
+    _setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
+      strokeWidth: value.width,
     ));
     controller.textSettings = controller.textSettings.copyWith(
         textStyle: controller.textSettings.textStyle
-            .copyWith(fontSize: _getTextWidth(value)));
+            .copyWith(fontSize: value.textWidth));
   }
 
-  void setColor(StrokeColor strokeColorValue) {
+  void _setColor(StrokeColor strokeColorValue) {
     setState(() {
       strokeColor = strokeColorValue;
     });
 
-    var color = _getStrokeColor(strokeColorValue);
-    controller.freeStyleColor = color;
-    setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
-      color: color,
+    controller.freeStyleColor = strokeColor.color;
+    _setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
+      color: strokeColor.color,
     ));
-    controller.textStyle = controller.textStyle.copyWith(color: color);
+    controller.textStyle =
+        controller.textStyle.copyWith(color: strokeColor.color);
   }
 
-  void setShapeFactoryPaint(Paint paint) {
+  void _setShapeFactoryPaint(Paint paint) {
     // Set state is just to update the current UI, the [FlutterPainter] UI updates without it
     setState(() {
       controller.shapePaint = paint;
     });
   }
 
-  void selectShape(ShapeFactory? factory) {
-    styleMode = styleMode == StyleMode.shape ? StyleMode.none : StyleMode.shape;
-    controller.freeStyleMode = styleModeToFreeStyleMode(styleMode);
-
-    controller.shapeFactory = factory;
+  void _selectShape(Shapes? selectedShape) {
+    shape = selectedShape;
+    if (shape != null) {
+      styleMode =
+          styleMode == StyleMode.shape ? StyleMode.none : StyleMode.shape;
+      controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
+    }
+    controller.shapeFactory = _getFactory(selectedShape);
   }
 
-  StyleMode freeStyleModeToStyleMode(FreeStyleMode freeStyleMode) {
-    switch (freeStyleMode) {
-      case FreeStyleMode.draw:
-        return StyleMode.draw;
-      case FreeStyleMode.erase:
-        return StyleMode.erase;
-      case FreeStyleMode.none:
-        return StyleMode.none;
+  ShapeFactory? _getFactory(Shapes? shape) {
+    switch (shape) {
+      case Shapes.line:
+        return LineFactory();
+      case Shapes.arrow:
+        return ArrowFactory();
+      case Shapes.doubleArrow:
+        return DoubleArrowFactory();
+      case Shapes.rectangle:
+        return RectangleFactory();
+      case Shapes.oval:
+        return OvalFactory();
+      default:
+        return null;
     }
   }
 
-  FreeStyleMode styleModeToFreeStyleMode(StyleMode styleMode) {
+  FreeStyleMode _styleModeToFreeStyleMode(StyleMode styleMode) {
     switch (styleMode) {
       case StyleMode.draw:
         return FreeStyleMode.draw;
@@ -517,7 +456,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     }
   }
 
-  Future<void> renderAndDisplayImage() async {
+  Future<void> _renderAndDisplayImage() async {
     if (backgroundImage == null) return;
     final backgroundImageSize = Size(
         backgroundImage!.width.toDouble(), backgroundImage!.height.toDouble());
@@ -539,15 +478,42 @@ enum StyleMode {
 }
 
 enum StrokeWidth {
-  small,
-  medium,
-  large,
+  small(width: 2, textWidth: 11),
+  medium(width: 12, textWidth: 20),
+  large(width: 25, textWidth: 50);
+
+  const StrokeWidth({
+    required this.width,
+    required this.textWidth,
+  });
+
+  final double width;
+  final double textWidth;
 }
 
 enum StrokeColor {
-  black,
-  red,
-  blue,
-  green,
-  yellow,
+  black(Color.fromARGB(255, 0, 0, 0)),
+  red(Colors.red),
+  blue(Colors.blue),
+  green(Colors.green),
+  yellow(Colors.yellow);
+
+  const StrokeColor(
+    this.color,
+  );
+
+  final Color color;
+}
+
+enum Shapes {
+  line(title: 'Linie', icon: Icons.horizontal_rule),
+  arrow(title: 'Pfeil', icon: Icons.trending_flat),
+  doubleArrow(title: 'Doppelpfeil', icon: Icons.open_in_full),
+  rectangle(title: 'Rechteck', icon: Icons.rectangle),
+  oval(title: 'Oval', icon: Icons.circle);
+
+  const Shapes({required this.title, required this.icon});
+
+  final String title;
+  final IconData icon;
 }
