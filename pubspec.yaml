@@ -11,10 +11,9 @@ dependencies:
         sdk: flutter
     # yust: ^3.1.0
     yust:
-        path: ../yust
-    #    git:
-    #        url: https://github.com/univelop/yust.git
-    #        ref: master
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: master
     firebase_core: ^1.20.1
     firebase_storage: ^10.3.5
     firebase_storage_mocks: ^0.5.1
