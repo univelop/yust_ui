@@ -12,10 +12,8 @@ dependencies:
     # yust: ^3.1.0
     yust:
         git:
-            url: https://github.com/univelop/yust
+            url: https://github.com/univelop/yust.git
             ref: master
-    # yust:
-    #   path: ../yust
     firebase_core: ^1.20.1
     firebase_storage: ^10.3.5
     firebase_storage_mocks: ^0.5.1
