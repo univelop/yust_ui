@@ -39,7 +39,7 @@ class YustFilePicker extends StatefulWidget {
 
   final bool showDeleteNotification;
 
-  final void Function()? deleteNotification;
+  final void Function()? deleteNotifications;
 
   final void Function(String)? deleteSingleNotification;
 
@@ -56,7 +56,7 @@ class YustFilePicker extends StatefulWidget {
     this.readOnly = false,
     this.newFiles = const [],
     this.showDeleteNotification = false,
-    this.deleteNotification,
+    this.deleteNotifications,
     this.deleteSingleNotification,
   }) : super(key: key);
 
@@ -397,6 +397,6 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildNotificationDelButton() {
     return TextButton(
-        onPressed: widget.deleteNotification, child: const Text('Gelesen'));
+        onPressed: widget.deleteNotifications, child: const Text('Gelesen'));
   }
 }
