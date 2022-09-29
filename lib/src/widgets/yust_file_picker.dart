@@ -37,8 +37,6 @@ class YustFilePicker extends StatefulWidget {
 
   final List<String> newFiles;
 
-  final bool showDeleteNotification;
-
   final void Function()? deleteNotifications;
 
   final void Function(String)? deleteSingleNotification;
@@ -55,7 +53,6 @@ class YustFilePicker extends StatefulWidget {
     this.enableDropzone = false,
     this.readOnly = false,
     this.newFiles = const [],
-    this.showDeleteNotification = false,
     this.deleteNotifications,
     this.deleteSingleNotification,
   }) : super(key: key);
@@ -117,7 +114,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         YustListTile(
           suffixChild:
               Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-            widget.showDeleteNotification && widget.newFiles.isNotEmpty
+            widget.newFiles.isNotEmpty
                 ? _buildNotificationDelButton()
                 : const SizedBox.shrink(),
             isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
@@ -223,20 +220,20 @@ class YustFilePickerState extends State<YustFilePicker> {
     final isBroken = file.name == null ||
         (file.cached && file.bytes == null && file.file == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
-    namelessCnt++;    
+    namelessCnt++;
     final badge = widget.newFiles.contains(file.name ?? 'missing_$namelessCnt')
-            ? Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  height: 8,
-                  width: 8,
-                ),
-              )
-            : const SizedBox.shrink();
+        ? Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              height: 8,
+              width: 8,
+            ),
+          )
+        : const SizedBox.shrink();
     return ListTile(
       title: Row(
         mainAxisSize: MainAxisSize.min,
@@ -256,8 +253,8 @@ class YustFilePickerState extends State<YustFilePicker> {
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
           if (widget.deleteSingleNotification != null) {
-
-            widget.deleteSingleNotification!(file.name ?? 'missing_$namelessCnt');
+            widget
+                .deleteSingleNotification!(file.name ?? 'missing_$namelessCnt');
           }
           _fileHandler.showFile(context, file);
         }
@@ -309,8 +306,6 @@ class YustFilePickerState extends State<YustFilePicker> {
           bytes: platformFile.bytes,
         );
       }
-      //TODO: Check if connection to server established
-      widget.onChanged!(_fileHandler.getOnlineFiles());
     }
   }
 
@@ -337,10 +332,9 @@ class YustFilePickerState extends State<YustFilePicker> {
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
-    /*TODO: Move onChanged to top when all Files are uploaded!
     if (!newYustFile.cached) {
       widget.onChanged!(_fileHandler.getOnlineFiles());
-    }*/
+    }
     if (mounted) {
       setState(() {});
     }
@@ -366,7 +360,8 @@ class YustFilePickerState extends State<YustFilePicker> {
         await _fileHandler.deleteFile(yustFile);
         if (!yustFile.cached) {
           if (widget.deleteSingleNotification != null) {
-            widget.deleteSingleNotification!(yustFile.name ?? 'missing_$namelessCnt');
+            widget.deleteSingleNotification!(
+                yustFile.name ?? 'missing_$namelessCnt');
           }
           widget.onChanged!(_fileHandler.getOnlineFiles());
         }
