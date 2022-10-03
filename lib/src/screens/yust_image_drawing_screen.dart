@@ -131,45 +131,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible(
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          maxWidth: 400,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        decoration: const BoxDecoration(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(20)),
-                          color: Colors.white54,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (showSettings == true) ...[
-                              const Divider(),
-                              const Text('Einstellungen'),
-                              Row(
-                                children: [
-                                  const Expanded(
-                                      flex: 2, child: Text('Strichstärke')),
-                                  ...StrokeWidth.values
-                                      .map((value) =>
-                                          _buildStrokeWidthSetting(value))
-                                      .toList(),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  const Expanded(flex: 2, child: Text('Farbe')),
-                                  ...StrokeColor.values
-                                      .map((value) =>
-                                          _buildStrokeColorSetting(value))
-                                      .toList(),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                      child: _buildSettings(),
                     ),
                   ],
                 ),
@@ -186,7 +148,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
               _buildFreeStyleDrawing(context),
               _buildAddText(context),
               _buildAddShapes(context),
-              _buildSettings(context),
+              _buildOpenSettings(context),
             ],
           ),
         ));
@@ -234,6 +196,42 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       onPressed: () async {
         Navigator.of(context).pop();
       },
+    );
+  }
+
+  Widget _buildSettings() {
+    return Container(
+      constraints: const BoxConstraints(
+        maxWidth: 400,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: _isDarkMode(context) ? Colors.grey[900] : Colors.grey[100],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showSettings == true) ...[
+            Row(
+              children: [
+                const Expanded(flex: 2, child: Text('Strichstärke')),
+                ...StrokeWidth.values
+                    .map((value) => _buildStrokeWidthSetting(value))
+                    .toList(),
+              ],
+            ),
+            Row(
+              children: [
+                const Expanded(flex: 2, child: Text('Farbe')),
+                ...StrokeColor.values
+                    .map((value) => _buildStrokeColorSetting(value))
+                    .toList(),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -300,7 +298,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     );
   }
 
-  Widget _buildSettings(BuildContext context) {
+  Widget _buildOpenSettings(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.lens),
       color: strokeColor.color,
@@ -356,6 +354,11 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
 
   void _redo() {
     controller.redo();
+  }
+
+  bool _isDarkMode(BuildContext context) {
+    var brightness = MediaQuery.of(context).platformBrightness;
+    return brightness == Brightness.dark;
   }
 
   void _toggleFreeStyleDraw() {
