@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
+import 'package:yust_ui/src/widgets/yust_image_drawable.dart';
 
 class YustImageDrawingScreen extends StatefulWidget {
   final ImageProvider image;
@@ -72,7 +73,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     ui.Image image = await (widget.image).image;
     setState(() {
       backgroundImage = image;
-      controller.background = image.backgroundDrawable;
+      controller.background = image.yustBackgroundDrawable;
     });
   }
 
@@ -107,20 +108,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         ),
         body: Stack(
           children: [
-            if (backgroundImage != null)
-              // Enforces constraints
-              InteractiveViewer(
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio:
-                        backgroundImage!.width / backgroundImage!.height,
-                    child: FlutterPainter(
-                      controller: controller,
-                      onDrawableCreated: ((drawable) => showSettings = false),
-                    ),
-                  ),
-                ),
-              ),
+            _buildImage(),
             Positioned(
               bottom: 0,
               right: 0,
@@ -196,6 +184,27 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       onPressed: () async {
         Navigator.of(context).pop();
       },
+    );
+  }
+
+  Widget _buildImage() {
+    if (backgroundImage == null) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: backgroundImage!.width / backgroundImage!.height,
+              child: FlutterPainter(
+                controller: controller,
+                onDrawableCreated: ((drawable) => showSettings = false),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
