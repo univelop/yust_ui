@@ -39,7 +39,9 @@ class YustFilePicker extends StatefulWidget {
 
   final void Function()? deleteNotifications;
 
-  final void Function(String)? deleteSingleNotification;
+  final void Function(String)? onOpenFile;
+
+  final void Function(List<String>?)? onUploadComplete;
 
   const YustFilePicker({
     Key? key,
@@ -54,7 +56,8 @@ class YustFilePicker extends StatefulWidget {
     this.readOnly = false,
     this.newFiles = const [],
     this.deleteNotifications,
-    this.deleteSingleNotification,
+    this.onOpenFile,
+    this.onUploadComplete,
   }) : super(key: key);
 
   @override
@@ -252,9 +255,8 @@ class YustFilePickerState extends State<YustFilePicker> {
       onTap: () {
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
-          if (widget.deleteSingleNotification != null) {
-            widget
-                .deleteSingleNotification!(file.name ?? 'missing_$namelessCnt');
+          if (widget.onOpenFile != null) {
+            widget.onOpenFile!(file.name ?? 'missing_$namelessCnt');
           }
           _fileHandler.showFile(context, file);
         }
@@ -305,6 +307,9 @@ class YustFilePickerState extends State<YustFilePicker> {
           file: _platformFileToFile(platformFile),
           bytes: platformFile.bytes,
         );
+      }
+      if (widget.onUploadComplete != null) {
+        widget.onUploadComplete!.call(result.files.map((e) => e.name).toList());
       }
     }
   }
@@ -359,9 +364,8 @@ class YustFilePickerState extends State<YustFilePicker> {
       try {
         await _fileHandler.deleteFile(yustFile);
         if (!yustFile.cached) {
-          if (widget.deleteSingleNotification != null) {
-            widget.deleteSingleNotification!(
-                yustFile.name ?? 'missing_$namelessCnt');
+          if (widget.onOpenFile != null) {
+            widget.onOpenFile!(yustFile.name ?? 'missing_$namelessCnt');
           }
           widget.onChanged!(_fileHandler.getOnlineFiles());
         }
