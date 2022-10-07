@@ -129,15 +129,18 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         ),
         bottomNavigationBar: ValueListenableBuilder(
           valueListenable: controller,
-          builder: (context, _, __) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildFreeStyleEraser(context),
-              _buildFreeStyleDrawing(context),
-              _buildAddText(context),
-              _buildAddShapes(context),
-              _buildOpenSettings(context),
-            ],
+          builder: (context, _, __) => Container(
+            color: Theme.of(context).backgroundColor,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildFreeStyleDrawing(context),
+                _buildAddText(context),
+                _buildAddShapes(context),
+                _buildFreeStyleEraser(context),
+                _buildOpenSettings(context),
+              ],
+            ),
           ),
         ));
   }
@@ -191,20 +194,14 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     if (backgroundImage == null) {
       return const SizedBox.shrink();
     }
-    return Column(
-      children: [
-        Expanded(
-          child: Center(
-            child: AspectRatio(
-              aspectRatio: backgroundImage!.width / backgroundImage!.height,
-              child: FlutterPainter(
-                controller: controller,
-                onDrawableCreated: ((drawable) => showSettings = false),
-              ),
-            ),
-          ),
+    return Center(
+      child: AspectRatio(
+        aspectRatio: backgroundImage!.width / backgroundImage!.height,
+        child: FlutterPainter(
+          controller: controller,
+          onDrawableCreated: ((drawable) => showSettings = false),
         ),
-      ],
+      ),
     );
   }
 
@@ -216,7 +213,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        color: _isDarkMode(context) ? Colors.grey[900] : Colors.grey[100],
+        color: Theme.of(context).backgroundColor,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -241,18 +238,6 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildFreeStyleEraser(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        Icons.auto_fix_high,
-        color: styleMode == StyleMode.erase
-            ? Theme.of(context).colorScheme.secondary
-            : null,
-      ),
-      onPressed: _toggleFreeStyleErase,
     );
   }
 
@@ -304,6 +289,18 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
           color: shape != null ? Theme.of(context).colorScheme.secondary : null,
         ),
       ),
+    );
+  }
+
+  Widget _buildFreeStyleEraser(BuildContext context) {
+    return IconButton(
+      icon: Icon(
+        Icons.cleaning_services,
+        color: styleMode == StyleMode.erase
+            ? Theme.of(context).colorScheme.secondary
+            : null,
+      ),
+      onPressed: _toggleFreeStyleErase,
     );
   }
 
@@ -363,11 +360,6 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
 
   void _redo() {
     controller.redo();
-  }
-
-  bool _isDarkMode(BuildContext context) {
-    var brightness = MediaQuery.of(context).platformBrightness;
-    return brightness == Brightness.dark;
   }
 
   void _toggleFreeStyleDraw() {

@@ -19,6 +19,7 @@ class YustImageDrawable extends BackgroundDrawable {
     var width = _calcWidth(size);
     var offset = _calcOffset(size, width, height);
 
+    canvas.clipRect(Rect.fromPoints(offset, Offset(width, height) + offset));
     canvas.drawImageRect(
         image,
         Rect.fromPoints(Offset.zero,
