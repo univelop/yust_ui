@@ -28,17 +28,17 @@ class YustButtonTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        above ?? SizedBox(),
+        above ?? const SizedBox(),
         Padding(
           padding: const EdgeInsets.all(10),
           child: elevated
               ? ElevatedButton.icon(
                   onPressed: onPressed,
                   style: ElevatedButton.styleFrom(
-                    primary: color,
-                    onPrimary: textColor,
+                    backgroundColor: color,
+                    foregroundColor: textColor,
                   ),
-                  icon: icon ?? SizedBox(),
+                  icon: icon ?? const SizedBox(),
                   label: Text(
                     label!,
                     overflow: TextOverflow.ellipsis,
@@ -47,17 +47,18 @@ class YustButtonTile extends StatelessWidget {
               : TextButton.icon(
                   onPressed: onPressed,
                   style: TextButton.styleFrom(
-                    primary: color,
+                    foregroundColor: color,
                   ),
-                  icon: icon ?? SizedBox(),
+                  icon: icon ?? const SizedBox(),
                   label: Text(
                     label!,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
         ),
-        below ?? SizedBox(),
-        if (divider) Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+        below ?? const SizedBox(),
+        if (divider)
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
   }

@@ -46,9 +46,9 @@ class YustListTile extends StatelessWidget {
       return Column(
         children: <Widget>[
           _buildInner(context),
-          below ?? SizedBox(),
+          below ?? const SizedBox(),
           if (divider && !(heading || largeHeading))
-            Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
         ],
       );
     }
@@ -94,7 +94,7 @@ class YustListTile extends StatelessWidget {
         ],
       ),
       trailing: navigate
-          ? Icon(
+          ? const Icon(
               Icons.navigate_next,
             )
           : suffixChild,

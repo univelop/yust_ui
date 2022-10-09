@@ -35,7 +35,7 @@ class YustTextField extends StatefulWidget {
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
 
-  YustTextField({
+  const YustTextField({
     Key? key,
     this.label,
     this.value,
@@ -75,17 +75,35 @@ class _YustTextFieldState extends State<YustTextField> {
   late TextEditingController _controller;
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
+  late bool _valueDidChange;
+
+  void onUnfocus() {
+    if (_valueDidChange == false) return;
+    if (widget.onEditingComplete == null) return;
+
+    final textFieldText = _controller.value.text.trim();
+    final textFieldValue = textFieldText == '' ? null : textFieldText;
+
+    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+      widget.onEditingComplete!(textFieldValue);
+      _valueDidChange = false;
+    } else {
+      _controller.text = widget.value ?? '';
+    }
+  }
 
   /// This Method resets/initializes the state of the widget
   void resetState() {
     if (widget.controller != null && widget.value != null) {
       widget.controller!.text = widget.value!;
     }
+    _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
     _focusNode = widget.focusNode ?? FocusNode();
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
+      // if (!_focusNode.hasFocus) onUnfocus();
       if (!_focusNode.hasFocus && widget.onEditingComplete != null) {
         final textFieldText = _controller.value.text.trim();
         final textFieldValue = textFieldText == '' ? null : textFieldText;
@@ -99,10 +117,13 @@ class _YustTextFieldState extends State<YustTextField> {
     });
     if (widget.hideKeyboardOnAutofocus) {
       Future.delayed(
-        Duration(),
+        const Duration(),
         () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
       );
     }
+    _controller.addListener(() {
+      _valueDidChange = true;
+    });
   }
 
   @override
@@ -119,6 +140,8 @@ class _YustTextFieldState extends State<YustTextField> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) => onUnfocus());
+
     super.dispose();
   }
 
@@ -127,7 +150,14 @@ class _YustTextFieldState extends State<YustTextField> {
     super.didUpdateWidget(oldWidget);
     // If the Text-Fields Label changed, we can assume it's a new/different TextField
     // (Flutter "reuses" existing Widgets in the tree)
-    if (oldWidget.label != widget.label) resetState();
+
+    // Also because "*" are often used to mark required fields, we remove them beforehand
+    final oldLabel = oldWidget.label?.replaceAll(' *', '');
+    final newLabel = widget.label?.replaceAll(' *', '');
+    if (oldLabel != newLabel) {
+      onUnfocus();
+      resetState();
+    }
   }
 
   @override
@@ -156,7 +186,7 @@ class _YustTextFieldState extends State<YustTextField> {
                               Colors.black),
                   contentPadding: const EdgeInsets.all(20.0),
                   border: widget.style == YustInputStyle.outlineBorder
-                      ? OutlineInputBorder()
+                      ? const OutlineInputBorder()
                       : InputBorder.none,
                   prefixIcon: widget.prefixIcon,
                 ),
@@ -191,7 +221,7 @@ class _YustTextFieldState extends State<YustTextField> {
                 autofocus: widget.autofocus,
               ),
             ),
-            widget.suffixIcon ?? SizedBox(),
+            widget.suffixIcon ?? const SizedBox(),
             if (widget.onDelete != null && widget.value != '')
               IconButton(
                   onPressed: widget.onDelete!,
@@ -202,7 +232,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ],
         ),
         if (widget.style == YustInputStyle.normal && widget.divider)
-          Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
   }

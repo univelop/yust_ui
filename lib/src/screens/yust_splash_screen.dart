@@ -4,7 +4,7 @@ class YustSplashScreen extends StatelessWidget {
   static const String routeName = '/splash';
   static const bool signInRequired = false;
 
-  YustSplashScreen({Key? key, this.appName}) : super(key: key);
+  const YustSplashScreen({Key? key, this.appName}) : super(key: key);
 
   final String? appName;
 
@@ -12,7 +12,7 @@ class YustSplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(appName ?? '')),
-      body: Center(child: CircularProgressIndicator()),
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }

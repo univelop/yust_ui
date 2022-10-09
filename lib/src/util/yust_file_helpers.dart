@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'dart:typed_data';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -23,7 +21,7 @@ class YustFileHelpers {
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
-  static final ConnectivityStream =
+  static final connectivityStream =
       Connectivity().onConnectivityChanged.asBroadcastStream();
 
   /// Shares or downloads a file.
@@ -46,6 +44,9 @@ class YustFileHelpers {
         a.remove();
       }
     } else {
+      final size = MediaQuery.of(context).size;
+      // Get the Location of the widget (e.g. button), that called the method.
+      final box = context.findRenderObject() as RenderBox?;
       if (file == null && data != null) {
         final tempDir = await getTemporaryDirectory();
         final path = '${tempDir.path}/$name';
@@ -53,11 +54,7 @@ class YustFileHelpers {
         file.writeAsBytesSync(data);
       }
       if (file != null) {
-        final size = MediaQuery.of(context).size;
-        // Get the Location of the widget (e.g. button), that called the method.
-        final box = context.findRenderObject() as RenderBox?;
         final buttonLocation = box!.localToGlobal(Offset.zero) & box.size;
-
         // Alternatively create a Location in the center of the Screen
         final centerLocation = Rect.fromLTWH(0, 0, size.width, size.height / 2);
 
