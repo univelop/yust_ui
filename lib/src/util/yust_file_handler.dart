@@ -59,7 +59,7 @@ class YustFileHandler {
   }
 
   List<YustFile> getOnlineFiles() {
-    return _yustFiles.where((f) => f.cached == false).toList();
+    return _yustFiles.where((f) => f.url != null).toList();
   }
 
   List<YustFile> getCachedFiles() {
@@ -124,7 +124,19 @@ class YustFileHandler {
     for (var f in onlineFiles) {
       f.storageFolderPath = storageFolderPath;
     }
+    _updateCachedFiles(yustFiles, onlineFiles);
     _mergeIntoYustFiles(yustFiles, onlineFiles);
+  }
+
+  void _updateCachedFiles(
+      List<YustFile> yustFiles, List<YustFile> newYustFiles) {
+    for (var newYustFile in newYustFiles) {
+      var matchingFile = yustFiles
+          .firstWhereOrNull((yustFile) => _equalFiles(yustFile, newYustFile));
+      if (matchingFile != null) {
+        matchingFile.update(newYustFile);
+      }
+    }
   }
 
   Future<void> _mergeCachedFiles(List<YustFile> yustFiles,
@@ -147,6 +159,17 @@ class YustFileHandler {
     }
 
     _yustFiles.add(yustFile);
+    await _uploadFile(yustFile);
+  }
+
+  Future<void> updateFile(YustFile yustFile,
+      {Uint8List? bytes, File? file}) async {
+    yustFile.bytes = bytes;
+    yustFile.file = file;
+    await _uploadFile(yustFile);
+  }
+
+  Future<void> _uploadFile(YustFile yustFile) async {
     if (!kIsWeb && yustFile.cacheable) {
       await _saveFileOnDevice(yustFile);
       startUploadingCachedFiles();
@@ -189,11 +212,13 @@ class YustFileHandler {
     for (final yustFile in cachedFiles) {
       yustFile.lastError = null;
       try {
+        _recentlyUploadedFiles.add(yustFile);
         await _uploadFileToStorage(yustFile);
         uploadedFiles++;
         await _deleteCachedInformations(yustFile);
         if (onFileUploaded != null) onFileUploaded!();
       } catch (error) {
+        _recentlyUploadedFiles.remove(yustFile);
         yustFile.lastError = error.toString();
         uploadError = true;
       }
@@ -332,7 +357,6 @@ class YustFileHandler {
     if (yustFile.cached) {
       await _updateDocAttribute(yustFile, url, yustFile.hash);
     }
-    _recentlyUploadedFiles.add(yustFile);
   }
 
   Future<void> _addFileHash(YustFile yustFile) async {

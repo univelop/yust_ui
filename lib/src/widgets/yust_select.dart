@@ -14,6 +14,10 @@ class YustSelect<T> extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixChild;
   final bool readOnly;
+  final bool showUnkownValue;
+  final bool divider;
+  final int? maxLines;
+  final int? minLines;
 
   const YustSelect({
     Key? key,
@@ -27,6 +31,10 @@ class YustSelect<T> extends StatelessWidget {
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
+    this.showUnkownValue = false,
+    this.divider = true,
+    this.maxLines,
+    this.minLines,
   }) : super(key: key);
 
   @override
@@ -37,6 +45,9 @@ class YustSelect<T> extends StatelessWidget {
       prefixIcon: prefixIcon,
       suffixChild: suffixChild,
       style: style,
+      divider: divider,
+      maxLines: maxLines,
+      minLines: minLines,
       onTap:
           (onSelected == null || readOnly) ? null : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
@@ -46,7 +57,7 @@ class YustSelect<T> extends StatelessWidget {
   String _valueCaption(T value) {
     final index = optionValues.indexOf(value);
     if (index == -1) {
-      return '';
+      return showUnkownValue ? value.toString() : '';
     }
     return optionLabels[index];
   }

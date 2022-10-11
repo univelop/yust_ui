@@ -412,6 +412,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.6+1"
+  flutter_painter:
+    dependency: "direct main"
+    description:
+      name: flutter_painter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -1179,10 +1186,10 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      path: "../yust"
-      relative: true
-    source: path
-    version: "3.1.0"
+      name: yust
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.2.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
   flutter: ">=3.0.0"

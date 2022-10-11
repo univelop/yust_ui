@@ -1,9 +1,11 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 
 import '../yust_ui.dart';
 
@@ -11,10 +13,12 @@ class YustImageScreen extends StatefulWidget {
   final List<YustFile> files;
 
   final int activeImageIndex;
+  final void Function(YustFile file, Uint8List newImage) onSave;
 
   const YustImageScreen({
     Key? key,
     required this.files,
+    required this.onSave,
     this.activeImageIndex = 0,
   }) : super(key: key);
 
@@ -45,14 +49,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   Widget _buildSingle(BuildContext context) {
     final file = widget.files.first;
-    if (file.url == null) {
-      return const SizedBox.shrink();
-    }
     return Stack(children: [
       PhotoView(
         imageProvider: _getImageOfUrl(file),
         minScale: PhotoViewComputedScale.contained,
-        heroAttributes: PhotoViewHeroAttributes(tag: file.url!),
+        heroAttributes: PhotoViewHeroAttributes(tag: file.url ?? ''),
         onTapUp: (context, details, controllerValue) {
           Navigator.pop(context);
         },
@@ -64,6 +65,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
+      if (!kIsWeb) _buildDrawButton(context, file),
       if (kIsWeb) _buildCloseButton(context),
       _buildShareButton(context, file),
     ]);
@@ -142,9 +144,53 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
+        if (!kIsWeb) _buildDrawButton(context, widget.files[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
         _buildShareButton(context, widget.files[activeImageIndex]),
       ],
+    );
+  }
+
+  Widget _buildDrawButton(BuildContext context, YustFile file) {
+    if (file.url == null && file.devicePath == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      right: 70.0,
+      child: RepaintBoundary(
+        child: Container(
+          margin: const EdgeInsets.all(20),
+          child: CircleAvatar(
+            backgroundColor: Colors.black,
+            radius: 25,
+            child: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  iconSize: 35,
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => YustImageDrawingScreen(
+                          image: _getImageOfUrl(file),
+                          onSave: (image) async {
+                            if (image != null) {
+                              widget.onSave(file, image);
+                              setState(() {});
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.draw_outlined),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -168,7 +214,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   Widget _buildShareButton(BuildContext context, YustFile file) {
     return Positioned(
-      right: kIsWeb ? 80.0 : 0.0,
+      right: kIsWeb ? 70.0 : 0.0,
       child: RepaintBoundary(
         child: Container(
           margin: const EdgeInsets.all(20),
@@ -199,7 +245,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
   /// because of the offline cache the file could be a stored online or on device
   ImageProvider<Object> _getImageOfUrl(YustFile file) {
     if (file.cached) {
-      return FileImage(File(file.devicePath!));
+      var imageFile = File(file.devicePath!);
+      return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
       return NetworkImage(file.url!);
     }

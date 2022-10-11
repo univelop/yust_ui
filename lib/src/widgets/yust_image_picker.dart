@@ -66,7 +66,6 @@ class YustImagePickerState extends State<YustImagePicker> {
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
-  ConnectivityResult _connectivityResult = ConnectivityResult.none;
 
   @override
   void initState() {
@@ -93,28 +92,20 @@ class YustImagePickerState extends State<YustImagePicker> {
   Widget build(BuildContext context) {
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
-    return StreamBuilder<ConnectivityResult>(
-      stream: YustFileHelpers.connectivityStream,
+    return FutureBuilder(
+      future: _fileHandler.updateFiles(widget.images, loadFiles: true),
       builder: (context, snapshot) {
-        if (snapshot.data != null) {
-          _connectivityResult = snapshot.data!;
-        }
-        return FutureBuilder(
-          future: _fileHandler.updateFiles(widget.images, loadFiles: true),
-          builder: (context, snapshot) {
-            return YustListTile(
-              label: widget.label,
-              suffixChild: _buildPickButtons(context),
-              prefixIcon: widget.prefixIcon,
-              below: widget.multiple
-                  ? _buildGallery(context)
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 2.0),
-                      child: _buildSingleImage(
-                          context, _fileHandler.getFiles().firstOrNull),
-                    ),
-            );
-          },
+        return YustListTile(
+          label: widget.label,
+          suffixChild: _buildPickButtons(context),
+          prefixIcon: widget.prefixIcon,
+          below: widget.multiple
+              ? _buildGallery(context)
+              : Padding(
+                  padding: const EdgeInsets.only(bottom: 2.0),
+                  child: _buildSingleImage(
+                      context, _fileHandler.getFiles().firstOrNull),
+                ),
         );
       },
     );
@@ -218,18 +209,13 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (file == null) {
       return const SizedBox.shrink();
     }
-    dynamic cacheKey;
-    if (file.key != null) {
-      cacheKey = file.key.toString();
-    } else if (file.url != null) {
-      cacheKey = Key(file.url! + _connectivityResult.toString()).toString();
-    }
     Widget? preview = YustCachedImage(
       file: file,
-      cacheKey: cacheKey,
       fit: BoxFit.cover,
     );
-    final zoomEnabled = (file.url != null && widget.zoomable);
+    final zoomEnabled =
+        ((file.url != null || file.bytes != null || file.file != null) &&
+            widget.zoomable);
     if (widget.multiple) {
       return AspectRatio(
         aspectRatio: 1,
@@ -480,6 +466,17 @@ class YustImagePickerState extends State<YustImagePicker> {
       builder: (context) => YustImageScreen(
         files: _fileHandler.getFiles(),
         activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
+        onSave: ((file, newImage) {
+          file.storageFolderPath = widget.storageFolderPath;
+          file.linkedDocPath = widget.linkedDocPath;
+          file.linkedDocAttribute = widget.linkedDocAttribute;
+
+          _fileHandler.updateFile(file, bytes: newImage);
+
+          if (mounted) {
+            setState(() {});
+          }
+        }),
       ),
     ));
   }
