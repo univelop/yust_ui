@@ -31,6 +31,7 @@ class YustTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final TextCapitalization textCapitalization;
   final AutovalidateMode? autovalidateMode;
+  final SmartQuotesType? smartQuotesType;
   final TextInputType? keyboardType;
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
@@ -63,6 +64,7 @@ class YustTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
+    this.smartQuotesType,
     this.keyboardType,
     this.textInputAction,
   }) : super(key: key);
@@ -211,6 +213,7 @@ class _YustTextFieldState extends State<YustTextField> {
                 obscureText: widget.obscureText,
                 textCapitalization: widget.textCapitalization,
                 inputFormatters: widget.inputFormatters,
+                smartQuotesType: widget.smartQuotesType,
                 autovalidateMode: widget.autovalidateMode ??
                     (widget.validator != null
                         ? AutovalidateMode.onUserInteraction
