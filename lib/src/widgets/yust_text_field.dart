@@ -24,6 +24,7 @@ class YustTextField extends StatefulWidget {
   final bool obscureText;
   final bool autofocus;
   final bool hideKeyboardOnAutofocus;
+  final bool slimmDesign;
   final FocusNode? focusNode;
   final YustInputStyle? style;
   final bool divider;
@@ -35,6 +36,7 @@ class YustTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
+  final EdgeInsets contentPadding;
 
   const YustTextField({
     Key? key,
@@ -53,6 +55,7 @@ class YustTextField extends StatefulWidget {
     this.showSelected = true,
     this.autocorrect = true,
     this.readOnly = false,
+    this.slimmDesign = false,
     this.obscureText = false,
     this.autofocus = false,
     this.hideKeyboardOnAutofocus = true,
@@ -67,6 +70,7 @@ class YustTextField extends StatefulWidget {
     this.smartQuotesType,
     this.keyboardType,
     this.textInputAction,
+    this.contentPadding = const EdgeInsets.all(20.0),
   }) : super(key: key);
 
   @override
@@ -173,56 +177,15 @@ class _YustTextFieldState extends State<YustTextField> {
       _controller.selection = TextSelection.fromPosition(
           TextPosition(offset: _controller.text.length));
     }
+
+    if (widget.slimmDesign) return _buildTextField();
+
     return Column(
       children: [
         Row(
           children: [
             Expanded(
-              child: TextFormField(
-                decoration: InputDecoration(
-                  labelText: widget.label,
-                  labelStyle: widget.showSelected
-                      ? null
-                      : TextStyle(
-                          color: Theme.of(context).textTheme.caption?.color ??
-                              Colors.black),
-                  contentPadding: const EdgeInsets.all(20.0),
-                  border: widget.style == YustInputStyle.outlineBorder
-                      ? const OutlineInputBorder()
-                      : InputBorder.none,
-                  prefixIcon: widget.prefixIcon,
-                ),
-                style: widget.textStyle,
-                maxLines: widget.obscureText ? 1 : widget.maxLines,
-                minLines: widget.minLines,
-                controller: _controller,
-                focusNode: _focusNode,
-                keyboardType: widget.keyboardType,
-                textInputAction: widget.textInputAction ??
-                    (widget.minLines != null
-                        ? TextInputAction.newline
-                        : TextInputAction.next),
-                onChanged: widget.onChanged == null
-                    ? null
-                    : (value) =>
-                        widget.onChanged!(value == '' ? null : value.trim()),
-                onTap: widget.onTap,
-                autocorrect: widget.autocorrect,
-                readOnly: widget.readOnly,
-                enabled: widget.enabled,
-                obscureText: widget.obscureText,
-                textCapitalization: widget.textCapitalization,
-                inputFormatters: widget.inputFormatters,
-                smartQuotesType: widget.smartQuotesType,
-                autovalidateMode: widget.autovalidateMode ??
-                    (widget.validator != null
-                        ? AutovalidateMode.onUserInteraction
-                        : null),
-                validator: widget.validator == null
-                    ? null
-                    : (value) => widget.validator!(value!.trim()),
-                autofocus: widget.autofocus,
-              ),
+              child: _buildTextField(),
             ),
             widget.suffixIcon ?? const SizedBox(),
             if (widget.onDelete != null && widget.value != '')
@@ -237,6 +200,53 @@ class _YustTextFieldState extends State<YustTextField> {
         if (widget.style == YustInputStyle.normal && widget.divider)
           const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
+    );
+  }
+
+  Widget _buildTextField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: widget.label,
+        labelStyle: widget.showSelected
+            ? null
+            : TextStyle(
+                color:
+                    Theme.of(context).textTheme.caption?.color ?? Colors.black),
+        contentPadding: widget.contentPadding,
+        border: widget.style == YustInputStyle.outlineBorder
+            ? const OutlineInputBorder()
+            : InputBorder.none,
+        prefixIcon: widget.prefixIcon,
+      ),
+      style: widget.textStyle,
+      maxLines: widget.obscureText ? 1 : widget.maxLines,
+      minLines: widget.minLines,
+      controller: _controller,
+      focusNode: _focusNode,
+      keyboardType: widget.keyboardType,
+      textInputAction: widget.textInputAction ??
+          (widget.minLines != null
+              ? TextInputAction.newline
+              : TextInputAction.next),
+      onChanged: widget.onChanged == null
+          ? null
+          : (value) => widget.onChanged!(value == '' ? null : value.trim()),
+      onTap: widget.onTap,
+      autocorrect: widget.autocorrect,
+      readOnly: widget.readOnly,
+      enabled: widget.enabled,
+      obscureText: widget.obscureText,
+      textCapitalization: widget.textCapitalization,
+      inputFormatters: widget.inputFormatters,
+      smartQuotesType: widget.smartQuotesType,
+      autovalidateMode: widget.autovalidateMode ??
+          (widget.validator != null
+              ? AutovalidateMode.onUserInteraction
+              : null),
+      validator: widget.validator == null
+          ? null
+          : (value) => widget.validator!(value!.trim()),
+      autofocus: widget.autofocus,
     );
   }
 }
