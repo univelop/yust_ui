@@ -232,29 +232,45 @@ class YustAlertService {
                   height: 500,
                   child: SingleChildScrollView(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: choosableItems
-                          .map(
-                            (item) => YustSwitch(
-                              label: getItemLabel(item ?? ''),
-                              value: newItemIds.contains(getItemId(item) ?? ''),
-                              onChanged: (value) {
-                                if (value) {
-                                  setState(() {
-                                    newItemIds.add(getItemId(item) ?? '');
-                                  });
-                                } else {
-                                  setState(() {
-                                    newItemIds.remove(getItemId(item) ?? '');
-                                  });
-                                }
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: () {
+                                newItemIds.clear();
+                                setState(() {
+                                  newItemIds.addAll(choosableItems
+                                      .map((item) => getItemId(item) ?? ''));
+                                });
                               },
-                              switchRepresentation: 'checkbox',
+                              child: const Text('Alle auswählen'),
                             ),
-                          )
-                          .toList(),
-                    ),
+                          ),
+                          ...choosableItems
+                              .map(
+                                (item) => YustSwitch(
+                                  label: getItemLabel(item ?? ''),
+                                  value: newItemIds
+                                      .contains(getItemId(item) ?? ''),
+                                  onChanged: (value) {
+                                    if (value) {
+                                      setState(() {
+                                        newItemIds.add(getItemId(item) ?? '');
+                                      });
+                                    } else {
+                                      setState(() {
+                                        newItemIds
+                                            .remove(getItemId(item) ?? '');
+                                      });
+                                    }
+                                  },
+                                  switchRepresentation: 'checkbox',
+                                ),
+                              )
+                              .toList(),
+                        ]),
                   ),
                 ),
                 actions: [
