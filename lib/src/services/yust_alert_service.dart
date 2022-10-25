@@ -210,12 +210,14 @@ class YustAlertService {
   }
 
   /// Returns newly selected items (only) after confirmation.
+  /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
   Future<List<String>> showCheckListDialog({
     required BuildContext context,
     required List<dynamic> choosableItems,
     required List<String> priorItemIds,
     required String? Function(dynamic) getItemLabel,
     required String? Function(dynamic) getItemId,
+    bool returnPriorItems = true,
     String? title,
   }) async {
     final newItemIds = List<String>.from(priorItemIds);
@@ -294,7 +296,11 @@ class YustAlertService {
           );
         });
     if (isAborted) {
-      return priorItemIds;
+      if (returnPriorItems) {
+        return priorItemIds;
+      } else {
+        return [];
+      }
     } else {
       return newItemIds;
     }
