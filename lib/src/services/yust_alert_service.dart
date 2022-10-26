@@ -292,4 +292,10 @@ class YustAlertService {
       content: Text(message),
     ));
   }
+
+  Future<T?> showSearchWithoutContext<T>(SearchDelegate<T> delegate) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showSearch<T>(context: context, delegate: delegate);
+  }
 }
