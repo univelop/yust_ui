@@ -81,6 +81,7 @@ class YustNumberField extends StatelessWidget {
       enabled: enabled,
       autovalidateMode:
           validator != null ? AutovalidateMode.onUserInteraction : null,
+      focusNode: focusNode,
       autofocus: autofocus,
       hideKeyboardOnAutofocus: hideKeyboardOnAutofocus,
       validator:
