@@ -47,7 +47,7 @@ class YustNumberField extends StatelessWidget {
     this.suffixIcon,
     this.focusNode,
     this.autofocus = false,
-    this.hideKeyboardOnAutofocus = true,
+    this.hideKeyboardOnAutofocus = false,
     this.validator,
     this.divider = true,
   }) : super(key: key);
