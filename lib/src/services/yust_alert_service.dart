@@ -210,12 +210,14 @@ class YustAlertService {
   }
 
   /// Returns newly selected items (only) after confirmation.
+  /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
   Future<List<String>> showCheckListDialog({
     required BuildContext context,
     required List<dynamic> choosableItems,
     required List<String> priorItemIds,
     required String? Function(dynamic) getItemLabel,
     required String? Function(dynamic) getItemId,
+    bool returnPriorItems = true,
     String? title,
   }) async {
     final newItemIds = List<String>.from(priorItemIds);
@@ -232,29 +234,45 @@ class YustAlertService {
                   height: 500,
                   child: SingleChildScrollView(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: choosableItems
-                          .map(
-                            (item) => YustSwitch(
-                              label: getItemLabel(item ?? ''),
-                              value: newItemIds.contains(getItemId(item) ?? ''),
-                              onChanged: (value) {
-                                if (value) {
-                                  setState(() {
-                                    newItemIds.add(getItemId(item) ?? '');
-                                  });
-                                } else {
-                                  setState(() {
-                                    newItemIds.remove(getItemId(item) ?? '');
-                                  });
-                                }
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: () {
+                                newItemIds.clear();
+                                setState(() {
+                                  newItemIds.addAll(choosableItems
+                                      .map((item) => getItemId(item) ?? ''));
+                                });
                               },
-                              switchRepresentation: 'checkbox',
+                              child: const Text('Alle auswählen'),
                             ),
-                          )
-                          .toList(),
-                    ),
+                          ),
+                          ...choosableItems
+                              .map(
+                                (item) => YustSwitch(
+                                  label: getItemLabel(item ?? ''),
+                                  value: newItemIds
+                                      .contains(getItemId(item) ?? ''),
+                                  onChanged: (value) {
+                                    if (value) {
+                                      setState(() {
+                                        newItemIds.add(getItemId(item) ?? '');
+                                      });
+                                    } else {
+                                      setState(() {
+                                        newItemIds
+                                            .remove(getItemId(item) ?? '');
+                                      });
+                                    }
+                                  },
+                                  switchRepresentation: 'checkbox',
+                                ),
+                              )
+                              .toList(),
+                        ]),
                   ),
                 ),
                 actions: [
@@ -278,7 +296,11 @@ class YustAlertService {
           );
         });
     if (isAborted) {
-      return priorItemIds;
+      if (returnPriorItems) {
+        return priorItemIds;
+      } else {
+        return [];
+      }
     } else {
       return newItemIds;
     }
@@ -291,5 +313,11 @@ class YustAlertService {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
     ));
+  }
+
+  Future<T?> showSearchWithoutContext<T>(SearchDelegate<T> delegate) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showSearch<T>(context: context, delegate: delegate);
   }
 }
