@@ -55,7 +55,7 @@ class YustTextField extends StatefulWidget {
     this.readOnly = false,
     this.obscureText = false,
     this.autofocus = false,
-    this.hideKeyboardOnAutofocus = true,
+    this.hideKeyboardOnAutofocus = false,
     this.focusNode,
     this.style = YustInputStyle.normal,
     this.divider = true,
@@ -117,7 +117,7 @@ class _YustTextFieldState extends State<YustTextField> {
         }
       }
     });
-    if (widget.hideKeyboardOnAutofocus) {
+    if (widget.autofocus && widget.hideKeyboardOnAutofocus) {
       Future.delayed(
         const Duration(),
         () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
