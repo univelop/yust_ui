@@ -14,7 +14,7 @@ class YustAccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return YustDocBuilder<YustUser>(
       modelSetup: Yust.userSetup,
-      id: Yust.authService.currUserId,
+      id: Yust.authService.getCurrentUserId(),
       builder: (user, insights, context) {
         if (user == null) {
           return const Scaffold(

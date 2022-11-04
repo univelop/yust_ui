@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 
 import '../widgets/yust_doc_builder.dart';
@@ -27,7 +27,7 @@ class YustAccountEditScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Persönliche Daten')),
         body: YustDocBuilder<YustUser>(
             modelSetup: Yust.userSetup,
-            id: Yust.authService.currUserId,
+            id: Yust.authService.getCurrentUserId(),
             builder: (user, insights, context) {
               if (user == null) {
                 return const Center(
