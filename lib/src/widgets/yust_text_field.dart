@@ -24,7 +24,7 @@ class YustTextField extends StatefulWidget {
   final bool obscureText;
   final bool autofocus;
   final bool hideKeyboardOnAutofocus;
-  final bool slimmDesign;
+  final bool slimDesign;
   final FocusNode? focusNode;
   final YustInputStyle? style;
   final bool divider;
@@ -55,7 +55,7 @@ class YustTextField extends StatefulWidget {
     this.showSelected = true,
     this.autocorrect = true,
     this.readOnly = false,
-    this.slimmDesign = false,
+    this.slimDesign = false,
     this.obscureText = false,
     this.autofocus = false,
     this.hideKeyboardOnAutofocus = false,
@@ -178,7 +178,7 @@ class _YustTextFieldState extends State<YustTextField> {
           TextPosition(offset: _controller.text.length));
     }
 
-    if (widget.slimmDesign) return _buildTextField();
+    if (widget.slimDesign) return _buildTextField();
 
     return Column(
       children: [
