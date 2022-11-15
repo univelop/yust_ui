@@ -129,13 +129,17 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   void _pickTime(BuildContext context, String title) async {
     YustUi.helpers.unfocusCurrent();
-    final dateTime = Yust.helpers.localNow(
-        year: 1970,
-        month: 1,
-        day: 1,
+    final value = widget.value ?? DateTime.utc(1970);
+
+    final localValue = Yust.helpers.utcToLocal(value);
+    final dateTimeUtc = Yust.helpers.localNow(
+        year: localValue.year,
+        month: localValue.month,
+        day: localValue.day,
         second: 0,
         microsecond: 0,
         millisecond: 0);
+    final dateTime = Yust.helpers.utcToLocal(dateTimeUtc);
     final initialTime = TimeOfDay.fromDateTime(dateTime);
     final selectedTime = await showTimePicker(
       context: context,
@@ -145,29 +149,33 @@ class _YustTimePickerState extends State<YustTimePicker> {
       helpText: title,
     );
     if (selectedTime != null) {
-      _setTime(DateTime(dateTime.year, dateTime.month, dateTime.day,
-          selectedTime.hour, selectedTime.minute, 0, 0, 0));
+      final changeDateTime = DateTime(dateTime.year, dateTime.month,
+          dateTime.day, selectedTime.hour, selectedTime.minute, 0, 0, 0);
+      _setTime(Yust.helpers.tryLocalToUtc(changeDateTime));
     }
   }
 
-  void _setTimeString(String value) {
-    if (value.length == 5) {
+  void _setTimeString(String txt) {
+    if (txt.length == 5) {
       var time = int.tryParse(_maskFormatter!.getUnmaskedText())!;
       if (time == 2400) {
         time == 0;
       }
       var hour = time ~/ 100 >= 24 ? 0 : time ~/ 100;
       var minute = time % 100 >= 60 ? 0 : time % 100;
-      var dateTime = DateTime(1970, 1, 1, hour, minute, 0, 0, 0);
+      final value = widget.value ?? DateTime(1970);
+      var dateTime =
+          DateTime(value.year, value.month, value.day, hour, minute, 0, 0, 0);
       widget.onChanged!(Yust.helpers.localToUtc(dateTime));
     }
   }
 
+  // Make sure the [dateTime] is in utc
   void _setTime(DateTime? dateTime) {
     setState(() {
       _maskFormatter!.clear();
       _controller!.text = Yust.helpers.formatTime(dateTime);
     });
-    widget.onChanged!(Yust.helpers.tryLocalToUtc(dateTime));
+    widget.onChanged!(dateTime);
   }
 }
