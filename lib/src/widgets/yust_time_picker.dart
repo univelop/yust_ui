@@ -145,7 +145,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
       helpText: title,
     );
     if (selectedTime != null) {
-      _setTime(DateTime.utc(dateTime.year, dateTime.month, dateTime.day,
+      _setTime(DateTime(dateTime.year, dateTime.month, dateTime.day,
           selectedTime.hour, selectedTime.minute, 0, 0, 0));
     }
   }
@@ -158,8 +158,8 @@ class _YustTimePickerState extends State<YustTimePicker> {
       }
       var hour = time ~/ 100 >= 24 ? 0 : time ~/ 100;
       var minute = time % 100 >= 60 ? 0 : time % 100;
-      var dateTime = DateTime.utc(1970, 1, 1, hour, minute, 0, 0, 0);
-      widget.onChanged!(dateTime);
+      var dateTime = DateTime(1970, 1, 1, hour, minute, 0, 0, 0);
+      widget.onChanged!(Yust.helpers.localToUtc(dateTime));
     }
   }
 
@@ -168,6 +168,6 @@ class _YustTimePickerState extends State<YustTimePicker> {
       _maskFormatter!.clear();
       _controller!.text = Yust.helpers.formatTime(dateTime);
     });
-    widget.onChanged!(dateTime);
+    widget.onChanged!(Yust.helpers.tryLocalToUtc(dateTime));
   }
 }

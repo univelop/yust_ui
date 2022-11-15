@@ -50,7 +50,7 @@ class YustDatePicker extends StatelessWidget {
         hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: dateTime!,
+      initialDate: dateTime,
       firstDate: DateTime.utc(1900),
       lastDate: DateTime.utc(2100),
       locale: const Locale('de', 'DE'),
