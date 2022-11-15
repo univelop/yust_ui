@@ -96,7 +96,10 @@ class _YustTimePickerState extends State<YustTimePicker> {
             readOnly: widget.readOnly,
             keyboardType: kIsWeb
                 ? null
-                : const TextInputType.numberWithOptions(decimal: true, signed: true),
+                : const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
           ),
         ),
         if (_controller!.text != '' &&
@@ -126,8 +129,8 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   void _pickTime(BuildContext context, String title) async {
     YustUi.helpers.unfocusCurrent();
-    final now = DateTime.now();
-    var dateTime = DateTime(1970, 1, 1, now.hour, now.minute, 0, 0, 0);
+    final now = Yust.helpers.nowLocal();
+    var dateTime = DateTime.utc(1970, 1, 1, now.hour, now.minute, 0, 0, 0);
     final initialTime = TimeOfDay.fromDateTime(dateTime);
     final selectedTime = await showTimePicker(
       context: context,
@@ -137,7 +140,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
       helpText: title,
     );
     if (selectedTime != null) {
-      dateTime = DateTime(dateTime.year, dateTime.month, dateTime.day,
+      dateTime = DateTime.utc(dateTime.year, dateTime.month, dateTime.day,
           selectedTime.hour, selectedTime.minute, 0, 0, 0);
       _setTime(dateTime);
     }
@@ -151,7 +154,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
       }
       var hour = time ~/ 100 >= 24 ? 0 : time ~/ 100;
       var minute = time % 100 >= 60 ? 0 : time % 100;
-      var dateTime = DateTime(1970, 1, 1, hour, minute, 0, 0, 0);
+      var dateTime = DateTime.utc(1970, 1, 1, hour, minute, 0, 0, 0);
       widget.onChanged!(dateTime);
     }
   }

@@ -1038,6 +1038,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.16"
+  timezone:
+    dependency: transitive
+    description:
+      name: timezone
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.9.0"
   typed_data:
     dependency: transitive
     description:
@@ -1188,9 +1195,11 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      name: yust
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "feature/timezone-support"
+      resolved-ref: "880f90b80bf9692757047f30317f9055510f3937"
+      url: "https://github.com/univelop/yust.git"
+    source: git
     version: "3.3.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
