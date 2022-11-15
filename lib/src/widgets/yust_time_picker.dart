@@ -129,7 +129,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   void _pickTime(BuildContext context, String title) async {
     YustUi.helpers.unfocusCurrent();
-    final dateTime = YustDateTime.localNow(
+    final dateTime = Yust.helpers.localNow(
         year: 1970,
         month: 1,
         day: 1,
@@ -145,7 +145,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
       helpText: title,
     );
     if (selectedTime != null) {
-      _setTime(YustDateTime(dateTime.year, dateTime.month, dateTime.day,
+      _setTime(DateTime.utc(dateTime.year, dateTime.month, dateTime.day,
           selectedTime.hour, selectedTime.minute, 0, 0, 0));
     }
   }
@@ -158,7 +158,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
       }
       var hour = time ~/ 100 >= 24 ? 0 : time ~/ 100;
       var minute = time % 100 >= 60 ? 0 : time % 100;
-      var dateTime = YustDateTime(1970, 1, 1, hour, minute, 0, 0, 0);
+      var dateTime = DateTime.utc(1970, 1, 1, hour, minute, 0, 0, 0);
       widget.onChanged!(dateTime);
     }
   }
