@@ -45,19 +45,19 @@ class YustDatePicker extends StatelessWidget {
 
   void pickDate(BuildContext context) async {
     YustUi.helpers.unfocusCurrent();
-    var dateTime = YustDateTime.tryFromUtc(value)?.toLocal();
-    dateTime ??= YustDateTime.localNow(
+    var dateTime = Yust.helpers.tryUtcToLocal(value);
+    dateTime ??= Yust.helpers.localNow(
         hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: dateTime!,
-      firstDate: YustDateTime(1900),
-      lastDate: YustDateTime(2100),
+      firstDate: DateTime.utc(1900),
+      lastDate: DateTime.utc(2100),
       locale: const Locale('de', 'DE'),
-      currentDate: YustDateTime.localNow(),
+      currentDate: Yust.helpers.localNow(),
     );
     if (selectedDate != null) {
-      final newDateTime = YustDateTime.local(
+      final newDateTime = DateTime(
         selectedDate.year,
         selectedDate.month,
         selectedDate.day,
@@ -66,7 +66,7 @@ class YustDatePicker extends StatelessWidget {
         dateTime.second,
         dateTime.millisecond,
       );
-      onChanged!(newDateTime);
+      onChanged!(Yust.helpers.localToUtc(newDateTime));
     }
   }
 }
