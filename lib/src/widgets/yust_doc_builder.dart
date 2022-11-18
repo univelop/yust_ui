@@ -39,12 +39,12 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
   void initStream() {
     if (widget.id != null) {
-      _docStream = Yust.databaseService.getDoc<T>(
+      _docStream = Yust.databaseService.getStream<T>(
         widget.modelSetup,
         widget.id!,
       );
     } else {
-      _docStream = Yust.databaseService.getFirstDoc<T>(
+      _docStream = Yust.databaseService.getFirstStream<T>(
         widget.modelSetup,
         filters: widget.filters,
         orderBy: widget.orderBy,
