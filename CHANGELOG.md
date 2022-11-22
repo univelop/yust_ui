@@ -1,3 +1,9 @@
+## 3.3.2 - 2022-11-22
+
+-   Improve multiple select
+-   Improve date time handling and timezones
+-   Fix issues
+
 ## 3.2.0 - 2022-10-09
 
 -   Add drawing screen
