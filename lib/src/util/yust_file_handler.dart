@@ -10,7 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -259,7 +259,7 @@ class YustFileHandler {
           await Dio().download(yustFile.url!, filePath);
           await EasyLoading.dismiss();
         }
-        var result = await OpenFile.open(filePath);
+        var result = await OpenFilex.open(filePath);
         if (result.type != ResultType.done) {
           await _launchBrowser(yustFile);
         }
