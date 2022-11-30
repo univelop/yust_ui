@@ -226,7 +226,7 @@ class YustFilePickerState extends State<YustFilePicker> {
                         Text(
                           file.getModifiedAt(),
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ])
                 : Text(isBroken ? 'Fehlerhafte Datei' : file.name!,
