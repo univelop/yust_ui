@@ -157,7 +157,6 @@ class YustFileHandler {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
       throw ('The file needs a name and a storageFolderPath to perform an upload!');
     }
-    yustFile.modifiedAt = Yust.helpers.utcNow();
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
   }
@@ -375,6 +374,8 @@ class YustFileHandler {
     var fileData = _getFileData(cachedFile.name!, attribute);
 
     fileData['name'] = cachedFile.name;
+    //modifiedAt is not cashed. So if cachedFile.modifiedAt==null, then modifiedAt will be set again
+    cachedFile.modifiedAt ??= Yust.helpers.utcNow();
     fileData['modifiedAt'] = cachedFile.modifiedAt;
     fileData['url'] = url;
     fileData['hash'] = hash;
