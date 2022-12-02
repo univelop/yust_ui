@@ -206,7 +206,10 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildFile(BuildContext context, YustFile file) {
     final isBroken = file.name == null ||
-        (file.cached && file.bytes == null && file.file == null) ||
+        (file.cached &&
+            file.bytes == null &&
+            file.file == null &&
+            file.devicePath == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
     final shouldShowDate =
         !isBroken && widget.showModifiedAt && file.modifiedAt != null;
