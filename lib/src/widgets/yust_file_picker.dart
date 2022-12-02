@@ -299,6 +299,7 @@ class YustFilePickerState extends State<YustFilePicker> {
   }) async {
     final newYustFile = YustFile(
       name: name,
+      modifiedAt: Yust.helpers.utcNow(),
       file: file,
       bytes: bytes,
       storageFolderPath: widget.storageFolderPath,
