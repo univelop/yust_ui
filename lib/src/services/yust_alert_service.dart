@@ -68,6 +68,7 @@ class YustAlertService {
     String? placeholder,
     String action, {
     String initialText = '',
+    AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
     /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
@@ -87,8 +88,7 @@ class YustAlertService {
             content: TextFormField(
               controller: controller,
               decoration: InputDecoration(hintText: placeholder),
-              autovalidateMode:
-                  validator == null ? null : AutovalidateMode.onUserInteraction,
+              autovalidateMode: validator == null ? null : validateMode,
               validator: validator == null
                   ? null
                   : (value) => validator(value!.trim()),
