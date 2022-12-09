@@ -25,6 +25,7 @@ class YustTextField extends StatefulWidget {
   final bool autofocus;
   final bool hideKeyboardOnAutofocus;
   final bool slimDesign;
+  final bool notTrim;
   final FocusNode? focusNode;
   final YustInputStyle? style;
   final bool divider;
@@ -58,6 +59,7 @@ class YustTextField extends StatefulWidget {
     this.slimDesign = false,
     this.obscureText = false,
     this.autofocus = false,
+    this.notTrim = false,
     this.hideKeyboardOnAutofocus = false,
     this.focusNode,
     this.style = YustInputStyle.normal,
@@ -87,7 +89,8 @@ class _YustTextFieldState extends State<YustTextField> {
     if (_valueDidChange == false) return;
     if (widget.onEditingComplete == null) return;
 
-    final textFieldText = _controller.value.text.trim();
+    final textFieldText =
+        widget.notTrim ? _controller.value.text : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null || widget.validator!(textFieldValue) == null) {
@@ -111,7 +114,9 @@ class _YustTextFieldState extends State<YustTextField> {
     _focusNode.addListener(() {
       // if (!_focusNode.hasFocus) onUnfocus();
       if (!_focusNode.hasFocus && widget.onEditingComplete != null) {
-        final textFieldText = _controller.value.text.trim();
+        final textFieldText = widget.notTrim
+            ? _controller.value.text
+            : _controller.value.text.trim();
         final textFieldValue = textFieldText == '' ? null : textFieldText;
         if (widget.validator == null ||
             widget.validator!(textFieldValue) == null) {
@@ -230,7 +235,8 @@ class _YustTextFieldState extends State<YustTextField> {
               : TextInputAction.next),
       onChanged: widget.onChanged == null
           ? null
-          : (value) => widget.onChanged!(value == '' ? null : value.trim()),
+          : (value) => widget.onChanged!(
+              value == '' ? null : (widget.notTrim ? value : value.trim())),
       onTap: widget.onTap,
       autocorrect: widget.autocorrect,
       readOnly: widget.readOnly,
