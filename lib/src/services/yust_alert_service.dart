@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/yust_select.dart';
@@ -213,91 +214,82 @@ class YustAlertService {
   /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
   Future<List<String>> showCheckListDialog({
     required BuildContext context,
-    required List<dynamic> choosableItems,
-    required List<String> priorItemIds,
-    required String? Function(dynamic) getItemLabel,
-    required String? Function(dynamic) getItemId,
+    required List<String> optionValues,
+    required List<String> priorOptionValues,
+    required List<String> optionLabels,
     bool returnPriorItems = true,
     String? title,
   }) async {
-    final newItemIds = List<String>.from(priorItemIds);
+    final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
-    await showDialog<dynamic>(
+    await showDialog<List<String>>(
         context: context,
         builder: (context) {
           return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
+            builder: ((context, setState1) {
+              return SimpleDialog(
                 title: Text(title ?? 'Pflichtfelder'),
-                content: SizedBox(
-                  width: 300,
-                  height: 500,
-                  child: SingleChildScrollView(
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () {
-                                newItemIds.clear();
-                                setState(() {
-                                  newItemIds.addAll(choosableItems
-                                      .map((item) => getItemId(item) ?? ''));
-                                });
-                              },
-                              child: const Text('Alle auswählen'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () {
+                          newItemIds.clear();
+                          setState1(() {
+                            newItemIds.addAll(optionValues);
+                          });
+                        },
+                        child: const Text('Alle auswählen'),
+                      ),
+                    ),
+                  ),
+                  ...optionValues
+                      .mapIndexed(
+                        (int index, dynamic optionValue) => StatefulBuilder(
+                          builder: (_, StateSetter setState) =>
+                              CheckboxListTile(
+                            title: Text(optionLabels[index]),
+                            value: newItemIds.contains(optionValue),
+                            controlAffinity: ListTileControlAffinity.platform,
+                            onChanged: (value) => setState(
+                              () => (value ?? false)
+                                  ? newItemIds.add(optionValue)
+                                  : newItemIds.remove(optionValue),
                             ),
                           ),
-                          ...choosableItems
-                              .map(
-                                (item) => YustSwitch(
-                                  label: getItemLabel(item ?? ''),
-                                  value: newItemIds
-                                      .contains(getItemId(item) ?? ''),
-                                  onChanged: (value) {
-                                    if (value) {
-                                      setState(() {
-                                        newItemIds.add(getItemId(item) ?? '');
-                                      });
-                                    } else {
-                                      setState(() {
-                                        newItemIds
-                                            .remove(getItemId(item) ?? '');
-                                      });
-                                    }
-                                  },
-                                  switchRepresentation: 'checkbox',
-                                ),
-                              )
-                              .toList(),
-                        ]),
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      isAborted = false;
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('OK'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      isAborted = true;
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Abbrechen'),
-                  ),
+                        ),
+                      )
+                      .toList(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          isAborted = false;
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('OK'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          isAborted = true;
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Abbrechen'),
+                      ),
+                    ],
+                  )
                 ],
               );
-            },
+            }),
           );
         });
+
     if (isAborted) {
       if (returnPriorItems) {
-        return priorItemIds;
+        return priorOptionValues;
       } else {
         return [];
       }
