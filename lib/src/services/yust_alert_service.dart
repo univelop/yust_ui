@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
 import '../widgets/yust_select.dart';
 import '../widgets/yust_switch.dart';
@@ -226,7 +227,7 @@ class YustAlertService {
         context: context,
         builder: (context) {
           return StatefulBuilder(
-            builder: ((context, setState1) {
+            builder: ((context, setState) {
               return SimpleDialog(
                 title: Text(title ?? 'Pflichtfelder'),
                 children: [
@@ -237,7 +238,7 @@ class YustAlertService {
                       child: TextButton(
                         onPressed: () {
                           newItemIds.clear();
-                          setState1(() {
+                          setState(() {
                             newItemIds.addAll(optionValues);
                           });
                         },
@@ -245,23 +246,11 @@ class YustAlertService {
                       ),
                     ),
                   ),
-                  ...optionValues
-                      .mapIndexed(
-                        (int index, dynamic optionValue) => StatefulBuilder(
-                          builder: (_, StateSetter setState) =>
-                              CheckboxListTile(
-                            title: Text(optionLabels[index]),
-                            value: newItemIds.contains(optionValue),
-                            controlAffinity: ListTileControlAffinity.platform,
-                            onChanged: (value) => setState(
-                              () => (value ?? false)
-                                  ? newItemIds.add(optionValue)
-                                  : newItemIds.remove(optionValue),
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+                  YustMultiSelectComponent<String>(
+                    optionValues: optionValues,
+                    optionLabels: optionLabels,
+                    selectedValues: newItemIds,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
