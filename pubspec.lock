@@ -1202,7 +1202,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "5848db2a95a0f6c405cf330a34d4dbcffb07359c"
+      resolved-ref: "3f60d57bd87d5065ba6e1a4f27f2375bb1af7010"
       url: "https://github.com/univelop/yust.git"
     source: git
     version: "3.3.2"
