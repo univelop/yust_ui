@@ -227,7 +227,8 @@ class YustFilePickerState extends State<YustFilePicker> {
                         // file.name is not null because shouldShowDate == true
                         Text(file.name!, overflow: TextOverflow.ellipsis),
                         Text(
-                          file.getModifiedAt(),
+                          YustHelpers().formatDate(file.modifiedAt,
+                              format: 'dd.MM.yyyy HH:mm'),
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: Colors.grey),
                         ),
