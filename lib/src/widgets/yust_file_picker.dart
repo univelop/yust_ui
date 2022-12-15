@@ -35,9 +35,12 @@ class YustFilePicker extends StatefulWidget {
 
   final bool readOnly;
 
+  final bool showModifiedAt;
+
   const YustFilePicker({
     Key? key,
     this.label,
+    this.showModifiedAt = false,
     required this.files,
     required this.storageFolderPath,
     this.linkedDocPath,
@@ -203,8 +206,13 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Widget _buildFile(BuildContext context, YustFile file) {
     final isBroken = file.name == null ||
-        (file.cached && file.bytes == null && file.file == null) ||
+        (file.cached &&
+            file.bytes == null &&
+            file.file == null &&
+            file.devicePath == null) ||
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
+    final shouldShowDate =
+        !isBroken && widget.showModifiedAt && file.modifiedAt != null;
     return ListTile(
       title: Row(
         mainAxisSize: MainAxisSize.min,
@@ -212,8 +220,21 @@ class YustFilePickerState extends State<YustFilePicker> {
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(isBroken ? 'Fehlerhafte Datei' : file.name!,
-                overflow: TextOverflow.ellipsis),
+            child: shouldShowDate
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                        // file.name is not null because shouldShowDate == true
+                        Text(file.name!, overflow: TextOverflow.ellipsis),
+                        Text(
+                          YustHelpers().formatDate(file.modifiedAt,
+                              format: 'dd.MM.yyyy HH:mm'),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ])
+                : Text(isBroken ? 'Fehlerhafte Datei' : file.name!,
+                    overflow: TextOverflow.ellipsis),
           ),
           _buildCachedIndicator(file),
         ],
@@ -282,6 +303,7 @@ class YustFilePickerState extends State<YustFilePicker> {
   }) async {
     final newYustFile = YustFile(
       name: name,
+      modifiedAt: Yust.helpers.utcNow(),
       file: file,
       bytes: bytes,
       storageFolderPath: widget.storageFolderPath,

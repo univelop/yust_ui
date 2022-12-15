@@ -157,7 +157,6 @@ class YustFileHandler {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
       throw ('The file needs a name and a storageFolderPath to perform an upload!');
     }
-
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
   }
@@ -375,6 +374,7 @@ class YustFileHandler {
     var fileData = _getFileData(cachedFile.name!, attribute);
 
     fileData['name'] = cachedFile.name;
+    fileData['modifiedAt'] = cachedFile.modifiedAt;
     fileData['url'] = url;
     fileData['hash'] = hash;
 
