@@ -1,9 +1,7 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
 import '../widgets/yust_select.dart';
-import '../widgets/yust_switch.dart';
 
 class YustAlertService {
   final GlobalKey<NavigatorState> navStateKey;
