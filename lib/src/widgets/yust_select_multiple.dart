@@ -59,9 +59,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
   void _selectValue(BuildContext context) async {
     YustUi.helpers.unfocusCurrent();
     if (onSelected == null) return;
-
-    final selectedValues = values.toSet();
-
+    final selectedValues = values.toSet().toList(); //remove duplicates
     await showDialog<List<T>>(
         context: context,
         builder: (BuildContext context) {
@@ -71,7 +69,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
               YustMultiSelectComponent(
                 optionValues: optionValues,
                 optionLabels: optionLabels,
-                selectedValues: values,
+                selectedValues: selectedValues,
               ),
               Align(
                 alignment: Alignment.center,
@@ -88,6 +86,6 @@ class YustSelectMultiple<T> extends StatelessWidget {
           );
         });
 
-    onSelected!(values);
+    onSelected!(selectedValues);
   }
 }
