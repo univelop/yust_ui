@@ -1,3 +1,8 @@
+## 3.4.0 - 2022-12-16
+
+-   Add modifiedAt to YustFilePicker
+-   Fix issues
+
 ## 3.3.2 - 2022-11-22
 
 -   Improve multiple select
