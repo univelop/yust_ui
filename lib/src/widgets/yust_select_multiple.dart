@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'package:collection/collection.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
+
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
