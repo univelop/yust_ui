@@ -1200,12 +1200,10 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: "3f60d57bd87d5065ba6e1a4f27f2375bb1af7010"
-      url: "https://github.com/univelop/yust.git"
-    source: git
-    version: "3.3.2"
+      path: "../yust"
+      relative: true
+    source: path
+    version: "3.4.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
   flutter: ">=3.0.0"
