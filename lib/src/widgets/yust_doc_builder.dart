@@ -12,7 +12,7 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
   final YustDocSetup<T> modelSetup;
   final String? id;
   final List<YustFilter>? filters;
-  final List<String>? orderBy;
+  final List<YustOrderBy>? orderBy;
   final bool showLoadingSpinner;
   final bool createIfNull;
   final Widget Function(T?, YustBuilderInsights, BuildContext) builder;
@@ -39,15 +39,15 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
   void initStream() {
     if (widget.id != null) {
-      _docStream = Yust.databaseService.getDoc<T>(
+      _docStream = Yust.databaseService.getStream<T>(
         widget.modelSetup,
         widget.id!,
       );
     } else {
-      _docStream = Yust.databaseService.getFirstDoc<T>(
+      _docStream = Yust.databaseService.getFirstStream<T>(
         widget.modelSetup,
         filters: widget.filters,
-        orderByList: widget.orderBy,
+        orderBy: widget.orderBy,
       );
     }
   }
@@ -57,8 +57,10 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
     if (widget.modelSetup != oldWidget.modelSetup ||
         widget.id != oldWidget.id ||
-        !const ListEquality<dynamic>().equals(widget.filters, oldWidget.filters) ||
-        !const ListEquality<dynamic>().equals(widget.orderBy, oldWidget.orderBy)) {
+        !const ListEquality<dynamic>()
+            .equals(widget.filters, oldWidget.filters) ||
+        !const ListEquality<dynamic>()
+            .equals(widget.orderBy, oldWidget.orderBy)) {
       updated = true;
       initStream();
     }
