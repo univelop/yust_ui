@@ -7,7 +7,7 @@ import 'package:yust/yust.dart';
 class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final YustDocSetup<T> modelSetup;
   final Widget Function(BuildContext, T?, int) listItemBuilder;
-  final List<String> orderBy;
+  final List<YustOrderBy> orderBy;
   final List<YustFilter>? filters;
   final bool Function(T doc)? hideItem;
   final ScrollController? scrollController;
@@ -31,7 +31,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final query = Yust.databaseService
-        .getQuery(modelSetup, filters: filters, orderByList: orderBy) as Query;
+        .getQuery(modelSetup, filters: filters, orderBy: orderBy) as Query;
 
     return PaginateFirestore(
       key: key,
