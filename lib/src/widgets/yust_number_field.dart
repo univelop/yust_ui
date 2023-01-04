@@ -29,11 +29,13 @@ class YustNumberField extends StatelessWidget {
   final bool hideKeyboardOnAutofocus;
   final FormFieldValidator<num?>? validator;
   final bool divider;
+  final TextStyle? valueStyle;
 
   const YustNumberField({
     Key? key,
     this.label,
     this.value,
+    this.valueStyle,
     this.decimalCount,
     this.thousandsSeparator = false,
     this.onChanged,
@@ -56,6 +58,7 @@ class YustNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     return YustTextField(
       style: style,
+      textStyle: valueStyle,
       label: label,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,

@@ -13,6 +13,7 @@ class YustListTile extends StatelessWidget {
   final Widget? suffixChild;
   final TapCallback? onTap;
   final YustInputStyle style;
+  final TextStyle? labelStyle;
   final Widget? prefixIcon;
   final Widget? below;
   final bool divider;
@@ -27,6 +28,7 @@ class YustListTile extends StatelessWidget {
     this.suffixChild,
     this.onTap,
     this.style = YustInputStyle.normal,
+    this.labelStyle,
     this.prefixIcon,
     this.below,
     this.divider = true,
@@ -68,11 +70,12 @@ class YustListTile extends StatelessWidget {
     }
     final text = Text(
       label ?? '',
-      style: (heading || largeHeading)
-          ? TextStyle(
-              fontSize: largeHeading ? 24 : 20,
-              color: Theme.of(context).primaryColor)
-          : null,
+      style: labelStyle ??
+          ((heading || largeHeading)
+              ? TextStyle(
+                  fontSize: largeHeading ? 24 : 20,
+                  color: Theme.of(context).primaryColor)
+              : null),
     );
 
     return ListTile(
