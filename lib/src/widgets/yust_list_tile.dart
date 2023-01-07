@@ -8,11 +8,17 @@ class YustListTile extends StatelessWidget {
   /// If navigate is set, the SuffixChild will display a Navigation Icon
   final bool navigate;
   final bool center;
+
+  /// If labelStyle is set, it will override heading
   final bool heading;
+
+  /// If labelStyle is set, it will override largeHeading
   final bool largeHeading;
   final Widget? suffixChild;
   final TapCallback? onTap;
   final YustInputStyle style;
+
+  /// If labelStyle is set, it will override heading and largeHeading
   final TextStyle? labelStyle;
   final Widget? prefixIcon;
   final Widget? below;
