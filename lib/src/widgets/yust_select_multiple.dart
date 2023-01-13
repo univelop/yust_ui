@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
-import 'package:collection/collection.dart';
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
@@ -58,43 +58,33 @@ class YustSelectMultiple<T> extends StatelessWidget {
   void _selectValue(BuildContext context) async {
     YustUi.helpers.unfocusCurrent();
     if (onSelected == null) return;
-
-    final selectedValues = values.toSet();
-
+    final selectedValues = values.toSet().toList(); //remove duplicates
     await showDialog<List<T>>(
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
             title: (label == null) ? null : Text('$label wählen'),
             children: [
-              ...optionValues
-                  .mapIndexed((int index, T optionValue) => StatefulBuilder(
-                        builder: (_, StateSetter setState) => CheckboxListTile(
-                            title: Text(
-                                optionLabels[index]), // Displays the option
-                            value: selectedValues.contains(
-                                optionValue), // Displays checked or unchecked value
-                            controlAffinity: ListTileControlAffinity.platform,
-                            onChanged: (value) => setState(() =>
-                                (value ?? false)
-                                    ? selectedValues.add(optionValue)
-                                    : selectedValues.remove(optionValue))),
-                      ))
-                  .toList(),
+              YustMultiSelectComponent(
+                optionValues: optionValues,
+                optionLabels: optionLabels,
+                selectedValues: selectedValues,
+              ),
               Align(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(
-                      style: const ButtonStyle(
-                          visualDensity: VisualDensity.comfortable),
-                      child: const Text('OK'),
-                      onPressed: () {
-                        // Close the Dialog & return selectedItems
-                        Navigator.pop(context);
-                      }))
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                    style: const ButtonStyle(
+                        visualDensity: VisualDensity.comfortable),
+                    child: const Text('OK'),
+                    onPressed: () {
+                      // Close the Dialog & return selectedItems
+                      Navigator.pop(context);
+                    }),
+              ),
             ],
           );
         });
 
-    onSelected!(selectedValues.toList());
+    onSelected!(selectedValues);
   }
 }
