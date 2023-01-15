@@ -63,7 +63,6 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   void _selectValue(BuildContext context) async {
-    YustUi.helpers.unfocusCurrent();
     if (onSelected == null) return;
 
     var selectedValue = await showDialog<T>(
