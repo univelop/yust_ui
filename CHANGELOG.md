@@ -1,3 +1,9 @@
+## 3.5.0 - 2023-01-16
+
+-   Improve multi select component
+-   Improve text field
+-   Fix issues
+
 ## 3.4.0 - 2022-12-16
 
 -   Add modifiedAt to YustFilePicker
