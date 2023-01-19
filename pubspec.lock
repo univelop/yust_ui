@@ -1200,9 +1200,11 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      name: yust
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: eab291e26fd32ccc84fe9d134a921628813fff91
+      url: "https://github.com/univelop/yust.git"
+    source: git
     version: "3.5.0"
 sdks:
   dart: ">=2.17.5 <3.0.0"
