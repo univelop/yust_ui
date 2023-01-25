@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
 class YustMultiSelectComponent<T> extends StatelessWidget {
+  final String? label;
   final List<T> optionValues;
   final List<String> optionLabels;
   final List<T> selectedValues;
@@ -12,6 +13,7 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
   final String noOptionsText;
   YustMultiSelectComponent({
     Key? key,
+    this.label,
     required this.optionValues,
     required this.optionLabels,
     List<T>? selectedValues,
@@ -32,6 +34,7 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
     return StatefulBuilder(
       builder: (_, StateSetter setState) => Column(
         children: [
+          if (label != null) Text(label!),
           ...optionValues
               .mapIndexed(
                 (int index, T optionValue) => CheckboxListTile(
