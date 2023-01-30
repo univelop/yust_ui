@@ -280,6 +280,10 @@ class YustFileHandler {
         .toList();
   }
 
+  void addFileToFileHandler(YustFile file) {
+    _yustFiles.add(file);
+  }
+
   /// works for cacheable and non-cacheable files
   void _mergeIntoYustFiles(List<YustFile> yustFiles, List<YustFile> newFiles) {
     for (final newFile in newFiles) {
