@@ -157,7 +157,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryIconTheme.color,
-                foregroundColor: Theme.of(context).backgroundColor,
+                foregroundColor: Theme.of(context).colorScheme.background,
               ),
               onPressed: () {
                 _currentImageNumber += widget.imageCount;
@@ -300,8 +300,8 @@ class YustImagePickerState extends State<YustImagePicker> {
                   setState(() {});
                 }
               } catch (e) {
-                await YustUi.alertService.showAlert('Ups',
-                    'Das Bild kann gerade nicht gelöscht werden: \n${e.toString()}');
+                await YustUi.alertService.showAlert(
+                    'Ups', 'Das Bild kann gerade nicht gelöscht werden: \n$e');
               }
             }
           },
@@ -346,16 +346,15 @@ class YustImagePickerState extends State<YustImagePicker> {
             // than maxHeight/-Width
             imageQuality: quality,
           );
-          if (images != null) {
-            for (final image in images) {
-              await uploadFile(
-                path: image.path,
-                file: File(image.path),
-                // Because of the reason stated above,
-                // we need to do the resizing ourself
-                resize: true,
-              );
-            }
+
+          for (final image in images) {
+            await uploadFile(
+              path: image.path,
+              file: File(image.path),
+              // Because of the reason stated above,
+              // we need to do the resizing ourself
+              resize: true,
+            );
           }
         } else {
           final image = await picker.pickImage(

@@ -353,8 +353,8 @@ class YustFilePickerState extends State<YustFilePicker> {
           setState(() {});
         }
       } catch (e) {
-        await YustUi.alertService.showAlert(
-            'Ups', 'Die Datei kann nicht gelöscht werden. ${e.toString()}');
+        await YustUi.alertService
+            .showAlert('Ups', 'Die Datei kann nicht gelöscht werden. $e');
       }
     }
   }

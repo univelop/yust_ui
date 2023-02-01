@@ -62,6 +62,9 @@ class YustFileHelpers {
         final sharePositionOrigin = buttonLocation.height >= size.height
             ? centerLocation
             : buttonLocation;
+        // ignore: todo
+        // TODO: use shareXFiles
+        // ignore: deprecated_member_use
         await Share.shareFiles(
           [file.path],
           subject: name,
@@ -95,8 +98,8 @@ class YustFileHelpers {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(
-          'Ups', 'Die Datei kann nicht geöffnet werden. ${e.toString()}');
+      await YustUi.alertService
+          .showAlert('Ups', 'Die Datei kann nicht geöffnet werden. $e');
     }
   }
 
