@@ -215,8 +215,8 @@ class _YustTextFieldState extends State<YustTextField> {
         labelStyle: widget.showSelected
             ? null
             : TextStyle(
-                color:
-                    Theme.of(context).textTheme.caption?.color ?? Colors.black),
+                color: Theme.of(context).textTheme.bodySmall?.color ??
+                    Colors.black),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
