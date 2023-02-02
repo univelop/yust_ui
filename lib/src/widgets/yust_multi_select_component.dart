@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
 class YustMultiSelectComponent<T> extends StatelessWidget {
@@ -11,6 +10,9 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
   final bool disabled;
   final bool singleSelect;
   final String noOptionsText;
+  final Function? onChanged;
+  final bool divider;
+
   YustMultiSelectComponent({
     Key? key,
     this.label,
@@ -20,6 +22,8 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
     this.noOptionsText = 'Keine Optionen vorhanden',
     this.disabled = false,
     this.singleSelect = false,
+    this.onChanged,
+    this.divider = true,
   })  : selectedValues = selectedValues ?? [],
         super(key: key);
 
@@ -34,7 +38,11 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
     return StatefulBuilder(
       builder: (_, StateSetter setState) => Column(
         children: [
-          if (label != null) Text(label!),
+          if (label != null)
+            YustListTile(
+              label: label,
+              divider: false,
+            ),
           ...optionValues
               .mapIndexed(
                 (int index, T optionValue) => CheckboxListTile(
@@ -46,10 +54,13 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
                     (value ?? false)
                         ? selectedValues.add(optionValue)
                         : selectedValues.remove(optionValue);
+                    onChanged?.call();
                   }),
                 ),
               )
               .toList(),
+          if (divider)
+            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
         ],
       ),
     );
