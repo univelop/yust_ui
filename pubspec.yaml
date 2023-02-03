@@ -9,15 +9,14 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.5.0
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust.git
-    #         ref: master
-    firebase_core: ^1.20.1
-    firebase_storage: ^10.3.5
-    firebase_storage_mocks: ^0.5.1
-    cloud_firestore: ^3.4.4
+    # yust: ^3.5.0
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: master
+    firebase_core: ^2.4.1
+    firebase_storage: ^11.0.10
+    cloud_firestore: ^4.3.1
     flutter_easyloading: ^3.0.5
     photo_view: ^0.14.0
     shared_preferences: ^2.0.3
@@ -47,3 +46,9 @@ dependencies:
 dev_dependencies:
     flutter_lints: ^2.0.1
     test: ^1.16.0
+
+dependency_overrides:
+    paginate_firestore:
+        git:
+            url: https://github.com/dock51/paginate_firestore.git
+            ref: master
