@@ -29,7 +29,8 @@ class YustFileHelpers {
   /// For the browser starts the file download.
   /// Use either [file] or [data].
   Future<void> launchFile({
-    required BuildContext context,
+    required Size size,
+    required RenderBox? box,
     required String name,
     File? file,
     Uint8List? data,
@@ -44,9 +45,7 @@ class YustFileHelpers {
         a.remove();
       }
     } else {
-      final size = MediaQuery.of(context).size;
       // Get the Location of the widget (e.g. button), that called the method.
-      final box = context.findRenderObject() as RenderBox?;
       if (file == null && data != null) {
         final tempDir = await getTemporaryDirectory();
         final path = '${tempDir.path}/$name';
@@ -80,6 +79,8 @@ class YustFileHelpers {
       {required BuildContext context,
       required String url,
       required String name}) async {
+    final size = MediaQuery.of(context).size;
+    final box = context.findRenderObject() as RenderBox?;
     await EasyLoading.show(status: 'Datei laden...');
     try {
       if (kIsWeb) {
@@ -87,13 +88,13 @@ class YustFileHelpers {
           Uri.parse(url),
         );
         final data = r.bodyBytes;
-        await launchFile(context: context, name: name, data: data);
+        await launchFile(size: size, box: box, name: name, data: data);
       } else {
         final tempDir = await getTemporaryDirectory();
         final path = '${tempDir.path}/$name';
         await Dio().download(url, path);
         final file = File(path);
-        await launchFile(context: context, name: name, file: file);
+        await launchFile(size: size, box: box, name: name, file: file);
       }
       await EasyLoading.dismiss();
     } catch (e) {
