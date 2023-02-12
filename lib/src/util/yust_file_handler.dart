@@ -281,6 +281,7 @@ class YustFileHandler {
   }
 
   void addFileToFileHandler(YustFile file) {
+    file.storageFolderPath = storageFolderPath;
     _yustFiles.add(file);
   }
 

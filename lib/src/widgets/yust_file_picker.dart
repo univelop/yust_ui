@@ -39,7 +39,7 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowMultiple;
 
-  final dynamic allowedExtensions;
+  final List<String>? allowedExtensions;
 
   const YustFilePicker({
     Key? key,
