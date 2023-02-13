@@ -20,7 +20,6 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
     required this.modelSetup,
     this.filters,
     this.orderBy,
-    bool? doNotWait,
     this.showLoadingSpinner = false,
     this.loadingIndicator,
     this.limit,
