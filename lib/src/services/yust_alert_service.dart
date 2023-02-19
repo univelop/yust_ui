@@ -67,6 +67,7 @@ class YustAlertService {
     String title,
     String? placeholder,
     String action, {
+    String? message,
     String initialText = '',
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
@@ -85,14 +86,20 @@ class YustAlertService {
           key: yustServiceValidationKey,
           child: AlertDialog(
             title: Text(title),
-            content: TextFormField(
-              controller: controller,
-              decoration: InputDecoration(hintText: placeholder),
-              autovalidateMode: validator == null ? null : validateMode,
-              validator: validator == null
-                  ? null
-                  : (value) => validator(value!.trim()),
-              autofocus: true,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (message != null) Text(message),
+                TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(hintText: placeholder),
+                  autovalidateMode: validator == null ? null : validateMode,
+                  validator: validator == null
+                      ? null
+                      : (value) => validator(value!.trim()),
+                  autofocus: true,
+                ),
+              ],
             ),
             actions: <Widget>[
               TextButton(
