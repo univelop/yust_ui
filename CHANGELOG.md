@@ -1,3 +1,9 @@
+## 3.6.0 - 2023-02-19
+
+-   Add OAuth for signup
+-   Improve account edit screen
+-   Fix issues
+
 ## 3.5.0 - 2023-01-16
 
 -   Improve multi select component
