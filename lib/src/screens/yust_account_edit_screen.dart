@@ -72,19 +72,7 @@ class YustAccountEditScreen extends StatelessWidget {
                           .saveDoc<YustUser>(Yust.userSetup, user);
                     },
                   ),
-                  YustTextField(
-                    label: 'E-Mail',
-                    value: user.email,
-                    readOnly: true,
-                    onTap: () => _changeEmail(context),
-                  ),
-                  YustTextField(
-                    label: 'Passwort',
-                    value: '*****',
-                    obscureText: true,
-                    readOnly: true,
-                    onTap: () => _changePassword(context),
-                  ),
+                  ..._buildAuthenticationMethod(user, context),
                 ],
               );
             }),
@@ -177,6 +165,34 @@ class YustAccountEditScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  List<Widget> _buildAuthenticationMethod(YustUser user, BuildContext context) {
+    final authMethod = user.authenticationMethod;
+    if (authMethod == null || authMethod == YustAuthenticationMethod.mail) {
+      return [
+        YustTextField(
+          label: 'E-Mail',
+          value: user.email,
+          readOnly: true,
+          onTap: () => _changeEmail(context),
+        ),
+        YustTextField(
+          label: 'Passwort',
+          value: '*****',
+          obscureText: true,
+          readOnly: true,
+          onTap: () => _changePassword(context),
+        )
+      ];
+    }
+    return [
+      YustTextField(
+        label: 'Anmeldung über',
+        value: authMethod.label,
+        readOnly: true,
+      )
+    ];
   }
 
   void _changePassword(BuildContext context) {

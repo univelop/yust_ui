@@ -36,7 +36,6 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
   String? _lastName;
   String? _email;
   String? _password;
-  String? _passwordConfirmation;
   bool _waitingForSignUp = false;
   void Function()? _onSignedIn;
 
@@ -197,8 +196,6 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                         obscureText: true,
                         textInputAction: TextInputAction.send,
                         focusNode: _passwordConfirmationFocus,
-                        onChanged: (value) =>
-                            _passwordConfirmation = value.trim(),
                         validator: (value) {
                           if (value == null || value == '') {
                             return 'Die Passwortbestätigung darf nicht leer sein.';
@@ -305,7 +302,6 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
               _lastName!,
               _email!,
               _password!,
-              _passwordConfirmation!,
               gender: _gender,
             )
             .timeout(const Duration(seconds: 10));
