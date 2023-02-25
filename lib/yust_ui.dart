@@ -6,6 +6,7 @@ library yust_ui;
 export 'src/screens/yust_account_edit_screen.dart';
 export 'src/screens/yust_account_screen.dart';
 export 'src/screens/yust_image_screen.dart';
+export 'src/screens/yust_image_drawing_screen.dart';
 export 'src/screens/yust_reset_password_screen.dart';
 export 'src/screens/yust_sign_in_screen.dart';
 export 'src/screens/yust_sign_up_screen.dart';

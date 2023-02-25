@@ -37,6 +37,10 @@ class YustFilePicker extends StatefulWidget {
 
   final bool showModifiedAt;
 
+  final bool allowMultiple;
+
+  final List<String>? allowedExtensions;
+
   const YustFilePicker({
     Key? key,
     this.label,
@@ -49,6 +53,8 @@ class YustFilePicker extends StatefulWidget {
     this.prefixIcon,
     this.enableDropzone = false,
     this.readOnly = false,
+    this.allowMultiple = true,
+    this.allowedExtensions,
   }) : super(key: key);
 
   @override
@@ -89,7 +95,9 @@ class YustFilePickerState extends State<YustFilePicker> {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-              suffixChild: _buildAddButton(context),
+              suffixChild: (widget.allowMultiple || widget.files.isEmpty)
+                  ? _buildAddButton(context)
+                  : null,
               label: widget.label,
               prefixIcon: widget.prefixIcon,
               below: _buildFiles(context));
@@ -284,7 +292,12 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Future<void> _pickFiles() async {
     YustUi.helpers.unfocusCurrent();
-    final result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    final result = await FilePicker.platform.pickFiles(
+      type: (widget.allowedExtensions != null) ? FileType.custom : FileType.any,
+      allowedExtensions:
+          (widget.allowedExtensions != null) ? widget.allowedExtensions : null,
+      allowMultiple: widget.allowMultiple,
+    );
     if (result != null) {
       for (final platformFile in result.files) {
         await uploadFile(
