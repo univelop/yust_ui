@@ -9,6 +9,8 @@ typedef DateTimeCallback = void Function(DateTime?);
 class YustDatePicker extends StatelessWidget {
   final String? label;
   final DateTime? value;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
 
   final DateTimeCallback? onChanged;
   final bool hideClearButton;
@@ -20,6 +22,8 @@ class YustDatePicker extends StatelessWidget {
     Key? key,
     this.label,
     this.value,
+    this.firstDate,
+    this.lastDate,
     this.onChanged,
     this.hideClearButton = false,
     this.style = YustInputStyle.normal,
@@ -51,8 +55,8 @@ class YustDatePicker extends StatelessWidget {
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: dateTime,
-      firstDate: DateTime.utc(1900),
-      lastDate: DateTime.utc(2100),
+      firstDate: firstDate ?? DateTime.utc(1900),
+      lastDate: lastDate ?? DateTime.utc(2100),
       locale: const Locale('de', 'DE'),
       currentDate: Yust.helpers.localNow(),
     );
