@@ -76,10 +76,14 @@ class YustDatePicker extends StatelessWidget {
       if (lastDate != null && dateTime.isAfter(lastDate!)) {
         return lastDate!;
       }
+      return dateTime;
+    } else {
+      final today = Yust.helpers.localNow(
+          hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
+      if (firstDate != null && firstDate!.isBefore(today)) {
+        return today;
+      }
+      return firstDate ?? today;
     }
-    return dateTime ??
-        firstDate ??
-        Yust.helpers.localNow(
-            hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
   }
 }
