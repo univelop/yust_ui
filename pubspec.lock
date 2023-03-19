@@ -636,10 +636,10 @@ packages:
     dependency: transitive
     description:
       name: googleapis
-      sha256: b98b2e909736ada32fdee433a14f5d37bad0311be0ce6506a1246ce1a50f3bcf
+      sha256: "0af31e6aba9c6a72ee9c6fd02cb10813ed16d34bbd392b500fb147d64558f95d"
       url: "https://pub.dev"
     source: hosted
-    version: "8.1.0"
+    version: "10.1.0"
   googleapis_auth:
     dependency: transitive
     description:
@@ -1521,10 +1521,11 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      name: yust
-      sha256: e7270894bfc8978cc1547e0763abb2e9f49f5fe933aeac9372cfdf5ce84055fd
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: "61c89b2c3beb5b3e2fb7ff193f5de43d0ee1c52b"
+      url: "https://github.com/univelop/yust.git"
+    source: git
     version: "3.6.1"
 sdks:
   dart: ">=2.19.0 <3.0.0"
