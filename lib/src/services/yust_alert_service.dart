@@ -127,31 +127,30 @@ class YustAlertService {
     );
   }
 
-  Future<String?> showPickerDialog(
+  Future<T?> showPickerDialog<T>(
     String title,
     String action, {
+    required List<T> optionValues,
     required List<String> optionLabels,
-    required List<String> optionValues,
     String initialText = '',
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
-    return showDialog<String>(
+    return showDialog<T>(
       context: context,
       builder: (BuildContext context) {
-        var selected = '';
+        T? selected;
         return AlertDialog(
           title: Text(title),
           content: StatefulBuilder(
             builder: (context, setState) {
               return SizedBox(
                 height: 100,
-                child: YustSelect(
+                child: YustSelect<T?>(
                   value: selected,
-                  optionLabels: optionLabels,
                   optionValues: optionValues,
-                  onSelected: (value) =>
-                      {setState(() => selected = value as String)},
+                  optionLabels: optionLabels,
+                  onSelected: (value) => {setState(() => selected = value)},
                 ),
               );
             },
@@ -218,17 +217,17 @@ class YustAlertService {
 
   /// Returns newly selected items (only) after confirmation.
   /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
-  Future<List<String>> showCheckListDialog({
+  Future<List<T>> showCheckListDialog<T>({
     required BuildContext context,
-    required List<String> optionValues,
-    required List<String> priorOptionValues,
+    required List<T> optionValues,
+    required List<T> priorOptionValues,
     required List<String> optionLabels,
     bool returnPriorItems = true,
     String? title,
   }) async {
-    final newItemIds = List<String>.from(priorOptionValues);
+    final newItemIds = List<T>.from(priorOptionValues);
     var isAborted = true;
-    await showDialog<List<String>>(
+    await showDialog<List<T>>(
         context: context,
         builder: (context) {
           return StatefulBuilder(
@@ -251,7 +250,7 @@ class YustAlertService {
                       ),
                     ),
                   ),
-                  YustMultiSelectComponent<String>(
+                  YustMultiSelectComponent<T>(
                     optionValues: optionValues,
                     optionLabels: optionLabels,
                     selectedValues: newItemIds,
