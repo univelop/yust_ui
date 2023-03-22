@@ -10,6 +10,7 @@ class YustButtonTile extends StatelessWidget {
   final Widget? below;
   final bool elevated;
   final bool divider;
+  final bool slimDesign;
 
   const YustButtonTile({
     Key? key,
@@ -22,44 +23,51 @@ class YustButtonTile extends StatelessWidget {
     this.below,
     this.elevated = true,
     this.divider = true,
+    this.slimDesign = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (slimDesign) return _buildButton();
+
     return Column(
       children: [
         above ?? const SizedBox(),
         Padding(
           padding: const EdgeInsets.all(10),
-          child: elevated
-              ? ElevatedButton.icon(
-                  onPressed: onPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
-                    foregroundColor: textColor,
-                  ),
-                  icon: icon ?? const SizedBox(),
-                  label: Text(
-                    label!,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )
-              : TextButton.icon(
-                  onPressed: onPressed,
-                  style: TextButton.styleFrom(
-                    foregroundColor: color,
-                  ),
-                  icon: icon ?? const SizedBox(),
-                  label: Text(
-                    label!,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+          child: _buildButton(),
         ),
         below ?? const SizedBox(),
         if (divider)
           const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
       ],
     );
+  }
+
+  Widget _buildButton() {
+    return elevated
+        ? ElevatedButton.icon(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: textColor,
+            ),
+            icon: icon ?? const SizedBox(),
+            label: Text(
+              label!,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )
+        : TextButton.icon(
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              foregroundColor: color,
+            ),
+            icon: icon ?? const SizedBox(),
+            label: Text(
+              label!,
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
   }
 }
