@@ -209,6 +209,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (file == null) {
       return const SizedBox.shrink();
     }
+
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
@@ -230,18 +231,25 @@ class YustImagePickerState extends State<YustImagePicker> {
         ),
       );
     } else {
-      return ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
-        child: GestureDetector(
-          onTap: zoomEnabled ? () => _showImages(file) : null,
-          child: file.url != null
-              ? Hero(
-                  tag: file.url!,
-                  child: preview,
-                )
-              : preview,
-        ),
-      );
+      return Container(
+          constraints: const BoxConstraints(
+            minHeight: 100,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 300,
+              maxWidth: 400,
+            ),
+            child: GestureDetector(
+              onTap: zoomEnabled ? () => _showImages(file) : null,
+              child: file.url != null
+                  ? Hero(
+                      tag: file.url!,
+                      child: preview,
+                    )
+                  : preview,
+            ),
+          ));
     }
   }
 
