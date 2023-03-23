@@ -51,9 +51,13 @@ class YustDatePicker extends StatelessWidget {
     YustUi.helpers.unfocusCurrent();
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: _determineInitialDate(),
-      firstDate: firstDate ?? DateTime.utc(1900),
-      lastDate: lastDate ?? DateTime.utc(2100),
+      initialDate: Yust.helpers.utcToLocal(_determineInitialDate()),
+      firstDate: (firstDate != null)
+          ? Yust.helpers.utcToLocal(firstDate!)
+          : DateTime.utc(1900),
+      lastDate: (lastDate != null)
+          ? Yust.helpers.utcToLocal(lastDate!)
+          : DateTime.utc(2100),
       locale: const Locale('de', 'DE'),
       currentDate: Yust.helpers.localNow(),
     );
@@ -68,22 +72,24 @@ class YustDatePicker extends StatelessWidget {
   }
 
   DateTime _determineInitialDate() {
-    var dateTime = Yust.helpers.tryUtcToLocal(value);
-    if (dateTime != null) {
-      if (firstDate != null && dateTime.isBefore(firstDate!)) {
+    if (value != null) {
+      if (firstDate != null && value!.isBefore(firstDate!)) {
         return firstDate!;
       }
-      if (lastDate != null && dateTime.isAfter(lastDate!)) {
+      if (lastDate != null && value!.isAfter(lastDate!)) {
         return lastDate!;
       }
-      return dateTime;
+      return value!;
     } else {
-      final today = Yust.helpers.localNow(
+      final today = Yust.helpers.utcNow(
           hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
-      if (firstDate != null && firstDate!.isBefore(today)) {
-        return today;
+      if (firstDate != null && firstDate!.isAfter(today)) {
+        return firstDate!;
       }
-      return firstDate ?? today;
+      if (lastDate != null && lastDate!.isBefore(today)) {
+        return lastDate!;
+      }
+      return today;
     }
   }
 }
