@@ -413,15 +413,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
   }) async {
+    final sanizitedPath = _sanitiseFilePath(path);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanizitedPath.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
-        bytes = await YustUi.fileHelpers
-            .resizeImageBytes(name: path, bytes: bytes!, maxWidth: size);
+        bytes = await YustUi.fileHelpers.resizeImageBytes(
+            name: sanizitedPath, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -446,6 +447,10 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  _sanitiseFilePath(String path) {
+    return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
   Future<void> _createDatebaseEntry() async {
