@@ -14,9 +14,9 @@ dependencies:
         git:
             url: https://github.com/univelop/yust.git
             ref: master
-    firebase_core: ^2.4.1
-    firebase_storage: ^11.0.10
-    cloud_firestore: ^4.3.1
+    firebase_core: ^2.9.0
+    firebase_storage: ^11.1.0
+    cloud_firestore: ^4.5.0
     flutter_easyloading: ^3.0.5
     photo_view: ^0.14.0
     shared_preferences: ^2.0.3
