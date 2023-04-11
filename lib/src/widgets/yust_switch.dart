@@ -13,6 +13,7 @@ class YustSwitch extends StatelessWidget {
   final bool slimDesign;
   //switchRepresentation could be: 'yesNo', 'checkbox', 'label',
   final String switchRepresentation;
+  final bool divider;
 
   const YustSwitch({
     Key? key,
@@ -24,6 +25,7 @@ class YustSwitch extends StatelessWidget {
     this.readOnly = false,
     this.slimDesign = false,
     this.switchRepresentation = 'yesNo',
+    this.divider = true,
   }) : super(key: key);
 
   @override
@@ -40,6 +42,7 @@ class YustSwitch extends StatelessWidget {
                 onChanged!(!value);
               },
         prefixIcon: prefixIcon,
+        divider: divider,
       );
     } else {
       if (slimDesign) return _buildSwitch(context);
@@ -53,6 +56,7 @@ class YustSwitch extends StatelessWidget {
                 onChanged!(!value);
               },
         prefixIcon: prefixIcon,
+        divider: divider,
       );
     }
   }
