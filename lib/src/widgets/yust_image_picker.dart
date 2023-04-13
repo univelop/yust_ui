@@ -33,7 +33,6 @@ class YustImagePicker extends StatefulWidget {
   final List<YustFile> images;
   final bool zoomable;
   final void Function(List<YustFile> images)? onChanged;
-  final void Function()? onInitialUpload;
   final Widget? prefixIcon;
   final bool newestFirst;
   final bool readOnly;
@@ -41,6 +40,9 @@ class YustImagePicker extends StatefulWidget {
 
   /// default is 15
   final int imageCount;
+
+  /// Callback for when the first image gets uploaded to an empty picker
+  final void Function()? onInitialUpload;
 
   const YustImagePicker({
     Key? key,

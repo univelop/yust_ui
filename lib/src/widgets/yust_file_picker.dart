@@ -29,6 +29,7 @@ class YustFilePicker extends StatefulWidget {
 
   final void Function(List<YustFile> files)? onChanged;
 
+  /// Callback for when the first file gets uploaded to an empty picker
   final void Function()? onInitialUpload;
 
   final Widget? prefixIcon;
