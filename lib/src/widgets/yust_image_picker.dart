@@ -33,6 +33,7 @@ class YustImagePicker extends StatefulWidget {
   final List<YustFile> images;
   final bool zoomable;
   final void Function(List<YustFile> images)? onChanged;
+  final void Function()? onInitialUpload;
   final Widget? prefixIcon;
   final bool newestFirst;
   final bool readOnly;
@@ -56,6 +57,7 @@ class YustImagePicker extends StatefulWidget {
     this.newestFirst = false,
     this.yustQuality = 'medium',
     int? imageCount,
+    this.onInitialUpload,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
   @override
@@ -354,7 +356,9 @@ class YustImagePickerState extends State<YustImagePicker> {
             // than maxHeight/-Width
             imageQuality: quality,
           );
-
+          if (_fileHandler.getFiles().isEmpty) {
+            widget.onInitialUpload?.call();
+          }
           for (final image in images) {
             await uploadFile(
               path: image.path,
@@ -372,6 +376,9 @@ class YustImagePickerState extends State<YustImagePicker> {
               // than maxHeight/-Width
               imageQuality: quality);
           if (image != null) {
+            if (_fileHandler.getFiles().isEmpty) {
+              widget.onInitialUpload?.call();
+            }
             await uploadFile(
               path: image.path,
               file: File(image.path),
@@ -384,6 +391,9 @@ class YustImagePickerState extends State<YustImagePicker> {
       }
       // Else, we are on Web
       else {
+        if (_fileHandler.getFiles().isEmpty) {
+          widget.onInitialUpload?.call();
+        }
         if (widget.multiple) {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
