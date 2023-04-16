@@ -1,3 +1,8 @@
+## 3.8.0 - 2023-04-16
+
+-   Upgrade firebase packages
+-   Fix bugs
+
 ## 3.7.0 - 2023-03-27
 
 -   Improve date and image picker
