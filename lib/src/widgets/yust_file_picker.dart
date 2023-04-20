@@ -29,9 +29,6 @@ class YustFilePicker extends StatefulWidget {
 
   final void Function(List<YustFile> files)? onChanged;
 
-  /// Callback for when the first file gets uploaded to an empty picker
-  final void Function()? onInitialUpload;
-
   final Widget? prefixIcon;
 
   final bool enableDropzone;
@@ -58,7 +55,6 @@ class YustFilePicker extends StatefulWidget {
     this.readOnly = false,
     this.allowMultiple = true,
     this.allowedExtensions,
-    this.onInitialUpload
   }) : super(key: key);
 
   @override
@@ -308,9 +304,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       allowMultiple: widget.allowMultiple,
     );
     if (result != null) {
-      if (_fileHandler.getFiles().isEmpty) {
-        widget.onInitialUpload?.call();
-      }
+
       for (final platformFile in result.files) {
         await uploadFile(
           name: _getFileName(platformFile),
