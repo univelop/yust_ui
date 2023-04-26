@@ -117,16 +117,21 @@ class YustFilePickerState extends State<YustFilePicker> {
           child: _buildDropzoneArea(context),
         ),
         YustListTile(
-          suffixChild:
-              isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
-          label: widget.label,
-          prefixIcon: widget.prefixIcon,
-          below: _buildFiles(context),
-          divider: widget.divider,
-        ),
+            suffixChild: isDragging ? null : _buildAddButton(context),
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildDropzoneInterfaceAndFiles(),
+            divider: widget.divider),
       ],
     );
   }
+
+  Widget _buildDropzoneInterfaceAndFiles() => Column(
+        children: [
+          if (isDragging) _buildDropzoneInterface(),
+          _buildFiles(context),
+        ],
+      );
 
   /// This widget will accept files from a drag and drop interaction
   Widget _buildDropzoneArea(BuildContext context) => Builder(
