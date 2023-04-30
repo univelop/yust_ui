@@ -42,7 +42,6 @@ class YustImagePicker extends StatefulWidget {
   /// default is 15
   final int imageCount;
 
-
   const YustImagePicker({
     Key? key,
     this.label,
@@ -109,7 +108,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   child: _buildSingleImage(
                       context, _fileHandler.getFiles().firstOrNull),
                 ),
-          divider: widget.divider,      
+          divider: widget.divider,
         );
       },
     );
@@ -358,6 +357,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             // than maxHeight/-Width
             imageQuality: quality,
           );
+
           for (final image in images) {
             await uploadFile(
               path: image.path,
@@ -454,7 +454,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
     if (!newYustFile.cached) {
       widget.onChanged!(_fileHandler.getOnlineFiles());
-    }else {
+    } else {
       widget.onChanged!(_fileHandler.getFiles().toList());
     }
     if (mounted) {

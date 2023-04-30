@@ -98,13 +98,14 @@ class YustFilePickerState extends State<YustFilePicker> {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-              suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                  ? _buildAddButton(context)
-                  : null,
-              label: widget.label,
-              prefixIcon: widget.prefixIcon,
-              below: _buildFiles(context),
-              divider: widget.divider,);
+            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
+                ? _buildAddButton(context)
+                : null,
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildFiles(context),
+            divider: widget.divider,
+          );
         }
       },
     );
@@ -309,7 +310,6 @@ class YustFilePickerState extends State<YustFilePicker> {
       allowMultiple: widget.allowMultiple,
     );
     if (result != null) {
-
       for (final platformFile in result.files) {
         await uploadFile(
           name: _getFileName(platformFile),
