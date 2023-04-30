@@ -37,6 +37,7 @@ class YustImagePicker extends StatefulWidget {
   final bool newestFirst;
   final bool readOnly;
   final String yustQuality;
+  final bool divider;
 
   /// default is 15
   final int imageCount;
@@ -56,6 +57,7 @@ class YustImagePicker extends StatefulWidget {
     this.readOnly = false,
     this.newestFirst = false,
     this.yustQuality = 'medium',
+    this.divider = true,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -107,6 +109,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   child: _buildSingleImage(
                       context, _fileHandler.getFiles().firstOrNull),
                 ),
+          divider: widget.divider,      
         );
       },
     );
