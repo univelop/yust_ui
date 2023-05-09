@@ -344,11 +344,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    } else {
-      widget.onChanged!(_fileHandler.getFiles().toList());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }

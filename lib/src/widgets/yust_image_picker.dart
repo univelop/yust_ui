@@ -452,11 +452,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (_currentImageNumber < _fileHandler.getFiles().length) {
       _currentImageNumber += widget.imageCount;
     }
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    } else {
-      widget.onChanged!(_fileHandler.getFiles().toList());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }
