@@ -39,6 +39,8 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowMultiple;
 
+  final bool divider;
+
   final List<String>? allowedExtensions;
 
   const YustFilePicker({
@@ -55,6 +57,7 @@ class YustFilePicker extends StatefulWidget {
     this.readOnly = false,
     this.allowMultiple = true,
     this.allowedExtensions,
+    this.divider = true,
   }) : super(key: key);
 
   @override
@@ -100,7 +103,8 @@ class YustFilePickerState extends State<YustFilePicker> {
                   : null,
               label: widget.label,
               prefixIcon: widget.prefixIcon,
-              below: _buildFiles(context));
+              below: _buildFiles(context),
+              divider: widget.divider,);
         }
       },
     );
@@ -116,7 +120,8 @@ class YustFilePickerState extends State<YustFilePicker> {
             suffixChild: isDragging ? null : _buildAddButton(context),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
-            below: _buildDropzoneInterfaceAndFiles()),
+            below: _buildDropzoneInterfaceAndFiles(),
+            divider: widget.divider),
       ],
     );
   }
