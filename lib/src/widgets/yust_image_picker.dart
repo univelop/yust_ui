@@ -108,7 +108,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   child: _buildSingleImage(
                       context, _fileHandler.getFiles().firstOrNull),
                 ),
-          divider: widget.divider,      
+          divider: widget.divider,
         );
       },
     );
@@ -452,9 +452,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (_currentImageNumber < _fileHandler.getFiles().length) {
       _currentImageNumber += widget.imageCount;
     }
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }

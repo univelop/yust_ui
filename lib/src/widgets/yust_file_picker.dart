@@ -98,13 +98,14 @@ class YustFilePickerState extends State<YustFilePicker> {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-              suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                  ? _buildAddButton(context)
-                  : null,
-              label: widget.label,
-              prefixIcon: widget.prefixIcon,
-              below: _buildFiles(context),
-              divider: widget.divider,);
+            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
+                ? _buildAddButton(context)
+                : null,
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildFiles(context),
+            divider: widget.divider,
+          );
         }
       },
     );
@@ -343,9 +344,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }
