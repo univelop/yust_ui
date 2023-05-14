@@ -1,3 +1,8 @@
+## 3.9.0 - 2023-05-14
+
+-   Improve widgets
+-   Fix bugs
+
 ## 3.8.0 - 2023-04-16
 
 -   Upgrade firebase packages
