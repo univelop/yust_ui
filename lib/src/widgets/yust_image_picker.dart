@@ -38,6 +38,7 @@ class YustImagePicker extends StatefulWidget {
   final bool readOnly;
   final String yustQuality;
   final bool divider;
+  final bool originalView;
 
   /// default is 15
   final int imageCount;
@@ -57,6 +58,7 @@ class YustImagePicker extends StatefulWidget {
     this.newestFirst = false,
     this.yustQuality = 'medium',
     this.divider = true,
+    this.originalView = false,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -234,7 +236,20 @@ class YustImagePickerState extends State<YustImagePicker> {
         ),
       );
     } else {
-      return Container(
+      if (widget.originalView) {
+        return Container(
+          constraints: const BoxConstraints(
+            minHeight: 100,
+          ),
+          child: file.url != null
+                  ? Hero(
+                      tag: file.url!,
+                      child: preview,
+                    )
+                  : preview,
+                  );
+                } else {
+         return Container(
           constraints: const BoxConstraints(
             minHeight: 100,
           ),
@@ -253,6 +268,8 @@ class YustImagePickerState extends State<YustImagePicker> {
                   : preview,
             ),
           ));
+      }
+     
     }
   }
 
