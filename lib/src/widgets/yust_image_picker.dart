@@ -38,7 +38,7 @@ class YustImagePicker extends StatefulWidget {
   final bool readOnly;
   final String yustQuality;
   final bool divider;
-  final bool originalView;
+  final bool showCentered;
 
   /// default is 15
   final int imageCount;
@@ -58,7 +58,7 @@ class YustImagePicker extends StatefulWidget {
     this.newestFirst = false,
     this.yustQuality = 'medium',
     this.divider = true,
-    this.originalView = false,
+    this.showCentered = false,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -236,7 +236,7 @@ class YustImagePickerState extends State<YustImagePicker> {
         ),
       );
     } else {
-      if (widget.originalView) {
+      if (widget.showCentered) {
         return Container(
           constraints: const BoxConstraints(
             minHeight: 100,
