@@ -39,7 +39,9 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowMultiple;
 
-  final dynamic allowedExtensions;
+  final bool divider;
+
+  final List<String>? allowedExtensions;
 
   const YustFilePicker({
     Key? key,
@@ -55,6 +57,7 @@ class YustFilePicker extends StatefulWidget {
     this.readOnly = false,
     this.allowMultiple = true,
     this.allowedExtensions,
+    this.divider = true,
   }) : super(key: key);
 
   @override
@@ -95,12 +98,14 @@ class YustFilePickerState extends State<YustFilePicker> {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-              suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                  ? _buildAddButton(context)
-                  : null,
-              label: widget.label,
-              prefixIcon: widget.prefixIcon,
-              below: _buildFiles(context));
+            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
+                ? _buildAddButton(context)
+                : null,
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildFiles(context),
+            divider: widget.divider,
+          );
         }
       },
     );
@@ -113,15 +118,21 @@ class YustFilePickerState extends State<YustFilePicker> {
           child: _buildDropzoneArea(context),
         ),
         YustListTile(
-          suffixChild:
-              isDragging ? _buildDropzoneInterface() : _buildAddButton(context),
-          label: widget.label,
-          prefixIcon: widget.prefixIcon,
-          below: _buildFiles(context),
-        ),
+            suffixChild: isDragging ? null : _buildAddButton(context),
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildDropzoneInterfaceAndFiles(),
+            divider: widget.divider),
       ],
     );
   }
+
+  Widget _buildDropzoneInterfaceAndFiles() => Column(
+        children: [
+          if (isDragging) _buildDropzoneInterface(),
+          _buildFiles(context),
+        ],
+      );
 
   /// This widget will accept files from a drag and drop interaction
   Widget _buildDropzoneArea(BuildContext context) => Builder(
@@ -333,9 +344,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }

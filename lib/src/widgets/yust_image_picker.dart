@@ -37,6 +37,7 @@ class YustImagePicker extends StatefulWidget {
   final bool newestFirst;
   final bool readOnly;
   final String yustQuality;
+  final bool divider;
 
   /// default is 15
   final int imageCount;
@@ -55,6 +56,7 @@ class YustImagePicker extends StatefulWidget {
     this.readOnly = false,
     this.newestFirst = false,
     this.yustQuality = 'medium',
+    this.divider = true,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -106,6 +108,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   child: _buildSingleImage(
                       context, _fileHandler.getFiles().firstOrNull),
                 ),
+          divider: widget.divider,
         );
       },
     );
@@ -209,6 +212,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (file == null) {
       return const SizedBox.shrink();
     }
+
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
@@ -230,18 +234,25 @@ class YustImagePickerState extends State<YustImagePicker> {
         ),
       );
     } else {
-      return ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
-        child: GestureDetector(
-          onTap: zoomEnabled ? () => _showImages(file) : null,
-          child: file.url != null
-              ? Hero(
-                  tag: file.url!,
-                  child: preview,
-                )
-              : preview,
-        ),
-      );
+      return Container(
+          constraints: const BoxConstraints(
+            minHeight: 100,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 300,
+              maxWidth: 400,
+            ),
+            child: GestureDetector(
+              onTap: zoomEnabled ? () => _showImages(file) : null,
+              child: file.url != null
+                  ? Hero(
+                      tag: file.url!,
+                      child: preview,
+                    )
+                  : preview,
+            ),
+          ));
     }
   }
 
@@ -413,15 +424,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
   }) async {
+    final sanizitedPath = _sanitiseFilePath(path);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanizitedPath.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
-        bytes = await YustUi.fileHelpers
-            .resizeImageBytes(name: path, bytes: bytes!, maxWidth: size);
+        bytes = await YustUi.fileHelpers.resizeImageBytes(
+            name: sanizitedPath, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -440,12 +452,14 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (_currentImageNumber < _fileHandler.getFiles().length) {
       _currentImageNumber += widget.imageCount;
     }
-    if (!newYustFile.cached) {
-      widget.onChanged!(_fileHandler.getOnlineFiles());
-    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {
       setState(() {});
     }
+  }
+
+  _sanitiseFilePath(String path) {
+    return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
   Future<void> _createDatebaseEntry() async {

@@ -64,6 +64,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     _setWidth(strokeWidth);
     textFocusNode.addListener(onFocus);
     initBackground();
+    _toggleFreeStyleDraw();
   }
 
   /// Fetches image from an [ImageProvider] (in this example, [NetworkImage])
