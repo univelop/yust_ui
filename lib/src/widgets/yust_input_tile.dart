@@ -41,7 +41,6 @@ class YustInputTile extends StatelessWidget {
       textStyle: textStyle,
       style: style,
       readOnly: true,
-      showSelected: false,
       divider: divider,
       maxLines: maxLines,
       minLines: minLines,
