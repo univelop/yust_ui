@@ -43,6 +43,8 @@ class YustFilePicker extends StatefulWidget {
 
   final List<String>? allowedExtensions;
 
+  final bool allowOnlyImages;
+
   const YustFilePicker({
     Key? key,
     this.label,
@@ -58,6 +60,7 @@ class YustFilePicker extends StatefulWidget {
     this.allowMultiple = true,
     this.allowedExtensions,
     this.divider = true,
+    this. allowOnlyImages = false,
   }) : super(key: key);
 
   @override
@@ -303,8 +306,9 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Future<void> _pickFiles() async {
     YustUi.helpers.unfocusCurrent();
+    final type = (widget.allowedExtensions != null) ? FileType.custom : (widget.allowOnlyImages ? FileType.image: FileType.any);
     final result = await FilePicker.platform.pickFiles(
-      type: (widget.allowedExtensions != null) ? FileType.custom : FileType.any,
+      type: type,
       allowedExtensions:
           (widget.allowedExtensions != null) ? widget.allowedExtensions : null,
       allowMultiple: widget.allowMultiple,
