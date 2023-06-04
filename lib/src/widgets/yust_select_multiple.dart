@@ -15,6 +15,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixChild;
   final bool readOnly;
+  final ButtonStyle buttonStyle;
 
   const YustSelectMultiple({
     Key? key,
@@ -25,6 +26,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
     this.onSelected,
     this.onDelete,
     this.style = YustInputStyle.normal,
+    this.buttonStyle = const ButtonStyle(),
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
@@ -70,16 +72,19 @@ class YustSelectMultiple<T> extends StatelessWidget {
                 optionLabels: optionLabels,
                 selectedValues: selectedValues,
               ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child:
               Align(
                 alignment: Alignment.center,
                 child: ElevatedButton(
-                    style: const ButtonStyle(
-                        visualDensity: VisualDensity.comfortable),
+                      style: buttonStyle,
                     child: const Text('OK'),
                     onPressed: () {
                       // Close the Dialog & return selectedItems
                       Navigator.pop(context);
                     }),
+                ),
               ),
             ],
           );
