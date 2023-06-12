@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
@@ -34,6 +36,7 @@ class YustImagePicker extends StatefulWidget {
   final bool zoomable;
   final void Function(List<YustFile> images)? onChanged;
   final Widget? prefixIcon;
+  final bool enableDropzone;
   final bool newestFirst;
   final bool readOnly;
   final String yustQuality;
@@ -54,6 +57,7 @@ class YustImagePicker extends StatefulWidget {
     this.zoomable = false,
     this.onChanged,
     this.prefixIcon,
+    this.enableDropzone = false,
     this.readOnly = false,
     this.newestFirst = false,
     this.yustQuality = 'medium',
@@ -70,6 +74,8 @@ class YustImagePickerState extends State<YustImagePicker> {
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
+  late DropzoneViewController controller;
+  var isDragging = false;
 
   @override
   void initState() {
@@ -99,20 +105,121 @@ class YustImagePickerState extends State<YustImagePicker> {
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.images, loadFiles: true),
       builder: (context, snapshot) {
-        return YustListTile(
-          label: widget.label,
-          suffixChild: _buildPickButtons(context),
-          prefixIcon: widget.prefixIcon,
-          below: widget.multiple
-              ? _buildGallery(context)
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: _buildSingleImage(
-                      context, _fileHandler.getFiles().firstOrNull),
-                ),
-          divider: widget.divider,
-        );
+        if (kIsWeb && widget.enableDropzone) {
+          return _buildDropzone(context);
+        } else {
+          return YustListTile(
+            label: widget.label,
+            suffixChild: _buildPickButtons(context),
+            prefixIcon: widget.prefixIcon,
+            below: _buildFilesView(),
+            divider: widget.divider,
+          );
+        }
       },
+    );
+  }
+
+  Widget _buildDropzone(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: _buildDropzoneArea(context),
+        ),
+        YustListTile(
+            suffixChild: isDragging ? null : _buildPickButtons(context),
+            label: widget.label,
+            prefixIcon: widget.prefixIcon,
+            below: _buildDropzoneInterfaceAndFiles(),
+            divider: widget.divider),
+      ],
+    );
+  }
+
+  Widget _buildDropzoneInterfaceAndFiles() => Column(
+        children: [
+          if (isDragging) _buildDropzoneInterface(),
+          _buildFilesView(),
+        ],
+      );
+
+  /// This widget will accept files from a drag and drop interaction
+  Widget _buildDropzoneArea(BuildContext context) => Builder(
+        builder: (context) => DropzoneView(
+          operation: DragOperation.copy,
+          cursor: CursorType.grab,
+          onCreated: (ctrl) => controller = ctrl,
+          onLoaded: () {},
+          onError: (ev) {},
+          onHover: () {
+            setState(() {
+              isDragging = true;
+            });
+          },
+          onLeave: () {
+            setState(() {
+              isDragging = false;
+            });
+          },
+          onDrop: (ev) async {},
+          onDropMultiple: (ev) async {
+            setState(() {
+              isDragging = false;
+            });
+            for (final file in ev ?? []) {
+              final bytes = await controller.getFileData(file);
+              await uploadFile(
+                path: file.name,
+                bytes: bytes,
+                resize: true,
+              );
+            }
+          },
+        ),
+      );
+
+  Widget _buildFilesView() => widget.multiple
+      ? _buildGallery(context)
+      : Padding(
+          padding: const EdgeInsets.only(bottom: 2.0),
+          child:
+              _buildSingleImage(context, _fileHandler.getFiles().firstOrNull));
+
+  /// This Widget is a visual drag and drop indicator. It shows a dotted box, an icon as well as a button to manually upload files
+  Widget _buildDropzoneInterface() {
+    final dropZoneColor =
+        isDragging ? Colors.blue : const Color.fromARGB(255, 116, 116, 116);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
+        child: DottedBorder(
+          borderType: BorderType.RRect,
+          radius: const Radius.circular(12),
+          padding: const EdgeInsets.all(6),
+          dashPattern: const [6, 5],
+          strokeWidth: 3,
+          strokeCap: StrokeCap.round,
+          color: dropZoneColor,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            child: SizedBox(
+              height: 200,
+              width: 400,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(Icons.cloud_upload_outlined,
+                      size: 35, color: dropZoneColor),
+                  Text(
+                    'Datei(en) hierher ziehen',
+                    style: TextStyle(fontSize: 20, color: dropZoneColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -242,34 +349,33 @@ class YustImagePickerState extends State<YustImagePicker> {
             minHeight: 100,
           ),
           child: file.url != null
-                  ? Hero(
-                      tag: file.url!,
-                      child: preview,
-                    )
-                  : preview,
-                  );
-                } else {
-         return Container(
-          constraints: const BoxConstraints(
-            minHeight: 100,
-          ),
-          child: ConstrainedBox(
+              ? Hero(
+                  tag: file.url!,
+                  child: preview,
+                )
+              : preview,
+        );
+      } else {
+        return Container(
             constraints: const BoxConstraints(
-              maxHeight: 300,
-              maxWidth: 400,
+              minHeight: 100,
             ),
-            child: GestureDetector(
-              onTap: zoomEnabled ? () => _showImages(file) : null,
-              child: file.url != null
-                  ? Hero(
-                      tag: file.url!,
-                      child: preview,
-                    )
-                  : preview,
-            ),
-          ));
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 300,
+                maxWidth: 400,
+              ),
+              child: GestureDetector(
+                onTap: zoomEnabled ? () => _showImages(file) : null,
+                child: file.url != null
+                    ? Hero(
+                        tag: file.url!,
+                        child: preview,
+                      )
+                    : preview,
+              ),
+            ));
       }
-     
     }
   }
 
