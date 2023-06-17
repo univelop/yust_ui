@@ -1521,12 +1521,11 @@ packages:
   yust:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: f882656198fab7751900f30be21bbb9d18548038
-      url: "https://github.com/univelop/yust.git"
-    source: git
-    version: "3.9.0"
+      name: yust
+      sha256: "0461d3a2a3f4f35f8347b883bafca78c94253da7b95922235f55092fd1df0077"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.10.0"
 sdks:
   dart: ">=2.19.0 <3.0.0"
   flutter: ">=3.3.0"
