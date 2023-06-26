@@ -29,6 +29,19 @@ class YustAlertService {
     );
   }
 
+  Future<void> showCustomAlert({required Widget Function(BuildContext) content, bool dismissable = true} ) async {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: dismissable,
+      builder: (BuildContext context) {
+        return content.call(context);      
+        },
+    );
+
+  }
+
   Future<bool?> showConfirmation(
     String title,
     String action, {

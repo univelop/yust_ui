@@ -1,3 +1,7 @@
+## 3.10.0 - 2023-06-17
+
+-   Improve image picker
+
 ## 3.9.0 - 2023-05-14
 
 -   Improve widgets
