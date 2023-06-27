@@ -29,17 +29,18 @@ class YustAlertService {
     );
   }
 
-  Future<void> showCustomAlert({required Widget Function(BuildContext) content, bool dismissable = true} ) async {
+  Future<void> showCustomAlert(
+      {required Widget Function(BuildContext) content,
+      bool dismissable = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
       context: context,
       barrierDismissible: dismissable,
       builder: (BuildContext context) {
-        return content.call(context);      
-        },
+        return content.call(context);
+      },
     );
-
   }
 
   Future<bool?> showConfirmation(
@@ -140,16 +141,15 @@ class YustAlertService {
     );
   }
 
-  Future<String?> showPickerDialog(
+  Future<T?> showPickerDialog<T>(
     String title,
     String action, {
     required List<String> optionLabels,
-    required List<String> optionValues,
-    String initialText = '',
+    required List<T> optionValues,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
-    return showDialog<String>(
+    return showDialog<T>(
       context: context,
       builder: (BuildContext context) {
         var selected = '';
@@ -231,15 +231,15 @@ class YustAlertService {
 
   /// Returns newly selected items (only) after confirmation.
   /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
-  Future<List<String>> showCheckListDialog({
+  Future<List<T>> showCheckListDialog<T>({
     required BuildContext context,
-    required List<String> optionValues,
-    required List<String> priorOptionValues,
+    required List<T> optionValues,
+    required List<T> priorOptionValues,
     required List<String> optionLabels,
     bool returnPriorItems = true,
     String? title,
   }) async {
-    final newItemIds = List<String>.from(priorOptionValues);
+    final newItems = List<T>.from(priorOptionValues);
     var isAborted = true;
     await showDialog<List<String>>(
         context: context,
@@ -255,19 +255,19 @@ class YustAlertService {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          newItemIds.clear();
+                          newItems.clear();
                           setState(() {
-                            newItemIds.addAll(optionValues);
+                            newItems.addAll(optionValues);
                           });
                         },
                         child: const Text('Alle auswählen'),
                       ),
                     ),
                   ),
-                  YustMultiSelectComponent<String>(
+                  YustMultiSelectComponent<T>(
                     optionValues: optionValues,
                     optionLabels: optionLabels,
-                    selectedValues: newItemIds,
+                    selectedValues: newItems,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -301,7 +301,7 @@ class YustAlertService {
         return [];
       }
     } else {
-      return newItemIds;
+      return newItems;
     }
   }
 
