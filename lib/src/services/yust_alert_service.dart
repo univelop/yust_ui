@@ -171,7 +171,7 @@ class YustAlertService {
         required List<String> optionLabels,
         required List<String> optionValues,
         String initialText = '',
-        String initialSelectedValue = '',
+        String? initialSelectedValue,
         bool canClear = false,
       }) {
     final context = navStateKey.currentContext;
@@ -198,7 +198,7 @@ class YustAlertService {
                   canClear ? TextButton(
                     child: const Text('Leeren'),
                     onPressed: () {
-                      setState(() => selected = '');
+                      setState(() => selected = null);
                     },
                   ) : const SizedBox(),
                   TextButton(
