@@ -142,51 +142,62 @@ class YustAlertService {
     );
   }
 
+  ///
+  /// initialSelectedValue: Initial selected value
+  /// canClear: Shows a button to empty the selected value
   Future<String?> showPickerDialog(
     String title,
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
     String initialText = '',
+    String initialSelectedValue = '',
+    bool canClear = false,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        var selected = '';
-        return AlertDialog(
-          title: Text(title),
-          content: StatefulBuilder(
+        context: context,
+        builder: (BuildContext context) {
+          var selected = initialSelectedValue;
+          return StatefulBuilder(
             builder: (context, setState) {
-              return SizedBox(
-                height: 100,
-                child: YustSelect(
-                  value: selected,
-                  optionLabels: optionLabels,
-                  optionValues: optionValues,
-                  onSelected: (value) => {setState(() => selected = value)},
+              return AlertDialog(
+                title: Text(title),
+                content: SizedBox(
+                  height: 100,
+                  child: YustSelect(
+                    value: selected,
+                    optionLabels: optionLabels,
+                    optionValues: optionValues,
+                    onSelected: (value) =>
+                        {setState(() => selected = value )},
+                  ),
                 ),
+                actions: <Widget>[
+                  canClear ? TextButton(
+                    child: const Text('Leeren'),
+                    onPressed: () {
+                      setState(() => selected = '');
+                    },
+                  ) : const SizedBox(),
+                  TextButton(
+                    child: const Text('Abbrechen'),
+                    onPressed: () {
+                      Navigator.of(context).pop(null);
+                    },
+                  ),
+                  TextButton(
+                    child: Text(action),
+                    onPressed: () {
+                      Navigator.of(context).pop(selected);
+                    },
+                  ),
+                ],
               );
             },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Abbrechen'),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            TextButton(
-              child: Text(action),
-              onPressed: () {
-                Navigator.of(context).pop(selected);
-              },
-            ),
-          ],
-        );
-      },
-    );
+          );
+        });
   }
 
   Future<T?> showCustomDialog<T>({
