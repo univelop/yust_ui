@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/services/alert_result.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
 import '../widgets/yust_select.dart';
@@ -152,11 +153,30 @@ class YustAlertService {
     required List<String> optionValues,
     String initialText = '',
     String initialSelectedValue = '',
-    bool canClear = false,
   }) {
+    return showClearablePickerDialog(
+        title, action,
+        optionLabels: optionLabels,
+        optionValues: optionValues,
+        initialSelectedValue: initialSelectedValue)
+        .then((v) => v?.result);
+  }
+
+  ///
+  /// initialSelectedValue: Initial selected value
+  /// canClear: Shows a button to empty the selected value
+  Future<AlertResult?> showClearablePickerDialog(
+      String title,
+      String action, {
+        required List<String> optionLabels,
+        required List<String> optionValues,
+        String initialText = '',
+        String initialSelectedValue = '',
+        bool canClear = false,
+      }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
-    return showDialog<String>(
+    return showDialog<AlertResult>(
         context: context,
         builder: (BuildContext context) {
           var selected = initialSelectedValue;
@@ -171,7 +191,7 @@ class YustAlertService {
                     optionLabels: optionLabels,
                     optionValues: optionValues,
                     onSelected: (value) =>
-                        {setState(() => selected = value )},
+                    {setState(() => selected = value )},
                   ),
                 ),
                 actions: <Widget>[
@@ -184,13 +204,13 @@ class YustAlertService {
                   TextButton(
                     child: const Text('Abbrechen'),
                     onPressed: () {
-                      Navigator.of(context).pop(null);
+                      Navigator.of(context).pop(AlertResult(false, null));
                     },
                   ),
                   TextButton(
                     child: Text(action),
                     onPressed: () {
-                      Navigator.of(context).pop(selected);
+                      Navigator.of(context).pop(AlertResult(true, selected));
                     },
                   ),
                 ],
