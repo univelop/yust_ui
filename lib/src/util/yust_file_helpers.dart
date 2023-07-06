@@ -28,8 +28,9 @@ class YustFileHelpers {
   /// On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
   /// Use either [file] or [data].
-  Future<void> launchFile({
-    required BuildContext context,
+  Future<void> launchFileWithoutContext({
+    required Size size,
+    required RenderBox? box,
     required String name,
     File? file,
     Uint8List? data,
@@ -44,9 +45,6 @@ class YustFileHelpers {
         a.remove();
       }
     } else {
-      final size = MediaQuery.of(context).size;
-      // Get the Location of the widget (e.g. button), that called the method.
-      final box = context.findRenderObject() as RenderBox?;
       if (file == null && data != null) {
         final tempDir = await getTemporaryDirectory();
         final path = '${tempDir.path}/$name';
@@ -74,12 +72,32 @@ class YustFileHelpers {
     }
   }
 
+  /// Shares or downloads a file.
+  /// On iOS and Android shows Share-Popup afterwards.
+  /// For the browser starts the file download.
+  /// Use either [file] or [data].
+  Future<void> launchFile({
+    required BuildContext context,
+    required String name,
+    File? file,
+    Uint8List? data,
+  }) async {
+    final size = MediaQuery.of(context).size;
+    // Get the Location of the widget (e.g. button), that called the method.
+    final box = context.findRenderObject() as RenderBox?;
+    await launchFileWithoutContext(
+        size: size, box: box, name: name, file: file, data: data);
+  }
+
   /// Downloads a file. On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
   Future<void> downloadAndLaunchFile(
       {required BuildContext context,
       required String url,
       required String name}) async {
+    final size = MediaQuery.of(context).size;
+    // Get the Location of the widget (e.g. button), that called the method.
+    final box = context.findRenderObject() as RenderBox?;
     await EasyLoading.show(status: 'Datei laden...');
     try {
       if (kIsWeb) {
@@ -87,13 +105,15 @@ class YustFileHelpers {
           Uri.parse(url),
         );
         final data = r.bodyBytes;
-        await launchFile(context: context, name: name, data: data);
+        await launchFileWithoutContext(
+            size: size, box: box, name: name, data: data);
       } else {
         final tempDir = await getTemporaryDirectory();
         final path = '${tempDir.path}/$name';
         await Dio().download(url, path);
         final file = File(path);
-        await launchFile(context: context, name: name, file: file);
+        await launchFileWithoutContext(
+            size: size, box: box, name: name, file: file);
       }
       await EasyLoading.dismiss();
     } catch (e) {
