@@ -237,39 +237,36 @@ class YustImagePickerState extends State<YustImagePicker> {
       );
     } else {
       if (widget.showCentered) {
-        return Container(
-          constraints: const BoxConstraints(
-            minHeight: 100,
-          ),
+        return FittedBox(
+          fit: BoxFit.scaleDown,
           child: file.url != null
-                  ? Hero(
-                      tag: file.url!,
-                      child: preview,
-                    )
-                  : preview,
-                  );
-                } else {
-         return Container(
-          constraints: const BoxConstraints(
-            minHeight: 100,
-          ),
-          child: ConstrainedBox(
+              ? Hero(
+                  tag: file.url!,
+                  child: preview,
+                )
+              : preview,
+        );
+      } else {
+        return Container(
             constraints: const BoxConstraints(
-              maxHeight: 300,
-              maxWidth: 400,
+              minHeight: 100,
             ),
-            child: GestureDetector(
-              onTap: zoomEnabled ? () => _showImages(file) : null,
-              child: file.url != null
-                  ? Hero(
-                      tag: file.url!,
-                      child: preview,
-                    )
-                  : preview,
-            ),
-          ));
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 300,
+                maxWidth: 400,
+              ),
+              child: GestureDetector(
+                onTap: zoomEnabled ? () => _showImages(file) : null,
+                child: file.url != null
+                    ? Hero(
+                        tag: file.url!,
+                        child: preview,
+                      )
+                    : preview,
+              ),
+            ));
       }
-     
     }
   }
 
