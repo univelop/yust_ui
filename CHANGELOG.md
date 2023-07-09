@@ -1,3 +1,7 @@
+## 3.10.1 - 2023-07-09
+
+-   Fix text field
+
 ## 3.10.0 - 2023-06-17
 
 -   Improve image picker
