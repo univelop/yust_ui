@@ -162,13 +162,13 @@ class YustFileHelpers {
   //Await package for ios & android which works native
   Future<Uint8List?> _resizeImageMobile(
       String name, Uint8List bytes, int maxWidth) async {
-    var image = image_lib.decodeNamedImage(bytes, name)!;
+    var image = image_lib.decodeNamedImage(name, bytes)!;
     if (image.width > image.height && image.width > maxWidth) {
       image = image_lib.copyResize(image, width: maxWidth);
     } else if (image.height > image.width && image.height > maxWidth) {
       image = image_lib.copyResize(image, height: maxWidth);
     }
-    return image_lib.encodeNamedImage(image, name) as Uint8List?;
+    return image_lib.encodeNamedImage(name, image);
   }
 
   Future<Uint8List?> _resizeImageWeb(
