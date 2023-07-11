@@ -158,6 +158,7 @@ class YustAlertService {
         title, action,
         optionLabels: optionLabels,
         optionValues: optionValues,
+        canClear: false,
         initialSelectedValue: initialSelectedValue)
         .then((v) => v?.result);
   }
@@ -172,7 +173,7 @@ class YustAlertService {
         required List<String> optionValues,
         String initialText = '',
         String? initialSelectedValue,
-        bool canClear = false,
+        bool canClear = true,
       }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
