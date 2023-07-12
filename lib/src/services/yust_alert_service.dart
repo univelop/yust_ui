@@ -154,12 +154,11 @@ class YustAlertService {
     String initialText = '',
     String initialSelectedValue = '',
   }) {
-    return showClearablePickerDialog(
-        title, action,
-        optionLabels: optionLabels,
-        optionValues: optionValues,
-        canClear: false,
-        initialSelectedValue: initialSelectedValue)
+    return showClearablePickerDialog(title, action,
+            optionLabels: optionLabels,
+            optionValues: optionValues,
+            canClear: false,
+            initialSelectedValue: initialSelectedValue)
         .then((v) => v?.result);
   }
 
@@ -167,14 +166,15 @@ class YustAlertService {
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
   Future<AlertResult?> showClearablePickerDialog(
-      String title,
-      String action, {
-        required List<String> optionLabels,
-        required List<String> optionValues,
-        String initialText = '',
-        String? initialSelectedValue,
-        bool canClear = true,
-      }) {
+    String title,
+    String action, {
+    required List<String> optionLabels,
+    required List<String> optionValues,
+    String initialText = '',
+    String? initialSelectedValue,
+    String? subTitle = '',
+    bool canClear = true,
+  }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<AlertResult>(
@@ -186,22 +186,30 @@ class YustAlertService {
               return AlertDialog(
                 title: Text(title),
                 content: SizedBox(
-                  height: 100,
-                  child: YustSelect(
-                    value: selected,
-                    optionLabels: optionLabels,
-                    optionValues: optionValues,
-                    onSelected: (value) =>
-                    {setState(() => selected = value )},
-                  ),
-                ),
+                    height: 100,
+                    child: Column(children: [
+                      Align(
+                          alignment: Alignment.topLeft,
+                          child: subTitle != null
+                              ? Text(subTitle)
+                              : const SizedBox.shrink()),
+                      YustSelect(
+                        value: selected,
+                        optionLabels: optionLabels,
+                        optionValues: optionValues,
+                        onSelected: (value) =>
+                            {setState(() => selected = value )},
+                      )
+                    ])),
                 actions: <Widget>[
-                  canClear ? TextButton(
-                    child: const Text('Leeren'),
-                    onPressed: () {
-                      setState(() => selected = null);
-                    },
-                  ) : const SizedBox(),
+                  canClear
+                      ? TextButton(
+                          child: const Text('Leeren'),
+                          onPressed: () {
+                            setState(() => selected = null);
+                          },
+                        )
+                      : const SizedBox.shrink(),
                   TextButton(
                     child: const Text('Abbrechen'),
                     onPressed: () {
@@ -285,9 +293,10 @@ class YustAlertService {
                 children: [
                   subTitle != null
                       ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 24.0),
                           child: Text(subTitle))
-                      : const SizedBox(),
+                      : const SizedBox.shrink(),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Align(
