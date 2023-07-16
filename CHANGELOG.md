@@ -1,3 +1,7 @@
+## 3.11.0 - 2023-07-16
+
+-   Improve widgets
+
 ## 3.10.1 - 2023-07-09
 
 -   Fix text field
