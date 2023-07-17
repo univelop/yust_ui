@@ -17,7 +17,7 @@ dependencies:
     cached_network_image: ^3.2.0
     cloud_firestore: ^4.5.0
     collection: ^1.16.0
-    connectivity_plus: ^1.0.6
+    connectivity_plus: ^3.0.6
     crypto: ^3.0.1
     dio: ^5.2.1+1
     dotted_border: ^2.0.0+2
@@ -54,7 +54,7 @@ dependency_overrides:
         git:
             url: https://github.com/dock51/paginate_firestore.git
             ref: master
+    # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
             url: https://github.com/Harishwarrior/flutter_painter.git
-    # See https://github.com/omarhurani/flutter_painter/pull/59
