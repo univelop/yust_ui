@@ -1522,10 +1522,10 @@ packages:
     dependency: "direct main"
     description:
       name: yust
-      sha256: "2be103a763ef95eafd6b604428de9452e533d1565f148342ad3d3964b2f013ef"
+      sha256: "98b76f899129333bf6a568c76047256a5fa69366097d2afb6c3bce6c9a8a0ad0"
       url: "https://pub.dev"
     source: hosted
-    version: "3.11.0"
+    version: "3.11.1"
 sdks:
   dart: ">=2.19.0 <3.0.0"
   flutter: ">=3.3.0"
