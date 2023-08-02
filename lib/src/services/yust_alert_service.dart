@@ -5,6 +5,7 @@ import '../widgets/yust_select.dart';
 
 class YustAlertService {
   final GlobalKey<NavigatorState> navStateKey;
+
   YustAlertService(this.navStateKey);
 
   Future<void> showAlert(String title, String message) {
@@ -29,17 +30,18 @@ class YustAlertService {
     );
   }
 
-  Future<void> showCustomAlert({required Widget Function(BuildContext) content, bool dismissable = true} ) async {
+  Future<void> showCustomAlert(
+      {required Widget Function(BuildContext) content,
+      bool dismissable = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
       context: context,
       barrierDismissible: dismissable,
       builder: (BuildContext context) {
-        return content.call(context);      
-        },
+        return content.call(context);
+      },
     );
-
   }
 
   Future<bool?> showConfirmation(
@@ -238,6 +240,7 @@ class YustAlertService {
     required List<String> optionLabels,
     bool returnPriorItems = true,
     String? title,
+    String? subTitle,
   }) async {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
@@ -249,6 +252,11 @@ class YustAlertService {
               return SimpleDialog(
                 title: Text(title ?? 'Pflichtfelder'),
                 children: [
+                  subTitle != null
+                      ? Padding(
+                          padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 0.0),
+                          child: Text(subTitle))
+                      : const SizedBox(),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Align(

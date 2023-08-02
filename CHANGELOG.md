@@ -1,3 +1,15 @@
+## 3.11.1 - 2023-07-21
+
+-   Improve button tile
+
+## 3.11.0 - 2023-07-16
+
+-   Improve widgets
+
+## 3.10.1 - 2023-07-09
+
+-   Fix text field
+
 ## 3.10.0 - 2023-06-17
 
 -   Improve image picker
