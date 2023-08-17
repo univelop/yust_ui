@@ -153,7 +153,7 @@ class YustAccountEditScreen extends StatelessWidget {
                           .showAlert('Fehler', err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
-                      Navigator.of(context).pop();
+                      navigator.pop();
                       await YustUi.alertService
                           .showAlert('Fehler', err.toString());
                     }
