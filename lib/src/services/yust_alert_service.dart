@@ -32,12 +32,12 @@ class YustAlertService {
 
   Future<void> showCustomAlert(
       {required Widget Function(BuildContext) content,
-      bool dismissable = true}) async {
+      bool dismissible = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
       context: context,
-      barrierDismissible: dismissable,
+      barrierDismissible: dismissible,
       builder: (BuildContext context) {
         return content.call(context);
       },
@@ -165,8 +165,7 @@ class YustAlertService {
                   value: selected,
                   optionLabels: optionLabels,
                   optionValues: optionValues,
-                  onSelected: (value) =>
-                      {setState(() => selected = value as String)},
+                  onSelected: (value) => {setState(() => selected = value)},
                 ),
               );
             },
@@ -254,7 +253,7 @@ class YustAlertService {
                 children: [
                   subTitle != null
                       ? Padding(
-                          padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 0.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: Text(subTitle))
                       : const SizedBox(),
                   Padding(
