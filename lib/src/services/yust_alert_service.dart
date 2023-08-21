@@ -243,6 +243,8 @@ class YustAlertService {
   }) async {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
+    var selectAll =
+        priorOptionValues.length == optionValues.length ? false : true;
     await showDialog<List<String>>(
         context: context,
         builder: (context) {
@@ -262,12 +264,17 @@ class YustAlertService {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          newItemIds.clear();
                           setState(() {
-                            newItemIds.addAll(optionValues);
+                            newItemIds.clear();
+                            if (selectAll) {
+                              newItemIds.addAll(optionValues);
+                            }
+                            selectAll = !selectAll;
                           });
                         },
-                        child: const Text('Alle auswählen'),
+                        child: selectAll
+                            ? const Text('Alle auswählen')
+                            : const Text('Alle abwählen'),
                       ),
                     ),
                   ),
