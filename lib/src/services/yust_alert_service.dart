@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/services/alert_result.dart';
+import 'package:yust_ui/src/services/yust_alert_result.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
 import '../widgets/yust_select.dart';
@@ -31,9 +31,8 @@ class YustAlertService {
     );
   }
 
-  Future<void> showCustomAlert(
-      {required Widget Function(BuildContext) content,
-      bool dismissible = true}) async {
+  Future<void> showCustomAlert({required Widget Function(BuildContext) content,
+    bool dismissible = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
@@ -45,12 +44,11 @@ class YustAlertService {
     );
   }
 
-  Future<bool?> showConfirmation(
-    String title,
-    String action, {
-    String cancelText = 'Abbrechen',
-    String? description,
-  }) {
+  Future<bool?> showConfirmation(String title,
+      String action, {
+        String cancelText = 'Abbrechen',
+        String? description,
+      }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<bool>(
@@ -79,17 +77,16 @@ class YustAlertService {
     );
   }
 
-  Future<String?> showTextFieldDialog(
-    String title,
-    String? placeholder,
-    String action, {
-    String? message,
-    String initialText = '',
-    AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
+  Future<String?> showTextFieldDialog(String title,
+      String? placeholder,
+      String action, {
+        String? message,
+        String initialText = '',
+        AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
-    /// if validator is set, action gets only triggered if the validator returns null (means true)
-    FormFieldValidator<String>? validator,
-  }) {
+        /// if validator is set, action gets only triggered if the validator returns null (means true)
+        FormFieldValidator<String>? validator,
+      }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
 
@@ -146,35 +143,33 @@ class YustAlertService {
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
-  Future<String?> showPickerDialog(
-    String title,
-    String action, {
-    required List<String> optionLabels,
-    required List<String> optionValues,
-    String initialText = '',
-    String initialSelectedValue = '',
-  }) {
+  Future<String?> showPickerDialog(String title,
+      String action, {
+        required List<String> optionLabels,
+        required List<String> optionValues,
+        String initialText = '',
+        String initialSelectedValue = '',
+      }) {
     return showClearablePickerDialog(title, action,
-            optionLabels: optionLabels,
-            optionValues: optionValues,
-            canClear: false,
-            initialSelectedValue: initialSelectedValue)
+        optionLabels: optionLabels,
+        optionValues: optionValues,
+        canClear: false,
+        initialSelectedValue: initialSelectedValue)
         .then((v) => v?.result);
   }
 
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
-  Future<AlertResult?> showClearablePickerDialog(
-    String title,
-    String action, {
-    required List<String> optionLabels,
-    required List<String> optionValues,
-    String initialText = '',
-    String? initialSelectedValue,
-    String? subTitle = '',
-    bool canClear = true,
-  }) {
+  Future<AlertResult?> showClearablePickerDialog(String title,
+      String action, {
+        required List<String> optionLabels,
+        required List<String> optionValues,
+        String initialText = '',
+        String? initialSelectedValue,
+        String? subTitle = '',
+        bool canClear = true,
+      }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<AlertResult>(
@@ -198,17 +193,17 @@ class YustAlertService {
                         optionLabels: optionLabels,
                         optionValues: optionValues,
                         onSelected: (value) =>
-                            {setState(() => selected = value )},
+                        {setState(() => selected = value )},
                       )
                     ])),
                 actions: <Widget>[
                   canClear
                       ? TextButton(
-                          child: const Text('Leeren'),
-                          onPressed: () {
-                            setState(() => selected = null);
-                          },
-                        )
+                    child: const Text('Leeren'),
+                    onPressed: () {
+                      setState(() => selected = null);
+                    },
+                  )
                       : const SizedBox.shrink(),
                   TextButton(
                     child: const Text('Abbrechen'),
@@ -271,8 +266,39 @@ class YustAlertService {
   }
 
   /// Returns newly selected items (only) after confirmation.
+  /// If popup has been canceled callable method get an empty list.
+  /// If you need to track the cancel click use [showCancelableCheckListDialog]
   /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
   Future<List<String>> showCheckListDialog({
+    required BuildContext context,
+    required List<String> optionValues,
+    required List<String> priorOptionValues,
+    required List<String> optionLabels,
+    bool returnPriorItems = true,
+    String? title,
+    String? subTitle,
+  }) async {
+    final result = await showCancelableCheckListDialog(
+        context: context,
+        optionValues: optionValues,
+        priorOptionValues: priorOptionValues,
+        optionLabels: optionLabels,
+        returnPriorItems: returnPriorItems,
+        title: title,
+        subTitle: subTitle
+    );
+
+    if (result.confirmed) {
+      return result.result;
+    } else {
+      return [];
+    }
+  }
+
+  /// Returns newly selected items (only) after confirmation.
+  /// If popup has been canceled callable method get a result object.
+  /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
+  Future<AlertCheckListResult> showCancelableCheckListDialog({
     required BuildContext context,
     required List<String> optionValues,
     required List<String> priorOptionValues,
@@ -293,9 +319,9 @@ class YustAlertService {
                 children: [
                   subTitle != null
                       ? Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Text(subTitle))
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Text(subTitle))
                       : const SizedBox.shrink(),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -344,12 +370,12 @@ class YustAlertService {
 
     if (isAborted) {
       if (returnPriorItems) {
-        return priorOptionValues;
+        return AlertCheckListResult(false, priorOptionValues);
       } else {
-        return [];
+        return AlertCheckListResult(false, []);
       }
     } else {
-      return newItemIds;
+      return AlertCheckListResult(true, newItemIds);
     }
   }
 
