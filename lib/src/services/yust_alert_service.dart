@@ -31,8 +31,9 @@ class YustAlertService {
     );
   }
 
-  Future<void> showCustomAlert({required Widget Function(BuildContext) content,
-    bool dismissible = true}) async {
+  Future<void> showCustomAlert(
+      {required Widget Function(BuildContext) content,
+      bool dismissible = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
@@ -44,11 +45,12 @@ class YustAlertService {
     );
   }
 
-  Future<bool?> showConfirmation(String title,
-      String action, {
-        String cancelText = 'Abbrechen',
-        String? description,
-      }) {
+  Future<bool?> showConfirmation(
+    String title,
+    String action, {
+    String cancelText = 'Abbrechen',
+    String? description,
+  }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<bool>(
@@ -77,16 +79,17 @@ class YustAlertService {
     );
   }
 
-  Future<String?> showTextFieldDialog(String title,
-      String? placeholder,
-      String action, {
-        String? message,
-        String initialText = '',
-        AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
+  Future<String?> showTextFieldDialog(
+    String title,
+    String? placeholder,
+    String action, {
+    String? message,
+    String initialText = '',
+    AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
-        /// if validator is set, action gets only triggered if the validator returns null (means true)
-        FormFieldValidator<String>? validator,
-      }) {
+    /// if validator is set, action gets only triggered if the validator returns null (means true)
+    FormFieldValidator<String>? validator,
+  }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
 
@@ -143,33 +146,35 @@ class YustAlertService {
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
-  Future<String?> showPickerDialog(String title,
-      String action, {
-        required List<String> optionLabels,
-        required List<String> optionValues,
-        String initialText = '',
-        String initialSelectedValue = '',
-      }) {
+  Future<String?> showPickerDialog(
+    String title,
+    String action, {
+    required List<String> optionLabels,
+    required List<String> optionValues,
+    String initialText = '',
+    String initialSelectedValue = '',
+  }) {
     return showClearablePickerDialog(title, action,
-        optionLabels: optionLabels,
-        optionValues: optionValues,
-        canClear: false,
-        initialSelectedValue: initialSelectedValue)
+            optionLabels: optionLabels,
+            optionValues: optionValues,
+            canClear: false,
+            initialSelectedValue: initialSelectedValue)
         .then((v) => v?.result);
   }
 
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
-  Future<AlertResult?> showClearablePickerDialog(String title,
-      String action, {
-        required List<String> optionLabels,
-        required List<String> optionValues,
-        String initialText = '',
-        String? initialSelectedValue,
-        String? subTitle = '',
-        bool canClear = true,
-      }) {
+  Future<AlertResult?> showClearablePickerDialog(
+    String title,
+    String action, {
+    required List<String> optionLabels,
+    required List<String> optionValues,
+    String initialText = '',
+    String? initialSelectedValue,
+    String? subTitle = '',
+    bool canClear = true,
+  }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<AlertResult>(
@@ -192,19 +197,15 @@ class YustAlertService {
                         value: selected,
                         optionLabels: optionLabels,
                         optionValues: optionValues,
+                        onDelete: canClear
+                            ? () async {
+                                setState(() => selected = null);
+                              } : null,
                         onSelected: (value) =>
-                        {setState(() => selected = value )},
+                            {setState(() => selected = value)},
                       )
                     ])),
                 actions: <Widget>[
-                  canClear
-                      ? TextButton(
-                    child: const Text('Leeren'),
-                    onPressed: () {
-                      setState(() => selected = null);
-                    },
-                  )
-                      : const SizedBox.shrink(),
                   TextButton(
                     child: const Text('Abbrechen'),
                     onPressed: () {
@@ -285,8 +286,7 @@ class YustAlertService {
         optionLabels: optionLabels,
         returnPriorItems: returnPriorItems,
         title: title,
-        subTitle: subTitle
-    );
+        subTitle: subTitle);
 
     if (result.confirmed) {
       return result.result;
@@ -319,9 +319,8 @@ class YustAlertService {
                 children: [
                   subTitle != null
                       ? Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Text(subTitle))
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Text(subTitle))
                       : const SizedBox.shrink(),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
