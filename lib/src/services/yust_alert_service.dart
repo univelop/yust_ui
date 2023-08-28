@@ -124,23 +124,23 @@ class YustAlertService {
                     if (suffixIcon != null) suffixIcon(controller: controller),
                   ],
                 ),
-                if (warning != null)
-                  const SizedBox(height: 5),
+                if (warning != null) const SizedBox(height: 5),
                 if (warning != null)
                   Row(
-                  children: [
-                    const Icon(
-                      size: 15,
-                      Icons.info,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      warning,
-                      style: const TextStyle(
-                        fontSize: 11,
+                    children: [
+                      const Icon(
+                        size: 15,
+                        Icons.info,
                       ),
-                    ),
-                ],),
+                      const SizedBox(width: 5),
+                      Text(
+                        warning,
+                        style: const TextStyle(
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
             actions: <Widget>[
@@ -174,14 +174,14 @@ class YustAlertService {
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
-    String initialText = '',
+    String? initialValue,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        var selected = '';
+        var selected = initialValue ?? '';
         return AlertDialog(
           title: Text(title),
           content: StatefulBuilder(
