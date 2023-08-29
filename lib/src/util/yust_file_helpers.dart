@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -206,5 +207,23 @@ class YustFileHelpers {
     reader.readAsArrayBuffer(blob);
     reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
     return completer.future;
+  }
+
+  String removeExtension(String file) {
+    var pathParts = file.split('.');
+    if (pathParts.length > 1) {
+      pathParts.removeLast();
+    }
+    return pathParts.join('.');
+  }
+
+  String getExtension(String file) {
+    return file.contains('.') ? file.split('.').last : '';
+  }
+
+  bool isValidFileName(String file) {
+    final invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
+
+    return invalidChars.none((element) => file.contains(element));
   }
 }

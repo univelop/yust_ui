@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:yust/yust.dart';
 
 import '../util/yust_file_handler.dart';
@@ -97,21 +97,25 @@ class YustFilePickerState extends State<YustFilePicker> {
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
-        if (kIsWeb && widget.enableDropzone) {
-          return _buildDropzone(context);
-        } else {
-          return YustListTile(
-            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                ? _buildAddButton(context)
-                : null,
-            label: widget.label,
-            prefixIcon: widget.prefixIcon,
-            below: _buildFiles(context),
-            divider: widget.divider,
-          );
-        }
+        return _buildFilePicker(context);
       },
     );
+  }
+
+  Widget _buildFilePicker(BuildContext context) {
+    if (kIsWeb && widget.enableDropzone) {
+      return _buildDropzone(context);
+    } else {
+      return YustListTile(
+        suffixChild: (widget.allowMultiple || widget.files.isEmpty)
+            ? _buildAddButton(context)
+            : null,
+        label: widget.label,
+        prefixIcon: widget.prefixIcon,
+        below: _buildFiles(context),
+        divider: widget.divider,
+      );
+    }
   }
 
   Widget _buildDropzone(BuildContext context) {
@@ -277,6 +281,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildDownloadButton(file),
+          _buildFileRenameButton(file),
           _buildDeleteButton(file),
         ],
       );
@@ -291,6 +296,72 @@ class YustFilePickerState extends State<YustFilePicker> {
           }
         },
       );
+
+  Widget _buildFileRenameButton(YustFile file) {
+    if (!_enabled) {
+      return const SizedBox.shrink();
+    }
+    if (_processing[file.name] == true) {
+      return const SizedBox.shrink();
+    }
+    return IconButton(
+      icon: const Icon(Icons.edit),
+      color: Theme.of(context).colorScheme.primary,
+      onPressed: _enabled ? () => _renameFile(file) : null,
+    );
+  }
+
+  Future<void> _renameFile(YustFile yustFile) async {
+    final newFileName = await YustUi.alertService.showTextFieldDialog(
+        'Wie soll die Datei heißen?', '', 'Speichern',
+        initialText: YustUi.fileHelpers.removeExtension(yustFile.name ?? ''),
+        validator: (value) => (_isNewFileNameValid(value, yustFile) &&
+                !fileExists(
+                    '$value.${YustUi.fileHelpers.getExtension(yustFile.name ?? '')}'))
+            ? null
+            : 'Der Dateiname ist nicht valide!');
+
+    if (newFileName == null) {
+      return;
+    }
+    _processing[yustFile.name] = true;
+    setState(() {});
+
+    final newFileNameWithExtension =
+        '$newFileName.${YustUi.fileHelpers.getExtension(yustFile.name ?? '')}';
+
+    await _reuploadFileForRename(yustFile, newFileNameWithExtension);
+    await _doDeleteFile(yustFile);
+
+    _processing[yustFile.name] = false;
+    setState(() {});
+  }
+
+  Future<void> _reuploadFileForRename(
+      YustFile yustFile, String newFileName) async {
+    final bytes = await Yust.fileService.downloadFile(
+        path: yustFile.storageFolderPath ?? '', name: yustFile.name ?? '');
+    await uploadFile(
+      name: newFileName,
+      file: yustFile.file,
+      bytes: bytes,
+      callSetState: false,
+    );
+  }
+
+  Future<void> _doDeleteFile(YustFile yustFile) async {
+    await _fileHandler.deleteFile(yustFile);
+    if (!yustFile.cached) {
+      widget.onChanged!(_fileHandler.getOnlineFiles());
+    }
+  }
+
+  bool _isNewFileNameValid(String? filename, YustFile oldFile) {
+    return filename != null &&
+        filename.isNotEmpty &&
+        filename.length < 256 &&
+        YustUi.fileHelpers.isValidFileName(filename);
+  }
 
   Widget _buildDeleteButton(YustFile file) {
     if (!_enabled) {
@@ -345,11 +416,11 @@ class YustFilePickerState extends State<YustFilePicker> {
     }
   }
 
-  Future<void> uploadFile({
-    required String name,
-    File? file,
-    Uint8List? bytes,
-  }) async {
+  Future<void> uploadFile(
+      {required String name,
+      File? file,
+      Uint8List? bytes,
+      callSetState = true}) async {
     final newYustFile = YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),
@@ -360,22 +431,28 @@ class YustFilePickerState extends State<YustFilePicker> {
       linkedDocAttribute: widget.linkedDocAttribute,
     );
     _processing[newYustFile.name] = true;
+    if (mounted && callSetState) {
+      setState(() {});
+    }
 
-    if (_fileHandler.getFiles().any((file) => file.name == newYustFile.name)) {
+    if (fileExists(newYustFile.name)) {
       await YustUi.alertService.showAlert('Nicht möglich',
           'Eine Datei mit dem Namen ${newYustFile.name} existiert bereits.');
     } else {
-      await _createDatebaseEntry();
+      await _createDatabaseEntry();
       await _fileHandler.addFile(newYustFile);
     }
     _processing[newYustFile.name] = false;
     widget.onChanged!(_fileHandler.getOnlineFiles());
-    if (mounted) {
+    if (mounted && callSetState) {
       setState(() {});
     }
   }
 
-  Future<void> _createDatebaseEntry() async {
+  bool fileExists(String? fileName) =>
+      _fileHandler.getFiles().any((file) => file.name == fileName);
+
+  Future<void> _createDatabaseEntry() async {
     try {
       if (widget.linkedDocPath != null &&
           !_fileHandler.existsDocData(
@@ -392,10 +469,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         .showConfirmation('Wirklich löschen?', 'Löschen');
     if (confirmed == true) {
       try {
-        await _fileHandler.deleteFile(yustFile);
-        if (!yustFile.cached) {
-          widget.onChanged!(_fileHandler.getOnlineFiles());
-        }
+        await _doDeleteFile(yustFile);
         if (mounted) {
           setState(() {});
         }

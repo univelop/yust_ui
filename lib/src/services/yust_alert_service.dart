@@ -86,7 +86,6 @@ class YustAlertService {
     String? warning,
     String initialText = '',
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
-
     /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
     Widget Function({required TextEditingController controller})? suffixIcon,
