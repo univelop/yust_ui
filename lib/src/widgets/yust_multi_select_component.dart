@@ -72,11 +72,12 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
           (!selectedValues.contains(value) && selectedValues.isNotEmpty));
 
   void _addOption(T option) {
-    final index = optionValues.indexOf(option);
-    if (index >= selectedValues.length) {
-      selectedValues.add(option);
-    } else {
-      selectedValues.insert(index, option);
+    Map<T, int> optionIndizes = {};
+    for (int i = 0; i < optionValues.length; i++) {
+      optionIndizes[optionValues[i]] = i;
     }
+    selectedValues.add(option);
+    selectedValues
+        .sort((a, b) => optionIndizes[a]!.compareTo(optionIndizes[b]!));
   }
 }
