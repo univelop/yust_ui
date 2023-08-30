@@ -1,3 +1,8 @@
+## 3.12.0 - 2023-08-20
+
+-   Upgrade to Flutter 3.10
+-   Add Apple Login
+
 ## 3.11.1 - 2023-07-21
 
 -   Improve button tile

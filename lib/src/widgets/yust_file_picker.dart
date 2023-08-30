@@ -60,7 +60,7 @@ class YustFilePicker extends StatefulWidget {
     this.allowMultiple = true,
     this.allowedExtensions,
     this.divider = true,
-    this. allowOnlyImages = false,
+    this.allowOnlyImages = false,
   }) : super(key: key);
 
   @override
@@ -261,7 +261,7 @@ class YustFilePickerState extends State<YustFilePicker> {
           _buildCachedIndicator(file),
         ],
       ),
-      trailing: _buildDeleteButton(file),
+      trailing: _buildTrailing(file),
       onTap: () {
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
@@ -272,6 +272,25 @@ class YustFilePickerState extends State<YustFilePicker> {
           const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
   }
+
+  Widget _buildTrailing(YustFile file) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDownloadButton(file),
+          _buildDeleteButton(file),
+        ],
+      );
+
+  Widget _buildDownloadButton(YustFile file) => IconButton(
+        icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
+        color: Theme.of(context).primaryColor,
+        onPressed: () async {
+          if (file.isValid()) {
+            await YustUi.fileHelpers.downloadAndLaunchFile(
+                context: context, url: file.url!, name: file.name!);
+          }
+        },
+      );
 
   Widget _buildDeleteButton(YustFile file) {
     if (!_enabled) {
@@ -306,7 +325,9 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Future<void> _pickFiles() async {
     YustUi.helpers.unfocusCurrent();
-    final type = (widget.allowedExtensions != null) ? FileType.custom : (widget.allowOnlyImages ? FileType.image: FileType.any);
+    final type = (widget.allowedExtensions != null)
+        ? FileType.custom
+        : (widget.allowOnlyImages ? FileType.image : FileType.any);
     final result = await FilePicker.platform.pickFiles(
       type: type,
       allowedExtensions:

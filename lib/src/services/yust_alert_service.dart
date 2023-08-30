@@ -32,12 +32,12 @@ class YustAlertService {
 
   Future<void> showCustomAlert(
       {required Widget Function(BuildContext) content,
-      bool dismissable = true}) async {
+      bool dismissible = true}) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
       context: context,
-      barrierDismissible: dismissable,
+      barrierDismissible: dismissible,
       builder: (BuildContext context) {
         return content.call(context);
       },
@@ -83,11 +83,13 @@ class YustAlertService {
     String? placeholder,
     String action, {
     String? message,
+    String? warning,
     String initialText = '',
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
     /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
+    Widget Function({required TextEditingController controller})? suffixIcon,
   }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
@@ -105,15 +107,40 @@ class YustAlertService {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (message != null) Text(message),
-                TextFormField(
-                  controller: controller,
-                  decoration: InputDecoration(hintText: placeholder),
-                  autovalidateMode: validator == null ? null : validateMode,
-                  validator: validator == null
-                      ? null
-                      : (value) => validator(value!.trim()),
-                  autofocus: true,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: controller,
+                        decoration: InputDecoration(hintText: placeholder),
+                        autovalidateMode:
+                            validator == null ? null : validateMode,
+                        validator: validator == null
+                            ? null
+                            : (value) => validator(value!.trim()),
+                        autofocus: true,
+                      ),
+                    ),
+                    if (suffixIcon != null) suffixIcon(controller: controller),
+                  ],
                 ),
+                if (warning != null) const SizedBox(height: 5),
+                if (warning != null)
+                  Row(
+                    children: [
+                      const Icon(
+                        size: 15,
+                        Icons.info,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        warning,
+                        style: const TextStyle(
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
             actions: <Widget>[
@@ -147,14 +174,14 @@ class YustAlertService {
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
-    String initialText = '',
+    String? initialValue,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        var selected = '';
+        var selected = initialValue ?? '';
         return AlertDialog(
           title: Text(title),
           content: StatefulBuilder(
@@ -165,8 +192,7 @@ class YustAlertService {
                   value: selected,
                   optionLabels: optionLabels,
                   optionValues: optionValues,
-                  onSelected: (value) =>
-                      {setState(() => selected = value as String)},
+                  onSelected: (value) => {setState(() => selected = value)},
                 ),
               );
             },
@@ -244,6 +270,8 @@ class YustAlertService {
   }) async {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
+    var selectAll =
+        priorOptionValues.length == optionValues.length ? false : true;
     await showDialog<List<String>>(
         context: context,
         builder: (context) {
@@ -254,7 +282,7 @@ class YustAlertService {
                 children: [
                   subTitle != null
                       ? Padding(
-                          padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 0.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: Text(subTitle))
                       : const SizedBox(),
                   Padding(
@@ -263,12 +291,17 @@ class YustAlertService {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          newItemIds.clear();
                           setState(() {
-                            newItemIds.addAll(optionValues);
+                            newItemIds.clear();
+                            if (selectAll) {
+                              newItemIds.addAll(optionValues);
+                            }
+                            selectAll = !selectAll;
                           });
                         },
-                        child: const Text('Alle auswählen'),
+                        child: selectAll
+                            ? const Text('Alle auswählen')
+                            : const Text('Alle abwählen'),
                       ),
                     ),
                   ),
