@@ -52,7 +52,7 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
                   controlAffinity: ListTileControlAffinity.platform,
                   onChanged: (value) => setState(() {
                     (value ?? false)
-                        ? selectedValues.add(optionValue)
+                        ? _addOption(optionValue)
                         : selectedValues.remove(optionValue);
                     onChanged?.call();
                   }),
@@ -70,4 +70,13 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
       disabled ||
       (singleSelect &&
           (!selectedValues.contains(value) && selectedValues.isNotEmpty));
+
+  void _addOption(T option) {
+    final index = optionValues.indexOf(option);
+    if (index >= selectedValues.length) {
+      selectedValues.add(option);
+    } else {
+      selectedValues.insert(index, option);
+    }
+  }
 }
