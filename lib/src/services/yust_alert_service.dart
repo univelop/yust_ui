@@ -152,13 +152,12 @@ class YustAlertService {
     required List<String> optionLabels,
     required List<String> optionValues,
     String initialText = '',
-    String initialSelectedValue = '',
   }) {
     return showClearablePickerDialog(title, action,
             optionLabels: optionLabels,
             optionValues: optionValues,
             canClear: false,
-            initialSelectedValue: initialSelectedValue)
+            initialText: initialText)
         .then((v) => v?.result);
   }
 
@@ -170,8 +169,7 @@ class YustAlertService {
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
-    String initialText = '',
-    String? initialSelectedValue,
+    String? initialText,
     String? subTitle = '',
     bool canClear = true,
   }) {
@@ -180,7 +178,7 @@ class YustAlertService {
     return showDialog<AlertResult>(
         context: context,
         builder: (BuildContext context) {
-          var selected = initialSelectedValue;
+          var selected = initialText;
           return StatefulBuilder(
             builder: (context, setState) {
               return AlertDialog(
@@ -200,7 +198,8 @@ class YustAlertService {
                         onDelete: canClear
                             ? () async {
                                 setState(() => selected = null);
-                              } : null,
+                              }
+                            : null,
                         onSelected: (value) =>
                             {setState(() => selected = value)},
                       )
