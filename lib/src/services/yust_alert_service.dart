@@ -84,11 +84,13 @@ class YustAlertService {
     String? placeholder,
     String action, {
     String? message,
+    String? warning,
     String initialText = '',
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
     /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
+    Widget Function({required TextEditingController controller})? suffixIcon,
   }) {
     final controller = TextEditingController(text: initialText);
     final yustServiceValidationKey = GlobalKey<FormState>();
@@ -106,15 +108,40 @@ class YustAlertService {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (message != null) Text(message),
-                TextFormField(
-                  controller: controller,
-                  decoration: InputDecoration(hintText: placeholder),
-                  autovalidateMode: validator == null ? null : validateMode,
-                  validator: validator == null
-                      ? null
-                      : (value) => validator(value!.trim()),
-                  autofocus: true,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: controller,
+                        decoration: InputDecoration(hintText: placeholder),
+                        autovalidateMode:
+                            validator == null ? null : validateMode,
+                        validator: validator == null
+                            ? null
+                            : (value) => validator(value!.trim()),
+                        autofocus: true,
+                      ),
+                    ),
+                    if (suffixIcon != null) suffixIcon(controller: controller),
+                  ],
                 ),
+                if (warning != null) const SizedBox(height: 5),
+                if (warning != null)
+                  Row(
+                    children: [
+                      const Icon(
+                        size: 15,
+                        Icons.info,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        warning,
+                        style: const TextStyle(
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
             actions: <Widget>[
@@ -151,13 +178,13 @@ class YustAlertService {
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
-    String initialText = '',
+    String? initialValue,
   }) {
     return showClearablePickerDialog(title, action,
             optionLabels: optionLabels,
             optionValues: optionValues,
             canClear: false,
-            initialText: initialText)
+            initialValue: initialValue)
         .then((v) => v?.result);
   }
 
@@ -169,7 +196,7 @@ class YustAlertService {
     String action, {
     required List<String> optionLabels,
     required List<String> optionValues,
-    String? initialText,
+    String? initialValue,
     String? subTitle = '',
     bool canClear = true,
   }) {
@@ -178,7 +205,7 @@ class YustAlertService {
     return showDialog<AlertResult>(
         context: context,
         builder: (BuildContext context) {
-          var selected = initialText;
+          var selected = initialValue;
           return StatefulBuilder(
             builder: (context, setState) {
               return AlertDialog(
@@ -308,6 +335,8 @@ class YustAlertService {
   }) async {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
+    var selectAll =
+        priorOptionValues.length == optionValues.length ? false : true;
     await showDialog<List<String>>(
         context: context,
         builder: (context) {
@@ -327,12 +356,17 @@ class YustAlertService {
                       alignment: Alignment.centerLeft,
                       child: TextButton(
                         onPressed: () {
-                          newItemIds.clear();
                           setState(() {
-                            newItemIds.addAll(optionValues);
+                            newItemIds.clear();
+                            if (selectAll) {
+                              newItemIds.addAll(optionValues);
+                            }
+                            selectAll = !selectAll;
                           });
                         },
-                        child: const Text('Alle auswählen'),
+                        child: selectAll
+                            ? const Text('Alle auswählen')
+                            : const Text('Alle abwählen'),
                       ),
                     ),
                   ),
