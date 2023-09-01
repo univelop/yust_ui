@@ -186,6 +186,7 @@ class _YustTextFieldState extends State<YustTextField> {
     return Column(
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: _buildTextField(),
@@ -193,6 +194,7 @@ class _YustTextFieldState extends State<YustTextField> {
             widget.suffixIcon ?? const SizedBox(),
             if (widget.onDelete != null && widget.value != '')
               IconButton(
+                  padding: widget.contentPadding.subtract(const EdgeInsets.all(5)),
                   onPressed: widget.onDelete!,
                   icon: Icon(
                     Icons.delete,

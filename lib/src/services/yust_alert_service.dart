@@ -211,7 +211,7 @@ class YustAlertService {
               return AlertDialog(
                 title: Text(title),
                 content: SizedBox(
-                    height: 100,
+                    height: 115,
                     child: Column(children: [
                       Align(
                           alignment: Alignment.topLeft,
