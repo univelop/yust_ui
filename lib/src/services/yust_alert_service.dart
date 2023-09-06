@@ -210,27 +210,30 @@ class YustAlertService {
             builder: (context, setState) {
               return AlertDialog(
                 title: Text(title),
-                content: SizedBox(
-                    height: 115,
-                    child: Column(children: [
-                      Align(
-                          alignment: Alignment.topLeft,
-                          child: subTitle != null
-                              ? Text(subTitle)
-                              : const SizedBox.shrink()),
-                      YustSelect(
-                        value: selected,
-                        optionLabels: optionLabels,
-                        optionValues: optionValues,
-                        onDelete: canClear
-                            ? () async {
-                                setState(() => selected = null);
-                              }
-                            : null,
-                        onSelected: (value) =>
-                            {setState(() => selected = value)},
-                      )
-                    ])),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                        alignment: Alignment.topLeft,
+                        child: subTitle != null
+                            ? Text(subTitle)
+                            : const SizedBox.shrink()),
+                    SizedBox(
+                        height: 100,
+                        child: YustSelect(
+                          value: selected,
+                          optionLabels: optionLabels,
+                          optionValues: optionValues,
+                          onDelete: canClear
+                              ? () async {
+                                  setState(() => selected = null);
+                                }
+                              : null,
+                          onSelected: (value) =>
+                              {setState(() => selected = value)},
+                        )),
+                  ],
+                ),
                 actions: <Widget>[
                   TextButton(
                     child: const Text('Abbrechen'),
