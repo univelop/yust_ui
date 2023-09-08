@@ -39,7 +39,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       pageSize: 50,
       loadingBuilder: (_) => SingleChildScrollView(
         controller: scrollController,
-        child: const CircularProgressIndicator(),
+        child: const Center(child: CircularProgressIndicator()),
       ),
     );
   }
