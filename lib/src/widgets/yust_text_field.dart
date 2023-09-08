@@ -92,6 +92,7 @@ class _YustTextFieldState extends State<YustTextField> {
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+      _initValue = textFieldText;
       widget.onEditingComplete!(textFieldValue);
       _valueDidChange = false;
     } else {
@@ -118,6 +119,7 @@ class _YustTextFieldState extends State<YustTextField> {
         final textFieldValue = textFieldText == '' ? null : textFieldText;
         if (widget.validator == null ||
             widget.validator!(textFieldValue) == null) {
+          _initValue = textFieldText;
           widget.onEditingComplete!(textFieldValue);
         } else {
           _controller.text = widget.value ?? '';
