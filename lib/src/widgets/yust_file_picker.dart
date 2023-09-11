@@ -314,10 +314,10 @@ class YustFilePickerState extends State<YustFilePicker> {
   Future<void> _renameFile(YustFile yustFile) async {
     final newFileName = await YustUi.alertService.showTextFieldDialog(
         'Wie soll die Datei heißen?', '', 'Speichern',
-        initialText: YustUi.fileHelpers.removeExtension(yustFile.name ?? ''),
+        initialText: yustFile.getFileNameWithoutExtension(),
         validator: (value) => (_isNewFileNameValid(value, yustFile) &&
                 !fileExists(
-                    '$value.${YustUi.fileHelpers.getExtension(yustFile.name ?? '')}'))
+                    '$value.${yustFile.getFilenameExtension()}'))
             ? null
             : 'Der Dateiname ist nicht valide!');
 
@@ -328,7 +328,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     setState(() {});
 
     final newFileNameWithExtension =
-        '$newFileName.${YustUi.fileHelpers.getExtension(yustFile.name ?? '')}';
+        '$newFileName.${yustFile.getFilenameExtension()}';
 
     await _reuploadFileForRename(yustFile, newFileNameWithExtension);
     await _doDeleteFile(yustFile);
@@ -373,7 +373,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     return IconButton(
       icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
-      onPressed: _enabled ? () => _deleteFile(file) : null,
+      onPressed: _enabled ? () => _deleteFileWithConfirmation(file) : null,
     );
   }
 
@@ -463,7 +463,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     } catch (e) {}
   }
 
-  Future<void> _deleteFile(YustFile yustFile) async {
+  Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService
         .showConfirmation('Wirklich löschen?', 'Löschen');

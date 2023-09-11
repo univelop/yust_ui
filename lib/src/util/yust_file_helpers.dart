@@ -209,21 +209,10 @@ class YustFileHelpers {
     return completer.future;
   }
 
-  String removeExtension(String file) {
-    var pathParts = file.split('.');
-    if (pathParts.length > 1) {
-      pathParts.removeLast();
-    }
-    return pathParts.join('.');
-  }
 
-  String getExtension(String file) {
-    return file.contains('.') ? file.split('.').last : '';
-  }
-
-  bool isValidFileName(String file) {
+  bool isValidFileName(String filename) {
     final invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
 
-    return invalidChars.none((element) => file.contains(element));
+    return invalidChars.none((element) => filename.contains(element));
   }
 }
