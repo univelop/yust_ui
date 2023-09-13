@@ -6,6 +6,7 @@ import '../yust_ui.dart';
 class YustTextField extends StatefulWidget {
   final String? label;
   final String? value;
+  final String? placeholder;
   final TextStyle? textStyle;
   final StringCallback? onChanged;
 
@@ -42,6 +43,7 @@ class YustTextField extends StatefulWidget {
     Key? key,
     this.label,
     this.value,
+    this.placeholder,
     this.textStyle,
     this.onChanged,
     this.onEditingComplete,
@@ -225,6 +227,7 @@ class _YustTextFieldState extends State<YustTextField> {
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
             : null,
+        hintText: widget.placeholder,
       ),
       style: widget.textStyle,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
