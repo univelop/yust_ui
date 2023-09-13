@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -350,6 +351,14 @@ class YustFilePickerState extends State<YustFilePicker> {
     File? file,
     Uint8List? bytes,
   }) async {
+    final extension = name.split('.').last;
+    if (widget.allowedExtensions != null &&
+        !widget.allowedExtensions!.contains(extension)) {
+      unawaited(YustUi.alertService.showAlert('File Upload',
+          'Es sind nur die folgenden Dateiendungen erlaubt:\n'
+          '${widget.allowedExtensions!.join(', ')}'));
+      return;
+    }
     final newYustFile = YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),
