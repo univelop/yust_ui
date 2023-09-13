@@ -102,9 +102,12 @@ class YustFilePickerState extends State<YustFilePicker> {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                ? _buildAddButton(context)
-                : null,
+            suffixChild: Wrap(children: [
+              if (widget.allowedExtensions != null)
+                _buildInfoIcon(context),
+              if (widget.allowMultiple || widget.files.isEmpty)
+                _buildAddButton(context)
+            ]),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
             below: _buildFiles(context),
@@ -122,7 +125,11 @@ class YustFilePickerState extends State<YustFilePicker> {
           child: _buildDropzoneArea(context),
         ),
         YustListTile(
-            suffixChild: isDragging ? null : _buildAddButton(context),
+            suffixChild: isDragging ? null : Wrap(children: [
+              if (widget.allowedExtensions != null)
+                _buildInfoIcon(context),
+              _buildAddButton(context),
+            ],),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
             below: _buildDropzoneInterfaceAndFiles(),
@@ -204,6 +211,20 @@ class YustFilePickerState extends State<YustFilePicker> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoIcon(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Tooltip(
+        preferBelow: false,
+        message: widget.allowedExtensions?.isEmpty ?? true
+          ? 'Es sind keine Dateiendugen erlaubt.'
+          : 'Erlaubte Dateiendungen:\n'
+          '${widget.allowedExtensions!.join(', ')}',
+        child: Icon(size: 40, Icons.info, color: Theme.of(context).colorScheme.primary),
+      )
     );
   }
 
@@ -354,9 +375,10 @@ class YustFilePickerState extends State<YustFilePicker> {
     final extension = name.split('.').last;
     if (widget.allowedExtensions != null &&
         !widget.allowedExtensions!.contains(extension)) {
-      unawaited(YustUi.alertService.showAlert('File Upload',
+      unawaited(YustUi.alertService.showAlert(
+          'File Upload',
           'Es sind nur die folgenden Dateiendungen erlaubt:\n'
-          '${widget.allowedExtensions!.join(', ')}'));
+              '${widget.allowedExtensions!.join(', ')}'));
       return;
     }
     final newYustFile = YustFile(
