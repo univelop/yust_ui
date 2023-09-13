@@ -228,6 +228,7 @@ class _YustTextFieldState extends State<YustTextField> {
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
             : null,
         hintText: widget.placeholder,
+        errorMaxLines: 5,
       ),
       style: widget.textStyle,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
