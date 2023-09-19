@@ -1,3 +1,13 @@
+## 3.13.1 - 2023-09-15
+
+-   Fix issues
+
+## 3.13.0 - 2023-09-12
+
+-   Improve paginated list
+-   Improve text field
+-   Improve alerts
+
 ## 3.12.0 - 2023-08-20
 
 -   Upgrade to Flutter 3.10
