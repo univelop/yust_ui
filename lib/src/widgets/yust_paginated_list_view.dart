@@ -29,7 +29,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
         .getQuery(modelSetup, filters: filters, orderBy: orderBy) as Query;
 
     return FirestoreListView(
-      key: ValueKey([filters, orderBy]),
+      key: key,
       controller: scrollController,
       emptyBuilder: (_) => emptyInfo ?? const SizedBox(),
       itemBuilder: (context, documentSnapshot) =>
