@@ -176,6 +176,7 @@ class YustAlertService {
   Future<String?> showPickerDialog(
     String title,
     String action, {
+    String? subTitle,
     required List<String> optionLabels,
     required List<String> optionValues,
     String? initialValue,
@@ -183,6 +184,7 @@ class YustAlertService {
     return showClearablePickerDialog(title, action,
             optionLabels: optionLabels,
             optionValues: optionValues,
+            subTitle: subTitle,
             canClear: false,
             initialValue: initialValue)
         .then((v) => v?.result);

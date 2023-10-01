@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -97,13 +98,16 @@ class YustFilePickerState extends State<YustFilePicker> {
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
-        if (kIsWeb && widget.enableDropzone) {
+        if (kIsWeb && widget.enableDropzone && (widget.allowedExtensions?.isNotEmpty ?? true)) {
           return _buildDropzone(context);
         } else {
           return YustListTile(
-            suffixChild: (widget.allowMultiple || widget.files.isEmpty)
-                ? _buildAddButton(context)
-                : null,
+            suffixChild: Wrap(children: [
+              if (widget.allowedExtensions != null)
+                _buildInfoIcon(context),
+              if (widget.allowMultiple || widget.files.isEmpty)
+                _buildAddButton(context)
+            ]),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
             below: _buildFiles(context),
@@ -121,7 +125,11 @@ class YustFilePickerState extends State<YustFilePicker> {
           child: _buildDropzoneArea(context),
         ),
         YustListTile(
-            suffixChild: isDragging ? null : _buildAddButton(context),
+            suffixChild: isDragging ? null : Wrap(children: [
+              if (widget.allowedExtensions != null)
+                _buildInfoIcon(context),
+              _buildAddButton(context),
+            ],),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
             below: _buildDropzoneInterfaceAndFiles(),
@@ -206,15 +214,30 @@ class YustFilePickerState extends State<YustFilePicker> {
     );
   }
 
+  Widget _buildInfoIcon(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Tooltip(
+        preferBelow: false,
+        message: widget.allowedExtensions?.isEmpty ?? true
+          ? 'Es sind keine Dateiendugen erlaubt.'
+          : 'Erlaubte Dateiendungen:\n'
+          '${widget.allowedExtensions!.join(', ')}',
+        child: Icon(size: 40, Icons.info, color: Theme.of(context).colorScheme.primary),
+      )
+    );
+  }
+
   Widget _buildAddButton(BuildContext context) {
     if (!_enabled) {
       return const SizedBox.shrink();
     }
     return IconButton(
       iconSize: 40,
+      color: Theme.of(context).colorScheme.primary,
       icon:
-          Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-      onPressed: _enabled ? _pickFiles : null,
+          const Icon(Icons.add_circle),
+      onPressed: _enabled && (widget.allowedExtensions?.isNotEmpty ?? true) ? _pickFiles : null,
     );
   }
 
@@ -330,8 +353,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         : (widget.allowOnlyImages ? FileType.image : FileType.any);
     final result = await FilePicker.platform.pickFiles(
       type: type,
-      allowedExtensions:
-          (widget.allowedExtensions != null) ? widget.allowedExtensions : null,
+      allowedExtensions: widget.allowedExtensions,
       allowMultiple: widget.allowMultiple,
     );
     if (result != null) {
@@ -350,6 +372,17 @@ class YustFilePickerState extends State<YustFilePicker> {
     File? file,
     Uint8List? bytes,
   }) async {
+    final extension = name.split('.').last;
+    if (widget.allowedExtensions != null &&
+        !widget.allowedExtensions!.contains(extension)) {
+      unawaited(YustUi.alertService.showAlert(
+          'File Upload',
+          widget.allowedExtensions!.isEmpty
+            ? 'Es sind keine Dateiendungen zum Upload erlaubt.'
+            : 'Es sind nur die folgenden Dateiendungen erlaubt:\n'
+              '${widget.allowedExtensions!.join(', ')}'));
+      return;
+    }
     final newYustFile = YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),
