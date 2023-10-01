@@ -11,6 +11,7 @@ export 'src/screens/yust_reset_password_screen.dart';
 export 'src/screens/yust_sign_in_screen.dart';
 export 'src/screens/yust_sign_up_screen.dart';
 export 'src/screens/yust_splash_screen.dart';
+export 'src/services/yust_alert_result.dart';
 export 'src/services/yust_alert_service.dart';
 export 'src/util/yust_file_handler.dart';
 export 'src/util/yust_file_helpers.dart';

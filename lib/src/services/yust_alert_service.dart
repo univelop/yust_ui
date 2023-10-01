@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/services/yust_alert_result.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
 
 import '../widgets/yust_select.dart';
@@ -169,6 +170,9 @@ class YustAlertService {
     );
   }
 
+  ///
+  /// initialSelectedValue: Initial selected value
+  /// canClear: Shows a button to empty the selected value
   Future<String?> showPickerDialog(
     String title,
     String action, {
@@ -176,44 +180,78 @@ class YustAlertService {
     required List<String> optionValues,
     String? initialValue,
   }) {
+    return showClearablePickerDialog(title, action,
+            optionLabels: optionLabels,
+            optionValues: optionValues,
+            canClear: false,
+            initialValue: initialValue)
+        .then((v) => v?.result);
+  }
+
+  ///
+  /// initialSelectedValue: Initial selected value
+  /// canClear: Shows a button to empty the selected value
+  Future<AlertResult?> showClearablePickerDialog(
+    String title,
+    String action, {
+    required List<String> optionLabels,
+    required List<String> optionValues,
+    String? initialValue,
+    String? subTitle = '',
+    bool canClear = true,
+  }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        var selected = initialValue ?? '';
-        return AlertDialog(
-          title: Text(title),
-          content: StatefulBuilder(
+    return showDialog<AlertResult>(
+        context: context,
+        builder: (BuildContext context) {
+          var selected = initialValue;
+          return StatefulBuilder(
             builder: (context, setState) {
-              return SizedBox(
-                height: 100,
-                child: YustSelect(
-                  value: selected,
-                  optionLabels: optionLabels,
-                  optionValues: optionValues,
-                  onSelected: (value) => {setState(() => selected = value)},
+              return AlertDialog(
+                title: Text(title),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                        alignment: Alignment.topLeft,
+                        child: subTitle != null
+                            ? Text(subTitle)
+                            : const SizedBox.shrink()),
+                    SizedBox(
+                        height: 100,
+                        child: YustSelect(
+                          value: selected,
+                          optionLabels: optionLabels,
+                          optionValues: optionValues,
+                          onDelete: canClear
+                              ? () async {
+                                  setState(() => selected = null);
+                                }
+                              : null,
+                          onSelected: (value) =>
+                              {setState(() => selected = value)},
+                        )),
+                  ],
                 ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Abbrechen'),
+                    onPressed: () {
+                      Navigator.of(context).pop(AlertResult(false, null));
+                    },
+                  ),
+                  TextButton(
+                    child: Text(action),
+                    onPressed: () {
+                      Navigator.of(context).pop(AlertResult(true, selected));
+                    },
+                  ),
+                ],
               );
             },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Abbrechen'),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            TextButton(
-              child: Text(action),
-              onPressed: () {
-                Navigator.of(context).pop(selected);
-              },
-            ),
-          ],
-        );
-      },
-    );
+          );
+        });
   }
 
   Future<T?> showCustomDialog<T>({
@@ -258,8 +296,38 @@ class YustAlertService {
   }
 
   /// Returns newly selected items (only) after confirmation.
+  /// If popup has been canceled callable method get an empty list.
+  /// If you need to track the cancel click use [showCancelableCheckListDialog]
   /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
   Future<List<String>> showCheckListDialog({
+    required BuildContext context,
+    required List<String> optionValues,
+    required List<String> priorOptionValues,
+    required List<String> optionLabels,
+    bool returnPriorItems = true,
+    String? title,
+    String? subTitle,
+  }) async {
+    final result = await showCancelableCheckListDialog(
+        context: context,
+        optionValues: optionValues,
+        priorOptionValues: priorOptionValues,
+        optionLabels: optionLabels,
+        returnPriorItems: returnPriorItems,
+        title: title,
+        subTitle: subTitle);
+
+    if (result.confirmed) {
+      return result.result;
+    } else {
+      return [];
+    }
+  }
+
+  /// Returns newly selected items (only) after confirmation.
+  /// If popup has been canceled callable method get a result object.
+  /// [returnPriorItems] decides whether priorItemIds or an empty list should be returned
+  Future<AlertCheckListResult> showCancelableCheckListDialog({
     required BuildContext context,
     required List<String> optionValues,
     required List<String> priorOptionValues,
@@ -284,7 +352,7 @@ class YustAlertService {
                       ? Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: Text(subTitle))
-                      : const SizedBox(),
+                      : const SizedBox.shrink(),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Align(
@@ -337,12 +405,12 @@ class YustAlertService {
 
     if (isAborted) {
       if (returnPriorItems) {
-        return priorOptionValues;
+        return AlertCheckListResult(false, priorOptionValues);
       } else {
-        return [];
+        return AlertCheckListResult(false, []);
       }
     } else {
-      return newItemIds;
+      return AlertCheckListResult(true, newItemIds);
     }
   }
 
