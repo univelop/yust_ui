@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/widgets/yust_drop_zone.dart';
 import 'package:yust_ui/yust_ui.dart';
 
 final Map<String, Map<String, int>> yustImageQuality = {
@@ -39,6 +40,7 @@ class YustImagePicker extends StatefulWidget {
   final String yustQuality;
   final bool divider;
   final bool showCentered;
+  final bool enableDropzone;
 
   /// default is 15
   final int imageCount;
@@ -59,6 +61,7 @@ class YustImagePicker extends StatefulWidget {
     this.yustQuality = 'medium',
     this.divider = true,
     this.showCentered = false,
+    this.enableDropzone = false,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -99,19 +102,40 @@ class YustImagePickerState extends State<YustImagePicker> {
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.images, loadFiles: true),
       builder: (context, snapshot) {
-        return YustListTile(
-          label: widget.label,
-          suffixChild: _buildPickButtons(context),
-          prefixIcon: widget.prefixIcon,
-          below: widget.multiple
-              ? _buildGallery(context)
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: _buildSingleImage(
-                      context, _fileHandler.getFiles().firstOrNull),
-                ),
-          divider: widget.divider,
-        );
+        if (kIsWeb && widget.enableDropzone) {
+          return YustDropZone(
+            onDrop: (file) async {
+              await uploadFile(
+                  name: file.name ?? 'Unkown Image', bytes: file.bytes);
+            },
+            suffixChild: _buildPickButtons(context),
+            prefixIcon: widget.prefixIcon,
+            divider: widget.divider,
+            label: widget.label,
+            dropzoneText: 'Foto(s) hierher ziehen',
+            child: widget.multiple
+                ? _buildGallery(context)
+                : Padding(
+                    padding: const EdgeInsets.only(bottom: 2.0),
+                    child: _buildSingleImage(
+                        context, _fileHandler.getFiles().firstOrNull),
+                  ),
+          );
+        } else {
+          return YustListTile(
+            label: widget.label,
+            suffixChild: _buildPickButtons(context),
+            prefixIcon: widget.prefixIcon,
+            below: widget.multiple
+                ? _buildGallery(context)
+                : Padding(
+                    padding: const EdgeInsets.only(bottom: 2.0),
+                    child: _buildSingleImage(
+                        context, _fileHandler.getFiles().firstOrNull),
+                  ),
+            divider: widget.divider,
+          );
+        }
       },
     );
   }
@@ -374,7 +398,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
           for (final image in images) {
             await uploadFile(
-              path: image.path,
+              name: image.path,
               file: File(image.path),
               // Because of the reason stated above,
               // we need to do the resizing ourself
@@ -390,7 +414,7 @@ class YustImagePickerState extends State<YustImagePicker> {
               imageQuality: quality);
           if (image != null) {
             await uploadFile(
-              path: image.path,
+              name: image.path,
               file: File(image.path),
               // Because of the reason stated above,
               // we need to do the resizing ourself
@@ -408,7 +432,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             await EasyLoading.show(status: 'Bilder werden hinzugefügt...');
             for (final platformFile in result.files) {
               await uploadFile(
-                path: platformFile.name,
+                name: platformFile.name,
                 bytes: platformFile.bytes,
                 resize: true,
               );
@@ -421,7 +445,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           if (result != null) {
             await EasyLoading.show(status: 'Bild wird hinzugefügt...');
             await uploadFile(
-              path: result.files.single.name,
+              name: result.files.single.name,
               bytes: result.files.single.bytes,
               resize: true,
             );
@@ -433,21 +457,21 @@ class YustImagePickerState extends State<YustImagePicker> {
   }
 
   Future<void> uploadFile({
-    required String path,
+    required String name,
     File? file,
     Uint8List? bytes,
     bool resize = false,
   }) async {
-    final sanizitedPath = _sanitiseFilePath(path);
+    final sanizitedName = _sanitiseFileName(name);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${sanizitedPath.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanizitedName.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
         bytes = await YustUi.fileHelpers.resizeImageBytes(
-            name: sanizitedPath, bytes: bytes!, maxWidth: size);
+            name: sanizitedName, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -472,7 +496,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
   }
 
-  _sanitiseFilePath(String path) {
+  _sanitiseFileName(String path) {
     return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
