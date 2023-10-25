@@ -84,6 +84,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
             optionLabels: optionLabels,
             selectedValues: selectedValues,
             divider: false,
+            maxVisibleOptions: 7,
           ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
