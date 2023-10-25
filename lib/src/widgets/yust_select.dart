@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../yust_ui.dart';
-import 'yust_input_tile.dart';
+import 'package:yust_ui/yust_ui.dart';
 
 class YustSelect<T> extends StatelessWidget {
   final String? label;
@@ -18,6 +16,9 @@ class YustSelect<T> extends StatelessWidget {
   final bool divider;
   final int? maxLines;
   final int? minLines;
+  final bool allowSearch;
+
+  static const maxVisibleOptions = 10;
 
   const YustSelect({
     Key? key,
@@ -35,6 +36,7 @@ class YustSelect<T> extends StatelessWidget {
     this.divider = true,
     this.maxLines,
     this.minLines,
+    this.allowSearch = true,
   }) : super(key: key);
 
   @override
@@ -65,23 +67,34 @@ class YustSelect<T> extends StatelessWidget {
   void _selectValue(BuildContext context) async {
     if (onSelected == null) return;
 
-    var selectedValue = await showDialog<T>(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            title: (label == null) ? null : Text('$label wählen'),
-            children: optionValues.map((optionValue) {
-              return SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, optionValue);
-                },
-                child: Text(_valueCaption(optionValue)),
-              );
-            }).toList(),
-          );
-        });
+    final selectedValues = [value];
+
+    await showDialog<T>(
+      context: context,
+      builder: (BuildContext context) {
+        return _buildDialog(context, selectedValues);
+      },
+    );
+    final selectedValue = selectedValues.first;
     if (selectedValue != null) {
       onSelected!(selectedValue);
     }
+  }
+
+  Widget _buildDialog(BuildContext context, List<T> selectedValues) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
+      title: label == null ? null : Text('$label wählen'),
+      content: YustSelectForm(
+        optionValues: optionValues,
+        optionLabels: optionLabels,
+        selectedValues: selectedValues,
+        formType: YustSelectFormType.singleWithoutIndicator,
+        onChanged: () {
+          Navigator.pop(context);
+        },
+        divider: false,
+      ),
+    );
   }
 }
