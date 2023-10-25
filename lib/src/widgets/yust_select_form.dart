@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
-class YustMultiSelectComponent<T> extends StatelessWidget {
+class YustSelectForm<T> extends StatelessWidget {
   final String? label;
   final List<T> optionValues;
   final List<String> optionLabels;
@@ -13,7 +13,7 @@ class YustMultiSelectComponent<T> extends StatelessWidget {
   final Function? onChanged;
   final bool divider;
 
-  YustMultiSelectComponent({
+  YustSelectForm({
     Key? key,
     this.label,
     required this.optionValues,

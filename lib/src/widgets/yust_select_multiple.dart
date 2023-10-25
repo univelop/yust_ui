@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
+import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
@@ -67,23 +67,22 @@ class YustSelectMultiple<T> extends StatelessWidget {
           return SimpleDialog(
             title: (label == null) ? null : Text('$label wählen'),
             children: [
-              YustMultiSelectComponent(
+              YustSelectForm(
                 optionValues: optionValues,
                 optionLabels: optionLabels,
                 selectedValues: selectedValues,
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child:
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ElevatedButton(
                       style: buttonStyle,
-                    child: const Text('OK'),
-                    onPressed: () {
-                      // Close the Dialog & return selectedItems
-                      Navigator.pop(context);
-                    }),
+                      child: const Text('OK'),
+                      onPressed: () {
+                        // Close the Dialog & return selectedItems
+                        Navigator.pop(context);
+                      }),
                 ),
               ),
             ],
