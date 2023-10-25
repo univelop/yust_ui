@@ -21,8 +21,7 @@ class YustSelectForm<T> extends StatelessWidget {
   final Function? onChanged;
   final bool divider;
   final bool allowSearch;
-
-  static const maxVisibleOptions = 10;
+  final int maxVisibleOptions;
 
   YustSelectForm({
     Key? key,
@@ -36,6 +35,7 @@ class YustSelectForm<T> extends StatelessWidget {
     this.onChanged,
     this.divider = true,
     this.allowSearch = true,
+    this.maxVisibleOptions = 10,
   })  : selectedValues = selectedValues ?? [],
         super(key: key);
 
