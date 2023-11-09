@@ -8,7 +8,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -242,7 +241,7 @@ class YustFileHandler {
     }
   }
 
-  Future<void> showFile(BuildContext context, YustFile yustFile) async {
+  Future<void> showFile(YustFile yustFile) async {
     await EasyLoading.show(status: 'Datei laden...');
     try {
       if (!kIsWeb) {
