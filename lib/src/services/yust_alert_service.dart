@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_alert_result.dart';
 import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
@@ -429,5 +430,28 @@ class YustAlertService {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showSearch<T>(context: context, delegate: delegate);
+  }
+
+  Future<T?> showSelectOptionDialog<T>({
+    required BuildContext context,
+    required String title,
+    required List<String> labels,
+    required List<T> values,
+  }) async {
+    return showDialog<T>(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(title),
+            children: values.mapIndexed((i, optionValue) {
+              return SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, optionValue);
+                },
+                child: Text(labels[i]),
+              );
+            }).toList(),
+          );
+        });
   }
 }
