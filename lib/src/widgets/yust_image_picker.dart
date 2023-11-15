@@ -39,6 +39,7 @@ class YustImagePicker extends StatefulWidget {
   final String yustQuality;
   final bool divider;
   final bool showCentered;
+  final bool showPreview;
 
   /// default is 15
   final int imageCount;
@@ -59,6 +60,7 @@ class YustImagePicker extends StatefulWidget {
     this.yustQuality = 'medium',
     this.divider = true,
     this.showCentered = false,
+    this.showPreview = true,
     int? imageCount,
   })  : imageCount = imageCount ?? 15,
         super(key: key);
@@ -103,13 +105,15 @@ class YustImagePickerState extends State<YustImagePicker> {
           label: widget.label,
           suffixChild: _buildPickButtons(context),
           prefixIcon: widget.prefixIcon,
-          below: widget.multiple
-              ? _buildGallery(context)
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: _buildSingleImage(
-                      context, _fileHandler.getFiles().firstOrNull),
-                ),
+          below: widget.showPreview
+              ? widget.multiple
+                  ? _buildGallery(context)
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: _buildSingleImage(
+                          context, _fileHandler.getFiles().firstOrNull),
+                    )
+              : null,
           divider: widget.divider,
         );
       },
@@ -118,16 +122,53 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildPickButtons(BuildContext context) {
     if (!_enabled ||
-        (!widget.multiple && _fileHandler.getFiles().firstOrNull != null)) {
+        (widget.showPreview &&
+            !widget.multiple &&
+            _fileHandler.getFiles().firstOrNull != null)) {
       return const SizedBox.shrink();
     }
+
+    final pictureFiles = _fileHandler.getFiles();
+    final canAddMore = widget.multiple
+        ? pictureFiles.length < widget.imageCount
+        : pictureFiles.isEmpty;
 
     return SizedBox(
       width: 150,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          if (!kIsWeb)
+          if (!widget.showPreview && pictureFiles.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              color: Theme.of(context).colorScheme.primary,
+              iconSize: 40,
+              onPressed: () async {
+                YustUi.helpers.unfocusCurrent();
+                final confirmed = await YustUi.alertService.showConfirmation(
+                    widget.multiple
+                        ? 'Willst du wirklich alle Bilder löschen?'
+                        : 'Wirklich löschen?',
+                    'Löschen');
+                if (confirmed == true) {
+                  try {
+                    for (final yustFile in pictureFiles) {
+                      await _fileHandler.deleteFile(yustFile);
+                    }
+                    widget.onChanged!(_fileHandler.getOnlineFiles());
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  } catch (e) {
+                    await YustUi.alertService.showAlert('Ups',
+                        widget.multiple
+                        ? 'Ein Bild konnte nicht gelöscht werden: \n$e'
+                        : 'Das Bild kann gerade nicht gelöscht werden: \n$e');
+                  }
+                }
+              },
+            ),
+          if (!kIsWeb && canAddMore)
             IconButton(
               color: Theme.of(context).colorScheme.primary,
               iconSize: 40,
@@ -135,12 +176,13 @@ class YustImagePickerState extends State<YustImagePicker> {
               onPressed:
                   _enabled ? () => _pickImages(ImageSource.camera) : null,
             ),
-          IconButton(
-            color: Theme.of(context).colorScheme.primary,
-            iconSize: 40,
-            icon: const Icon(Icons.image),
-            onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
-          ),
+          if (canAddMore)
+            IconButton(
+              color: Theme.of(context).colorScheme.primary,
+              iconSize: 40,
+              icon: const Icon(Icons.image),
+              onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
+            ),
         ],
       ),
     );
