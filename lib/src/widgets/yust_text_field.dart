@@ -15,6 +15,7 @@ class YustTextField extends StatefulWidget {
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
   final TapCallback? onTap;
+  final StringCallback? onFieldSubmitted;
   final DeleteCallback? onDelete;
   final int? maxLines;
   final int? minLines;
@@ -47,6 +48,7 @@ class YustTextField extends StatefulWidget {
     this.textStyle,
     this.onChanged,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.controller,
     this.validator,
     this.onTap,
@@ -245,6 +247,7 @@ class _YustTextFieldState extends State<YustTextField> {
           : (value) => widget.onChanged!(
               value == '' ? null : (widget.notTrim ? value : value.trim())),
       onTap: widget.onTap,
+      onFieldSubmitted: widget.onFieldSubmitted,
       autocorrect: widget.autocorrect,
       readOnly: widget.readOnly,
       enabled: widget.enabled,

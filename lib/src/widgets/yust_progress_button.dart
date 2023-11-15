@@ -36,6 +36,8 @@ class _YustProgressButtonState extends State<YustProgressButton> {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: widget.color,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(40))),
       ),
       onPressed: (waiting ??= false) ? null : onPressed,
       child: Padding(
