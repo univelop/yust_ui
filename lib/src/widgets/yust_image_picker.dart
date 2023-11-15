@@ -160,10 +160,11 @@ class YustImagePickerState extends State<YustImagePicker> {
                       setState(() {});
                     }
                   } catch (e) {
-                    await YustUi.alertService.showAlert('Ups',
+                    await YustUi.alertService.showAlert(
+                        'Ups',
                         widget.multiple
-                        ? 'Ein Bild konnte nicht gelöscht werden: \n$e'
-                        : 'Das Bild kann gerade nicht gelöscht werden: \n$e');
+                            ? 'Ein Bild konnte nicht gelöscht werden: \n$e'
+                            : 'Das Bild kann gerade nicht gelöscht werden: \n$e');
                   }
                 }
               },
@@ -181,7 +182,8 @@ class YustImagePickerState extends State<YustImagePicker> {
               color: Theme.of(context).colorScheme.primary,
               iconSize: 40,
               icon: const Icon(Icons.image),
-              onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
+              onPressed:
+                  _enabled ? () => _pickImages(ImageSource.gallery) : null,
             ),
         ],
       ),
