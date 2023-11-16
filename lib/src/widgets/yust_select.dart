@@ -11,6 +11,7 @@ class YustSelect<T> extends StatelessWidget {
   final YustInputStyle style;
   final Widget? prefixIcon;
   final Widget? suffixChild;
+  final FormFieldValidator<String>? validator;
   final bool readOnly;
   final bool showUnkownValue;
   final bool divider;
@@ -31,6 +32,7 @@ class YustSelect<T> extends StatelessWidget {
     this.style = YustInputStyle.normal,
     this.prefixIcon,
     this.suffixChild,
+    this.validator,
     this.readOnly = false,
     this.showUnkownValue = false,
     this.divider = true,
@@ -46,6 +48,7 @@ class YustSelect<T> extends StatelessWidget {
       text: _valueCaption(value),
       prefixIcon: prefixIcon,
       suffixChild: suffixChild,
+      validator: validator,
       style: style,
       divider: divider,
       maxLines: maxLines,
