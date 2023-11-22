@@ -83,6 +83,10 @@ class YustSelectMultiple<T> extends StatelessWidget {
             optionValues: optionValues,
             optionLabels: optionLabels,
             selectedValues: selectedValues,
+            optionListConstraints: const BoxConstraints(
+              maxHeight: 400.0,
+              maxWidth: 400.0,
+            ),
             divider: false,
           ),
           Padding(

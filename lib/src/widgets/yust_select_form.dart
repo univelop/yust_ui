@@ -19,7 +19,7 @@ class YustSelectForm<T> extends StatelessWidget {
   final Function? onChanged;
   final bool divider;
   final bool allowSearch;
-  final double maxHeight;
+  final BoxConstraints optionListConstraints;
 
   YustSelectForm({
     Key? key,
@@ -33,7 +33,7 @@ class YustSelectForm<T> extends StatelessWidget {
     this.onChanged,
     this.divider = true,
     this.allowSearch = true,
-    this.maxHeight = 300.0,
+    this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
   })  : selectedValues = selectedValues ?? [],
         super(key: key);
 
@@ -41,6 +41,10 @@ class YustSelectForm<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (optionListConstraints.maxHeight == double.infinity) {
+      throw Exception('The OptionListConstraints must at least constrain the maxHeight.');
+    }
+
     if (optionValues.isEmpty) {
       return YustListTile(
         label: noOptionsText,
@@ -62,7 +66,7 @@ class YustSelectForm<T> extends StatelessWidget {
                 label: label,
                 divider: false,
               ),
-            if (allowSearch && maxHeight / optionHeight < optionValues.length)
+            if (allowSearch && optionListConstraints.maxHeight / optionHeight < optionValues.length)
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -85,9 +89,7 @@ class YustSelectForm<T> extends StatelessWidget {
                 ),
               ),
             Container(
-              constraints: BoxConstraints(
-                maxHeight: maxHeight,
-              ),
+              constraints: optionListConstraints,
               child: Scrollbar(
                 controller: controller,
                 thumbVisibility: true,
