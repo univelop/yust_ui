@@ -49,6 +49,7 @@ class YustSelectForm<T> extends StatelessWidget {
     }
 
     String searchValue = '';
+    final controller = ScrollController();
 
     return StatefulBuilder(
       builder: (_, setState) {
@@ -87,28 +88,33 @@ class YustSelectForm<T> extends StatelessWidget {
               constraints: BoxConstraints(
                 maxHeight: maxHeight,
               ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (allowSearch && foundValues.isEmpty)
-                      const ListTile(
-                        title: Center(child: Text('Keine Optionen gefunden')),
-                        titleAlignment: ListTileTitleAlignment.center,
-                      ),
-                    ...foundValues.map((value) {
-                      switch (formType) {
-                        case YustSelectFormType.single:
-                          return _listItemSingle(foundValues, foundValues.indexOf(value), setState);
-                        case YustSelectFormType.multiple:
-                          return _listItemMultiple(foundValues, foundValues.indexOf(value), setState);
-                        case YustSelectFormType.singleWithoutIndicator:
-                          return _listItemSingleNoIndicator(foundValues, foundValues.indexOf(value), setState);
-                        default:
-                          throw Exception('Unknown form type');
-                      }
-                    }),
-                  ],
-                )
+              child: Scrollbar(
+                controller: controller,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: [
+                      if (allowSearch && foundValues.isEmpty)
+                        const ListTile(
+                          title: Center(child: Text('Keine Optionen gefunden')),
+                          titleAlignment: ListTileTitleAlignment.center,
+                        ),
+                      ...foundValues.map((value) {
+                        switch (formType) {
+                          case YustSelectFormType.single:
+                            return _listItemSingle(foundValues, foundValues.indexOf(value), setState);
+                          case YustSelectFormType.multiple:
+                            return _listItemMultiple(foundValues, foundValues.indexOf(value), setState);
+                          case YustSelectFormType.singleWithoutIndicator:
+                            return _listItemSingleNoIndicator(foundValues, foundValues.indexOf(value), setState);
+                          default:
+                            throw Exception('Unknown form type');
+                        }
+                      }),
+                    ],
+                  )
+                ),
               ),
             ),
             if (divider)
