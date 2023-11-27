@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
+import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
@@ -62,34 +62,46 @@ class YustSelectMultiple<T> extends StatelessWidget {
     if (onSelected == null) return;
     final selectedValues = values.toSet().toList(); //remove duplicates
     await showDialog<List<T>>(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            title: (label == null) ? null : Text('$label wählen'),
-            children: [
-              YustMultiSelectComponent(
-                optionValues: optionValues,
-                optionLabels: optionLabels,
-                selectedValues: selectedValues,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child:
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                      style: buttonStyle,
-                    child: const Text('OK'),
-                    onPressed: () {
-                      // Close the Dialog & return selectedItems
-                      Navigator.pop(context);
-                    }),
-                ),
-              ),
-            ],
-          );
-        });
+      context: context,
+      builder: (BuildContext context) {
+        return _buildDialog(selectedValues, context);
+      },
+    );
 
     onSelected!(selectedValues);
+  }
+
+  Widget _buildDialog(List<dynamic> selectedValues, BuildContext context) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
+      title: (label == null) ? null : Text('$label wählen'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          YustSelectForm(
+            optionValues: optionValues,
+            optionLabels: optionLabels,
+            selectedValues: selectedValues,
+            divider: false,
+            maxVisibleOptions: 7,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                style: buttonStyle,
+                child: const Text('OK'),
+                onPressed: () {
+                  // Close the Dialog & return selectedItems
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
