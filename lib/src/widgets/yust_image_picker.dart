@@ -452,16 +452,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
   }) async {
-    final sanitisedPath = _sanitiseFilePath(path);
+    final sanitizedPath = _sanitizeFilePath(path);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${sanitisedPath.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanitizedPath.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
         bytes = await YustUi.fileHelpers.resizeImageBytes(
-            name: sanitisedPath, bytes: bytes!, maxWidth: size);
+            name: sanitizedPath, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -486,7 +486,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
   }
 
-  _sanitiseFilePath(String path) {
+  _sanitizeFilePath(String path) {
     return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 

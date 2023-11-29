@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:yust/yust.dart';
 
 import '../util/yust_file_handler.dart';
@@ -113,7 +113,9 @@ class YustFilePickerState extends State<YustFilePicker> {
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
               // ignore: deprecated_member_use_from_same_package
-              if (widget.allowMultiple || widget.files.isEmpty)
+              if (widget.allowMultiple ||
+                  (widget.numberOfFiles ?? 2) > 1 ||
+                  widget.files.isEmpty)
                 _buildAddButton(context)
             ]),
             label: widget.label,
