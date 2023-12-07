@@ -96,6 +96,10 @@ class YustSelect<T> extends StatelessWidget {
         onChanged: () {
           Navigator.pop(context);
         },
+        optionListConstraints: const BoxConstraints(
+          maxHeight: 400.0,
+          maxWidth: 400.0,
+        ),
         divider: false,
       ),
     );
