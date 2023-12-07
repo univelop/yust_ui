@@ -37,7 +37,7 @@ class YustSelectForm<T> extends StatelessWidget {
   })  : selectedValues = selectedValues ?? [],
         super(key: key);
 
-  final optionHeight = 48.0;
+  final _maxOptionCountBeforeSearch = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +66,7 @@ class YustSelectForm<T> extends StatelessWidget {
                 label: label,
                 divider: false,
               ),
-            if (allowSearch && optionListConstraints.maxHeight / optionHeight < optionValues.length)
+            if (allowSearch && optionValues.length > _maxOptionCountBeforeSearch)
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
