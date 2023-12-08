@@ -10,7 +10,7 @@ class YustTextField extends StatefulWidget {
   final TextStyle? textStyle;
   final StringCallback? onChanged;
 
-  /// if a validator is implemented, onEditingComplete gets only triggered, if validator is true (true = returns null)
+  /// if a validator is implemented, onEditingComplete gets only triggered, if validator is true (true = returns null) or shouldCompleteNotValidInput is true
   final StringCallback? onEditingComplete;
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
@@ -39,6 +39,7 @@ class YustTextField extends StatefulWidget {
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
   final EdgeInsets contentPadding;
+  final bool shouldCompleteNotValidInput;
 
   const YustTextField({
     Key? key,
@@ -75,6 +76,7 @@ class YustTextField extends StatefulWidget {
     this.keyboardType,
     this.textInputAction,
     this.contentPadding = const EdgeInsets.all(20.0),
+    this.shouldCompleteNotValidInput = false,
   }) : super(key: key);
 
   @override
@@ -95,7 +97,9 @@ class _YustTextFieldState extends State<YustTextField> {
         widget.notTrim ? _controller.value.text : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
-    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+    if (widget.validator == null ||
+        widget.validator!(textFieldValue) == null ||
+        widget.shouldCompleteNotValidInput) {
       _initValue = textFieldText;
       widget.onEditingComplete!(textFieldValue);
       _valueDidChange = false;
@@ -122,7 +126,8 @@ class _YustTextFieldState extends State<YustTextField> {
             : _controller.value.text.trim();
         final textFieldValue = textFieldText == '' ? null : textFieldText;
         if (widget.validator == null ||
-            widget.validator!(textFieldValue) == null) {
+            widget.validator!(textFieldValue) == null ||
+            widget.shouldCompleteNotValidInput) {
           _initValue = textFieldText;
           widget.onEditingComplete!(textFieldValue);
         } else {
