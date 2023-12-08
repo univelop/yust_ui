@@ -29,7 +29,13 @@ class YustImagePicker extends StatefulWidget {
   /// [linkedDocPath] and [linkedDocAttribute] are needed for the offline compatibility.
   /// If not given, uploads are only possible with internet connection
   final String? linkedDocAttribute;
+
+  @Deprecated('Use [numberOfFiles] instead')
   final bool multiple;
+
+  /// When [numberOfFiles] is null, the user can upload as many files as he
+  /// wants. Otherwise the user can only upload [numberOfFiles] files.
+  final num? numberOfFiles;
   final List<YustFile> images;
   final bool zoomable;
   final void Function(List<YustFile> images)? onChanged;
@@ -51,6 +57,7 @@ class YustImagePicker extends StatefulWidget {
     this.linkedDocPath,
     this.linkedDocAttribute,
     this.multiple = false,
+    this.numberOfFiles,
     required this.images,
     this.zoomable = false,
     this.onChanged,
@@ -106,7 +113,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           suffixChild: _buildPickButtons(context),
           prefixIcon: widget.prefixIcon,
           below: widget.showPreview
-              ? widget.multiple
+              ? widget.multiple || (widget.numberOfFiles ?? 2) > 1
                   ? _buildGallery(context)
                   : Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
@@ -123,7 +130,7 @@ class YustImagePickerState extends State<YustImagePicker> {
   Widget _buildPickButtons(BuildContext context) {
     if (!_enabled ||
         (widget.showPreview &&
-            !widget.multiple &&
+            (!widget.multiple || widget.numberOfFiles == 1) &&
             _fileHandler.getFiles().firstOrNull != null)) {
       return const SizedBox.shrink();
     }
@@ -266,7 +273,8 @@ class YustImagePickerState extends State<YustImagePicker> {
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
-    if (widget.multiple) {
+    // ignore: deprecated_member_use_from_same_package
+    if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -408,7 +416,9 @@ class YustImagePickerState extends State<YustImagePicker> {
     } else {
       if (!kIsWeb) {
         final picker = ImagePicker();
-        if (widget.multiple && imageSource == ImageSource.gallery) {
+        // ignore: deprecated_member_use_from_same_package
+        if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
+            imageSource == ImageSource.gallery) {
           final images = await picker.pickMultiImage(
             // We don't use maxHeight & maxWidth for now, as there are some
             // image-orientation problems with iOS when the image is smaller(!),
@@ -445,7 +455,8 @@ class YustImagePickerState extends State<YustImagePicker> {
       }
       // Else, we are on Web
       else {
-        if (widget.multiple) {
+        // ignore: deprecated_member_use_from_same_package
+        if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
           if (result != null) {
@@ -482,16 +493,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
   }) async {
-    final sanizitedPath = _sanitiseFilePath(path);
+    final sanitizedPath = _sanitizeFilePath(path);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${sanizitedPath.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanitizedPath.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
         bytes = await YustUi.fileHelpers.resizeImageBytes(
-            name: sanizitedPath, bytes: bytes!, maxWidth: size);
+            name: sanitizedPath, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -504,7 +515,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       linkedDocAttribute: widget.linkedDocAttribute,
     );
 
-    await _createDatebaseEntry();
+    await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);
 
     if (_currentImageNumber < _fileHandler.getFiles().length) {
@@ -516,11 +527,11 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
   }
 
-  _sanitiseFilePath(String path) {
+  _sanitizeFilePath(String path) {
     return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
-  Future<void> _createDatebaseEntry() async {
+  Future<void> _createDatabaseEntry() async {
     try {
       if (widget.linkedDocPath != null &&
           !_fileHandler.existsDocData(

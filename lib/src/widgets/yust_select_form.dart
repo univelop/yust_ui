@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
@@ -21,7 +19,7 @@ class YustSelectForm<T> extends StatelessWidget {
   final Function? onChanged;
   final bool divider;
   final bool allowSearch;
-  final int maxVisibleOptions;
+  final BoxConstraints optionListConstraints;
 
   YustSelectForm({
     Key? key,
@@ -35,25 +33,18 @@ class YustSelectForm<T> extends StatelessWidget {
     this.onChanged,
     this.divider = true,
     this.allowSearch = true,
-    this.maxVisibleOptions = 10,
+    this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
   })  : selectedValues = selectedValues ?? [],
         super(key: key);
 
-  double get optionHeight {
-    switch (formType) {
-      case YustSelectFormType.single:
-        return 48.0;
-      case YustSelectFormType.multiple:
-        return 48.0;
-      case YustSelectFormType.singleWithoutIndicator:
-        return 36.0;
-      default:
-        throw Exception('Unknown form type');
-    }
-  }
+  final _maxOptionCountBeforeSearch = 10;
 
   @override
   Widget build(BuildContext context) {
+    if (optionListConstraints.maxHeight == double.infinity) {
+      throw Exception('The OptionListConstraints must at least constrain the maxHeight.');
+    }
+
     if (optionValues.isEmpty) {
       return YustListTile(
         label: noOptionsText,
@@ -62,6 +53,7 @@ class YustSelectForm<T> extends StatelessWidget {
     }
 
     String searchValue = '';
+    final controller = ScrollController();
 
     return StatefulBuilder(
       builder: (_, setState) {
@@ -74,13 +66,15 @@ class YustSelectForm<T> extends StatelessWidget {
                 label: label,
                 divider: false,
               ),
-            if (allowSearch && optionValues.length > maxVisibleOptions)
+            if (allowSearch && optionValues.length > _maxOptionCountBeforeSearch)
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
                 child: TextFormField(
                   initialValue: searchValue,
                   decoration: InputDecoration(
+                    icon: const Icon(Icons.search),
+                    iconColor: Colors.grey,
                     hintText:
                         label == null ? 'Suche...' : 'Durchsuche $label...',
                     border: InputBorder.none,
@@ -94,26 +88,35 @@ class YustSelectForm<T> extends StatelessWidget {
                   },
                 ),
               ),
-            SizedBox(
-              height:
-                  min(maxVisibleOptions, optionValues.length) * optionHeight,
-              width: 300.0,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: foundValues.length,
-                itemBuilder: (context, index) {
-                  switch (formType) {
-                    case YustSelectFormType.single:
-                      return _listItemSingle(foundValues, index, setState);
-                    case YustSelectFormType.multiple:
-                      return _listItemMultiple(foundValues, index, setState);
-                    case YustSelectFormType.singleWithoutIndicator:
-                      return _listItemSingleNoIndicator(
-                          foundValues, index, setState);
-                    default:
-                      throw Exception('Unknown form type');
-                  }
-                },
+            Container(
+              constraints: optionListConstraints,
+              child: Scrollbar(
+                controller: controller,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: [
+                      if (allowSearch && foundValues.isEmpty)
+                        const ListTile(
+                          title: Center(child: Text('Keine Optionen gefunden')),
+                          titleAlignment: ListTileTitleAlignment.center,
+                        ),
+                      ...foundValues.map((value) {
+                        switch (formType) {
+                          case YustSelectFormType.single:
+                            return _listItemSingle(foundValues, foundValues.indexOf(value), setState);
+                          case YustSelectFormType.multiple:
+                            return _listItemMultiple(foundValues, foundValues.indexOf(value), setState);
+                          case YustSelectFormType.singleWithoutIndicator:
+                            return _listItemSingleNoIndicator(foundValues, foundValues.indexOf(value), setState);
+                          default:
+                            throw Exception('Unknown form type');
+                        }
+                      }),
+                    ],
+                  )
+                ),
               ),
             ),
             if (divider)
@@ -162,14 +165,14 @@ class YustSelectForm<T> extends StatelessWidget {
 
   Widget _listItemSingleNoIndicator(
       List<T> foundValues, int index, StateSetter setState) {
-    return SimpleDialogOption(
-      onPressed: () {
+    return ListTile(
+      title: Text(_getOptionLabel(foundValues[index])),
+      onTap: () => setState(() {
         final value = foundValues[index];
         selectedValues.clear();
         selectedValues.add(value);
         onChanged?.call();
-      },
-      child: Text(_getOptionLabel(foundValues[index])),
+      }),
     );
   }
 
