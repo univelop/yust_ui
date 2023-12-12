@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_alert_result.dart';
-import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
+import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
 import '../widgets/yust_select.dart';
 
@@ -376,7 +376,7 @@ class YustAlertService {
                       ),
                     ),
                   ),
-                  YustMultiSelectComponent<String>(
+                  YustSelectForm<String>(
                     optionValues: optionValues,
                     optionLabels: optionLabels,
                     selectedValues: newItemIds,

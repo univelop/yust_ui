@@ -11,6 +11,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final bool Function(T doc)? hideItem;
   final ScrollController? scrollController;
   final Widget? emptyInfo;
+  final bool reverse;
 
   const YustPaginatedListView({
     Key? key,
@@ -21,6 +22,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.hideItem,
     this.scrollController,
     this.emptyInfo,
+    this.reverse = false,
   }) : super(key: key);
 
   @override
@@ -36,6 +38,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
           _itemBuilder(context, documentSnapshot),
       // orderBy is compulsory to enable pagination
       query: query,
+      reverse: reverse,
       pageSize: 50,
       loadingBuilder: (_) => SingleChildScrollView(
         controller: scrollController,
