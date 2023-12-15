@@ -18,6 +18,7 @@ class YustSelect<T> extends StatelessWidget {
   final int? maxLines;
   final int? minLines;
   final bool allowSearch;
+  final AutovalidateMode? autovalidateMode;
 
   static const maxVisibleOptions = 10;
 
@@ -39,6 +40,7 @@ class YustSelect<T> extends StatelessWidget {
     this.maxLines,
     this.minLines,
     this.allowSearch = true,
+    this.autovalidateMode,
   }) : super(key: key);
 
   @override
@@ -49,6 +51,7 @@ class YustSelect<T> extends StatelessWidget {
       prefixIcon: prefixIcon,
       suffixChild: suffixChild,
       validator: validator,
+      autovalidateMode: autovalidateMode,
       style: style,
       divider: divider,
       maxLines: maxLines,
