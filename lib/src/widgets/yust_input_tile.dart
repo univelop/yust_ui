@@ -56,7 +56,7 @@ class YustInputTile extends StatelessWidget {
               await onDelete!();
             },
       validator: validator,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: autovalidateMode,
     );
   }
 }
