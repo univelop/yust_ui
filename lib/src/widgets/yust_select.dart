@@ -70,7 +70,7 @@ class YustSelect<T> extends StatelessWidget {
   void _selectValue(BuildContext context) async {
     if (onSelected == null) return;
 
-    final selectedValues = [value];
+    final selectedValues = <T>[];
 
     await showDialog<T>(
       context: context,
