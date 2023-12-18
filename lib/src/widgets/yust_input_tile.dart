@@ -16,6 +16,7 @@ class YustInputTile extends StatelessWidget {
   final bool divider;
   final int? maxLines;
   final int? minLines;
+  final AutovalidateMode? autovalidateMode;
 
   const YustInputTile({
     Key? key,
@@ -31,6 +32,7 @@ class YustInputTile extends StatelessWidget {
     this.divider = true,
     this.maxLines,
     this.minLines,
+    this.autovalidateMode,
   }) : super(key: key);
 
   @override
@@ -54,6 +56,7 @@ class YustInputTile extends StatelessWidget {
               await onDelete!();
             },
       validator: validator,
+      autovalidateMode: autovalidateMode,
     );
   }
 }
