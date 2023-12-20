@@ -1,3 +1,10 @@
+## 3.16.0 - 2023-12-18
+
+-   Profile picture for user
+-   Improve transactions
+-   Add batches
+-   Fix bugs
+
 ## 3.15.0 - 2023-11-17
 
 -   Improve Yust Select
