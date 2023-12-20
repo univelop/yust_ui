@@ -113,7 +113,8 @@ class YustAlertService {
                     Expanded(
                       child: TextFormField(
                         controller: controller,
-                        decoration: InputDecoration(hintText: placeholder),
+                        decoration: InputDecoration(
+                            hintText: placeholder, errorMaxLines: 5),
                         autovalidateMode:
                             validator == null ? null : validateMode,
                         validator: validator == null
