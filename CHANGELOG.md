@@ -1,3 +1,7 @@
+## 3.16.1 - 2024-01-10
+
+-   Fix image picker bug
+
 ## 3.16.0 - 2023-12-18
 
 -   Profile picture for user
