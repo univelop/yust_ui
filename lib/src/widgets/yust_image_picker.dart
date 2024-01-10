@@ -136,9 +136,9 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
 
     final pictureFiles = [..._fileHandler.getFiles()];
-    final canAddMore = widget.multiple
-        ? pictureFiles.length < widget.imageCount
-        : pictureFiles.isEmpty;
+    final canAddMore = widget.numberOfFiles != null
+        ? pictureFiles.length < widget.numberOfFiles!
+        : true;
 
     return SizedBox(
       width: 150,
