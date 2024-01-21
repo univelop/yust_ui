@@ -1,3 +1,8 @@
+## 3.17.0 - 2024-01-21
+
+-   Improve database services
+-   Fix bugs
+
 ## 3.16.1 - 2024-01-10
 
 -   Fix image picker bug
