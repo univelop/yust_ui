@@ -19,7 +19,7 @@ class YustDatePicker extends StatelessWidget {
   final bool readOnly;
 
   const YustDatePicker({
-    Key? key,
+    super.key,
     this.label,
     this.value,
     this.firstDate,
@@ -29,7 +29,7 @@ class YustDatePicker extends StatelessWidget {
     this.style = YustInputStyle.normal,
     this.prefixIcon,
     this.readOnly = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

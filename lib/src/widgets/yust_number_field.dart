@@ -32,7 +32,7 @@ class YustNumberField extends StatelessWidget {
   final TextStyle? valueStyle;
 
   const YustNumberField({
-    Key? key,
+    super.key,
     this.label,
     this.value,
     this.valueStyle,
@@ -52,7 +52,7 @@ class YustNumberField extends StatelessWidget {
     this.hideKeyboardOnAutofocus = false,
     this.validator,
     this.divider = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

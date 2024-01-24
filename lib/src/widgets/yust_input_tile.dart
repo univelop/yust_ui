@@ -19,7 +19,7 @@ class YustInputTile extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
 
   const YustInputTile({
-    Key? key,
+    super.key,
     this.label,
     this.text,
     this.textStyle,
@@ -33,7 +33,7 @@ class YustInputTile extends StatelessWidget {
     this.maxLines,
     this.minLines,
     this.autovalidateMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

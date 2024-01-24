@@ -18,9 +18,9 @@ class YustSignInScreen extends StatefulWidget {
   final String? logoAssetName;
 
   const YustSignInScreen({
-    Key? key,
+    super.key,
     this.logoAssetName,
-  }) : super(key: key);
+  });
 
   @override
   State<YustSignInScreen> createState() => _YustSignInScreenState();
@@ -39,8 +39,8 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
 
   @override
   void initState() {
-    SharedPreferences.getInstance().then((prefs) {
-      _email = prefs.getString('email');
+    SharedPreferences.getInstance().then((preferences) {
+      _email = preferences.getString('email');
       if (_email != null) {
         _emailController.text = _email!;
       }
@@ -201,8 +201,8 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
 
   Future<void> _signIn(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', _email!);
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setString('email', _email!);
       try {
         await Yust.authService
             .signIn(_email!, _password!)

@@ -5,7 +5,7 @@ import '../yust_ui.dart';
 class YustFocusHandler extends StatelessWidget {
   final Widget child;
 
-  const YustFocusHandler({Key? key, required this.child}) : super(key: key);
+  const YustFocusHandler({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

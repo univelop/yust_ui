@@ -25,7 +25,7 @@ class YustListTile extends StatelessWidget {
   final bool divider;
 
   const YustListTile({
-    Key? key,
+    super.key,
     this.label,
     this.navigate = false,
     this.center = false,
@@ -38,7 +38,7 @@ class YustListTile extends StatelessWidget {
     this.prefixIcon,
     this.below,
     this.divider = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -51,7 +51,7 @@ class YustImagePicker extends StatefulWidget {
   final int imageCount;
 
   const YustImagePicker({
-    Key? key,
+    super.key,
     this.label,
     required this.storageFolderPath,
     this.linkedDocPath,
@@ -69,8 +69,7 @@ class YustImagePicker extends StatefulWidget {
     this.showCentered = false,
     this.showPreview = true,
     int? imageCount,
-  })  : imageCount = imageCount ?? 15,
-        super(key: key);
+  }) : imageCount = imageCount ?? 15;
   @override
   YustImagePickerState createState() => YustImagePickerState();
 }
@@ -113,6 +112,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           suffixChild: _buildPickButtons(context),
           prefixIcon: widget.prefixIcon,
           below: widget.showPreview
+              // ignore: deprecated_member_use_from_same_package
               ? widget.multiple || (widget.numberOfFiles ?? 2) > 1
                   ? _buildGallery(context)
                   : Padding(
@@ -130,6 +130,7 @@ class YustImagePickerState extends State<YustImagePicker> {
   Widget _buildPickButtons(BuildContext context) {
     if (!_enabled ||
         (widget.showPreview &&
+            // ignore: deprecated_member_use_from_same_package
             (!widget.multiple || widget.numberOfFiles == 1) &&
             _fileHandler.getFiles().firstOrNull != null)) {
       return const SizedBox.shrink();
@@ -153,6 +154,7 @@ class YustImagePickerState extends State<YustImagePicker> {
               onPressed: () async {
                 YustUi.helpers.unfocusCurrent();
                 final confirmed = await YustUi.alertService.showConfirmation(
+                    // ignore: deprecated_member_use_from_same_package
                     widget.multiple
                         ? 'Willst du wirklich alle Bilder löschen?'
                         : 'Wirklich löschen?',
@@ -169,6 +171,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                   } catch (e) {
                     await YustUi.alertService.showAlert(
                         'Ups',
+                        // ignore: deprecated_member_use_from_same_package
                         widget.multiple
                             ? 'Ein Bild konnte nicht gelöscht werden: \n$e'
                             : 'Das Bild kann gerade nicht gelöscht werden: \n$e');

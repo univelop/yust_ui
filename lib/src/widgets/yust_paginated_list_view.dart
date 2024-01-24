@@ -14,7 +14,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final bool reverse;
 
   const YustPaginatedListView({
-    Key? key,
+    super.key,
     required this.modelSetup,
     required this.listItemBuilder,
     required this.orderBy,
@@ -23,7 +23,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.scrollController,
     this.emptyInfo,
     this.reverse = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

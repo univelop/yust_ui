@@ -17,8 +17,7 @@ class YustAccountEditScreen extends StatelessWidget {
 
   final bool askForGender;
 
-  const YustAccountEditScreen({Key? key, this.askForGender = false})
-      : super(key: key);
+  const YustAccountEditScreen({super.key, this.askForGender = false});
 
   @override
   Widget build(BuildContext context) {

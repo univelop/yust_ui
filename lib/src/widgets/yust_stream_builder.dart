@@ -11,13 +11,13 @@ class YustStreamBuilder<T extends YustDoc> extends StatefulWidget {
   final Widget Function(T?, YustBuilderInsights, BuildContext) builder;
 
   const YustStreamBuilder({
-    Key? key,
+    super.key,
     required this.stream,
     this.showLoadingSpinner = false,
     this.createIfNull = false,
     required this.init,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   YustStreamBuilderState<T> createState() => YustStreamBuilderState<T>();

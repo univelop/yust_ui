@@ -20,7 +20,7 @@ class YustTimePicker extends StatefulWidget {
   final bool readOnly;
 
   const YustTimePicker({
-    Key? key,
+    super.key,
     this.label,
     this.value,
     this.onChanged,
@@ -32,7 +32,7 @@ class YustTimePicker extends StatefulWidget {
     this.autofocus = false,
     this.popUpTitle = 'Uhrzeit wählen',
     this.readOnly = false,
-  }) : super(key: key);
+  });
 
   @override
   State<YustTimePicker> createState() => _YustTimePickerState();
