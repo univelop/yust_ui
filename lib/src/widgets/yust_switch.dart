@@ -16,7 +16,7 @@ class YustSwitch extends StatelessWidget {
   final bool divider;
 
   const YustSwitch({
-    Key? key,
+    super.key,
     this.label,
     required this.value,
     this.activeColor,
@@ -26,7 +26,7 @@ class YustSwitch extends StatelessWidget {
     this.slimDesign = false,
     this.switchRepresentation = 'yesNo',
     this.divider = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

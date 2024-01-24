@@ -20,7 +20,7 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
   final Widget Function(T?, YustBuilderInsights, BuildContext) builder;
 
   const YustDocBuilder({
-    Key? key,
+    super.key,
     required this.modelSetup,
     this.id,
     this.filters,
@@ -28,7 +28,7 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
     this.showLoadingSpinner = false,
     this.createIfNull = false,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   YustDocBuilderState<T> createState() => YustDocBuilderState<T>();

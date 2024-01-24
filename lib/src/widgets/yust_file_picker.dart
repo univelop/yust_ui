@@ -52,7 +52,7 @@ class YustFilePicker extends StatefulWidget {
   final bool allowOnlyImages;
 
   const YustFilePicker({
-    Key? key,
+    super.key,
     this.label,
     this.showModifiedAt = false,
     required this.files,
@@ -68,7 +68,7 @@ class YustFilePicker extends StatefulWidget {
     this.allowedExtensions,
     this.divider = true,
     this.allowOnlyImages = false,
-  }) : super(key: key);
+  });
 
   @override
   YustFilePickerState createState() => YustFilePickerState();

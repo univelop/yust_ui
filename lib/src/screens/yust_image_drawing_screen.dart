@@ -10,10 +10,10 @@ class YustImageDrawingScreen extends StatefulWidget {
   final void Function(Uint8List? image) onSave;
 
   const YustImageDrawingScreen({
-    Key? key,
+    super.key,
     required this.image,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   YustImageDrawingScreenState createState() => YustImageDrawingScreenState();
@@ -224,16 +224,14 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
               children: [
                 const Expanded(flex: 2, child: Text('Strichstärke')),
                 ...StrokeWidth.values
-                    .map((value) => _buildStrokeWidthSetting(value))
-                    .toList(),
+                    .map((value) => _buildStrokeWidthSetting(value)),
               ],
             ),
             Row(
               children: [
                 const Expanded(flex: 2, child: Text('Farbe')),
                 ...StrokeColor.values
-                    .map((value) => _buildStrokeColorSetting(value))
-                    .toList(),
+                    .map((value) => _buildStrokeColorSetting(value)),
               ],
             ),
           ],

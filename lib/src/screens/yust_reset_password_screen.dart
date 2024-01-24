@@ -11,8 +11,7 @@ class YustResetPasswordScreen extends StatefulWidget {
 
   final String? logoAssetName;
 
-  const YustResetPasswordScreen({Key? key, this.logoAssetName})
-      : super(key: key);
+  const YustResetPasswordScreen({super.key, this.logoAssetName});
 
   @override
   State<YustResetPasswordScreen> createState() =>
@@ -71,7 +70,7 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                               navigator.pop();
                               await YustUi.alertService.showAlert(
                                   'E-Mail verschickt',
-                                  'Du erhälst eine E-Mail. Folge den Anweisungen um ein neues Passwort zu erstellen.');
+                                  'Du erhältst eine E-Mail. Folge den Anweisungen um ein neues Passwort zu erstellen.');
                             } catch (err) {
                               await YustUi.alertService
                                   .showAlert('Fehler', err.toString());

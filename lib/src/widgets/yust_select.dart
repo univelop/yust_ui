@@ -23,7 +23,7 @@ class YustSelect<T> extends StatelessWidget {
   static const maxVisibleOptions = 10;
 
   const YustSelect({
-    Key? key,
+    super.key,
     this.label,
     required this.value,
     required this.optionValues,
@@ -41,7 +41,7 @@ class YustSelect<T> extends StatelessWidget {
     this.minLines,
     this.allowSearch = true,
     this.autovalidateMode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

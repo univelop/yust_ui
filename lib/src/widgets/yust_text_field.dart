@@ -42,7 +42,7 @@ class YustTextField extends StatefulWidget {
   final bool shouldCompleteNotValidInput;
 
   const YustTextField({
-    Key? key,
+    super.key,
     this.label,
     this.value,
     this.placeholder,
@@ -77,7 +77,7 @@ class YustTextField extends StatefulWidget {
     this.textInputAction,
     this.contentPadding = const EdgeInsets.all(20.0),
     this.shouldCompleteNotValidInput = false,
-  }) : super(key: key);
+  });
 
   @override
   State<YustTextField> createState() => _YustTextFieldState();

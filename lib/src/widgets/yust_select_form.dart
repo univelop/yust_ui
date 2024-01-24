@@ -22,7 +22,7 @@ class YustSelectForm<T> extends StatelessWidget {
   final BoxConstraints optionListConstraints;
 
   YustSelectForm({
-    Key? key,
+    super.key,
     this.label,
     required this.optionValues,
     required this.optionLabels,
@@ -34,15 +34,15 @@ class YustSelectForm<T> extends StatelessWidget {
     this.divider = true,
     this.allowSearch = true,
     this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
-  })  : selectedValues = selectedValues ?? [],
-        super(key: key);
+  }) : selectedValues = selectedValues ?? [];
 
   final _maxOptionCountBeforeSearch = 10;
 
   @override
   Widget build(BuildContext context) {
     if (optionListConstraints.maxHeight == double.infinity) {
-      throw Exception('The OptionListConstraints must at least constrain the maxHeight.');
+      throw Exception(
+          'The OptionListConstraints must at least constrain the maxHeight.');
     }
 
     if (optionValues.isEmpty) {
@@ -66,7 +66,8 @@ class YustSelectForm<T> extends StatelessWidget {
                 label: label,
                 divider: false,
               ),
-            if (allowSearch && optionValues.length > _maxOptionCountBeforeSearch)
+            if (allowSearch &&
+                optionValues.length > _maxOptionCountBeforeSearch)
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -94,29 +95,32 @@ class YustSelectForm<T> extends StatelessWidget {
                 controller: controller,
                 thumbVisibility: true,
                 child: SingleChildScrollView(
-                  controller: controller,
-                  child: Column(
-                    children: [
-                      if (allowSearch && foundValues.isEmpty)
-                        const ListTile(
-                          title: Center(child: Text('Keine Optionen gefunden')),
-                          titleAlignment: ListTileTitleAlignment.center,
-                        ),
-                      ...foundValues.map((value) {
-                        switch (formType) {
-                          case YustSelectFormType.single:
-                            return _listItemSingle(foundValues, foundValues.indexOf(value), setState);
-                          case YustSelectFormType.multiple:
-                            return _listItemMultiple(foundValues, foundValues.indexOf(value), setState);
-                          case YustSelectFormType.singleWithoutIndicator:
-                            return _listItemSingleNoIndicator(foundValues, foundValues.indexOf(value), setState);
-                          default:
-                            throw Exception('Unknown form type');
-                        }
-                      }),
-                    ],
-                  )
-                ),
+                    controller: controller,
+                    child: Column(
+                      children: [
+                        if (allowSearch && foundValues.isEmpty)
+                          const ListTile(
+                            title:
+                                Center(child: Text('Keine Optionen gefunden')),
+                            titleAlignment: ListTileTitleAlignment.center,
+                          ),
+                        ...foundValues.map((value) {
+                          switch (formType) {
+                            case YustSelectFormType.single:
+                              return _listItemSingle(foundValues,
+                                  foundValues.indexOf(value), setState);
+                            case YustSelectFormType.multiple:
+                              return _listItemMultiple(foundValues,
+                                  foundValues.indexOf(value), setState);
+                            case YustSelectFormType.singleWithoutIndicator:
+                              return _listItemSingleNoIndicator(foundValues,
+                                  foundValues.indexOf(value), setState);
+                            default:
+                              throw Exception('Unknown form type');
+                          }
+                        }),
+                      ],
+                    )),
               ),
             ),
             if (divider)

@@ -5,7 +5,7 @@ import '../widgets/yust_doc_builder.dart';
 import 'yust_account_edit_screen.dart';
 
 class YustAccountScreen extends StatelessWidget {
-  const YustAccountScreen({Key? key}) : super(key: key);
+  const YustAccountScreen({super.key});
 
   static const String routeName = '/account';
   static const bool signInRequired = true;

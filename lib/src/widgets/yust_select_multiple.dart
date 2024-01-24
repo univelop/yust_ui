@@ -18,7 +18,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
   final ButtonStyle buttonStyle;
 
   const YustSelectMultiple({
-    Key? key,
+    super.key,
     this.label,
     required this.values,
     required this.optionValues,
@@ -30,7 +30,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

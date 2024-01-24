@@ -19,11 +19,11 @@ class YustSignUpScreen extends StatefulWidget {
   final bool askForGender;
 
   const YustSignUpScreen({
-    Key? key,
+    super.key,
     this.homeRouteName = '/',
     this.logoAssetName,
     this.askForGender = false,
-  }) : super(key: key);
+  });
 
   @override
   State<YustSignUpScreen> createState() => _YustSignUpScreenState();

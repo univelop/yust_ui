@@ -16,7 +16,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   final Widget Function(List<T>, YustBuilderInsights, BuildContext) builder;
 
   const YustDocsBuilder({
-    Key? key,
+    super.key,
     required this.modelSetup,
     this.filters,
     this.orderBy,
@@ -24,7 +24,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
     this.loadingIndicator,
     this.limit,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   YustDocsBuilderState<T> createState() => YustDocsBuilderState<T>();
