@@ -13,7 +13,7 @@ dependencies:
     yust:
         git:
             url: https://github.com/univelop/yust.git
-            ref: master
+            ref: 2520-multilingual-yust
     cached_network_image: ^3.3.1
     cloud_firestore: ^4.5.0
     collection: ^1.18.0
