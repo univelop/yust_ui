@@ -40,12 +40,12 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
   void initStream() {
     if (widget.id != null) {
-      _docStream = Yust.databaseService.getStream<T>(
+      _docStream = Yust.instance!.databaseService.getStream<T>(
         widget.modelSetup,
         widget.id!,
       );
     } else {
-      _docStream = Yust.databaseService.getFirstStream<T>(
+      _docStream = Yust.instance!.databaseService.getFirstStream<T>(
         widget.modelSetup,
         filters: widget.filters,
         orderBy: widget.orderBy,
@@ -89,7 +89,7 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
       stream: _docStream!,
       showLoadingSpinner: widget.showLoadingSpinner,
       createIfNull: widget.createIfNull,
-      init: () => Yust.databaseService.initDoc<T>(widget.modelSetup),
+      init: () => Yust.instance!.databaseService.initDoc<T>(widget.modelSetup),
       builder: widget.builder,
     );
   }
