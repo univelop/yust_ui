@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../widgets/yust_focus_handler.dart';
 import '../widgets/yust_progress_button.dart';
 import '../yust_ui.dart';
@@ -59,7 +61,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
     return YustFocusHandler(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Anmeldung'),
+          title: Text(LocaleKeys.login.tr()),
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -77,9 +79,9 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                       child: TextFormField(
                         key: const Key('email'),
                         controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'E-Mail',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.email.tr(),
+                          border: const OutlineInputBorder(),
                         ),
                         textInputAction: TextInputAction.next,
                         keyboardType: TextInputType.emailAddress,
@@ -91,7 +93,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                         },
                         validator: (value) {
                           if (value == null || value == '') {
-                            return 'Die E-Mail darf nicht leer sein.';
+                            return LocaleKeys.validationEmail.tr();
                           } else {
                             return null;
                           }
@@ -103,9 +105,9 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
                         key: const Key('password'),
-                        decoration: const InputDecoration(
-                          labelText: 'Passwort',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.password.tr(),
+                          border: const OutlineInputBorder(),
                         ),
                         obscureText: true,
                         textInputAction: TextInputAction.send,
@@ -113,7 +115,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                         onChanged: (value) => _password = value.trim(),
                         validator: (value) {
                           if (value == null || value == '') {
-                            return 'Das Passwort darf nicht leer sein.';
+                            return LocaleKeys.validationPassword.tr();
                           }
                           return null;
                         },
@@ -137,16 +139,16 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                         color: Theme.of(context).colorScheme.secondary,
                         inProgress: _waitingForSignIn,
                         onPressed: () => _signIn(context),
-                        child: const Text('Anmelden',
-                            style:
-                                TextStyle(fontSize: 20.0, color: Colors.white)),
+                        child: Text(LocaleKeys.signIn.tr(),
+                            style: const TextStyle(
+                                fontSize: 20.0, color: Colors.white)),
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(
+                    Padding(
+                      padding: const EdgeInsets.only(
                           left: 20.0, top: 40.0, right: 20.0, bottom: 10.0),
-                      child: Text('Du hast noch keinen Account?',
-                          style: TextStyle(fontSize: 16.0)),
+                      child: Text(LocaleKeys.noAccount.tr(),
+                          style: const TextStyle(fontSize: 16.0)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -157,7 +159,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                               context, YustSignUpScreen.routeName,
                               arguments: arguments);
                         },
-                        child: Text('Hier Registrieren',
+                        child: Text(LocaleKeys.registerNow.tr(),
                             style: TextStyle(
                                 fontSize: 20.0,
                                 color: Theme.of(context).primaryColor)),
@@ -171,7 +173,7 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                           Navigator.pushNamed(
                               context, YustResetPasswordScreen.routeName);
                         },
-                        child: Text('Passwort vergessen',
+                        child: Text(LocaleKeys.forgotPassword.tr(),
                             style: TextStyle(
                                 fontSize: 20.0,
                                 color: Theme.of(context).primaryColor)),
@@ -209,16 +211,18 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
             .timeout(const Duration(seconds: 10));
         if (_onSignedIn != null) _onSignedIn!();
       } on YustException catch (err) {
-        await YustUi.alertService.showAlert('Fehler', err.message);
+        await YustUi.alertService.showAlert(LocaleKeys.error.tr(), err.message);
       } on PlatformException catch (err) {
-        await YustUi.alertService.showAlert('Fehler', err.message!);
+        await YustUi.alertService
+            .showAlert(LocaleKeys.error.tr(), err.message!);
       } on TimeoutException catch (_) {
         await YustUi.alertService.showAlert(
-          'Fehler',
-          'Zeitüberschreitung der Anfrage',
+          LocaleKeys.error.tr(),
+          LocaleKeys.timeout.tr(),
         );
       } catch (err) {
-        await YustUi.alertService.showAlert('Fehler', err.toString());
+        await YustUi.alertService
+            .showAlert(LocaleKeys.error.tr(), err.toString());
       }
     }
   }

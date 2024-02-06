@@ -7,6 +7,7 @@ import 'yust_input_tile.dart';
 typedef DateTimeCallback = void Function(DateTime?);
 
 class YustDatePicker extends StatelessWidget {
+  final Locale locale;
   final String? label;
   final DateTime? value;
   final DateTime? firstDate;
@@ -20,6 +21,7 @@ class YustDatePicker extends StatelessWidget {
 
   const YustDatePicker({
     super.key,
+    this.locale = const Locale('de'),
     this.label,
     this.value,
     this.firstDate,
@@ -58,7 +60,7 @@ class YustDatePicker extends StatelessWidget {
       lastDate: (lastDate != null)
           ? Yust.helpers.utcToLocal(lastDate!)
           : DateTime.utc(2100),
-      locale: const Locale('de', 'DE'),
+      locale: locale,
       currentDate: Yust.helpers.localNow(),
     );
     if (selectedDate != null) {

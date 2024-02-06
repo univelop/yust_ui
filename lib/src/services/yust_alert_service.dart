@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_alert_result.dart';
 import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../widgets/yust_select.dart';
 
 class YustAlertService {
@@ -20,7 +22,7 @@ class YustAlertService {
           content: Text(message),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK'),
+              child: Text(LocaleKeys.ok.tr()),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -48,7 +50,7 @@ class YustAlertService {
   Future<bool?> showConfirmation(
     String title,
     String action, {
-    String cancelText = 'Abbrechen',
+    String? cancelText,
     String? description,
   }) {
     final context = navStateKey.currentContext;
@@ -61,7 +63,7 @@ class YustAlertService {
           content: description != null ? Text(description) : null,
           actions: <Widget>[
             TextButton(
-              child: Text(cancelText),
+              child: Text(cancelText ?? LocaleKeys.cancel.tr()),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
@@ -147,7 +149,7 @@ class YustAlertService {
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('Abbrechen'),
+                child: Text(LocaleKeys.cancel.tr()),
                 onPressed: () {
                   Navigator.of(context).pop(null);
                 },
@@ -239,7 +241,7 @@ class YustAlertService {
                 ),
                 actions: <Widget>[
                   TextButton(
-                    child: const Text('Abbrechen'),
+                    child: Text(LocaleKeys.cancel.tr()),
                     onPressed: () {
                       Navigator.of(context).pop(AlertResult(false, null));
                     },
@@ -280,7 +282,7 @@ class YustAlertService {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Abbrechen'),
+              child: Text(LocaleKeys.cancel.tr()),
               onPressed: () {
                 Navigator.of(context).pop(null);
               },
@@ -349,7 +351,7 @@ class YustAlertService {
           return StatefulBuilder(
             builder: ((context, setState) {
               return SimpleDialog(
-                title: Text(title ?? 'Pflichtfelder'),
+                title: Text(title ?? LocaleKeys.mandatoryFields.tr()),
                 children: [
                   subTitle != null
                       ? Padding(
@@ -371,8 +373,8 @@ class YustAlertService {
                           });
                         },
                         child: selectAll
-                            ? const Text('Alle auswählen')
-                            : const Text('Alle abwählen'),
+                            ? Text(LocaleKeys.selectAll.tr())
+                            : Text(LocaleKeys.deselectAll.tr()),
                       ),
                     ),
                   ),
@@ -389,14 +391,14 @@ class YustAlertService {
                           isAborted = false;
                           Navigator.of(context).pop();
                         },
-                        child: const Text('OK'),
+                        child: Text(LocaleKeys.ok.tr()),
                       ),
                       TextButton(
                         onPressed: () {
                           isAborted = true;
                           Navigator.of(context).pop();
                         },
-                        child: const Text('Abbrechen'),
+                        child: Text(LocaleKeys.cancel.tr()),
                       ),
                     ],
                   )

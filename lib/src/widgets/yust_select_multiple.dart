@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
@@ -74,7 +76,9 @@ class YustSelectMultiple<T> extends StatelessWidget {
   Widget _buildDialog(List<dynamic> selectedValues, BuildContext context) {
     return AlertDialog(
       contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
-      title: (label == null) ? null : Text('$label wählen'),
+      title: (label == null)
+          ? null
+          : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +99,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
               alignment: Alignment.center,
               child: ElevatedButton(
                 style: buttonStyle,
-                child: const Text('OK'),
+                child: Text(LocaleKeys.ok.tr()),
                 onPressed: () {
                   // Close the Dialog & return selectedItems
                   Navigator.pop(context);

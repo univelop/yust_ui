@@ -16,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 
 class YustFileHandler {
@@ -155,7 +157,7 @@ class YustFileHandler {
 
   Future<void> addFile(YustFile yustFile) async {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
-      throw ('The file needs a name and a storageFolderPath to perform an upload!');
+      throw (LocaleKeys.exceptionMissingNameOrStorageFolderPath.tr());
     }
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
@@ -184,7 +186,7 @@ class YustFileHandler {
     } else {
       final connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult == ConnectivityResult.none) {
-        throw ('No internet connection.');
+        throw (LocaleKeys.missingConnection.tr());
       }
       try {
         await _deleteFileFromStorage(yustFile);
@@ -243,16 +245,16 @@ class YustFileHandler {
   }
 
   Future<void> showFile(BuildContext context, YustFile yustFile) async {
-    await EasyLoading.show(status: 'Datei laden...');
+    await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
     try {
       if (!kIsWeb) {
         String filePath;
         if (yustFile.cached) {
           filePath = yustFile.devicePath!;
         } else if (yustFile.url == null) {
-          throw YustException('Die Datei existiert nicht.');
+          throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
-          await EasyLoading.show(status: 'Datei laden...');
+          await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
           filePath = '${await _getDirectory(yustFile)}${yustFile.name}';
 
           await Dio().download(yustFile.url!, filePath);
@@ -268,8 +270,10 @@ class YustFileHandler {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService
-          .showAlert('Ups', 'Die Datei kann nicht geöffnet werden. $e');
+      await YustUi.alertService.showAlert(
+          LocaleKeys.oops.tr(),
+          LocaleKeys.alertCannotOpenFileWithError
+              .tr(namedArgs: {'error': e.toString()}));
     }
   }
 
@@ -328,12 +332,11 @@ class YustFileHandler {
 
   Future<void> _uploadFileToStorage(YustFile yustFile) async {
     if (yustFile.storageFolderPath == null) {
-      throw (YustException(
-          'Can not upload file. The storage folder path is missing.'));
+      throw (YustException(LocaleKeys.exceptionMissingStorageFolderPath.tr()));
     }
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      throw ('No internet connection.');
+      throw (LocaleKeys.missingConnection.tr());
     }
 
     if (yustFile.cached) {
@@ -495,7 +498,7 @@ class YustFileHandler {
     if (file.url != null && await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      throw YustException('Die Datei kann nicht geöffnet werden.');
+      throw YustException(LocaleKeys.alertCannotOpenFile.tr());
     }
   }
 
