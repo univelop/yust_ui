@@ -388,6 +388,7 @@ abstract class LocaleKeys {
   static const checkFailedLabelBrickSpec = 'checkFailedLabelBrickSpec';
   static const checkFailedLinkedRecordSpec = 'checkFailedLinkedRecordSpec';
   static const checkFailedNumberFields = 'checkFailedNumberFields';
+  static const checkFailedTransfer = 'checkFailedTransfer';
   static const checkMandatoryFields = 'checkMandatoryFields';
   static const checkResultAllGood = 'checkResultAllGood';
   static const checkResultErrors = 'checkResultErrors';
@@ -404,6 +405,7 @@ abstract class LocaleKeys {
   static const checksPassedLabelBrickSpec = 'checksPassedLabelBrickSpec';
   static const checksPassedLinkedRecordSpec = 'checksPassedLinkedRecordSpec';
   static const checksPassedNumberFields = 'checksPassedNumberFields';
+  static const checksPassedTransfer = 'checksPassedTransfer';
   static const chooseColor = 'chooseColor';
   static const chooseFittingColor = 'chooseFittingColor';
   static const chooseLicense = 'chooseLicense';
@@ -738,6 +740,7 @@ abstract class LocaleKeys {
   static const exceptionLicenseNotFound = 'exceptionLicenseNotFound';
   static const exceptionLinkedRecordSpecNotFound = 'exceptionLinkedRecordSpecNotFound';
   static const exceptionListNotFound = 'exceptionListNotFound';
+  static const exceptionListTooLong = 'exceptionListTooLong';
   static const exceptionMemberRecordSpecNotFound = 'exceptionMemberRecordSpecNotFound';
   static const exceptionMemberTileWithoutEmailBrick = 'exceptionMemberTileWithoutEmailBrick';
   static const exceptionMemberTileWithoutStatusBrick = 'exceptionMemberTileWithoutStatusBrick';
@@ -783,6 +786,7 @@ abstract class LocaleKeys {
   static const exceptionOptionListConstraints = 'exceptionOptionListConstraints';
   static const exceptionOwnerAdminLicense = 'exceptionOwnerAdminLicense';
   static const exceptionPasswordRequired = 'exceptionPasswordRequired';
+  static const exceptionRangeStep = 'exceptionRangeStep';
   static const exceptionReachedLicenseLimit = 'exceptionReachedLicenseLimit';
   static const exceptionReachedRoleLimit = 'exceptionReachedRoleLimit';
   static const exceptionRecordDoesNotExist = 'exceptionRecordDoesNotExist';
@@ -831,6 +835,7 @@ abstract class LocaleKeys {
   static const exportingWorkspace = 'exportingWorkspace';
   static const expression = 'expression';
   static const expressionExplanation = 'expressionExplanation';
+  static const expressionYieldsInvalidValue = 'expressionYieldsInvalidValue';
   static const externalUser = 'externalUser';
   static const failed = 'failed';
   static const fieldLabel = 'fieldLabel';
