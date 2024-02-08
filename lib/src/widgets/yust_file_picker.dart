@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
 import 'yust_list_tile.dart';
@@ -216,7 +218,7 @@ class YustFilePickerState extends State<YustFilePicker> {
                   Icon(Icons.cloud_upload_outlined,
                       size: 35, color: dropZoneColor),
                   Text(
-                    'Datei(en) hierher ziehen',
+                    LocaleKeys.dragFilesHere.tr(),
                     style: TextStyle(fontSize: 20, color: dropZoneColor),
                   ),
                 ],
@@ -234,9 +236,11 @@ class YustFilePickerState extends State<YustFilePicker> {
         child: Tooltip(
           preferBelow: false,
           message: widget.allowedExtensions?.isEmpty ?? true
-              ? 'Es sind keine Dateiendungen erlaubt.'
-              : 'Erlaubte Dateiendungen:\n'
-                  '${widget.allowedExtensions!.join(', ')}',
+              ? LocaleKeys.tooltipNoAllowedExtensions.tr()
+              : LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
+                  'allowedExtensions':
+                      widget.allowedExtensions?.join(', ') ?? ''
+                }),
           child: Icon(
               size: 40,
               Icons.info,
@@ -295,7 +299,7 @@ class YustFilePickerState extends State<YustFilePicker> {
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ])
-                : Text(isBroken ? 'Fehlerhafte Datei' : file.name!,
+                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name!,
                     overflow: TextOverflow.ellipsis),
           ),
           _buildCachedIndicator(file),
@@ -357,8 +361,8 @@ class YustFilePickerState extends State<YustFilePicker> {
       icon: const Icon(Icons.cloud_upload_outlined),
       color: Colors.black,
       onPressed: () async {
-        await YustUi.alertService.showAlert('Lokal gespeicherte Datei',
-            'Diese Datei ist noch nicht hochgeladen.');
+        await YustUi.alertService.showAlert(
+            LocaleKeys.localFile.tr(), LocaleKeys.alertLocalFile.tr());
       },
     );
   }
@@ -393,20 +397,22 @@ class YustFilePickerState extends State<YustFilePicker> {
     if (widget.allowedExtensions != null &&
         !widget.allowedExtensions!.contains(extension)) {
       unawaited(YustUi.alertService.showAlert(
-          'File Upload',
+          LocaleKeys.fileUpload.tr(),
           widget.allowedExtensions!.isEmpty
-              ? 'Es sind keine Dateiendungen zum Upload erlaubt.'
-              : 'Es sind nur die folgenden Dateiendungen erlaubt:\n'
-                  '${widget.allowedExtensions!.join(', ')}'));
+              ? LocaleKeys.alertNoAllowedExtensions.tr()
+              : LocaleKeys.alertAllowedExtensions.tr(namedArgs: {
+                  'allowedExtensions': widget.allowedExtensions!.join(', ')
+                })));
       return;
     }
     final numberOfFiles = widget.numberOfFiles;
     if (numberOfFiles != null && widget.files.length >= numberOfFiles) {
       unawaited(YustUi.alertService.showAlert(
-          'File Upload',
+          LocaleKeys.fileUpload.tr(),
           numberOfFiles == 1
-              ? 'Es kann nur eine Datei hochgeladen werden.'
-              : 'Es können nur $numberOfFiles Dateien hochgeladen werden.'));
+              ? LocaleKeys.alertMaxOneFile.tr()
+              : LocaleKeys.alertMaxNumberFiles
+                  .tr(namedArgs: {'numberFiles': numberOfFiles.toString()})));
       return;
     }
     final newYustFile = YustFile(
@@ -421,8 +427,10 @@ class YustFilePickerState extends State<YustFilePicker> {
     _processing[newYustFile.name] = true;
 
     if (_fileHandler.getFiles().any((file) => file.name == newYustFile.name)) {
-      await YustUi.alertService.showAlert('Nicht möglich',
-          'Eine Datei mit dem Namen ${newYustFile.name} existiert bereits.');
+      await YustUi.alertService.showAlert(
+          LocaleKeys.notPossible.tr(),
+          LocaleKeys.alertFileAlreadyExists
+              .tr(namedArgs: {'fileName': newYustFile.name ?? ''}));
     } else {
       await _createDatabaseEntry();
       await _fileHandler.addFile(newYustFile);
@@ -447,8 +455,8 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   Future<void> _deleteFile(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
-    final confirmed = await YustUi.alertService
-        .showConfirmation('Wirklich löschen?', 'Löschen');
+    final confirmed = await YustUi.alertService.showConfirmation(
+        LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
     if (confirmed == true) {
       try {
         await _fileHandler.deleteFile(yustFile);
@@ -459,8 +467,10 @@ class YustFilePickerState extends State<YustFilePicker> {
           setState(() {});
         }
       } catch (e) {
-        await YustUi.alertService
-            .showAlert('Ups', 'Die Datei kann nicht gelöscht werden. $e');
+        await YustUi.alertService.showAlert(
+            LocaleKeys.oops.tr(),
+            LocaleKeys.alertCannotDeleteFile
+                .tr(namedArgs: {'error': e.toString()}));
       }
     }
   }

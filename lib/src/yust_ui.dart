@@ -21,13 +21,28 @@ class YustUi {
   static YustFileHelpers fileHelpers = YustFileHelpers();
   static String? storageUrl;
   static String? imagePlaceholderPath;
+  static Function(
+    String key, {
+    String? localeOverride,
+    List<String>? args,
+    Map<String, String>? namedArgs,
+    String? gender,
+  }) trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
 
   static void initialize({
     String? storageUrl,
     String? imagePlaceholderPath,
+    Function(
+      String key, {
+      String? localeOverride,
+      List<String>? args,
+      Map<String, String>? namedArgs,
+      String? gender,
+    })? trCallback,
   }) {
     YustUi.storageUrl = storageUrl;
     YustUi.imagePlaceholderPath = imagePlaceholderPath;
+    YustUi.trCallback = trCallback ?? YustUi.trCallback;
   }
 
   static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {

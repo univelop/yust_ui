@@ -9,11 +9,11 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.17.3
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust.git
-    #         ref: master
+    # yust: ^3.17.3
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: master
     cached_network_image: ^3.3.1
     cloud_firestore: ^4.5.0
     collection: ^1.18.0

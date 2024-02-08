@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 import 'package:yust_ui/yust_ui.dart';
+
+import '../generated/locale_keys.g.dart';
 
 class YustSelect<T> extends StatelessWidget {
   final String? label;
@@ -90,7 +93,9 @@ class YustSelect<T> extends StatelessWidget {
   Widget _buildDialog(BuildContext context, List<T> selectedValues) {
     return AlertDialog(
       contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
-      title: label == null ? null : Text('$label wählen'),
+      title: label == null
+          ? null
+          : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
       content: YustSelectForm(
         optionValues: optionValues,
         optionLabels: optionLabels,

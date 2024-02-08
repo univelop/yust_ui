@@ -14,6 +14,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 
 class YustFileHelpers {
@@ -98,7 +100,7 @@ class YustFileHelpers {
     final size = MediaQuery.of(context).size;
     // Get the Location of the widget (e.g. button), that called the method.
     final box = context.findRenderObject() as RenderBox?;
-    await EasyLoading.show(status: 'Datei laden...');
+    await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
     try {
       if (kIsWeb) {
         final r = await http.get(
@@ -118,8 +120,10 @@ class YustFileHelpers {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService
-          .showAlert('Ups', 'Die Datei kann nicht geöffnet werden. $e');
+      await YustUi.alertService.showAlert(
+          LocaleKeys.oops.tr(),
+          LocaleKeys.alertCannotOpenFileWithError
+              .tr(namedArgs: {'error': e.toString()}));
     }
   }
 

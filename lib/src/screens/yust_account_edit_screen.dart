@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../widgets/yust_doc_builder.dart';
 import '../widgets/yust_focus_handler.dart';
 import '../widgets/yust_select.dart';
@@ -23,14 +25,14 @@ class YustAccountEditScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return YustFocusHandler(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Persönliche Daten')),
+        appBar: AppBar(title: Text(LocaleKeys.personalData.tr())),
         body: YustDocBuilder<YustUser>(
             modelSetup: Yust.userSetup,
             id: Yust.authService.getCurrentUserId(),
             builder: (user, insights, context) {
               if (user == null) {
-                return const Center(
-                  child: Text('In Arbeit...'),
+                return Center(
+                  child: Text(LocaleKeys.inProgress.tr()),
                 );
               }
               return ListView(
@@ -38,11 +40,11 @@ class YustAccountEditScreen extends StatelessWidget {
                 children: <Widget>[
                   _buildGender(context, user),
                   YustTextField(
-                    label: 'Vorname',
+                    label: LocaleKeys.firstName.tr(),
                     value: user.firstName,
                     validator: (value) {
                       if (value == null || value == '') {
-                        return 'Es muss ein Vorname angegeben werden.';
+                        return LocaleKeys.validationFirstName.tr();
                       } else {
                         return null;
                       }
@@ -55,11 +57,11 @@ class YustAccountEditScreen extends StatelessWidget {
                     },
                   ),
                   YustTextField(
-                    label: 'Nachname',
+                    label: LocaleKeys.lastName.tr(),
                     value: user.lastName,
                     validator: (value) {
                       if (value == null || value == '') {
-                        return 'Es muss ein Nachname angegeben werden.';
+                        return LocaleKeys.validationLastName.tr();
                       } else {
                         return null;
                       }
@@ -84,10 +86,13 @@ class YustAccountEditScreen extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return YustSelect(
-      label: 'Anrede',
+      label: LocaleKeys.salutation.tr(),
       value: user.gender,
       optionValues: const [YustGender.male, YustGender.female],
-      optionLabels: const ['Herr', 'Frau'],
+      optionLabels: [
+        LocaleKeys.salutationMale.tr(),
+        LocaleKeys.salutationFemale.tr()
+      ],
       onSelected: (dynamic value) {
         user.gender = value;
         Yust.databaseService.saveDoc<YustUser>(Yust.userSetup, user);
@@ -102,15 +107,15 @@ class YustAccountEditScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('E-Mail ändern'),
+          title: Text(LocaleKeys.changeEmail.tr()),
           children: [
             YustTextField(
-              label: 'Neue E-Mail Adresse',
+              label: LocaleKeys.newEmailAddress.tr(),
               value: email,
               onChanged: (value) => email = value,
             ),
             YustTextField(
-              label: 'Passwort zur Bestätigung',
+              label: LocaleKeys.confirmedPassword.tr(),
               value: password,
               onChanged: (value) => password = value,
               obscureText: true,
@@ -120,14 +125,14 @@ class YustAccountEditScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: const Text('Abbrechen'),
+                  child: Text(LocaleKeys.cancel.tr()),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 TextButton(
                   child: Text(
-                    'Speichern',
+                    LocaleKeys.save.tr(),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.secondary),
                   ),
@@ -136,25 +141,27 @@ class YustAccountEditScreen extends StatelessWidget {
                     try {
                       if (email == null || password == null) {
                         throw Exception(
-                            'E-Mail oder Passwort dürfen nicht leer sein');
+                            LocaleKeys.exceptionMissingEmailOrPassword.tr());
                       }
-                      await EasyLoading.show(status: 'E-Mail wird geändert...');
+                      await EasyLoading.show(
+                          status: LocaleKeys.changingEmail.tr());
                       await Yust.authService.changeEmail(email!, password!);
                       unawaited(EasyLoading.dismiss());
 
                       navigator.pop();
-                      await YustUi.alertService.showAlert('E-Mail geändert',
-                          'Deine E-Mail wurde erfolgreich geändert.');
+                      await YustUi.alertService.showAlert(
+                          LocaleKeys.changedEmail.tr(),
+                          LocaleKeys.alertChangedEmail.tr());
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
                       await YustUi.alertService
-                          .showAlert('Fehler', err.message!);
+                          .showAlert(LocaleKeys.error.tr(), err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
                       await YustUi.alertService
-                          .showAlert('Fehler', err.toString());
+                          .showAlert(LocaleKeys.error.tr(), err.toString());
                     }
                   },
                 ),
@@ -171,13 +178,13 @@ class YustAccountEditScreen extends StatelessWidget {
     if (authMethod == null || authMethod == YustAuthenticationMethod.mail) {
       return [
         YustTextField(
-          label: 'E-Mail',
+          label: LocaleKeys.email.tr(),
           value: user.email,
           readOnly: true,
           onTap: () => _changeEmail(context),
         ),
         YustTextField(
-          label: 'Passwort',
+          label: LocaleKeys.password.tr(),
           value: '*****',
           obscureText: true,
           readOnly: true,
@@ -187,7 +194,7 @@ class YustAccountEditScreen extends StatelessWidget {
     }
     return [
       YustTextField(
-        label: 'Anmeldung über',
+        label: LocaleKeys.signInVia.tr(),
         value: authMethod.label,
         readOnly: true,
       )
@@ -201,16 +208,16 @@ class YustAccountEditScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Passwort ändern'),
+          title: Text(LocaleKeys.changePassword.tr()),
           children: [
             YustTextField(
-              label: 'Neues Passwort',
+              label: LocaleKeys.newPassword.tr(),
               value: newPassword,
               onChanged: (value) => newPassword = value,
               obscureText: true,
             ),
             YustTextField(
-              label: 'Altes Passwort zur Bestätigung',
+              label: LocaleKeys.oldPassword.tr(),
               value: oldPassword,
               onChanged: (value) => oldPassword = value,
               obscureText: true,
@@ -220,14 +227,14 @@ class YustAccountEditScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  child: const Text('Abbrechen'),
+                  child: Text(LocaleKeys.cancel.tr()),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 TextButton(
                   child: Text(
-                    'Speichern',
+                    LocaleKeys.save.tr(),
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.secondary),
                   ),
@@ -236,26 +243,27 @@ class YustAccountEditScreen extends StatelessWidget {
                     try {
                       if (newPassword == null || oldPassword == null) {
                         throw Exception(
-                            'Es muss sowohl das alte, als auch das neue Passwort eingegeben werden');
+                            LocaleKeys.exceptionMissingNewOrOldPassword.tr());
                       }
                       await EasyLoading.show(
-                          status: 'Passwort wird geändert...');
+                          status: LocaleKeys.changingPassword.tr());
                       await Yust.authService
                           .changePassword(newPassword!, oldPassword!);
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
-                      await YustUi.alertService.showAlert('Passwort geändert',
-                          'Dein Passwort wurde erfolgreich geändert.');
+                      await YustUi.alertService.showAlert(
+                          LocaleKeys.changedPassword.tr(),
+                          LocaleKeys.alertChangedPassword.tr());
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
                       await YustUi.alertService
-                          .showAlert('Fehler', err.message!);
+                          .showAlert(LocaleKeys.error.tr(), err.message!);
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
                       await YustUi.alertService
-                          .showAlert('Fehler', err.toString());
+                          .showAlert(LocaleKeys.error.tr(), err.toString());
                     }
                   },
                 ),

@@ -9,6 +9,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/yust_ui.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
+
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
   'high': {'quality': 100, 'size': 2000},
@@ -156,9 +159,9 @@ class YustImagePickerState extends State<YustImagePicker> {
                 final confirmed = await YustUi.alertService.showConfirmation(
                     // ignore: deprecated_member_use_from_same_package
                     widget.multiple
-                        ? 'Willst du wirklich alle Bilder löschen?'
-                        : 'Wirklich löschen?',
-                    'Löschen');
+                        ? LocaleKeys.alertDeleteAllImages.tr()
+                        : LocaleKeys.confirmDelete.tr(),
+                    LocaleKeys.delete.tr());
                 if (confirmed == true) {
                   try {
                     for (final yustFile in pictureFiles) {
@@ -170,11 +173,9 @@ class YustImagePickerState extends State<YustImagePicker> {
                     }
                   } catch (e) {
                     await YustUi.alertService.showAlert(
-                        'Ups',
-                        // ignore: deprecated_member_use_from_same_package
-                        widget.multiple
-                            ? 'Ein Bild konnte nicht gelöscht werden: \n$e'
-                            : 'Das Bild kann gerade nicht gelöscht werden: \n$e');
+                        LocaleKeys.oops.tr(),
+                        LocaleKeys.alertCannotDeleteImage
+                            .tr(namedArgs: {'error': e.toString()}));
                   }
                 }
               },
@@ -225,7 +226,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                 });
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('mehr laden'),
+              label: Text(LocaleKeys.loadMore.tr()),
             ),
           ),
         const SizedBox(height: 2)
@@ -342,7 +343,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              'Bild hochladen',
+              LocaleKeys.uploadImage.tr(),
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary, fontSize: 16),
@@ -368,8 +369,8 @@ class YustImagePickerState extends State<YustImagePicker> {
           color: Colors.black,
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
-            final confirmed = await YustUi.alertService
-                .showConfirmation('Wirklich löschen?', 'Löschen');
+            final confirmed = await YustUi.alertService.showConfirmation(
+                LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
             if (confirmed == true) {
               try {
                 await _fileHandler.deleteFile(yustFile);
@@ -381,7 +382,9 @@ class YustImagePickerState extends State<YustImagePicker> {
                 }
               } catch (e) {
                 await YustUi.alertService.showAlert(
-                    'Ups', 'Das Bild kann gerade nicht gelöscht werden: \n$e');
+                    LocaleKeys.oops.tr(),
+                    LocaleKeys.alertCannotDeleteImage
+                        .tr(namedArgs: {'error': e.toString()}));
               }
             }
           },
@@ -401,8 +404,8 @@ class YustImagePickerState extends State<YustImagePicker> {
         icon: const Icon(Icons.cloud_upload_outlined),
         color: Colors.white,
         onPressed: () async {
-          await YustUi.alertService.showAlert('Lokal gespeichertes Bild',
-              'Dieses Bild ist noch nicht hochgeladen.');
+          await YustUi.alertService.showAlert(
+              LocaleKeys.localImage.tr(), LocaleKeys.alertLocalImage.tr());
         },
       ),
     );
@@ -414,8 +417,8 @@ class YustImagePickerState extends State<YustImagePicker> {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
-      await YustUi.alertService.showAlert('Kein Internet',
-          'Für das Hinzufügen von Bildern ist eine Internetverbindung erforderlich.');
+      await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
+          LocaleKeys.alertMissingConnectionAddImages.tr());
     } else {
       if (!kIsWeb) {
         final picker = ImagePicker();
@@ -463,7 +466,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
           if (result != null) {
-            await EasyLoading.show(status: 'Bilder werden hinzugefügt...');
+            await EasyLoading.show(status: LocaleKeys.addingImages.tr());
             for (final platformFile in result.files) {
               await uploadFile(
                 path: platformFile.name,
@@ -477,7 +480,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           final result =
               await FilePicker.platform.pickFiles(type: FileType.image);
           if (result != null) {
-            await EasyLoading.show(status: 'Bild wird hinzugefügt...');
+            await EasyLoading.show(status: LocaleKeys.addingImage.tr());
             await uploadFile(
               path: result.files.single.name,
               bytes: result.files.single.bytes,
