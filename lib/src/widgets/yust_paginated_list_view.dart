@@ -27,7 +27,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final query = Yust.instance!.databaseService
+    final query = Yust.databaseService
         .getQuery(modelSetup, filters: filters, orderBy: orderBy) as Query;
 
     return FirestoreListView(
@@ -49,8 +49,8 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
 
   Widget _itemBuilder(
       BuildContext context, QueryDocumentSnapshot<Object?> documentSnapshot) {
-    final doc = Yust.instance!.databaseService
-        .transformDoc<T>(modelSetup, documentSnapshot);
+    final doc =
+        Yust.databaseService.transformDoc<T>(modelSetup, documentSnapshot);
     if (doc == null) {
       return const SizedBox.shrink();
     }
