@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_date_picker.dart';
 
@@ -19,7 +21,7 @@ class YustTimePicker extends StatefulWidget {
   final String popUpTitle;
   final bool readOnly;
 
-  const YustTimePicker({
+  YustTimePicker({
     super.key,
     this.label,
     this.value,
@@ -30,9 +32,9 @@ class YustTimePicker extends StatefulWidget {
     this.prefixIcon,
     this.focusNode,
     this.autofocus = false,
-    this.popUpTitle = 'Uhrzeit wählen',
+    String? popUpTitle,
     this.readOnly = false,
-  });
+  }) : popUpTitle = popUpTitle ?? LocaleKeys.selectTime.tr();
 
   @override
   State<YustTimePicker> createState() => _YustTimePickerState();
@@ -144,8 +146,8 @@ class _YustTimePickerState extends State<YustTimePicker> {
     final selectedTime = await showTimePicker(
       context: context,
       initialTime: initialTime,
-      cancelText: 'Abbrechen',
-      confirmText: 'OK',
+      cancelText: LocaleKeys.cancel.tr(),
+      confirmText: LocaleKeys.ok.tr(),
       helpText: title,
     );
     if (selectedTime != null) {

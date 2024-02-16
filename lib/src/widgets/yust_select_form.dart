@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
+
 enum YustSelectFormType {
   single, // single select with indicator
   multiple, // select multiple
@@ -27,22 +30,22 @@ class YustSelectForm<T> extends StatelessWidget {
     required this.optionValues,
     required this.optionLabels,
     List<T>? selectedValues,
-    this.noOptionsText = 'Keine Optionen vorhanden',
+    String? noOptionsText,
     this.disabled = false,
     this.formType = YustSelectFormType.multiple,
     this.onChanged,
     this.divider = true,
     this.allowSearch = true,
     this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
-  }) : selectedValues = selectedValues ?? [];
+  })  : noOptionsText = noOptionsText ?? LocaleKeys.noOptions.tr(),
+        selectedValues = selectedValues ?? [];
 
   final _maxOptionCountBeforeSearch = 10;
 
   @override
   Widget build(BuildContext context) {
     if (optionListConstraints.maxHeight == double.infinity) {
-      throw Exception(
-          'The OptionListConstraints must at least constrain the maxHeight.');
+      throw Exception(LocaleKeys.exceptionOptionListConstraints.tr());
     }
 
     if (optionValues.isEmpty) {
@@ -76,8 +79,10 @@ class YustSelectForm<T> extends StatelessWidget {
                   decoration: InputDecoration(
                     icon: const Icon(Icons.search),
                     iconColor: Colors.grey,
-                    hintText:
-                        label == null ? 'Suche...' : 'Durchsuche $label...',
+                    hintText: label == null
+                        ? LocaleKeys.searching.tr()
+                        : LocaleKeys.searchingWithLabel
+                            .tr(namedArgs: {'label': label ?? ''}),
                     border: InputBorder.none,
                   ),
                   onChanged: (value) {
@@ -99,9 +104,9 @@ class YustSelectForm<T> extends StatelessWidget {
                     child: Column(
                       children: [
                         if (allowSearch && foundValues.isEmpty)
-                          const ListTile(
-                            title:
-                                Center(child: Text('Keine Optionen gefunden')),
+                          ListTile(
+                            title: Center(
+                                child: Text(LocaleKeys.noOptionsFound.tr())),
                             titleAlignment: ListTileTitleAlignment.center,
                           ),
                         ...foundValues.map((value) {
