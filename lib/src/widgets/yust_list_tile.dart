@@ -20,6 +20,7 @@ class YustListTile extends StatelessWidget {
 
   /// If labelStyle is set, it will override heading and largeHeading
   final TextStyle? labelStyle;
+  final bool labelOverflow;
   final Widget? prefixIcon;
   final Widget? below;
   final bool divider;
@@ -35,6 +36,7 @@ class YustListTile extends StatelessWidget {
     this.onTap,
     this.style = YustInputStyle.normal,
     this.labelStyle,
+    this.labelOverflow = false,
     this.prefixIcon,
     this.below,
     this.divider = true,
@@ -82,7 +84,7 @@ class YustListTile extends StatelessWidget {
                   fontSize: largeHeading ? 24 : 20,
                   color: Theme.of(context).primaryColor)
               : null),
-      overflow: TextOverflow.ellipsis,
+      overflow: labelOverflow ? TextOverflow.ellipsis : null,
     );
 
     return ListTile(
