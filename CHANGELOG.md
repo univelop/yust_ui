@@ -1,3 +1,7 @@
+## 3.18.1 - 2024-02-19
+
+-   Fix bugs
+
 ## 3.18.0 - 2024-02-17
 
 -   Add multi language support
