@@ -107,7 +107,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
         if (kIsWeb &&
-            widget.enableDropzone &&
+            widget.enableDropzone && _enabled &&
             (widget.allowedExtensions?.isNotEmpty ?? true)) {
           return _buildDropzone(context);
         } else {
