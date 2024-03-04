@@ -74,9 +74,7 @@ class YustNumberField extends StatelessWidget {
       onEditingComplete: onEditingComplete == null
           ? null
           : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '')),
-      keyboardType: (!kIsWeb && Platform.isIOS)
-          ? const TextInputType.numberWithOptions(decimal: true, signed: true)
-          : null,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
       textInputAction: TextInputAction.next,
       onTap: onTap,
