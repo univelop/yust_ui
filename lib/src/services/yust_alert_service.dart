@@ -207,10 +207,10 @@ class YustAlertService {
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
+    var selected = initialValue;
     return showDialog<AlertResult>(
         context: context,
         builder: (BuildContext context) {
-          var selected = initialValue;
           return StatefulBuilder(
             builder: (context, setState) {
               return AlertDialog(
