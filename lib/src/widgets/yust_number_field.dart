@@ -74,7 +74,8 @@ class YustNumberField extends StatelessWidget {
       onEditingComplete: onEditingComplete == null
           ? null
           : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '')),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
       textInputAction: TextInputAction.next,
       onTap: onTap,
@@ -96,10 +97,10 @@ class YustNumberField extends StatelessWidget {
     if (value?.floorToDouble() == value) {
       value = value?.toInt();
     }
-    decimalCount ??= 0;
-    final format = NumberFormat(
-        '${thousandsSeparator ? '#,##0' : '0'}.${decimalCount > 0 ? '0' * decimalCount : '#####'}',
-        'de-DE');
+    var pattern = thousandsSeparator ? '#,##0' : '0';
+    pattern += decimalCount != null && decimalCount > 0 ? '.' : '';
+    pattern += decimalCount != null ? '0' * decimalCount : '.#####';
+    final format = NumberFormat(pattern, 'de-DE');
     return value != null ? format.format(value) : null;
   }
 
