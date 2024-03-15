@@ -98,8 +98,8 @@ class YustNumberField extends StatelessWidget {
       value = value?.toInt();
     }
     var pattern = thousandsSeparator ? '#,##0' : '0';
-    pattern += decimalCount != null && decimalCount > 0 ? '.' : '';
-    pattern += decimalCount != null ? '0' * decimalCount : '.#####';
+    pattern += decimalCount == 0 ? '' : '.';
+    pattern += decimalCount != null ? '0' * decimalCount : '#####';
     final format = NumberFormat(pattern, 'de-DE');
     return value != null ? format.format(value) : null;
   }
