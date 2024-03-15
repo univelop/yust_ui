@@ -1,3 +1,9 @@
+## 3.19.0 - 2024-03-15
+
+-   Improve YustNumberField
+-   Fix bugs
+
+
 ## 3.18.1 - 2024-02-19
 
 -   Fix bugs

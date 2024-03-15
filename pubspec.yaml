@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.18.1
+version: 3.19.0
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -9,11 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    # yust: ^3.18.0
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: master
+    yust: ^3.19.0
     cached_network_image: ^3.3.1
     cloud_firestore: ^4.5.0
     collection: ^1.18.0
@@ -51,3 +47,7 @@ dependency_overrides:
     flutter_painter:
         git:
             url: https://github.com/Harishwarrior/flutter_painter.git
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: master
