@@ -64,10 +64,10 @@ class YustNumberField extends StatelessWidget {
       controller: controller,
       onChanged: onChanged == null
           ? null
-          : (value) => onChanged!(valueToNum(value, decimalCount: decimalCount)),
+          : (value) => onChanged!(valueToNum(value?.trim() ?? '', decimalCount: decimalCount)),
       onEditingComplete: onEditingComplete == null
           ? null
-          : (value) => onEditingComplete!(valueToNum(value, decimalCount: decimalCount)),
+          : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '', decimalCount: decimalCount)),
       keyboardType:
           const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))],
