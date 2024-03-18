@@ -66,6 +66,9 @@ class YustNumberField extends StatelessWidget {
           ? null
           : (value) {
               var numValue = valueToNum(value?.trim() ?? '');
+              if (decimalCount == 0) {
+                numValue = numValue?.truncate();
+              }
               onChanged!(numValue);
             },
       onEditingComplete: onEditingComplete == null
