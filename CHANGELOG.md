@@ -1,3 +1,7 @@
+## 3.19.1 - 2024-03-26
+
+-   Improve YustNumberField's number parsing
+
 ## 3.19.0 - 2024-03-15
 
 -   Improve YustNumberField
