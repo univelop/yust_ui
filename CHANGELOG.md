@@ -1,3 +1,7 @@
+## 3.19.2 - 2024-04-02
+
+-   Fix Samsung keyboard issue
+
 ## 3.19.1 - 2024-03-26
 
 -   Improve YustNumberField's number parsing
@@ -6,7 +10,6 @@
 
 -   Improve YustNumberField
 -   Fix bugs
-
 
 ## 3.18.1 - 2024-02-19
 
