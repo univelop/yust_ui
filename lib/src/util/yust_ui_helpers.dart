@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:keyboard_name/keyboard_name.dart';
 
 class YustUiHelpers {
   final GlobalKey<NavigatorState> navStateKey;
@@ -40,4 +43,11 @@ class YustUiHelpers {
   /// Returns null if the string cannot be parsed.
   DateTime? fromStandardDateTimeString(String dateTimeString) =>
       DateTime.tryParse(dateTimeString);
+
+  /// Does this device use the Samsung keyboard?
+  Future<bool> usesSamsungKeyboard() async =>
+      Platform.isAndroid &&
+      (await KeyboardName.getVendorName ?? '')
+          .toLowerCase()
+          .contains('samsung');
 }
