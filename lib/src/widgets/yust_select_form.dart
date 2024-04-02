@@ -76,6 +76,7 @@ class YustSelectForm<T> extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
                 child: TextFormField(
                   initialValue: searchValue,
+                  autofocus: true,
                   decoration: InputDecoration(
                     icon: const Icon(Icons.search),
                     iconColor: Colors.grey,
