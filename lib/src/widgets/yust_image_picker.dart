@@ -138,14 +138,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (!_enabled ||
         (widget.showPreview &&
             // ignore: deprecated_member_use_from_same_package
-            !widget.multiple && 
-            _fileHandler.getFiles().firstOrNull != null && !widget.overwriteSingleImage)) {
+            !widget.multiple &&
+            _fileHandler.getFiles().firstOrNull != null &&
+            !widget.overwriteSingleImage)) {
       return const SizedBox.shrink();
     }
 
     final pictureFiles = [..._fileHandler.getFiles()];
     final canAddMore = widget.numberOfFiles != null
-        ? pictureFiles.length < widget.numberOfFiles! || (widget.numberOfFiles == 1 && widget.overwriteSingleImage)
+        ? pictureFiles.length < widget.numberOfFiles! ||
+            (widget.numberOfFiles == 1 && widget.overwriteSingleImage)
         : true;
 
     return SizedBox(
@@ -184,17 +186,6 @@ class YustImagePickerState extends State<YustImagePicker> {
                 }
               },
             ),
-          
-          if (!kIsWeb && canAddMore && widget.overwriteSingleImage)
-            IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              iconSize: 40,
-              icon: const Icon(Icons.camera_alt),
-              onPressed:
-                  _enabled ? () => _pickImages(ImageSource.camera) : null,
-                  // DELETE IMAGE HERE //
-            ),
-
           if (!kIsWeb && canAddMore)
             IconButton(
               color: Theme.of(context).colorScheme.primary,
@@ -203,18 +194,7 @@ class YustImagePickerState extends State<YustImagePicker> {
               onPressed:
                   _enabled ? () => _pickImages(ImageSource.camera) : null,
             ),
-          
-          if (canAddMore && widget.overwriteSingleImage)
-            IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              iconSize: 140,
-              icon: const Icon(Icons.image),
-              onPressed:
-                  _enabled ? () => _pickImages(ImageSource.gallery) : null,
-                  // DELETE IMAGE HERE //
-            ),
-
-          if (canAddMore && !widget.overwriteSingleImage)
+          if (canAddMore)
             IconButton(
               color: Theme.of(context).colorScheme.primary,
               iconSize: 40,
@@ -446,6 +426,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
           LocaleKeys.alertMissingConnectionAddImages.tr());
     } else {
+      final pictureFiles = List<YustFile>.from(_fileHandler.getFiles());
       if (!kIsWeb) {
         final picker = ImagePicker();
         // ignore: deprecated_member_use_from_same_package
@@ -482,6 +463,9 @@ class YustImagePickerState extends State<YustImagePicker> {
               // we need to do the resizing ourself
               resize: true,
             );
+            for (final yustFile in pictureFiles) {
+              await _fileHandler.deleteFile(yustFile);
+            }
           }
         }
       }
