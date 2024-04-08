@@ -53,6 +53,10 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowOnlyImages;
 
+  final bool singleFile;
+
+  final bool overwriteSingleFile;
+
   const YustFilePicker({
     super.key,
     this.label,
@@ -70,6 +74,8 @@ class YustFilePicker extends StatefulWidget {
     this.allowedExtensions,
     this.divider = true,
     this.allowOnlyImages = false,
+    this.singleFile = false,
+    this.overwriteSingleFile = false
   });
 
   @override
@@ -115,8 +121,8 @@ class YustFilePickerState extends State<YustFilePicker> {
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
               // ignore: deprecated_member_use_from_same_package
-              if (widget.allowMultiple ||
-                  (widget.numberOfFiles ?? 2) > 1 ||
+              if (widget.allowMultiple && !widget.singleFile ||
+                  (widget.numberOfFiles ?? 2) > 1 && !widget.singleFile ||
                   widget.files.isEmpty)
                 _buildAddButton(context)
             ]),
@@ -249,7 +255,7 @@ class YustFilePickerState extends State<YustFilePicker> {
   }
 
   Widget _buildAddButton(BuildContext context) {
-    if (!_enabled) {
+    if (!_enabled && !widget.overwriteSingleFile) {
       return const SizedBox.shrink();
     }
     return IconButton(
