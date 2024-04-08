@@ -463,9 +463,6 @@ class YustImagePickerState extends State<YustImagePicker> {
               // we need to do the resizing ourself
               resize: true,
             );
-            for (final yustFile in pictureFiles) {
-              await _fileHandler.deleteFile(yustFile);
-            }
           }
         }
       }
@@ -500,6 +497,19 @@ class YustImagePickerState extends State<YustImagePicker> {
           }
         }
       }
+      if(widget.singleImage && widget.overwriteSingleImage){
+      await _deleteFiles(pictureFiles);
+      }
+    }
+  }
+
+  Future<void> _deleteFiles(List<YustFile> pictureFiles) async {
+    for (final yustFile in pictureFiles) {
+      await _fileHandler.deleteFile(yustFile);
+    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
+    if (mounted) {
+      setState(() {});
     }
   }
 
