@@ -49,8 +49,8 @@ class YustImagePicker extends StatefulWidget {
   final bool divider;
   final bool showCentered;
   final bool showPreview;
-  final bool singleImage;
-  final bool overwriteSingleImage;
+  final bool singleFile;
+  final bool overwriteSingleFile;
 
   /// default is 15
   final int imageCount;
@@ -73,8 +73,8 @@ class YustImagePicker extends StatefulWidget {
     this.divider = true,
     this.showCentered = false,
     this.showPreview = true,
-    this.singleImage = false,
-    this.overwriteSingleImage = false,
+    this.singleFile = false,
+    this.overwriteSingleFile = false,
     int? imageCount,
   }) : imageCount = imageCount ?? 15;
   @override
@@ -140,14 +140,14 @@ class YustImagePickerState extends State<YustImagePicker> {
             // ignore: deprecated_member_use_from_same_package
             !widget.multiple &&
             _fileHandler.getFiles().firstOrNull != null &&
-            !widget.overwriteSingleImage)) {
+            !widget.overwriteSingleFile)) {
       return const SizedBox.shrink();
     }
 
     final pictureFiles = [..._fileHandler.getFiles()];
     final canAddMore = widget.numberOfFiles != null
         ? pictureFiles.length < widget.numberOfFiles! ||
-            (widget.numberOfFiles == 1 && widget.overwriteSingleImage)
+            (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
         : true;
 
     return SizedBox(
@@ -427,6 +427,15 @@ class YustImagePickerState extends State<YustImagePicker> {
           LocaleKeys.alertMissingConnectionAddImages.tr());
     } else {
       final pictureFiles = List<YustFile>.from(_fileHandler.getFiles());
+
+      if (widget.singleFile &&
+          widget.overwriteSingleFile &&
+          pictureFiles.isNotEmpty) {
+        final confirmed = await YustUi.alertService.showConfirmation(
+            LocaleKeys.alertConfirmOverwriteFile.tr(),
+            LocaleKeys.continue_.tr());
+        if (confirmed == false) return;
+      }
       if (!kIsWeb) {
         final picker = ImagePicker();
         // ignore: deprecated_member_use_from_same_package
@@ -438,6 +447,16 @@ class YustImagePickerState extends State<YustImagePicker> {
             // than maxHeight/-Width
             imageQuality: quality,
           );
+          final numberOfFiles = widget.numberOfFiles;
+          if (pictureFiles.length + images.length >
+              (widget.numberOfFiles ?? 1)) {
+            await YustUi.alertService.showAlert(
+                LocaleKeys.fileUpload.tr(),
+                numberOfFiles == 1
+                    ? LocaleKeys.alertMaxOneFile.tr()
+                    : LocaleKeys.alertMaxNumberFiles.tr(
+                        namedArgs: {'numberFiles': numberOfFiles.toString()}));
+          }
 
           for (final image in images) {
             await uploadFile(
@@ -473,6 +492,18 @@ class YustImagePickerState extends State<YustImagePicker> {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
           if (result != null) {
+            if (pictureFiles.length + result.files.length >
+                (widget.numberOfFiles ?? 1)) {
+              final numberOfFiles = widget.numberOfFiles;
+              await YustUi.alertService.showAlert(
+                  LocaleKeys.fileUpload.tr(),
+                  numberOfFiles == 1
+                      ? LocaleKeys.alertMaxOneFile.tr()
+                      : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
+                          'numberFiles': numberOfFiles.toString()
+                        }));
+              return;
+            }
             await EasyLoading.show(status: LocaleKeys.addingImages.tr());
             for (final platformFile in result.files) {
               await uploadFile(
@@ -497,8 +528,8 @@ class YustImagePickerState extends State<YustImagePicker> {
           }
         }
       }
-      if(widget.singleImage && widget.overwriteSingleImage){
-      await _deleteFiles(pictureFiles);
+      if (widget.singleFile && widget.overwriteSingleFile) {
+        await _deleteFiles(pictureFiles);
       }
     }
   }
