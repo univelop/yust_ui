@@ -49,7 +49,6 @@ class YustImagePicker extends StatefulWidget {
   final bool divider;
   final bool showCentered;
   final bool showPreview;
-  final bool singleFile;
   final bool overwriteSingleFile;
 
   /// default is 15
@@ -73,7 +72,6 @@ class YustImagePicker extends StatefulWidget {
     this.divider = true,
     this.showCentered = false,
     this.showPreview = true,
-    this.singleFile = false,
     this.overwriteSingleFile = false,
     int? imageCount,
   }) : imageCount = imageCount ?? 15;
@@ -428,7 +426,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     } else {
       final pictureFiles = List<YustFile>.from(_fileHandler.getFiles());
 
-      if (widget.singleFile &&
+      if (widget.numberOfFiles == 1 &&
           widget.overwriteSingleFile &&
           pictureFiles.isNotEmpty) {
         final confirmed = await YustUi.alertService.showConfirmation(
@@ -528,7 +526,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           }
         }
       }
-      if (widget.singleFile && widget.overwriteSingleFile) {
+      if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
         await _deleteFiles(pictureFiles);
       }
     }

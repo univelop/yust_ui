@@ -1904,6 +1904,7 @@ abstract class LocaleKeys {
   static const validationLockingReasonTooLong = 'validationLockingReasonTooLong';
   static const validationNumber = 'validationNumber';
   static const validationNumberBounds = 'validationNumberBounds';
+  static const validationNumberGreaterZero = 'validationNumberGreaterZero';
   static const validationNumberLowerBound = 'validationNumberLowerBound';
   static const validationNumberUpperBound = 'validationNumberUpperBound';
   static const validationOption = 'validationOption';

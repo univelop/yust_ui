@@ -53,8 +53,6 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowOnlyImages;
 
-  final bool singleFile;
-
   final bool overwriteSingleFile;
 
   const YustFilePicker(
@@ -74,7 +72,6 @@ class YustFilePicker extends StatefulWidget {
       this.allowedExtensions,
       this.divider = true,
       this.allowOnlyImages = false,
-      this.singleFile = false,
       this.overwriteSingleFile = false});
 
   @override
@@ -121,8 +118,9 @@ class YustFilePickerState extends State<YustFilePicker> {
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
               // ignore: deprecated_member_use_from_same_package
-              if (widget.allowMultiple && !widget.singleFile ||
-                  (widget.numberOfFiles ?? 2) > 1 && !widget.singleFile ||
+              if (widget.allowMultiple && widget.numberOfFiles != 1 ||
+                  (widget.numberOfFiles ?? 2) > 1 &&
+                      widget.numberOfFiles != 1 ||
                   widget.files.isEmpty)
                 _buildAddButton(context)
             ]),
@@ -393,7 +391,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       allowMultiple: (widget.numberOfFiles ?? 2) > 1,
     );
 
-    if (widget.singleFile &&
+    if (widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
         widget.files.isNotEmpty) {
       final confirmed = await YustUi.alertService.showConfirmation(
@@ -424,7 +422,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       }
     }
 
-    if (widget.singleFile && widget.overwriteSingleFile) {
+    if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(widget.files);
     }
   }
