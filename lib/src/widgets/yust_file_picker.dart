@@ -53,6 +53,8 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowOnlyImages;
 
+  final Widget? suffixIcon;
+
   const YustFilePicker({
     super.key,
     this.label,
@@ -63,6 +65,7 @@ class YustFilePicker extends StatefulWidget {
     this.linkedDocAttribute,
     this.onChanged,
     this.prefixIcon,
+    this.suffixIcon,
     this.enableDropzone = false,
     this.readOnly = false,
     this.allowMultiple = true,
@@ -107,7 +110,8 @@ class YustFilePickerState extends State<YustFilePicker> {
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
         if (kIsWeb &&
-            widget.enableDropzone && _enabled &&
+            widget.enableDropzone &&
+            _enabled &&
             (widget.allowedExtensions?.isNotEmpty ?? true)) {
           return _buildDropzone(context);
         } else {
