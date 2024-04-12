@@ -122,7 +122,8 @@ class YustFilePickerState extends State<YustFilePicker> {
               if (widget.allowMultiple ||
                   (widget.numberOfFiles ?? 2) > 1 ||
                   widget.files.isEmpty)
-                _buildAddButton(context)
+                _buildAddButton(context),
+              if (widget.suffixIcon != null) widget.suffixIcon!
             ]),
             label: widget.label,
             prefixIcon: widget.prefixIcon,
@@ -148,6 +149,7 @@ class YustFilePickerState extends State<YustFilePicker> {
                       if (widget.allowedExtensions != null)
                         _buildInfoIcon(context),
                       _buildAddButton(context),
+                      if (widget.suffixIcon != null) widget.suffixIcon!
                     ],
                   ),
             label: widget.label,
