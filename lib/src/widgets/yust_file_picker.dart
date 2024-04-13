@@ -118,10 +118,11 @@ class YustFilePickerState extends State<YustFilePicker> {
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
               // ignore: deprecated_member_use_from_same_package
-              if (widget.allowMultiple && widget.numberOfFiles != 1 ||
-                  (widget.numberOfFiles ?? 2) > 1 &&
-                      widget.numberOfFiles != 1 ||
-                  widget.files.isEmpty)
+              if (widget.numberOfFiles == null ||
+                  (widget.numberOfFiles != null &&
+                      (widget.files.length < widget.numberOfFiles! ||
+                          widget.numberOfFiles == 1 &&
+                              widget.overwriteSingleFile)))
                 _buildAddButton(context)
             ]),
             label: widget.label,
@@ -258,7 +259,7 @@ class YustFilePickerState extends State<YustFilePicker> {
             (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
         : true;
 
-    if (!_enabled && !widget.overwriteSingleFile) {
+    if (!_enabled) {
       return const SizedBox.shrink();
     }
     if (canAddMore) {
@@ -399,16 +400,16 @@ class YustFilePickerState extends State<YustFilePicker> {
       if (confirmed == false) return;
     }
 
-    final numberOfFiles = widget.numberOfFiles;
     if (!widget.overwriteSingleFile &&
         widget.files.length + (result?.files.length ?? 0) >
             (widget.numberOfFiles ?? 1)) {
       unawaited(YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
-          numberOfFiles == 1
+          widget.numberOfFiles == 1
               ? LocaleKeys.alertMaxOneFile.tr()
-              : LocaleKeys.alertMaxNumberFiles
-                  .tr(namedArgs: {'numberFiles': numberOfFiles.toString()})));
+              : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
+                  'numberFiles': widget.numberOfFiles.toString()
+                })));
       return;
     }
 

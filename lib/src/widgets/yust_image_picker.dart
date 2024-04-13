@@ -118,7 +118,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           prefixIcon: widget.prefixIcon,
           below: widget.showPreview
               // ignore: deprecated_member_use_from_same_package
-              ? widget.multiple || (widget.numberOfFiles ?? 1) > 1
+              ? widget.multiple || (widget.numberOfFiles ?? 2) > 1
                   ? _buildGallery(context)
                   : Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
@@ -136,7 +136,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (!_enabled ||
         (widget.showPreview &&
             // ignore: deprecated_member_use_from_same_package
-            !widget.multiple &&
+            widget.numberOfFiles == 1 &&
             _fileHandler.getFiles().firstOrNull != null &&
             !widget.overwriteSingleFile)) {
       return const SizedBox.shrink();
