@@ -259,10 +259,7 @@ class YustFilePickerState extends State<YustFilePicker> {
             (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
         : true;
 
-    if (!_enabled) {
-      return const SizedBox.shrink();
-    }
-    if (canAddMore) {
+    if (_enabled && canAddMore) {
       return IconButton(
         iconSize: 40,
         color: Theme.of(context).colorScheme.primary,
@@ -271,9 +268,9 @@ class YustFilePickerState extends State<YustFilePicker> {
             ? _pickFiles
             : null,
       );
-    } else {
-      return const SizedBox.shrink();
     }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildFiles(BuildContext context) {
