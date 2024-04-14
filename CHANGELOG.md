@@ -1,3 +1,7 @@
+## 3.20.0 - 2024-04-14
+
+-   Improve file picker
+
 ## 3.19.2 - 2024-04-02
 
 -   Fix Samsung keyboard issue
