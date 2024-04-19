@@ -1,3 +1,7 @@
+## 3.20.3 - 2024-04-19
+
+-   Fix Compatibility with Yust 3.20.3
+
 ## 3.20.0 - 2024-04-14
 
 -   Improve file picker
