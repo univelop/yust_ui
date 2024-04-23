@@ -452,9 +452,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     // Upload one file when overwriting is enabled
     // (We know the user also has only uploaded one file, because otherwise the
     // limit would be exceeded)
-    if (widget.overwriteSingleFile &&
-        numberOfFiles == 1 &&
-        widget.files.isNotEmpty) {
+    if (widget.overwriteSingleFile && widget.files.isNotEmpty) {
       final confirmed = await YustUi.alertService.showConfirmation(
           LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
       return confirmed ?? false;
