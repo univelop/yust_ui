@@ -188,10 +188,10 @@ class YustFilePickerState extends State<YustFilePicker> {
             setState(() {
               isDragging = false;
             });
-            for (final file in ev ?? []) {
-              final bytes = await controller.getFileData(file);
-              await uploadFile(name: file.name, file: null, bytes: bytes);
-            }
+            await checkAndUploadFiles(ev ?? [], (fileData) async {
+              final data = await controller.getFileData(fileData);
+              return (fileData.name.toString(), null, data);
+            });
           },
         ),
       );
@@ -389,41 +389,55 @@ class YustFilePickerState extends State<YustFilePicker> {
     );
     if (result == null) return;
 
-    if (widget.numberOfFiles == 1 &&
-        widget.overwriteSingleFile &&
-        widget.files.isNotEmpty) {
-      final confirmed = await YustUi.alertService.showConfirmation(
-          LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
-      if (confirmed == false) return;
-    }
+    await checkAndUploadFiles(
+      result.files,
+      (file) async =>
+          (_getFileName(file), _platformFileToFile(file), file.bytes),
+    );
+  }
 
-    if (widget.overwriteSingleFile &&
-        widget.numberOfFiles == 1 &&
-        result.files.length != 1) {
-      unawaited(YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(), LocaleKeys.alertMaxOneFile.tr()));
-      return;
-    }
-
-    if (widget.numberOfFiles != null &&
-        widget.files.length + result.files.length > widget.numberOfFiles!) {
-      unawaited(YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          LocaleKeys.alertMaxNumberFiles.tr(
-              namedArgs: {'numberFiles': widget.numberOfFiles.toString()})));
-      return;
-    }
-
-    for (final platformFile in result.files) {
-      await uploadFile(
-        name: _getFileName(platformFile),
-        file: _platformFileToFile(platformFile),
-        bytes: platformFile.bytes,
-      );
-    }
+  Future<void> checkAndUploadFiles<T>(List<T> fileData,
+      Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor) async {
+    final filesValid = await checkFileAmount(fileData);
+    if (!filesValid) return;
 
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(widget.files);
+    }
+
+    for (final fileData in fileData) {
+      final (name, file, bytes) = await fileDataExtractor(fileData);
+      await uploadFile(
+        name: name,
+        file: file,
+        bytes: bytes,
+      );
+    }
+  }
+
+  Future<bool> checkFileAmount(List<dynamic> fileElements) async {
+    if (!widget.overwriteSingleFile &&
+        widget.numberOfFiles != null &&
+        widget.files.length + fileElements.length > widget.numberOfFiles!) {
+      // Tried to upload so many files that the overall limit will be exceeded
+      unawaited(YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.fileLimitWillExceed.tr(namedArgs: {
+            'difference':
+                (widget.numberOfFiles! - widget.files.length).toString(),
+            'limit': widget.numberOfFiles.toString()
+          })));
+      return false;
+    } else if (widget.overwriteSingleFile &&
+        widget.numberOfFiles == 1 &&
+        fileElements.length == 1 &&
+        widget.files.isNotEmpty) {
+      // Upload one file when overwriting is enabled and limit is 1
+      final confirmed = await YustUi.alertService.showConfirmation(
+          LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
+      return confirmed ?? false;
+    } else {
+      return true;
     }
   }
 
