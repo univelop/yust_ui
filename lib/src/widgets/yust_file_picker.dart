@@ -117,7 +117,6 @@ class YustFilePickerState extends State<YustFilePicker> {
           return YustListTile(
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
-              // ignore: deprecated_member_use_from_same_package
               if (widget.numberOfFiles == null ||
                   (widget.numberOfFiles != null &&
                       (widget.files.length < widget.numberOfFiles! ||
@@ -397,16 +396,21 @@ class YustFilePickerState extends State<YustFilePicker> {
       if (confirmed == false) return;
     }
 
-    if (!widget.overwriteSingleFile &&
+    if (widget.overwriteSingleFile &&
+        widget.numberOfFiles == 1 &&
+        result?.files.length != 1) {
+      unawaited(YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(), LocaleKeys.alertMaxOneFile.tr()));
+      return;
+    }
+
+    if (widget.numberOfFiles != null &&
         widget.files.length + (result?.files.length ?? 0) >
-            (widget.numberOfFiles ?? 1)) {
+            widget.numberOfFiles!) {
       unawaited(YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
-          widget.numberOfFiles == 1
-              ? LocaleKeys.alertMaxOneFile.tr()
-              : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
-                  'numberFiles': widget.numberOfFiles.toString()
-                })));
+          LocaleKeys.alertMaxNumberFiles.tr(
+              namedArgs: {'numberFiles': widget.numberOfFiles.toString()})));
       return;
     }
 
