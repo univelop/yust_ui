@@ -387,6 +387,7 @@ class YustFilePickerState extends State<YustFilePicker> {
       allowedExtensions: widget.allowedExtensions,
       allowMultiple: (widget.numberOfFiles ?? 2) > 1,
     );
+    if (result == null) return;
 
     if (widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
@@ -398,15 +399,14 @@ class YustFilePickerState extends State<YustFilePicker> {
 
     if (widget.overwriteSingleFile &&
         widget.numberOfFiles == 1 &&
-        result?.files.length != 1) {
+        result.files.length != 1) {
       unawaited(YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(), LocaleKeys.alertMaxOneFile.tr()));
       return;
     }
 
     if (widget.numberOfFiles != null &&
-        widget.files.length + (result?.files.length ?? 0) >
-            widget.numberOfFiles!) {
+        widget.files.length + result.files.length > widget.numberOfFiles!) {
       unawaited(YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
           LocaleKeys.alertMaxNumberFiles.tr(
@@ -414,14 +414,12 @@ class YustFilePickerState extends State<YustFilePicker> {
       return;
     }
 
-    if (result != null) {
-      for (final platformFile in result.files) {
-        await uploadFile(
-          name: _getFileName(platformFile),
-          file: _platformFileToFile(platformFile),
-          bytes: platformFile.bytes,
-        );
-      }
+    for (final platformFile in result.files) {
+      await uploadFile(
+        name: _getFileName(platformFile),
+        file: _platformFileToFile(platformFile),
+        bytes: platformFile.bytes,
+      );
     }
 
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
