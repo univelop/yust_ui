@@ -446,8 +446,8 @@ class YustImagePickerState extends State<YustImagePicker> {
             imageQuality: quality,
           );
           final numberOfFiles = widget.numberOfFiles;
-          if (pictureFiles.length + images.length >
-              (widget.numberOfFiles ?? 1)) {
+          if (widget.numberOfFiles != null &&
+              pictureFiles.length + images.length > widget.numberOfFiles!) {
             await YustUi.alertService.showAlert(
                 LocaleKeys.fileUpload.tr(),
                 numberOfFiles == 1
@@ -490,8 +490,9 @@ class YustImagePickerState extends State<YustImagePicker> {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
           if (result != null) {
-            if (pictureFiles.length + result.files.length >
-                (widget.numberOfFiles ?? 1)) {
+            if (widget.numberOfFiles != null &&
+                pictureFiles.length + result.files.length >
+                    widget.numberOfFiles!) {
               final numberOfFiles = widget.numberOfFiles;
               await YustUi.alertService.showAlert(
                   LocaleKeys.fileUpload.tr(),
