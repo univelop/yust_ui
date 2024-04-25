@@ -1,3 +1,6 @@
+## 3.20.5 - 2024-04-25
+-   Improvements of YustImagePicker
+
 ## 3.20.4 - 2024-04-24
 -   Improvements of YustFilePicker
 
