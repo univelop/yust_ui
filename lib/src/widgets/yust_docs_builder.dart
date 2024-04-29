@@ -11,7 +11,6 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   final bool showLoadingSpinner;
   final Widget? loadingIndicator;
   final int? limit;
-  final dynamic suffixChild;
 
   /// There will never be a null for the list given.
   final Widget Function(List<T>, YustBuilderInsights, BuildContext) builder;
@@ -24,7 +23,6 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
     this.showLoadingSpinner = false,
     this.loadingIndicator,
     this.limit,
-    this.suffixChild,
     required this.builder,
   });
 
