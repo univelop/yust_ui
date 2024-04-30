@@ -1,3 +1,21 @@
+## 3.20.5 - 2024-04-25
+-   Improvements of YustImagePicker
+
+## 3.20.4 - 2024-04-24
+-   Improvements of YustFilePicker
+
+## 3.20.3 - 2024-04-19
+
+-   Fix Compatibility with Yust 3.20.3
+
+## 3.20.0 - 2024-04-14
+
+-   Improve file picker
+
+## 3.19.2 - 2024-04-02
+
+-   Fix Samsung keyboard issue
+
 ## 3.19.1 - 2024-03-26
 
 -   Improve YustNumberField's number parsing
@@ -6,7 +24,6 @@
 
 -   Improve YustNumberField
 -   Fix bugs
-
 
 ## 3.18.1 - 2024-02-19
 

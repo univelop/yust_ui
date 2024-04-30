@@ -53,24 +53,26 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowOnlyImages;
 
-  const YustFilePicker({
-    super.key,
-    this.label,
-    this.showModifiedAt = false,
-    required this.files,
-    required this.storageFolderPath,
-    this.linkedDocPath,
-    this.linkedDocAttribute,
-    this.onChanged,
-    this.prefixIcon,
-    this.enableDropzone = false,
-    this.readOnly = false,
-    this.allowMultiple = true,
-    this.numberOfFiles,
-    this.allowedExtensions,
-    this.divider = true,
-    this.allowOnlyImages = false,
-  });
+  final bool overwriteSingleFile;
+
+  const YustFilePicker(
+      {super.key,
+      this.label,
+      this.showModifiedAt = false,
+      required this.files,
+      required this.storageFolderPath,
+      this.linkedDocPath,
+      this.linkedDocAttribute,
+      this.onChanged,
+      this.prefixIcon,
+      this.enableDropzone = false,
+      this.readOnly = false,
+      this.allowMultiple = true,
+      this.numberOfFiles,
+      this.allowedExtensions,
+      this.divider = true,
+      this.allowOnlyImages = false,
+      this.overwriteSingleFile = false});
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -107,17 +109,19 @@ class YustFilePickerState extends State<YustFilePicker> {
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
         if (kIsWeb &&
-            widget.enableDropzone && _enabled &&
+            widget.enableDropzone &&
+            _enabled &&
             (widget.allowedExtensions?.isNotEmpty ?? true)) {
           return _buildDropzone(context);
         } else {
           return YustListTile(
             suffixChild: Wrap(children: [
               if (widget.allowedExtensions != null) _buildInfoIcon(context),
-              // ignore: deprecated_member_use_from_same_package
-              if (widget.allowMultiple ||
-                  (widget.numberOfFiles ?? 2) > 1 ||
-                  widget.files.isEmpty)
+              if (widget.numberOfFiles == null ||
+                  (widget.numberOfFiles != null &&
+                      (widget.files.length < widget.numberOfFiles! ||
+                          widget.numberOfFiles == 1 &&
+                              widget.overwriteSingleFile)))
                 _buildAddButton(context)
             ]),
             label: widget.label,
@@ -184,10 +188,10 @@ class YustFilePickerState extends State<YustFilePicker> {
             setState(() {
               isDragging = false;
             });
-            for (final file in ev ?? []) {
-              final bytes = await controller.getFileData(file);
-              await uploadFile(name: file.name, file: null, bytes: bytes);
-            }
+            await checkAndUploadFiles(ev ?? [], (fileData) async {
+              final data = await controller.getFileData(fileData);
+              return (fileData.name.toString(), null, data);
+            });
           },
         ),
       );
@@ -249,17 +253,23 @@ class YustFilePickerState extends State<YustFilePicker> {
   }
 
   Widget _buildAddButton(BuildContext context) {
-    if (!_enabled) {
-      return const SizedBox.shrink();
+    final canAddMore = widget.numberOfFiles != null
+        ? widget.files.length < widget.numberOfFiles! ||
+            (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
+        : true;
+
+    if (_enabled && canAddMore) {
+      return IconButton(
+        iconSize: 40,
+        color: Theme.of(context).colorScheme.primary,
+        icon: const Icon(Icons.add_circle),
+        onPressed: _enabled && (widget.allowedExtensions?.isNotEmpty ?? true)
+            ? _pickFiles
+            : null,
+      );
     }
-    return IconButton(
-      iconSize: 40,
-      color: Theme.of(context).colorScheme.primary,
-      icon: const Icon(Icons.add_circle),
-      onPressed: _enabled && (widget.allowedExtensions?.isNotEmpty ?? true)
-          ? _pickFiles
-          : null,
-    );
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildFiles(BuildContext context) {
@@ -377,14 +387,87 @@ class YustFilePickerState extends State<YustFilePicker> {
       allowedExtensions: widget.allowedExtensions,
       allowMultiple: (widget.numberOfFiles ?? 2) > 1,
     );
-    if (result != null) {
-      for (final platformFile in result.files) {
-        await uploadFile(
-          name: _getFileName(platformFile),
-          file: _platformFileToFile(platformFile),
-          bytes: platformFile.bytes,
-        );
-      }
+    if (result == null) return;
+
+    await checkAndUploadFiles(
+      result.files,
+      (file) async =>
+          (_getFileName(file), _platformFileToFile(file), file.bytes),
+    );
+  }
+
+  Future<void> checkAndUploadFiles<T>(List<T> fileData,
+      Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor) async {
+    final filesValid = await checkFileAmount(fileData);
+    if (!filesValid) return;
+
+    if (widget.overwriteSingleFile) {
+      assert(widget.numberOfFiles == 1,
+          'overwriteSingleFile is only supported when numberOfFiles is 1.');
+      assert(
+          widget.files.length <= 1,
+          'overwriteSingleFile is only supported when there is at most '
+          'one file present.');
+      await _deleteFiles(widget.files);
+    }
+
+    for (final fileData in fileData) {
+      final (name, file, bytes) = await fileDataExtractor(fileData);
+      await uploadFile(
+        name: name,
+        file: file,
+        bytes: bytes,
+      );
+    }
+  }
+
+  Future<bool> checkFileAmount(List<dynamic> fileElements) async {
+    final numberOfFiles = widget.numberOfFiles;
+    // No restriction on file count
+    if (numberOfFiles == null) return true;
+
+    // Tried to upload so many files that the overall limit will be exceeded
+    if (!widget.overwriteSingleFile &&
+        widget.files.length + fileElements.length > numberOfFiles) {
+      unawaited(YustUi.alertService.showAlert(
+        LocaleKeys.fileUpload.tr(),
+        LocaleKeys.fileLimitWillExceed
+            .tr(namedArgs: {'limit': widget.numberOfFiles.toString()}),
+      ));
+      return false;
+    }
+
+    // Override is enabled and the user tries to upload more than one file /
+    // more than one file is already uploaded
+    if (widget.overwriteSingleFile &&
+        (fileElements.length > 1 || widget.files.length > 1)) {
+      unawaited(YustUi.alertService.showAlert(
+        LocaleKeys.fileUpload.tr(),
+        LocaleKeys.fileLimitWillExceed
+            .tr(namedArgs: {'limit': widget.numberOfFiles.toString()}),
+      ));
+      return false;
+    }
+
+    // Upload one file when overwriting is enabled
+    // (We know the user also has only uploaded one file, because otherwise the
+    // limit would be exceeded)
+    if (widget.overwriteSingleFile && widget.files.isNotEmpty) {
+      final confirmed = await YustUi.alertService.showConfirmation(
+          LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
+      return confirmed ?? false;
+    }
+
+    return true;
+  }
+
+  Future<void> _deleteFiles(List<YustFile> files) async {
+    for (final yustFile in files) {
+      await _fileHandler.deleteFile(yustFile);
+    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -405,16 +488,7 @@ class YustFilePickerState extends State<YustFilePicker> {
                 })));
       return;
     }
-    final numberOfFiles = widget.numberOfFiles;
-    if (numberOfFiles != null && widget.files.length >= numberOfFiles) {
-      unawaited(YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          numberOfFiles == 1
-              ? LocaleKeys.alertMaxOneFile.tr()
-              : LocaleKeys.alertMaxNumberFiles
-                  .tr(namedArgs: {'numberFiles': numberOfFiles.toString()})));
-      return;
-    }
+
     final newYustFile = YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),

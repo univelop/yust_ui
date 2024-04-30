@@ -27,8 +27,8 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final query = Yust.databaseService.getQueryWithLogging(modelSetup,
-        filters: filters, orderBy: orderBy) as Query;
+    final query = Yust.databaseService
+        .getQuery(modelSetup, filters: filters, orderBy: orderBy) as Query;
 
     return FirestoreListView(
       key: key,
