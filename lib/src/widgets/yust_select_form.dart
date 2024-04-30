@@ -23,6 +23,7 @@ class YustSelectForm<T> extends StatelessWidget {
   final bool divider;
   final bool allowSearch;
   final BoxConstraints optionListConstraints;
+  final bool autofocus;
 
   YustSelectForm({
     super.key,
@@ -37,6 +38,7 @@ class YustSelectForm<T> extends StatelessWidget {
     this.divider = true,
     this.allowSearch = true,
     this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
+    this.autofocus = false,
   })  : noOptionsText = noOptionsText ?? LocaleKeys.noOptions.tr(),
         selectedValues = selectedValues ?? [];
 
@@ -76,7 +78,7 @@ class YustSelectForm<T> extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
                 child: TextFormField(
                   initialValue: searchValue,
-                  autofocus: true,
+                  autofocus: autofocus,
                   decoration: InputDecoration(
                     icon: const Icon(Icons.search),
                     iconColor: Colors.grey,
