@@ -26,6 +26,7 @@ abstract class LocaleKeys {
   static const addFrequentlyUsedActions = 'addFrequentlyUsedActions';
   static const addItem = 'addItem';
   static const addMember = 'addMember';
+  static const addMemberToPortal = 'addMemberToPortal';
   static const addOption = 'addOption';
   static const addPath = 'addPath';
   static const addRole = 'addRole';
@@ -423,6 +424,8 @@ abstract class LocaleKeys {
   static const checkResultAllGood = 'checkResultAllGood';
   static const checkResultErrors = 'checkResultErrors';
   static const checkResultWarnings = 'checkResultWarnings';
+  static const checkWarningNoLinkedRecords = 'checkWarningNoLinkedRecords';
+  static const checkWarningTooManyLinkedRecords = 'checkWarningTooManyLinkedRecords';
   static const checkbox = 'checkbox';
   static const checkedByDefault = 'checkedByDefault';
   static const checkingColumns = 'checkingColumns';
@@ -690,6 +693,7 @@ abstract class LocaleKeys {
   static const exceptionBrickSpecNotFoundByAttrPath = 'exceptionBrickSpecNotFoundByAttrPath';
   static const exceptionBrickSpecNotFoundById = 'exceptionBrickSpecNotFoundById';
   static const exceptionBrickSpecNotFoundByIdInList = 'exceptionBrickSpecNotFoundByIdInList';
+  static const exceptionCannotAddAdminServiceAccountToWorkspace = 'exceptionCannotAddAdminServiceAccountToWorkspace';
   static const exceptionCannotAssignOwnerLicense = 'exceptionCannotAssignOwnerLicense';
   static const exceptionCannotChangeLicenseMaxNumberExceeded = 'exceptionCannotChangeLicenseMaxNumberExceeded';
   static const exceptionCannotChangeLicenseUsersWithOldLicense = 'exceptionCannotChangeLicenseUsersWithOldLicense';
@@ -872,6 +876,7 @@ abstract class LocaleKeys {
   static const exceptionRoleNotFound = 'exceptionRoleNotFound';
   static const exceptionRoleNotFoundById = 'exceptionRoleNotFoundById';
   static const exceptionRoleNotFoundByName = 'exceptionRoleNotFoundByName';
+  static const exceptionServerOnly = 'exceptionServerOnly';
   static const exceptionSettingValueNotPossible = 'exceptionSettingValueNotPossible';
   static const exceptionSoundAssetPlayerNotInitialized = 'exceptionSoundAssetPlayerNotInitialized';
   static const exceptionStatusNotFound = 'exceptionStatusNotFound';
@@ -1313,6 +1318,7 @@ abstract class LocaleKeys {
   static const modifyRecordStepDescription = 'modifyRecordStepDescription';
   static const mondayAbbreviated = 'mondayAbbreviated';
   static const month = 'month';
+  static const more = 'more';
   static const moreWithNumber = 'moreWithNumber';
   static const move = 'move';
   static const moveBrickToTab = 'moveBrickToTab';
@@ -1491,6 +1497,7 @@ abstract class LocaleKeys {
   static const prefixSearch = 'prefixSearch';
   static const preview = 'preview';
   static const previewExplanation = 'previewExplanation';
+  static const previewLimit = 'previewLimit';
   static const previewLimitColValidator = 'previewLimitColValidator';
   static const previewLimitRowValidator = 'previewLimitRowValidator';
   static const primaryButton = 'primaryButton';
