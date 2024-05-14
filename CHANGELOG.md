@@ -1,7 +1,13 @@
+## 3.21.0 - 2024-05-14
+
+-   Improvements for alerts and number field
+
 ## 3.20.5 - 2024-04-25
+
 -   Improvements of YustImagePicker
 
 ## 3.20.4 - 2024-04-24
+
 -   Improvements of YustFilePicker
 
 ## 3.20.3 - 2024-04-19
