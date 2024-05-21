@@ -122,7 +122,7 @@ class _YustTextFieldState extends State<YustTextField> {
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
       // if (!_focusNode.hasFocus) onUnfocus();
-      if (!_focusNode.hasFocus) {
+      if (!_focusNode.hasFocus && widget.compleatOnUnfocus) {
         onComplete();
       }
     });
@@ -147,9 +147,7 @@ class _YustTextFieldState extends State<YustTextField> {
           widget.validator!(textFieldValue) == null ||
           widget.shouldCompleteNotValidInput) {
         _initValue = textFieldText;
-        if (widget.compleatOnUnfocus) {
-          widget.onEditingComplete!(textFieldValue);
-        }
+        widget.onEditingComplete!(textFieldValue);
       } else {
         _controller.text = widget.value ?? '';
       }
@@ -261,7 +259,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ? null
           : (value) => widget.onChanged!(
               value == '' ? null : (widget.notTrim ? value : value.trim())),
-      onEditingComplete: onComplete,
+      onEditingComplete: widget.compleatOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
       autocorrect: widget.autocorrect,

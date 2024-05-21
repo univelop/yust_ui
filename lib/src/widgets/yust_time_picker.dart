@@ -89,6 +89,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
             onEditingComplete: (value) => widget.onEditingComplete?.call(),
             compleatOnUnfocus: false,
             readOnly: widget.readOnly,
+            validator: (value) => value == null || value.isEmpty || value.length == 5 ? null : LocaleKeys.validationTimePicker.tr(),
             keyboardType: kIsWeb
                 ? null
                 : const TextInputType.numberWithOptions(
