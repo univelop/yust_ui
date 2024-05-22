@@ -7,6 +7,7 @@ class YustInputTile extends StatelessWidget {
   final String? label;
   final String? text;
   final TextStyle? textStyle;
+  final TextStyle? labelStyle;
   final Widget? prefixIcon;
   final YustInputStyle style;
   final TapCallback? onTap;
@@ -23,6 +24,7 @@ class YustInputTile extends StatelessWidget {
     this.label,
     this.text,
     this.textStyle,
+    this.labelStyle,
     this.prefixIcon,
     this.style = YustInputStyle.normal,
     this.onTap,
@@ -39,6 +41,7 @@ class YustInputTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return YustTextField(
       label: label,
+      labelStyle: labelStyle,
       value: text,
       textStyle: textStyle,
       style: style,
