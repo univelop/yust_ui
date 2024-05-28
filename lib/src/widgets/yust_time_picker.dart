@@ -45,8 +45,8 @@ class YustTimePicker extends StatefulWidget {
 }
 
 class _YustTimePickerState extends State<YustTimePicker> {
-  TextEditingController? _controller;
-  TimeInputFormatter? _maskFormatter;
+  late TextEditingController _controller;
+  late TimeInputFormatter _maskFormatter;
 
   @override
   void initState() {
@@ -59,7 +59,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   @override
   void dispose() {
-    _controller!.dispose();
+    _controller.dispose();
 
     super.dispose();
   }
@@ -67,7 +67,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
   @override
   Widget build(BuildContext context) {
     if (widget.value == null) {
-      _controller!.text = '';
+      _controller.text = '';
     }
     return Row(
       children: [
@@ -79,7 +79,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
             suffixIcon: _buildTrailing(context),
             placeholder: 'HH:MM',
             controller: _controller,
-            inputFormatters: [_maskFormatter!],
+            inputFormatters: [_maskFormatter],
             textInputAction: TextInputAction.next,
             focusNode: widget.focusNode,
             autofocus: widget.autofocus,
@@ -87,9 +87,12 @@ class _YustTimePickerState extends State<YustTimePicker> {
                 ? null
                 : (value) => _setTimeString(value ?? ''),
             onEditingComplete: (value) => widget.onEditingComplete?.call(),
-            compleatOnUnfocus: false,
+            completeOnUnfocus: false,
             readOnly: widget.readOnly,
-            validator: (value) => value == null || value.isEmpty || value.length == 5 ? null : LocaleKeys.validationTimePicker.tr(),
+            validator: (value) =>
+                (value ?? '').isEmpty || _maskFormatter.isFill()
+                    ? null
+                    : LocaleKeys.validationTimePicker.tr(),
             keyboardType: kIsWeb
                 ? null
                 : const TextInputType.numberWithOptions(
@@ -98,7 +101,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
                   ),
           ),
         ),
-        if (_controller!.text != '' &&
+        if (_controller.text != '' &&
             !widget.hideClearButton &&
             !widget.readOnly)
           IconButton(
@@ -113,7 +116,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   /// build the clock- / x-icon
   Widget _buildTrailing(BuildContext context) {
-    return (_controller!.text == '')
+    return (_controller.text == '')
         ? IconButton(
             icon: const Icon(Icons.access_time),
             onPressed: widget.onChanged == null
@@ -154,7 +157,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
   void _setTimeString(String txt) {
     if (txt == '') widget.onChanged!(null);
     if (txt.length == 5) {
-      var time = int.tryParse(_maskFormatter!.getUnmaskedText())!;
+      var time = int.tryParse(_maskFormatter.getUnmaskedText())!;
       if (time == 2400) {
         time == 0;
       }
@@ -170,8 +173,8 @@ class _YustTimePickerState extends State<YustTimePicker> {
   // Make sure the [dateTime] is in utc
   void _setTime(DateTime? dateTime) {
     setState(() {
-      _maskFormatter!.clear();
-      _controller!.text = Yust.helpers.formatTime(dateTime);
+      _maskFormatter.clear();
+      _controller.text = Yust.helpers.formatTime(dateTime);
     });
     widget.onChanged!(dateTime);
   }
@@ -206,9 +209,9 @@ class TimeInputFormatter extends TextInputFormatter {
     return maskedInputFormatter.formatEditUpdate(oldValue, newValue);
   }
 
-  void clear() {
-    maskedInputFormatter.clear();
-  }
+  void clear() => maskedInputFormatter.clear();
+
+  bool isFill() => maskedInputFormatter.isFill();
 
   String getUnmaskedText() => maskedInputFormatter.getUnmaskedText();
 }
