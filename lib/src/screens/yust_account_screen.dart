@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../widgets/yust_doc_builder.dart';
 import 'yust_account_edit_screen.dart';
 
 class YustAccountScreen extends StatelessWidget {
-  const YustAccountScreen({Key? key}) : super(key: key);
+  const YustAccountScreen({super.key});
 
   static const String routeName = '/account';
   static const bool signInRequired = true;
@@ -17,14 +19,14 @@ class YustAccountScreen extends StatelessWidget {
       id: Yust.authService.getCurrentUserId(),
       builder: (user, insights, context) {
         if (user == null) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
-              child: Text('In Arbeit...'),
+              child: Text(LocaleKeys.inProgress.tr()),
             ),
           );
         }
         return Scaffold(
-          appBar: AppBar(title: const Text('Account')),
+          appBar: AppBar(title: Text(LocaleKeys.account.tr())),
           body: ListView(
             padding: const EdgeInsets.only(top: 20.0),
             children: <Widget>[
@@ -52,7 +54,7 @@ class YustAccountScreen extends StatelessWidget {
                   size: 40.0,
                 ),
                 title: Text(
-                  'Persönliche Daten',
+                  LocaleKeys.personalData.tr(),
                   style:
                       TextStyle(color: Theme.of(context).colorScheme.secondary),
                 ),
@@ -68,7 +70,7 @@ class YustAccountScreen extends StatelessWidget {
                   size: 40.0,
                 ),
                 title: Text(
-                  'Abmelden',
+                  LocaleKeys.signOut.tr(),
                   style:
                       TextStyle(color: Theme.of(context).colorScheme.secondary),
                 ),

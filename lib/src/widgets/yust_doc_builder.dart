@@ -2,6 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
+import 'yust_stream_builder.dart';
+
 class YustBuilderInsights {
   bool? waiting;
 
@@ -18,23 +20,22 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
   final Widget Function(T?, YustBuilderInsights, BuildContext) builder;
 
   const YustDocBuilder({
-    Key? key,
+    super.key,
     required this.modelSetup,
     this.id,
     this.filters,
     this.orderBy,
-    bool? doNotWait,
     this.showLoadingSpinner = false,
     this.createIfNull = false,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   YustDocBuilderState<T> createState() => YustDocBuilderState<T>();
 }
 
 class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
-  /// May not be null.
+  // May not be null.
   Stream<T?>? _docStream;
 
   void initStream() {
@@ -84,25 +85,12 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<T?>(
-      stream: _docStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          throw snapshot.error!;
-        }
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            widget.showLoadingSpinner) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        var doc = snapshot.data;
-        if (doc == null && widget.createIfNull) {
-          doc = Yust.databaseService.initDoc<T>(widget.modelSetup);
-        }
-        final opts = YustBuilderInsights(
-          waiting: snapshot.connectionState == ConnectionState.waiting,
-        );
-        return widget.builder(doc, opts, context);
-      },
+    return YustStreamBuilder(
+      stream: _docStream!,
+      showLoadingSpinner: widget.showLoadingSpinner,
+      createIfNull: widget.createIfNull,
+      init: () => Yust.databaseService.initDoc<T>(widget.modelSetup),
+      builder: widget.builder,
     );
   }
 }

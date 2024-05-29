@@ -14,7 +14,7 @@ class YustButtonTile extends StatelessWidget {
   final bool inProgress;
 
   const YustButtonTile({
-    Key? key,
+    super.key,
     this.label = '',
     this.color,
     this.textColor = Colors.white,
@@ -26,7 +26,7 @@ class YustButtonTile extends StatelessWidget {
     this.divider = true,
     this.slimDesign = false,
     this.inProgress = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

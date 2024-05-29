@@ -4,7 +4,7 @@ class YustSplashScreen extends StatelessWidget {
   static const String routeName = '/splash';
   static const bool signInRequired = false;
 
-  const YustSplashScreen({Key? key, this.appName}) : super(key: key);
+  const YustSplashScreen({super.key, this.appName});
 
   final String? appName;
 

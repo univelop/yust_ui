@@ -9,6 +9,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/yust_ui.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
+
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
   'high': {'quality': 100, 'size': 2000},
@@ -29,7 +32,13 @@ class YustImagePicker extends StatefulWidget {
   /// [linkedDocPath] and [linkedDocAttribute] are needed for the offline compatibility.
   /// If not given, uploads are only possible with internet connection
   final String? linkedDocAttribute;
+
+  @Deprecated('Use [numberOfFiles] instead')
   final bool multiple;
+
+  /// When [numberOfFiles] is null, the user can upload as many files as he
+  /// wants. Otherwise the user can only upload [numberOfFiles] files.
+  final num? numberOfFiles;
   final List<YustFile> images;
   final bool zoomable;
   final void Function(List<YustFile> images)? onChanged;
@@ -39,17 +48,20 @@ class YustImagePicker extends StatefulWidget {
   final String yustQuality;
   final bool divider;
   final bool showCentered;
+  final bool showPreview;
+  final bool overwriteSingleFile;
 
   /// default is 15
   final int imageCount;
 
   const YustImagePicker({
-    Key? key,
+    super.key,
     this.label,
     required this.storageFolderPath,
     this.linkedDocPath,
     this.linkedDocAttribute,
     this.multiple = false,
+    this.numberOfFiles,
     required this.images,
     this.zoomable = false,
     this.onChanged,
@@ -59,9 +71,10 @@ class YustImagePicker extends StatefulWidget {
     this.yustQuality = 'medium',
     this.divider = true,
     this.showCentered = false,
+    this.showPreview = true,
+    this.overwriteSingleFile = false,
     int? imageCount,
-  })  : imageCount = imageCount ?? 15,
-        super(key: key);
+  }) : imageCount = imageCount ?? 15;
   @override
   YustImagePickerState createState() => YustImagePickerState();
 }
@@ -103,13 +116,16 @@ class YustImagePickerState extends State<YustImagePicker> {
           label: widget.label,
           suffixChild: _buildPickButtons(context),
           prefixIcon: widget.prefixIcon,
-          below: widget.multiple
-              ? _buildGallery(context)
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: _buildSingleImage(
-                      context, _fileHandler.getFiles().firstOrNull),
-                ),
+          below: widget.showPreview
+              // ignore: deprecated_member_use_from_same_package
+              ? widget.multiple || (widget.numberOfFiles ?? 2) > 1
+                  ? _buildGallery(context)
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: _buildSingleImage(
+                          context, _fileHandler.getFiles().firstOrNull),
+                    )
+              : null,
           divider: widget.divider,
         );
       },
@@ -118,16 +134,57 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Widget _buildPickButtons(BuildContext context) {
     if (!_enabled ||
-        (!widget.multiple && _fileHandler.getFiles().firstOrNull != null)) {
+        (widget.showPreview &&
+            // ignore: deprecated_member_use_from_same_package
+            widget.numberOfFiles == 1 &&
+            _fileHandler.getFiles().firstOrNull != null &&
+            !widget.overwriteSingleFile)) {
       return const SizedBox.shrink();
     }
+
+    final pictureFiles = [..._fileHandler.getFiles()];
+    final canAddMore = widget.numberOfFiles != null
+        ? pictureFiles.length < widget.numberOfFiles! ||
+            (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
+        : true;
 
     return SizedBox(
       width: 150,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          if (!kIsWeb)
+          if (!widget.showPreview && pictureFiles.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              color: Theme.of(context).colorScheme.primary,
+              iconSize: 40,
+              onPressed: () async {
+                YustUi.helpers.unfocusCurrent();
+                final confirmed = await YustUi.alertService.showConfirmation(
+                    // ignore: deprecated_member_use_from_same_package
+                    widget.multiple
+                        ? LocaleKeys.alertDeleteAllImages.tr()
+                        : LocaleKeys.confirmDelete.tr(),
+                    LocaleKeys.delete.tr());
+                if (confirmed == true) {
+                  try {
+                    for (final yustFile in pictureFiles) {
+                      await _fileHandler.deleteFile(yustFile);
+                    }
+                    widget.onChanged!(_fileHandler.getOnlineFiles());
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  } catch (e) {
+                    await YustUi.alertService.showAlert(
+                        LocaleKeys.oops.tr(),
+                        LocaleKeys.alertCannotDeleteImage
+                            .tr(namedArgs: {'error': e.toString()}));
+                  }
+                }
+              },
+            ),
+          if (!kIsWeb && canAddMore)
             IconButton(
               color: Theme.of(context).colorScheme.primary,
               iconSize: 40,
@@ -135,12 +192,14 @@ class YustImagePickerState extends State<YustImagePicker> {
               onPressed:
                   _enabled ? () => _pickImages(ImageSource.camera) : null,
             ),
-          IconButton(
-            color: Theme.of(context).colorScheme.primary,
-            iconSize: 40,
-            icon: const Icon(Icons.image),
-            onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
-          ),
+          if (canAddMore)
+            IconButton(
+              color: Theme.of(context).colorScheme.primary,
+              iconSize: 40,
+              icon: const Icon(Icons.image),
+              onPressed:
+                  _enabled ? () => _pickImages(ImageSource.gallery) : null,
+            ),
         ],
       ),
     );
@@ -171,7 +230,7 @@ class YustImagePickerState extends State<YustImagePicker> {
                 });
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('mehr laden'),
+              label: Text(LocaleKeys.loadMore.tr()),
             ),
           ),
         const SizedBox(height: 2)
@@ -222,7 +281,8 @@ class YustImagePickerState extends State<YustImagePicker> {
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
-    if (widget.multiple) {
+    // ignore: deprecated_member_use_from_same_package
+    if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -287,7 +347,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              'Bild hochladen',
+              LocaleKeys.uploadImage.tr(),
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary, fontSize: 16),
@@ -313,8 +373,8 @@ class YustImagePickerState extends State<YustImagePicker> {
           color: Colors.black,
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
-            final confirmed = await YustUi.alertService
-                .showConfirmation('Wirklich löschen?', 'Löschen');
+            final confirmed = await YustUi.alertService.showConfirmation(
+                LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
             if (confirmed == true) {
               try {
                 await _fileHandler.deleteFile(yustFile);
@@ -326,7 +386,9 @@ class YustImagePickerState extends State<YustImagePicker> {
                 }
               } catch (e) {
                 await YustUi.alertService.showAlert(
-                    'Ups', 'Das Bild kann gerade nicht gelöscht werden: \n$e');
+                    LocaleKeys.oops.tr(),
+                    LocaleKeys.alertCannotDeleteImage
+                        .tr(namedArgs: {'error': e.toString()}));
               }
             }
           },
@@ -346,8 +408,8 @@ class YustImagePickerState extends State<YustImagePicker> {
         icon: const Icon(Icons.cloud_upload_outlined),
         color: Colors.white,
         onPressed: () async {
-          await YustUi.alertService.showAlert('Lokal gespeichertes Bild',
-              'Dieses Bild ist noch nicht hochgeladen.');
+          await YustUi.alertService.showAlert(
+              LocaleKeys.localImage.tr(), LocaleKeys.alertLocalImage.tr());
         },
       ),
     );
@@ -359,18 +421,40 @@ class YustImagePickerState extends State<YustImagePicker> {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
-      await YustUi.alertService.showAlert('Kein Internet',
-          'Für das Hinzufügen von Bildern ist eine Internetverbindung erforderlich.');
+      await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
+          LocaleKeys.alertMissingConnectionAddImages.tr());
     } else {
+      final pictureFiles = List<YustFile>.from(_fileHandler.getFiles());
+
+      if (widget.numberOfFiles == 1 &&
+          widget.overwriteSingleFile &&
+          pictureFiles.isNotEmpty) {
+        final confirmed = await YustUi.alertService.showConfirmation(
+            LocaleKeys.alertConfirmOverwriteFile.tr(),
+            LocaleKeys.continue_.tr());
+        if (confirmed == false) return;
+      }
       if (!kIsWeb) {
         final picker = ImagePicker();
-        if (widget.multiple && imageSource == ImageSource.gallery) {
+        // ignore: deprecated_member_use_from_same_package
+        if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
+            imageSource == ImageSource.gallery) {
           final images = await picker.pickMultiImage(
             // We don't use maxHeight & maxWidth for now, as there are some
             // image-orientation problems with iOS when the image is smaller(!),
             // than maxHeight/-Width
             imageQuality: quality,
           );
+          final numberOfFiles = widget.numberOfFiles;
+          if (widget.numberOfFiles != null &&
+              pictureFiles.length + images.length > widget.numberOfFiles!) {
+            await YustUi.alertService.showAlert(
+                LocaleKeys.fileUpload.tr(),
+                numberOfFiles == 1
+                    ? LocaleKeys.alertMaxOneFile.tr()
+                    : LocaleKeys.alertMaxNumberFiles.tr(
+                        namedArgs: {'numberFiles': numberOfFiles.toString()}));
+          }
 
           for (final image in images) {
             await uploadFile(
@@ -401,11 +485,25 @@ class YustImagePickerState extends State<YustImagePicker> {
       }
       // Else, we are on Web
       else {
-        if (widget.multiple) {
+        // ignore: deprecated_member_use_from_same_package
+        if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
           final result = await FilePicker.platform
               .pickFiles(type: FileType.image, allowMultiple: true);
           if (result != null) {
-            await EasyLoading.show(status: 'Bilder werden hinzugefügt...');
+            if (widget.numberOfFiles != null &&
+                pictureFiles.length + result.files.length >
+                    widget.numberOfFiles!) {
+              final numberOfFiles = widget.numberOfFiles;
+              await YustUi.alertService.showAlert(
+                  LocaleKeys.fileUpload.tr(),
+                  numberOfFiles == 1
+                      ? LocaleKeys.alertMaxOneFile.tr()
+                      : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
+                          'numberFiles': numberOfFiles.toString()
+                        }));
+              return;
+            }
+            await EasyLoading.show(status: LocaleKeys.addingImages.tr());
             for (final platformFile in result.files) {
               await uploadFile(
                 path: platformFile.name,
@@ -419,7 +517,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           final result =
               await FilePicker.platform.pickFiles(type: FileType.image);
           if (result != null) {
-            await EasyLoading.show(status: 'Bild wird hinzugefügt...');
+            await EasyLoading.show(status: LocaleKeys.addingImage.tr());
             await uploadFile(
               path: result.files.single.name,
               bytes: result.files.single.bytes,
@@ -429,6 +527,19 @@ class YustImagePickerState extends State<YustImagePicker> {
           }
         }
       }
+      if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
+        await _deleteFiles(pictureFiles);
+      }
+    }
+  }
+
+  Future<void> _deleteFiles(List<YustFile> pictureFiles) async {
+    for (final yustFile in pictureFiles) {
+      await _fileHandler.deleteFile(yustFile);
+    }
+    widget.onChanged!(_fileHandler.getOnlineFiles());
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -438,16 +549,16 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
   }) async {
-    final sanizitedPath = _sanitiseFilePath(path);
+    final sanitizedPath = _sanitizeFilePath(path);
     final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${sanizitedPath.split('.').last}';
+        '${Yust.helpers.randomString(length: 16)}.${sanitizedPath.split('.').last}';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       if (file != null) {
         file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
       } else {
         bytes = await YustUi.fileHelpers.resizeImageBytes(
-            name: sanizitedPath, bytes: bytes!, maxWidth: size);
+            name: sanitizedPath, bytes: bytes!, maxWidth: size);
       }
     }
 
@@ -460,7 +571,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       linkedDocAttribute: widget.linkedDocAttribute,
     );
 
-    await _createDatebaseEntry();
+    await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);
 
     if (_currentImageNumber < _fileHandler.getFiles().length) {
@@ -472,11 +583,11 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
   }
 
-  _sanitiseFilePath(String path) {
+  _sanitizeFilePath(String path) {
     return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
-  Future<void> _createDatebaseEntry() async {
+  Future<void> _createDatabaseEntry() async {
     try {
       if (widget.linkedDocPath != null &&
           !_fileHandler.existsDocData(

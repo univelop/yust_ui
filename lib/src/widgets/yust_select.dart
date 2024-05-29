@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/extensions/string_translate_extension.dart';
+import 'package:yust_ui/yust_ui.dart';
 
-import '../yust_ui.dart';
-import 'yust_input_tile.dart';
+import '../generated/locale_keys.g.dart';
 
 class YustSelect<T> extends StatelessWidget {
   final String? label;
@@ -13,14 +14,19 @@ class YustSelect<T> extends StatelessWidget {
   final YustInputStyle style;
   final Widget? prefixIcon;
   final Widget? suffixChild;
+  final FormFieldValidator<String>? validator;
   final bool readOnly;
   final bool showUnkownValue;
   final bool divider;
   final int? maxLines;
   final int? minLines;
+  final bool allowSearch;
+  final AutovalidateMode? autovalidateMode;
+
+  static const maxVisibleOptions = 10;
 
   const YustSelect({
-    Key? key,
+    super.key,
     this.label,
     required this.value,
     required this.optionValues,
@@ -30,12 +36,15 @@ class YustSelect<T> extends StatelessWidget {
     this.style = YustInputStyle.normal,
     this.prefixIcon,
     this.suffixChild,
+    this.validator,
     this.readOnly = false,
     this.showUnkownValue = false,
     this.divider = true,
     this.maxLines,
     this.minLines,
-  }) : super(key: key);
+    this.allowSearch = true,
+    this.autovalidateMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +53,8 @@ class YustSelect<T> extends StatelessWidget {
       text: _valueCaption(value),
       prefixIcon: prefixIcon,
       suffixChild: suffixChild,
+      validator: validator,
+      autovalidateMode: autovalidateMode,
       style: style,
       divider: divider,
       maxLines: maxLines,
@@ -65,23 +76,40 @@ class YustSelect<T> extends StatelessWidget {
   void _selectValue(BuildContext context) async {
     if (onSelected == null) return;
 
-    var selectedValue = await showDialog<T>(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            title: (label == null) ? null : Text('$label wählen'),
-            children: optionValues.map((optionValue) {
-              return SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, optionValue);
-                },
-                child: Text(_valueCaption(optionValue)),
-              );
-            }).toList(),
-          );
-        });
+    final selectedValues = <T>[];
+
+    await showDialog<T>(
+      context: context,
+      builder: (BuildContext context) {
+        return _buildDialog(context, selectedValues);
+      },
+    );
+    final selectedValue = selectedValues.first;
     if (selectedValue != null) {
       onSelected!(selectedValue);
     }
+  }
+
+  Widget _buildDialog(BuildContext context, List<T> selectedValues) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
+      title: label == null
+          ? null
+          : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
+      content: YustSelectForm(
+        optionValues: optionValues,
+        optionLabels: optionLabels,
+        selectedValues: selectedValues,
+        formType: YustSelectFormType.singleWithoutIndicator,
+        onChanged: () {
+          Navigator.pop(context);
+        },
+        optionListConstraints: const BoxConstraints(
+          maxHeight: 400.0,
+          maxWidth: 400.0,
+        ),
+        divider: false,
+      ),
+    );
   }
 }

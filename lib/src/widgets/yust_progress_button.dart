@@ -10,13 +10,13 @@ class YustProgressButton extends StatefulWidget {
   final bool inProgress;
 
   const YustProgressButton({
-    Key? key,
+    super.key,
     this.child,
     required this.onPressed,
     this.color,
     this.spinnerColor = Colors.white,
     this.inProgress = false,
-  }) : super(key: key);
+  });
 
   @override
   State<YustProgressButton> createState() => _YustProgressButtonState();
@@ -36,6 +36,8 @@ class _YustProgressButtonState extends State<YustProgressButton> {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: widget.color,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(40))),
       ),
       onPressed: (waiting ??= false) ? null : onPressed,
       child: Padding(

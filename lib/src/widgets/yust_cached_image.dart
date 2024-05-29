@@ -11,13 +11,13 @@ class YustCachedImage extends StatelessWidget {
   final double? width;
   final double? height;
   const YustCachedImage({
-    Key? key,
+    super.key,
     required this.file,
     this.fit,
     this.height,
     this.width,
     this.placeholder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

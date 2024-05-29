@@ -6,14 +6,16 @@ import '../yust_ui.dart';
 class YustTextField extends StatefulWidget {
   final String? label;
   final String? value;
+  final String? placeholder;
   final TextStyle? textStyle;
   final StringCallback? onChanged;
 
-  /// if a validator is implemented, onEditingComplete gets only triggered, if validator is true (true = returns null)
+  /// if a validator is implemented, onEditingComplete gets only triggered, if validator is true (true = returns null) or shouldCompleteNotValidInput is true
   final StringCallback? onEditingComplete;
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
   final TapCallback? onTap;
+  final StringCallback? onFieldSubmitted;
   final DeleteCallback? onDelete;
   final int? maxLines;
   final int? minLines;
@@ -37,14 +39,17 @@ class YustTextField extends StatefulWidget {
   final List<FilteringTextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
   final EdgeInsets contentPadding;
+  final bool shouldCompleteNotValidInput;
 
   const YustTextField({
-    Key? key,
+    super.key,
     this.label,
     this.value,
+    this.placeholder,
     this.textStyle,
     this.onChanged,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.controller,
     this.validator,
     this.onTap,
@@ -71,7 +76,8 @@ class YustTextField extends StatefulWidget {
     this.keyboardType,
     this.textInputAction,
     this.contentPadding = const EdgeInsets.all(20.0),
-  }) : super(key: key);
+    this.shouldCompleteNotValidInput = false,
+  });
 
   @override
   State<YustTextField> createState() => _YustTextFieldState();
@@ -91,7 +97,10 @@ class _YustTextFieldState extends State<YustTextField> {
         widget.notTrim ? _controller.value.text : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
-    if (widget.validator == null || widget.validator!(textFieldValue) == null) {
+    if (widget.validator == null ||
+        widget.validator!(textFieldValue) == null ||
+        widget.shouldCompleteNotValidInput) {
+      _initValue = textFieldText;
       widget.onEditingComplete!(textFieldValue);
       _valueDidChange = false;
     } else {
@@ -117,7 +126,9 @@ class _YustTextFieldState extends State<YustTextField> {
             : _controller.value.text.trim();
         final textFieldValue = textFieldText == '' ? null : textFieldText;
         if (widget.validator == null ||
-            widget.validator!(textFieldValue) == null) {
+            widget.validator!(textFieldValue) == null ||
+            widget.shouldCompleteNotValidInput) {
+          _initValue = textFieldText;
           widget.onEditingComplete!(textFieldValue);
         } else {
           _controller.text = widget.value ?? '';
@@ -223,6 +234,8 @@ class _YustTextFieldState extends State<YustTextField> {
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
             : null,
+        hintText: widget.placeholder,
+        errorMaxLines: 5,
       ),
       style: widget.textStyle,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
@@ -239,6 +252,7 @@ class _YustTextFieldState extends State<YustTextField> {
           : (value) => widget.onChanged!(
               value == '' ? null : (widget.notTrim ? value : value.trim())),
       onTap: widget.onTap,
+      onFieldSubmitted: widget.onFieldSubmitted,
       autocorrect: widget.autocorrect,
       readOnly: widget.readOnly,
       enabled: widget.enabled,

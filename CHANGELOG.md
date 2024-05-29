@@ -1,3 +1,86 @@
+## 3.21.0 - 2024-05-14
+
+-   Improvements for alerts and number field
+
+## 3.20.5 - 2024-04-25
+
+-   Improvements of YustImagePicker
+
+## 3.20.4 - 2024-04-24
+
+-   Improvements of YustFilePicker
+
+## 3.20.3 - 2024-04-19
+
+-   Fix Compatibility with Yust 3.20.3
+
+## 3.20.0 - 2024-04-14
+
+-   Improve file picker
+
+## 3.19.2 - 2024-04-02
+
+-   Fix Samsung keyboard issue
+
+## 3.19.1 - 2024-03-26
+
+-   Improve YustNumberField's number parsing
+
+## 3.19.0 - 2024-03-15
+
+-   Improve YustNumberField
+-   Fix bugs
+
+## 3.18.1 - 2024-02-19
+
+-   Fix bugs
+
+## 3.18.0 - 2024-02-17
+
+-   Add multi language support
+-   Fix bugs
+
+## 3.17.1 - 2024-02-09
+
+-   Fix bugs
+
+## 3.17.0 - 2024-01-21
+
+-   Improve database services
+-   Fix bugs
+
+## 3.16.1 - 2024-01-10
+
+-   Fix image picker bug
+
+## 3.16.0 - 2023-12-18
+
+-   Profile picture for user
+-   Improve transactions
+-   Add batches
+-   Fix bugs
+
+## 3.15.0 - 2023-11-17
+
+-   Improve Yust Select
+-   Add Google Cloud helpers
+-   Improve date calculation
+-   Fix bugs
+
+## 3.14.0 - 2023-10-06
+
+-   Fix issues
+
+## 3.13.1 - 2023-09-15
+
+-   Fix issues
+
+## 3.13.0 - 2023-09-12
+
+-   Improve paginated list
+-   Improve text field
+-   Improve alerts
+
 ## 3.12.0 - 2023-08-20
 
 -   Upgrade to Flutter 3.10

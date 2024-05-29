@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../widgets/yust_focus_handler.dart';
 import '../widgets/yust_progress_button.dart';
 import '../yust_ui.dart';
@@ -11,8 +13,7 @@ class YustResetPasswordScreen extends StatefulWidget {
 
   final String? logoAssetName;
 
-  const YustResetPasswordScreen({Key? key, this.logoAssetName})
-      : super(key: key);
+  const YustResetPasswordScreen({super.key, this.logoAssetName});
 
   @override
   State<YustResetPasswordScreen> createState() =>
@@ -28,7 +29,7 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
     return YustFocusHandler(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Passwort vergessen'),
+          title: Text(LocaleKeys.forgotPassword.tr()),
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -44,13 +45,13 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20.0, vertical: 10.0),
                       child: TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'E-Mail',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.email.tr(),
+                          border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value == '') {
-                            return 'Die E-Mail darf nicht leer sein.';
+                            return LocaleKeys.validationEmail.tr();
                           }
                           return null;
                         },
@@ -70,17 +71,17 @@ class _YustResetPasswordScreenState extends State<YustResetPasswordScreen> {
                                   .sendPasswordResetEmail(_email!);
                               navigator.pop();
                               await YustUi.alertService.showAlert(
-                                  'E-Mail verschickt',
-                                  'Du erhälst eine E-Mail. Folge den Anweisungen um ein neues Passwort zu erstellen.');
+                                  LocaleKeys.sentResetEmail.tr(),
+                                  LocaleKeys.alertSentResetEmail.tr());
                             } catch (err) {
-                              await YustUi.alertService
-                                  .showAlert('Fehler', err.toString());
+                              await YustUi.alertService.showAlert(
+                                  LocaleKeys.error.tr(), err.toString());
                             }
                           }
                         },
-                        child: const Text('Passwort vergessen',
-                            style:
-                                TextStyle(fontSize: 20.0, color: Colors.white)),
+                        child: Text(LocaleKeys.forgotPassword.tr(),
+                            style: const TextStyle(
+                                fontSize: 20.0, color: Colors.white)),
                       ),
                     ),
                   ],

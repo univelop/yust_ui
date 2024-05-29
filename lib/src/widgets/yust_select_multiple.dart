@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/widgets/yust_multi_select_component.dart';
+import 'package:yust_ui/src/widgets/yust_select_form.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_input_tile.dart';
 
@@ -18,7 +20,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
   final ButtonStyle buttonStyle;
 
   const YustSelectMultiple({
-    Key? key,
+    super.key,
     this.label,
     required this.values,
     required this.optionValues,
@@ -30,7 +32,7 @@ class YustSelectMultiple<T> extends StatelessWidget {
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -62,34 +64,51 @@ class YustSelectMultiple<T> extends StatelessWidget {
     if (onSelected == null) return;
     final selectedValues = values.toSet().toList(); //remove duplicates
     await showDialog<List<T>>(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            title: (label == null) ? null : Text('$label wählen'),
-            children: [
-              YustMultiSelectComponent(
-                optionValues: optionValues,
-                optionLabels: optionLabels,
-                selectedValues: selectedValues,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child:
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                      style: buttonStyle,
-                    child: const Text('OK'),
-                    onPressed: () {
-                      // Close the Dialog & return selectedItems
-                      Navigator.pop(context);
-                    }),
-                ),
-              ),
-            ],
-          );
-        });
+      context: context,
+      builder: (BuildContext context) {
+        return _buildDialog(selectedValues, context);
+      },
+    );
 
     onSelected!(selectedValues);
+  }
+
+  Widget _buildDialog(List<dynamic> selectedValues, BuildContext context) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
+      title: (label == null)
+          ? null
+          : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          YustSelectForm(
+            optionValues: optionValues,
+            optionLabels: optionLabels,
+            selectedValues: selectedValues,
+            optionListConstraints: const BoxConstraints(
+              maxHeight: 400.0,
+              maxWidth: 400.0,
+            ),
+            divider: false,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                style: buttonStyle,
+                child: Text(LocaleKeys.ok.tr()),
+                onPressed: () {
+                  // Close the Dialog & return selectedItems
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

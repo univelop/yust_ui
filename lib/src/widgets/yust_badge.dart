@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class YustBadge extends StatelessWidget {
   final int counter;
 
-  const YustBadge({Key? key, required this.counter}) : super(key: key);
+  const YustBadge({super.key, required this.counter});
 
   @override
   Widget build(BuildContext context) {

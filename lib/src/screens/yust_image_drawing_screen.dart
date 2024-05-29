@@ -5,15 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
 import 'package:yust_ui/src/widgets/yust_image_drawable.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
+
 class YustImageDrawingScreen extends StatefulWidget {
   final ImageProvider image;
   final void Function(Uint8List? image) onSave;
 
   const YustImageDrawingScreen({
-    Key? key,
+    super.key,
     required this.image,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   YustImageDrawingScreenState createState() => YustImageDrawingScreenState();
@@ -167,7 +170,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   Widget _buildSaveButton(BuildContext context) {
     return TextButton.icon(
       icon: const Icon(Icons.check),
-      label: const Text('Speichern'),
+      label: Text(LocaleKeys.save.tr()),
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).primaryColor,
       ),
@@ -181,7 +184,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   Widget _buildDiscardButton(BuildContext context) {
     return TextButton.icon(
       icon: const Icon(Icons.cancel),
-      label: const Text('Abbrechen'),
+      label: Text(LocaleKeys.cancel.tr()),
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).primaryColor,
       ),
@@ -222,18 +225,16 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
           if (showSettings == true) ...[
             Row(
               children: [
-                const Expanded(flex: 2, child: Text('Strichstärke')),
+                Expanded(flex: 2, child: Text(LocaleKeys.strokeWidth.tr())),
                 ...StrokeWidth.values
-                    .map((value) => _buildStrokeWidthSetting(value))
-                    .toList(),
+                    .map((value) => _buildStrokeWidthSetting(value)),
               ],
             ),
             Row(
               children: [
-                const Expanded(flex: 2, child: Text('Farbe')),
+                Expanded(flex: 2, child: Text(LocaleKeys.color.tr())),
                 ...StrokeColor.values
-                    .map((value) => _buildStrokeColorSetting(value))
-                    .toList(),
+                    .map((value) => _buildStrokeColorSetting(value)),
               ],
             ),
           ],
@@ -511,14 +512,15 @@ enum StrokeColor {
 }
 
 enum Shapes {
-  line(title: 'Linie', icon: Icons.horizontal_rule),
-  arrow(title: 'Pfeil', icon: Icons.trending_flat),
-  doubleArrow(title: 'Doppelpfeil', icon: Icons.open_in_full),
-  rectangle(title: 'Rechteck', icon: Icons.rectangle),
-  oval(title: 'Oval', icon: Icons.circle);
+  line(icon: Icons.horizontal_rule),
+  arrow(icon: Icons.trending_flat),
+  doubleArrow(icon: Icons.open_in_full),
+  rectangle(icon: Icons.rectangle),
+  oval(icon: Icons.circle);
 
-  const Shapes({required this.title, required this.icon});
+  const Shapes({required this.icon});
 
-  final String title;
   final IconData icon;
+
+  String get title => name.tr();
 }

@@ -16,11 +16,11 @@ class YustImageScreen extends StatefulWidget {
   final void Function(YustFile file, Uint8List newImage) onSave;
 
   const YustImageScreen({
-    Key? key,
+    super.key,
     required this.files,
     required this.onSave,
     this.activeImageIndex = 0,
-  }) : super(key: key);
+  });
 
   static const String routeName = '/imageScreen';
 

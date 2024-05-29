@@ -1,22 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
-import 'package:paginate_firestore/widgets/empty_display.dart';
 import 'package:yust/yust.dart';
 
 class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final YustDocSetup<T> modelSetup;
-  final Widget Function(BuildContext, T?, int) listItemBuilder;
+  final Widget Function(BuildContext, T?) listItemBuilder;
   final List<YustOrderBy> orderBy;
   final List<YustFilter>? filters;
   final bool Function(T doc)? hideItem;
   final ScrollController? scrollController;
-  final Widget? header;
-  final Widget? footer;
   final Widget? emptyInfo;
+  final bool reverse;
 
   const YustPaginatedListView({
-    Key? key,
+    super.key,
     required this.modelSetup,
     required this.listItemBuilder,
     required this.orderBy,
@@ -24,37 +22,33 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.hideItem,
     this.scrollController,
     this.emptyInfo,
-    this.header,
-    this.footer,
-  }) : super(key: key);
+    this.reverse = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final query = Yust.databaseService
         .getQuery(modelSetup, filters: filters, orderBy: orderBy) as Query;
 
-    return PaginateFirestore(
+    return FirestoreListView(
       key: key,
-      scrollController: scrollController,
-      header: header,
-      footer: footer,
-      onEmpty: emptyInfo ?? const EmptyDisplay(),
-      itemBuilderType: PaginateBuilderType.listView,
-      itemBuilder: (context, documentSnapshot, index) =>
-          _itemBuilder(index, context, documentSnapshot[index]),
-      // orderBy is compulsary to enable pagination
+      controller: scrollController,
+      emptyBuilder: (_) => emptyInfo ?? const SizedBox(),
+      itemBuilder: (context, documentSnapshot) =>
+          _itemBuilder(context, documentSnapshot),
+      // orderBy is compulsory to enable pagination
       query: query,
-      itemsPerPage: 50,
-      isLive: true,
-      initialLoader: SingleChildScrollView(
+      reverse: reverse,
+      pageSize: 50,
+      loadingBuilder: (_) => SingleChildScrollView(
         controller: scrollController,
-        child: const CircularProgressIndicator(),
+        child: const Center(child: CircularProgressIndicator()),
       ),
     );
   }
 
   Widget _itemBuilder(
-      int index, BuildContext context, DocumentSnapshot documentSnapshot) {
+      BuildContext context, QueryDocumentSnapshot<Object?> documentSnapshot) {
     final doc =
         Yust.databaseService.transformDoc<T>(modelSetup, documentSnapshot);
     if (doc == null) {
@@ -63,6 +57,6 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     if (hideItem != null && hideItem!(doc) == true) {
       return const SizedBox.shrink();
     }
-    return listItemBuilder(context, doc, index);
+    return listItemBuilder(context, doc);
   }
 }
