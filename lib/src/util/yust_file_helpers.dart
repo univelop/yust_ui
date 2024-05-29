@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -210,5 +211,12 @@ class YustFileHelpers {
     reader.readAsArrayBuffer(blob);
     reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
     return completer.future;
+  }
+
+
+  bool isValidFileName(String filename) {
+    final invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
+
+    return invalidChars.none((element) => filename.contains(element));
   }
 }
