@@ -88,6 +88,7 @@ class YustAlertService {
     String? message,
     String? warning,
     String initialText = '',
+    bool obscureText = false,
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
     /// if validator is set, action gets only triggered if the validator returns null (means true)
@@ -123,6 +124,7 @@ class YustAlertService {
                             ? null
                             : (value) => validator(value!.trim()),
                         autofocus: true,
+                        obscureText: obscureText,
                       ),
                     ),
                     if (suffixIcon != null) suffixIcon(controller: controller),
