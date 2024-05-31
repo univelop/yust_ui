@@ -12,6 +12,7 @@ class YustButtonTile extends StatelessWidget {
   final bool divider;
   final bool slimDesign;
   final bool inProgress;
+  final Widget? suffixChild;
 
   const YustButtonTile({
     super.key,
@@ -20,6 +21,7 @@ class YustButtonTile extends StatelessWidget {
     this.textColor = Colors.white,
     this.icon,
     this.onPressed,
+    this.suffixChild,
     this.above,
     this.below,
     this.elevated = true,
@@ -38,14 +40,27 @@ class YustButtonTile extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildButton(),
-              if (inProgress)
-                const Padding(
-                  padding: EdgeInsets.only(left: 12.0),
-                  child: CircularProgressIndicator(),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildButton(),
+                        if (inProgress)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 12.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                      ],
+                    ),
+                    if (suffixChild != null)
+                      Positioned(right: 0, child: suffixChild!)
+                  ],
                 ),
+              ),
             ],
           ),
         ),
