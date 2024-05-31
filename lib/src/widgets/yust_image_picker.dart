@@ -229,7 +229,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryIconTheme.color,
-                foregroundColor: Theme.of(context).colorScheme.background,
+                foregroundColor: Theme.of(context).colorScheme.surface,
               ),
               onPressed: () {
                 _currentImageNumber += widget.imageCount;
