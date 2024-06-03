@@ -1808,6 +1808,7 @@ abstract class LocaleKeys {
   static const tableBrickDescription = 'tableBrickDescription';
   static const tableSetSettings = 'tableSetSettings';
   static const tableSetSettingsColumns = 'tableSetSettingsColumns';
+  static const tableWidthPortion = 'tableWidthPortion';
   static const tabs = 'tabs';
   static const target = 'target';
   static const team = 'team';
@@ -1966,6 +1967,7 @@ abstract class LocaleKeys {
   static const validationPositiveNumber = 'validationPositiveNumber';
   static const validationQuantity = 'validationQuantity';
   static const validationQuantityPositive = 'validationQuantityPositive';
+  static const validationTableWidthPortionNotInRange = 'validationTableWidthPortionNotInRange';
   static const validationUrl = 'validationUrl';
   static const validationValueMustBeList = 'validationValueMustBeList';
   static const validationWholeNumber = 'validationWholeNumber';
