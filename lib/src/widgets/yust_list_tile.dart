@@ -105,11 +105,16 @@ class YustListTile extends StatelessWidget {
           ),
         ],
       ),
-      trailing: navigate
-          ? const Icon(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (navigate)
+            const Icon(
               Icons.navigate_next,
-            )
-          : suffixChild,
+            ),
+          if (suffixChild != null) suffixChild!,
+        ],
+      ),
       onTap: onTap,
       contentPadding: padding,
     );
