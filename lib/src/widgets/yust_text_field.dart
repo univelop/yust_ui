@@ -211,7 +211,6 @@ class _YustTextFieldState extends State<YustTextField> {
             Expanded(
               child: _buildTextField(),
             ),
-            widget.suffixIcon ?? const SizedBox(),
             if (widget.onDelete != null && widget.value != '')
               IconButton(
                   onPressed: widget.onDelete!,
@@ -219,6 +218,7 @@ class _YustTextFieldState extends State<YustTextField> {
                     Icons.delete,
                     color: Theme.of(context).primaryColor,
                   )),
+            widget.suffixIcon ?? const SizedBox(),
           ],
         ),
         if (widget.style == YustInputStyle.normal && widget.divider)

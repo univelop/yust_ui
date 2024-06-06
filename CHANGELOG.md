@@ -1,3 +1,11 @@
+## 3.22.0 - 2024-05-30
+
+- Correctly show `suffixChild` in different YustWidgets
+
+## 3.22.0 - 2024-05-30
+
+- Make yust_ui ready for Flutter 3.22.1
+
 ## 3.21.0 - 2024-05-14
 
 -   Improvements for alerts and number field

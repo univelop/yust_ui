@@ -14,6 +14,7 @@ class YustSwitch extends StatelessWidget {
   //switchRepresentation could be: 'yesNo', 'checkbox', 'label',
   final String switchRepresentation;
   final bool divider;
+  final Widget? suffixIcon;
 
   const YustSwitch({
     super.key,
@@ -21,6 +22,7 @@ class YustSwitch extends StatelessWidget {
     required this.value,
     this.activeColor,
     this.prefixIcon,
+    this.suffixIcon,
     this.onChanged,
     this.readOnly = false,
     this.slimDesign = false,
@@ -34,7 +36,12 @@ class YustSwitch extends StatelessWidget {
       if (slimDesign) return _buildCheckbox(context);
       return YustListTile(
         label: label,
-        suffixChild: _buildCheckbox(context),
+        suffixChild: Row(
+          children: [
+            _buildCheckbox(context),
+            if (suffixIcon != null) suffixIcon!
+          ],
+        ),
         onTap: readOnly || onChanged == null
             ? null
             : () {
@@ -48,7 +55,12 @@ class YustSwitch extends StatelessWidget {
       if (slimDesign) return _buildSwitch(context);
       return YustListTile(
         label: label,
-        suffixChild: _buildSwitch(context),
+        suffixChild: Row(
+          children: [
+            _buildSwitch(context),
+            if (suffixIcon != null) suffixIcon!
+          ],
+        ),
         onTap: readOnly || onChanged == null
             ? null
             : () {
