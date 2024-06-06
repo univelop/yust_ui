@@ -134,7 +134,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
         bottomNavigationBar: ValueListenableBuilder(
           valueListenable: controller,
           builder: (context, _, __) => Container(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -217,7 +217,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
