@@ -40,6 +40,7 @@ class YustTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final EdgeInsets contentPadding;
   final bool shouldCompleteNotValidInput;
+  final Iterable<String>? autofillHints;
 
   const YustTextField({
     super.key,
@@ -77,6 +78,7 @@ class YustTextField extends StatefulWidget {
     this.textInputAction,
     this.contentPadding = const EdgeInsets.all(20.0),
     this.shouldCompleteNotValidInput = false,
+    this.autofillHints,
   });
 
   @override
@@ -268,6 +270,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ? null
           : (value) => widget.validator!(value!.trim()),
       autofocus: widget.autofocus,
+      autofillHints: widget.autofillHints,
     );
   }
 }

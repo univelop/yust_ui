@@ -379,6 +379,7 @@ abstract class LocaleKeys {
   static const by = 'by';
   static const calendar = 'calendar';
   static const calendarBrickDescription = 'calendarBrickDescription';
+  static const calendarBrickSetSettings = 'calendarBrickSetSettings';
   static const calendarFormat = 'calendarFormat';
   static const canEnter = 'canEnter';
   static const cancel = 'cancel';
@@ -414,6 +415,8 @@ abstract class LocaleKeys {
   static const changelogBrickDescription = 'changelogBrickDescription';
   static const changingEmail = 'changingEmail';
   static const changingPassword = 'changingPassword';
+  static const checkAborted = 'checkAborted';
+  static const checkDuplicateTransferFailed = 'checkDuplicateTransferFailed';
   static const checkFailedFormula = 'checkFailedFormula';
   static const checkFailedFormulaWorkflow = 'checkFailedFormulaWorkflow';
   static const checkFailedLabelBrickSpec = 'checkFailedLabelBrickSpec';
@@ -439,6 +442,7 @@ abstract class LocaleKeys {
   static const checksPassedLinkedRecordSpec = 'checksPassedLinkedRecordSpec';
   static const checksPassedNumberFields = 'checksPassedNumberFields';
   static const checksPassedTransfer = 'checksPassedTransfer';
+  static const checksPassedTransferDuplicates = 'checksPassedTransferDuplicates';
   static const chooseColor = 'chooseColor';
   static const chooseFittingColor = 'chooseFittingColor';
   static const chooseLicense = 'chooseLicense';
@@ -453,6 +457,7 @@ abstract class LocaleKeys {
   static const closePageOnSuccess = 'closePageOnSuccess';
   static const collapsedByDefault = 'collapsedByDefault';
   static const collapsible = 'collapsible';
+  static const colon = 'colon';
   static const color = 'color';
   static const colors = 'colors';
   static const columnPlural = 'columnPlural';
@@ -462,6 +467,7 @@ abstract class LocaleKeys {
   static const columnWidth = 'columnWidth';
   static const columns = 'columns';
   static const comingSoon = 'comingSoon';
+  static const comma = 'comma';
   static const comment = 'comment';
   static const commentWithNumber = 'commentWithNumber';
   static const comments = 'comments';
@@ -536,6 +542,9 @@ abstract class LocaleKeys {
   static const creatingTiles = 'creatingTiles';
   static const creatingWorkflows = 'creatingWorkflows';
   static const creatingWorkspace = 'creatingWorkspace';
+  static const csvFieldDelimiter = 'csvFieldDelimiter';
+  static const csvFile = 'csvFile';
+  static const csvTextDelimiter = 'csvTextDelimiter';
   static const currentList = 'currentList';
   static const currentMonth = 'currentMonth';
   static const currentRecord = 'currentRecord';
@@ -543,6 +552,7 @@ abstract class LocaleKeys {
   static const customColumnWidth = 'customColumnWidth';
   static const customTitle = 'customTitle';
   static const customerSupport = 'customerSupport';
+  static const customization = 'customization';
   static const dark = 'dark';
   static const date = 'date';
   static const dateAndTime = 'dateAndTime';
@@ -552,6 +562,7 @@ abstract class LocaleKeys {
   static const dateLimitsExplanation = 'dateLimitsExplanation';
   static const datePickerBrickDescription = 'datePickerBrickDescription';
   static const defaultLanguage = 'defaultLanguage';
+  static const defaultLocaleInfo = 'defaultLocaleInfo';
   static const defaultOption = 'defaultOption';
   static const defaultOptionExplanation = 'defaultOptionExplanation';
   static const defaultPath = 'defaultPath';
@@ -610,6 +621,7 @@ abstract class LocaleKeys {
   static const done = 'done';
   static const dotGrid = 'dotGrid';
   static const doubleArrow = 'doubleArrow';
+  static const doubleQuote = 'doubleQuote';
   static const download = 'download';
   static const downloadScript = 'downloadScript';
   static const downloadingTemplate = 'downloadingTemplate';
@@ -621,6 +633,8 @@ abstract class LocaleKeys {
   static const dummyMode = 'dummyMode';
   static const dummyModeDescription = 'dummyModeDescription';
   static const duplicate = 'duplicate';
+  static const duplicateRecord = 'duplicateRecord';
+  static const duplicateRecordStepDescription = 'duplicateRecordStepDescription';
   static const duplicateTile = 'duplicateTile';
   static const duplicateWorkflow = 'duplicateWorkflow';
   static const duplicatesFound = 'duplicatesFound';
@@ -747,6 +761,7 @@ abstract class LocaleKeys {
   static const exceptionFailedTransfer = 'exceptionFailedTransfer';
   static const exceptionFileNameMultipleUsage = 'exceptionFileNameMultipleUsage';
   static const exceptionFileNotFound = 'exceptionFileNotFound';
+  static const exceptionFileNotFoundInArchive = 'exceptionFileNotFoundInArchive';
   static const exceptionFlowSpecNotFound = 'exceptionFlowSpecNotFound';
   static const exceptionFrontendFilters = 'exceptionFrontendFilters';
   static const exceptionHttp = 'exceptionHttp';
@@ -828,7 +843,6 @@ abstract class LocaleKeys {
   static const exceptionMissingEmailOrPassword = 'exceptionMissingEmailOrPassword';
   static const exceptionMissingEmailProvider = 'exceptionMissingEmailProvider';
   static const exceptionMissingEmailVerificationSendGrid = 'exceptionMissingEmailVerificationSendGrid';
-  static const exceptionMissingExcelFile = 'exceptionMissingExcelFile';
   static const exceptionMissingFile = 'exceptionMissingFile';
   static const exceptionMissingFileForImport = 'exceptionMissingFileForImport';
   static const exceptionMissingId = 'exceptionMissingId';
@@ -851,6 +865,7 @@ abstract class LocaleKeys {
   static const exceptionMissingSesRegion = 'exceptionMissingSesRegion';
   static const exceptionMissingSesSecretKey = 'exceptionMissingSesSecretKey';
   static const exceptionMissingStorageFolderPath = 'exceptionMissingStorageFolderPath';
+  static const exceptionMissingTableFile = 'exceptionMissingTableFile';
   static const exceptionMissingTechName = 'exceptionMissingTechName';
   static const exceptionMissingTemplate = 'exceptionMissingTemplate';
   static const exceptionMissingUrl = 'exceptionMissingUrl';
@@ -871,6 +886,7 @@ abstract class LocaleKeys {
   static const exceptionRecordNotFoundById = 'exceptionRecordNotFoundById';
   static const exceptionRecordNotFoundCannotImport = 'exceptionRecordNotFoundCannotImport';
   static const exceptionRecordSpecNotFound = 'exceptionRecordSpecNotFound';
+  static const exceptionRecordSpecWithTemplateIdNotFound = 'exceptionRecordSpecWithTemplateIdNotFound';
   static const exceptionRecordTitleSemicolon = 'exceptionRecordTitleSemicolon';
   static const exceptionRequest = 'exceptionRequest';
   static const exceptionRoleNotFound = 'exceptionRoleNotFound';
@@ -887,7 +903,7 @@ abstract class LocaleKeys {
   static const exceptionTechnicalNameNotFound = 'exceptionTechnicalNameNotFound';
   static const exceptionTileIsNotMemberTile = 'exceptionTileIsNotMemberTile';
   static const exceptionTileNotFound = 'exceptionTileNotFound';
-  static const exceptionTooManyExcelFiles = 'exceptionTooManyExcelFiles';
+  static const exceptionTooManyFiles = 'exceptionTooManyFiles';
   static const exceptionTooManyMatchingStatuses = 'exceptionTooManyMatchingStatuses';
   static const exceptionTooManySheets = 'exceptionTooManySheets';
   static const exceptionUiComponentNotFound = 'exceptionUiComponentNotFound';
@@ -900,13 +916,15 @@ abstract class LocaleKeys {
   static const exceptionUserNotFoundByEmail = 'exceptionUserNotFoundByEmail';
   static const exceptionUserNotFoundByValue = 'exceptionUserNotFoundByValue';
   static const exceptionValueInvalidDate = 'exceptionValueInvalidDate';
+  static const exceptionValueIsNull = 'exceptionValueIsNull';
   static const exceptionValueNotFound = 'exceptionValueNotFound';
   static const exceptionWorkspaceMustHaveOwner = 'exceptionWorkspaceMustHaveOwner';
   static const exceptionWorkspaceNotLoaded = 'exceptionWorkspaceNotLoaded';
-  static const exceptionWrongFileFormat = 'exceptionWrongFileFormat';
+  static const exceptionWrongFileFormatCsv = 'exceptionWrongFileFormatCsv';
+  static const exceptionWrongFileFormatXlsx = 'exceptionWrongFileFormatXlsx';
   static const exhibition = 'exhibition';
   static const export = 'export';
-  static const exportToExcel = 'exportToExcel';
+  static const exportToTable = 'exportToTable';
   static const exportWorkspace = 'exportWorkspace';
   static const exportWorkspaceWithData = 'exportWorkspaceWithData';
   static const exportWorkspaceWithoutData = 'exportWorkspaceWithoutData';
@@ -934,6 +952,7 @@ abstract class LocaleKeys {
   static const fileFormatNotSupported = 'fileFormatNotSupported';
   static const fileLimitWillExceed = 'fileLimitWillExceed';
   static const filePickerBrickDescription = 'filePickerBrickDescription';
+  static const fileType = 'fileType';
   static const fileUpload = 'fileUpload';
   static const fillFromRecordList = 'fillFromRecordList';
   static const filter = 'filter';
@@ -1052,6 +1071,7 @@ abstract class LocaleKeys {
   static const flowLogCreatedUser = 'flowLogCreatedUser';
   static const flowLogDeletedRecord = 'flowLogDeletedRecord';
   static const flowLogDeniedRequest = 'flowLogDeniedRequest';
+  static const flowLogDuplicatedRecord = 'flowLogDuplicatedRecord';
   static const flowLogErrorForItem = 'flowLogErrorForItem';
   static const flowLogErrorForRecord = 'flowLogErrorForRecord';
   static const flowLogErrorWhileSendingEmail = 'flowLogErrorWhileSendingEmail';
@@ -1136,11 +1156,11 @@ abstract class LocaleKeys {
   static const immediateMailing = 'immediateMailing';
   static const import = 'import';
   static const importErrorForUser = 'importErrorForUser';
-  static const importExcel = 'importExcel';
-  static const importExcelStepDescription = 'importExcelStepDescription';
   static const importFinished = 'importFinished';
   static const importFinishedAdditionalInfoPlural = 'importFinishedAdditionalInfoPlural';
   static const importFromExcel = 'importFromExcel';
+  static const importTable = 'importTable';
+  static const importTableStepDescription = 'importTableStepDescription';
   static const importTile = 'importTile';
   static const importWorkflow = 'importWorkflow';
   static const importWorkspace = 'importWorkspace';
@@ -1152,8 +1172,31 @@ abstract class LocaleKeys {
   static const includingCountry = 'includingCountry';
   static const includingTime = 'includingTime';
   static const individualUsers = 'individualUsers';
+  static const industryAdvertisingAndMarketing = 'industryAdvertisingAndMarketing';
+  static const industryAgriculture = 'industryAgriculture';
+  static const industryChemicalAndRawMaterialsIndustry = 'industryChemicalAndRawMaterialsIndustry';
+  static const industryConstructionIndustry = 'industryConstructionIndustry';
+  static const industryConsumerGoods = 'industryConsumerGoods';
+  static const industryECommerce = 'industryECommerce';
+  static const industryEconomyAndPolitics = 'industryEconomyAndPolitics';
+  static const industryEnergyAndEnvironment = 'industryEnergyAndEnvironment';
+  static const industryFinanceRealEstateAndInsurance = 'industryFinanceRealEstateAndInsurance';
+  static const industryLabel = 'industryLabel';
+  static const industryLeisureIndustry = 'industryLeisureIndustry';
+  static const industryMedia = 'industryMedia';
+  static const industryMetalAndElectronics = 'industryMetalAndElectronics';
+  static const industryOther = 'industryOther';
+  static const industryPharmaceuticalsAndHealth = 'industryPharmaceuticalsAndHealth';
+  static const industryServicesIndustry = 'industryServicesIndustry';
+  static const industrySportsAndFitness = 'industrySportsAndFitness';
+  static const industryTelecommunicationsAndIt = 'industryTelecommunicationsAndIt';
+  static const industryTourismAndGastronomy = 'industryTourismAndGastronomy';
+  static const industryTransportationAndLogistics = 'industryTransportationAndLogistics';
   static const info = 'info';
   static const infoForPersonalization = 'infoForPersonalization';
+  static const install = 'install';
+  static const installedSolutions = 'installedSolutions';
+  static const installingSolution = 'installingSolution';
   static const invalidExpression = 'invalidExpression';
   static const invalidJson = 'invalidJson';
   static const invalidLink = 'invalidLink';
@@ -1402,6 +1445,7 @@ abstract class LocaleKeys {
   static const noStepsInWorkflow = 'noStepsInWorkflow';
   static const noStyle = 'noStyle';
   static const noTeam = 'noTeam';
+  static const noTextSeparator = 'noTextSeparator';
   static const noTiles = 'noTiles';
   static const noTitle = 'noTitle';
   static const noTransfers = 'noTransfers';
@@ -1482,6 +1526,7 @@ abstract class LocaleKeys {
   static const personalData = 'personalData';
   static const phone = 'phone';
   static const phoneBrickDescription = 'phoneBrickDescription';
+  static const pipe = 'pipe';
   static const plain = 'plain';
   static const pleaseConnect = 'pleaseConnect';
   static const pleaseSaveDesignModeChangesToContinue = 'pleaseSaveDesignModeChangesToContinue';
@@ -1562,6 +1607,7 @@ abstract class LocaleKeys {
   static const recordNotFound = 'recordNotFound';
   static const recordNotFound404 = 'recordNotFound404';
   static const recordPickerBrickDescription = 'recordPickerBrickDescription';
+  static const recordSpecWithTemplateIdNotFound = 'recordSpecWithTemplateIdNotFound';
   static const records = 'records';
   static const recordsAre = 'recordsAre';
   static const rectangle = 'rectangle';
@@ -1748,6 +1794,7 @@ abstract class LocaleKeys {
   static const signerName = 'signerName';
   static const singleFile = 'singleFile';
   static const singleImage = 'singleImage';
+  static const singleQuote = 'singleQuote';
   static const size = 'size';
   static const sizeArrangementExplanation = 'sizeArrangementExplanation';
   static const sizeArrangementInPrintout = 'sizeArrangementInPrintout';
@@ -1755,6 +1802,22 @@ abstract class LocaleKeys {
   static const skip = 'skip';
   static const small = 'small';
   static const smallestPossibleNumber = 'smallestPossibleNumber';
+  static const solution = 'solution';
+  static const solutionArchive = 'solutionArchive';
+  static const solutionAssigned = 'solutionAssigned';
+  static const solutionBrickExplanation = 'solutionBrickExplanation';
+  static const solutionBuildVersion = 'solutionBuildVersion';
+  static const solutionCanNotBeDeleted = 'solutionCanNotBeDeleted';
+  static const solutionConfirmInstall = 'solutionConfirmInstall';
+  static const solutionIncludeEntireWorkspace = 'solutionIncludeEntireWorkspace';
+  static const solutionName = 'solutionName';
+  static const solutionNamePlaceholder = 'solutionNamePlaceholder';
+  static const solutionNew = 'solutionNew';
+  static const solutionTileExplanation = 'solutionTileExplanation';
+  static const solutionVersion = 'solutionVersion';
+  static const solutionVersions = 'solutionVersions';
+  static const solutions = 'solutions';
+  static const solutionsEmptyInfo = 'solutionsEmptyInfo';
   static const somethingWentWrong = 'somethingWentWrong';
   static const space = 'space';
   static const specific = 'specific';
@@ -1808,7 +1871,6 @@ abstract class LocaleKeys {
   static const tableBrickDescription = 'tableBrickDescription';
   static const tableSetSettings = 'tableSetSettings';
   static const tableSetSettingsColumns = 'tableSetSettingsColumns';
-  static const tableWidthPortion = 'tableWidthPortion';
   static const tabs = 'tabs';
   static const target = 'target';
   static const team = 'team';
@@ -1900,6 +1962,7 @@ abstract class LocaleKeys {
   static const typeQrBarcode = 'typeQrBarcode';
   static const unit = 'unit';
   static const unitPrice = 'unitPrice';
+  static const univelopStoreComingSoon = 'univelopStoreComingSoon';
   static const univelopUser = 'univelopUser';
   static const unknown = 'unknown';
   static const unknownContent = 'unknownContent';
@@ -1919,8 +1982,8 @@ abstract class LocaleKeys {
   static const updateAppExplanationMobile = 'updateAppExplanationMobile';
   static const updateAppExplanationWeb = 'updateAppExplanationWeb';
   static const updateTileIndicators = 'updateTileIndicators';
-  static const uploadExcelSpreadExplanation = 'uploadExcelSpreadExplanation';
   static const uploadImage = 'uploadImage';
+  static const uploadTableSpreadExplanation = 'uploadTableSpreadExplanation';
   static const url = 'url';
   static const urlExample = 'urlExample';
   static const urlForButton = 'urlForButton';
@@ -1967,7 +2030,6 @@ abstract class LocaleKeys {
   static const validationPositiveNumber = 'validationPositiveNumber';
   static const validationQuantity = 'validationQuantity';
   static const validationQuantityPositive = 'validationQuantityPositive';
-  static const validationTableWidthPortionNotInRange = 'validationTableWidthPortionNotInRange';
   static const validationUrl = 'validationUrl';
   static const validationValueMustBeList = 'validationValueMustBeList';
   static const validationWholeNumber = 'validationWholeNumber';
