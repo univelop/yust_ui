@@ -1871,7 +1871,6 @@ abstract class LocaleKeys {
   static const tableBrickDescription = 'tableBrickDescription';
   static const tableSetSettings = 'tableSetSettings';
   static const tableSetSettingsColumns = 'tableSetSettingsColumns';
-  static const tableWidthPortion = 'tableWidthPortion';
   static const tabs = 'tabs';
   static const target = 'target';
   static const team = 'team';

@@ -41,9 +41,11 @@ class YustTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final EdgeInsets contentPadding;
   final bool shouldCompleteNotValidInput;
+
   /// if false, [onEditingComplete] gets triggered only on
   /// enter or submit but not on unfocus
   final bool completeOnUnfocus;
+  final Iterable<String>? autofillHints;
 
   const YustTextField({
     super.key,
@@ -83,6 +85,7 @@ class YustTextField extends StatefulWidget {
     this.contentPadding = const EdgeInsets.all(20.0),
     this.shouldCompleteNotValidInput = false,
     this.completeOnUnfocus = true,
+    this.autofillHints,
   });
 
   @override
@@ -233,11 +236,12 @@ class _YustTextFieldState extends State<YustTextField> {
     return TextFormField(
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: widget.labelStyle ?? (widget.readOnly
-            ? TextStyle(
-                color: Theme.of(context).textTheme.bodySmall?.color ??
-                    Colors.black)
-            : null),
+        labelStyle: widget.labelStyle ??
+            (widget.readOnly
+                ? TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.black)
+                : null),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
@@ -281,6 +285,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ? null
           : (value) => widget.validator!(value!.trim()),
       autofocus: widget.autofocus,
+      autofillHints: widget.autofillHints,
     );
   }
 }
