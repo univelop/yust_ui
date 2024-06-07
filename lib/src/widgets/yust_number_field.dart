@@ -87,7 +87,9 @@ class YustNumberField extends StatelessWidget {
                   ? null
                   : const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
+            allowDecimalInput
+                ? FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
+                : FilteringTextInputFormatter.allow(RegExp('[0-9-]'))
           ],
           textInputAction: TextInputAction.next,
           onTap: onTap,

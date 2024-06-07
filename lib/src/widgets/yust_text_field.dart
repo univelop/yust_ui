@@ -36,10 +36,13 @@ class YustTextField extends StatefulWidget {
   final AutovalidateMode? autovalidateMode;
   final SmartQuotesType? smartQuotesType;
   final TextInputType? keyboardType;
-  final List<FilteringTextInputFormatter> inputFormatters;
+  final List<TextInputFormatter> inputFormatters;
   final TextInputAction? textInputAction;
   final EdgeInsets contentPadding;
   final bool shouldCompleteNotValidInput;
+  /// if false, [onEditingComplete] gets triggered only on
+  /// enter or submit but not on unfocus
+  final bool completeOnUnfocus;
 
   const YustTextField({
     super.key,
@@ -77,6 +80,7 @@ class YustTextField extends StatefulWidget {
     this.textInputAction,
     this.contentPadding = const EdgeInsets.all(20.0),
     this.shouldCompleteNotValidInput = false,
+    this.completeOnUnfocus = true,
   });
 
   @override
@@ -120,19 +124,8 @@ class _YustTextFieldState extends State<YustTextField> {
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
       // if (!_focusNode.hasFocus) onUnfocus();
-      if (!_focusNode.hasFocus && widget.onEditingComplete != null) {
-        final textFieldText = widget.notTrim
-            ? _controller.value.text
-            : _controller.value.text.trim();
-        final textFieldValue = textFieldText == '' ? null : textFieldText;
-        if (widget.validator == null ||
-            widget.validator!(textFieldValue) == null ||
-            widget.shouldCompleteNotValidInput) {
-          _initValue = textFieldText;
-          widget.onEditingComplete!(textFieldValue);
-        } else {
-          _controller.text = widget.value ?? '';
-        }
+      if (!_focusNode.hasFocus && widget.completeOnUnfocus) {
+        onComplete();
       }
     });
     if (widget.autofocus && widget.hideKeyboardOnAutofocus) {
@@ -144,6 +137,23 @@ class _YustTextFieldState extends State<YustTextField> {
     _controller.addListener(() {
       _valueDidChange = true;
     });
+  }
+
+  void onComplete() {
+    if (widget.onEditingComplete != null) {
+      final textFieldText = widget.notTrim
+          ? _controller.value.text
+          : _controller.value.text.trim();
+      final textFieldValue = textFieldText == '' ? null : textFieldText;
+      if (widget.validator == null ||
+          widget.validator!(textFieldValue) == null ||
+          widget.shouldCompleteNotValidInput) {
+        _initValue = textFieldText;
+        widget.onEditingComplete!(textFieldValue);
+      } else {
+        _controller.text = widget.value ?? '';
+      }
+    }
   }
 
   @override
@@ -251,6 +261,7 @@ class _YustTextFieldState extends State<YustTextField> {
           ? null
           : (value) => widget.onChanged!(
               value == '' ? null : (widget.notTrim ? value : value.trim())),
+      onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
       autocorrect: widget.autocorrect,
