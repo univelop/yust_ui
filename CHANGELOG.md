@@ -1,4 +1,10 @@
-## 3.22.0 - 2024-05-30
+## 3.22.2 - 2024-06-07
+
+- Improvements of YustTextField
+- Improvements of YustNumberField
+- Improvements of YustTimePicker
+
+## 3.22.1 - 2024-05-31
 
 - Correctly show `suffixChild` in different YustWidgets
 
