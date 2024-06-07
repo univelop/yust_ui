@@ -8,6 +8,7 @@ class YustTextField extends StatefulWidget {
   final String? value;
   final String? placeholder;
   final TextStyle? textStyle;
+  final TextStyle? labelStyle;
   final StringCallback? onChanged;
 
   /// if a validator is implemented, onEditingComplete gets only triggered, if validator is true (true = returns null) or shouldCompleteNotValidInput is true
@@ -58,6 +59,7 @@ class YustTextField extends StatefulWidget {
     this.onTap,
     this.onDelete,
     this.maxLines,
+    this.labelStyle,
     this.minLines,
     this.enabled = true,
     this.autocorrect = true,
@@ -231,11 +233,11 @@ class _YustTextFieldState extends State<YustTextField> {
     return TextFormField(
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: widget.readOnly
+        labelStyle: widget.labelStyle ?? (widget.readOnly
             ? TextStyle(
                 color: Theme.of(context).textTheme.bodySmall?.color ??
                     Colors.black)
-            : null,
+            : null),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
