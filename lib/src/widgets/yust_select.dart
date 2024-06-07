@@ -109,6 +109,7 @@ class YustSelect<T> extends StatelessWidget {
           maxWidth: 400.0,
         ),
         divider: false,
+        autofocus: true,
       ),
     );
   }
