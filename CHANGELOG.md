@@ -1,3 +1,7 @@
+## 3.23.0 - 2024-06-11
+
+- Realign YustUI & Yust-Version
+
 ## 3.22.3 - 2024-06-11
 
 - Added `completeOnUnfocus` to YustNumberField
