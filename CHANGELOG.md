@@ -1,3 +1,7 @@
+## 3.22.3 - 2024-06-11
+
+- Added `completeOnUnfocus` to YustNumberField
+
 ## 3.22.2 - 2024-06-07
 
 - Improvements of YustTextField
