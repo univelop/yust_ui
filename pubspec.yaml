@@ -50,7 +50,7 @@ dependency_overrides:
     flutter_painter:
         git:
             url: https://github.com/Harishwarrior/flutter_painter.git
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust.git
-    #         ref: master
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: mocked-file-service
