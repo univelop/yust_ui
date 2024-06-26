@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:yust/yust.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
+import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
 
 class YustFilePicker extends StatefulWidget {
@@ -84,8 +83,6 @@ class YustFilePicker extends StatefulWidget {
 class YustFilePickerState extends State<YustFilePicker> {
   late YustFileHandler _fileHandler;
   final Map<String?, bool> _processing = {};
-  late DropzoneViewController controller;
-  var isDragging = false;
   late bool _enabled;
 
   @override
@@ -121,18 +118,22 @@ class YustFilePickerState extends State<YustFilePicker> {
         widget.enableDropzone &&
         _enabled &&
         (widget.allowedExtensions?.isNotEmpty ?? true)) {
-      return _buildDropzone(context);
+      return YustDropzoneListTile(
+        suffixChild: _buildSuffixChild(),
+        label: widget.label,
+        prefixIcon: widget.prefixIcon,
+        below: _buildFiles(context),
+        divider: widget.divider,
+        onDropMultiple: (controller, ev) async {
+          await checkAndUploadFiles(ev ?? [], (fileData) async {
+            final data = await controller.getFileData(fileData);
+            return (fileData.name.toString(), null, data);
+          });
+        },
+      );
     } else {
       return YustListTile(
-        suffixChild: Wrap(children: [
-          if (widget.allowedExtensions != null) _buildInfoIcon(context),
-          if (widget.numberOfFiles == null ||
-              (widget.numberOfFiles != null &&
-                  (widget.files.length < widget.numberOfFiles! ||
-                      widget.numberOfFiles == 1 && widget.overwriteSingleFile)))
-            _buildAddButton(context),
-          if (widget.suffixIcon != null) widget.suffixIcon!
-        ]),
+        suffixChild: _buildSuffixChild(),
         label: widget.label,
         prefixIcon: widget.prefixIcon,
         below: _buildFiles(context),
@@ -141,105 +142,12 @@ class YustFilePickerState extends State<YustFilePicker> {
     }
   }
 
-  Widget _buildDropzone(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: _buildDropzoneArea(context),
-        ),
-        YustListTile(
-            suffixChild: isDragging
-                ? null
-                : Wrap(
-                    children: [
-                      if (widget.allowedExtensions != null)
-                        _buildInfoIcon(context),
-                      _buildAddButton(context),
-                      if (widget.suffixIcon != null) widget.suffixIcon!
-                    ],
-                  ),
-            label: widget.label,
-            prefixIcon: widget.prefixIcon,
-            below: _buildDropzoneInterfaceAndFiles(),
-            divider: widget.divider),
-      ],
-    );
-  }
-
-  Widget _buildDropzoneInterfaceAndFiles() => Column(
-        children: [
-          if (isDragging) _buildDropzoneInterface(),
-          _buildFiles(context),
-        ],
-      );
-
-  /// This widget will accept files from a drag and drop interaction
-  Widget _buildDropzoneArea(BuildContext context) => Builder(
-        builder: (context) => DropzoneView(
-          operation: DragOperation.copy,
-          cursor: CursorType.grab,
-          onCreated: (ctrl) => controller = ctrl,
-          onLoaded: () {},
-          onError: (ev) {},
-          onHover: () {
-            setState(() {
-              isDragging = true;
-            });
-          },
-          onLeave: () {
-            setState(() {
-              isDragging = false;
-            });
-          },
-          onDrop: (ev) async {},
-          onDropMultiple: (ev) async {
-            setState(() {
-              isDragging = false;
-            });
-            await checkAndUploadFiles(ev ?? [], (fileData) async {
-              final data = await controller.getFileData(fileData);
-              return (fileData.name.toString(), null, data);
-            });
-          },
-        ),
-      );
-
-  /// This Widget is a visual drag and drop indicator. It shows a dotted box, an icon as well as a button to manually upload files
-  Widget _buildDropzoneInterface() {
-    final dropZoneColor =
-        isDragging ? Colors.blue : const Color.fromARGB(255, 116, 116, 116);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
-        child: DottedBorder(
-          borderType: BorderType.RRect,
-          radius: const Radius.circular(12),
-          padding: const EdgeInsets.all(6),
-          dashPattern: const [6, 5],
-          strokeWidth: 3,
-          strokeCap: StrokeCap.round,
-          color: dropZoneColor,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: SizedBox(
-              height: 200,
-              width: 400,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Icon(Icons.cloud_upload_outlined,
-                      size: 35, color: dropZoneColor),
-                  Text(
-                    LocaleKeys.dragFilesHere.tr(),
-                    style: TextStyle(fontSize: 20, color: dropZoneColor),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  Widget _buildSuffixChild() {
+    return Wrap(children: [
+      if (widget.allowedExtensions != null) _buildInfoIcon(context),
+      _buildAddButton(context),
+      if (widget.suffixIcon != null) widget.suffixIcon!
+    ]);
   }
 
   Widget _buildInfoIcon(BuildContext context) {

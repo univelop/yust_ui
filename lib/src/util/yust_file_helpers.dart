@@ -9,9 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
-import 'package:exif/exif.dart';
 import 'package:image/image.dart' as image_lib;
-import 'package:image/src/util/rational.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
@@ -130,57 +128,40 @@ class YustFileHelpers {
   }
 
   bool isValidFileName(String filename) {
-    final invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
+    final invalidChars = ['\\', '/', ':', '*', '?', '<', '>', '|'];
 
     return invalidChars.none((element) => filename.contains(element));
   }
 
-
-Future<Uint8List?> resizeImage(
-    {required String name, required Uint8List bytes, int maxWidth = 1024}) async {
-  var image = image_lib.decodeNamedImage(name, bytes)!;
-  if (image.width > image.height && image.width > maxWidth) {
-    image = image_lib.copyResize(image, width: maxWidth);
-  } else if (image.height > image.width && image.height > maxWidth) {
-    image = image_lib.copyResize(image, height: maxWidth);
-  }
-
-  name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
-
-  //Read EXIF-data
-  final data = await readExifFromBytes(bytes);
-  final exifData = image_lib.ExifData();
-
-  for (final entry in data.entries) {
-    dynamic newValue;
-    switch (entry.value.tagType) {
-      case 'ASCII':
-        newValue = image_lib.IfdValueAscii(entry.value.toString());
-        break;
-      case 'Byte':
-        newValue = image_lib.IfdByteValue.list(
-            Uint8List.fromList(entry.value.values.toList() as List<int>));
-        break;
-      case 'Long':
-        newValue = image_lib.IfdValueLong(entry.value.values.firstAsInt());
-        break;
-      case 'Ratio':
-        newValue = image_lib.IfdValueRational.list(
-            (entry.value.values as IfdRatios)
-                .ratios
-                .map((e) => Rational(e.numerator, e.denominator))
-                .toList());
-        break;
+  Future<Uint8List?> resizeImage(
+      {required String name,
+      required Uint8List bytes,
+      int maxWidth = 1024}) async {
+    var originalImage = image_lib.decodeNamedImage(name, bytes)!;
+    image_lib.Image newImage = originalImage;
+    if (originalImage.width > originalImage.height &&
+        originalImage.width > maxWidth) {
+      newImage = image_lib.copyResize(originalImage, width: maxWidth);
+    } else if (originalImage.height > originalImage.width &&
+        originalImage.height > maxWidth) {
+      newImage = image_lib.copyResize(originalImage, height: maxWidth);
     }
-    if (entry.key.contains('GPS')) {
-      exifData.gpsIfd[entry.value.tag] = newValue;
-    } else {
-      exifData.imageIfd[entry.value.tag] = newValue;
-    }
+
+    name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
+
+    final exif = originalImage.exif;
+
+    // Orientation is baked into the image, so we can set it to no rotation
+    exif.imageIfd.orientation = 1;
+    // Size is changed, so we need to update the resolution
+    exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
+    exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
+    exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
+    exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
+    exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+
+    newImage.exif = exif;
+
+    return image_lib.encodeNamedImage(name, newImage);
   }
-
-  image.exif = exifData;
-
-  return image_lib.encodeNamedImage(name, image);
-}
 }
