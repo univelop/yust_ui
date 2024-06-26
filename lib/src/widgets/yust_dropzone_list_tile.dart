@@ -54,7 +54,7 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
   Widget _buildDropzoneArea(BuildContext context) => Builder(
         builder: (context) => DropzoneView(
           operation: DragOperation.copy,
-          cursor: CursorType.grab,
+          cursor: _isDragging ? CursorType.grab : CursorType.Default,
           onCreated: (ctrl) => _controller = ctrl,
           onLoaded: () {},
           onError: (ev) {},
