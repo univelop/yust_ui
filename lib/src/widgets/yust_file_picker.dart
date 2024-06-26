@@ -52,6 +52,8 @@ class YustFilePicker extends StatefulWidget {
 
   final bool allowOnlyImages;
 
+  final Widget? suffixIcon;
+
   final bool overwriteSingleFile;
 
   const YustFilePicker(
@@ -63,6 +65,7 @@ class YustFilePicker extends StatefulWidget {
       this.linkedDocPath,
       this.linkedDocAttribute,
       this.onChanged,
+      this.suffixIcon,
       this.prefixIcon,
       this.enableDropzone = false,
       this.readOnly = false,
@@ -105,44 +108,45 @@ class YustFilePickerState extends State<YustFilePicker> {
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
       builder: (context, snapshot) {
-        if (kIsWeb &&
-            widget.enableDropzone &&
-            _enabled &&
-            (widget.allowedExtensions?.isNotEmpty ?? true)) {
-          return YustDropzoneListTile(
-            suffixChild: _buildSuffixChild(),
-            label: widget.label,
-            prefixIcon: widget.prefixIcon,
-            below: _buildFiles(context),
-            divider: widget.divider,
-            onDropMultiple: (controller, ev) async {
-              await checkAndUploadFiles(ev ?? [], (fileData) async {
-                final data = await controller.getFileData(fileData);
-                return (fileData.name.toString(), null, data);
-              });
-            },
-          );
-        } else {
-          return YustListTile(
-            suffixChild: _buildSuffixChild(),
-            label: widget.label,
-            prefixIcon: widget.prefixIcon,
-            below: _buildFiles(context),
-            divider: widget.divider,
-          );
-        }
+        return _buildFilePicker(context);
       },
     );
+  }
+
+  Widget _buildFilePicker(BuildContext context) {
+    if (kIsWeb &&
+        widget.enableDropzone &&
+        _enabled &&
+        (widget.allowedExtensions?.isNotEmpty ?? true)) {
+      return YustDropzoneListTile(
+        suffixChild: _buildSuffixChild(),
+        label: widget.label,
+        prefixIcon: widget.prefixIcon,
+        below: _buildFiles(context),
+        divider: widget.divider,
+        onDropMultiple: (controller, ev) async {
+          await checkAndUploadFiles(ev ?? [], (fileData) async {
+            final data = await controller.getFileData(fileData);
+            return (fileData.name.toString(), null, data);
+          });
+        },
+      );
+    } else {
+      return YustListTile(
+        suffixChild: _buildSuffixChild(),
+        label: widget.label,
+        prefixIcon: widget.prefixIcon,
+        below: _buildFiles(context),
+        divider: widget.divider,
+      );
+    }
   }
 
   Widget _buildSuffixChild() {
     return Wrap(children: [
       if (widget.allowedExtensions != null) _buildInfoIcon(context),
-      if (widget.numberOfFiles == null ||
-          (widget.numberOfFiles != null &&
-              (widget.files.length < widget.numberOfFiles! ||
-                  widget.numberOfFiles == 1 && widget.overwriteSingleFile)))
-        _buildAddButton(context)
+      _buildAddButton(context),
+      if (widget.suffixIcon != null) widget.suffixIcon!
     ]);
   }
 
@@ -243,6 +247,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildDownloadButton(file),
+          _buildFileRenameButton(file),
           _buildDeleteButton(file),
         ],
       );
@@ -258,6 +263,71 @@ class YustFilePickerState extends State<YustFilePicker> {
         },
       );
 
+  Widget _buildFileRenameButton(YustFile file) {
+    if (!_enabled) {
+      return const SizedBox.shrink();
+    }
+    if (_processing[file.name] == true) {
+      return const SizedBox.shrink();
+    }
+    return IconButton(
+      icon: const Icon(Icons.edit),
+      color: Theme.of(context).colorScheme.primary,
+      onPressed: _enabled ? () => _renameFile(file) : null,
+    );
+  }
+
+  Future<void> _renameFile(YustFile yustFile) async {
+    final newFileName = await YustUi.alertService.showTextFieldDialog(
+        'Wie soll die Datei heißen?', '', 'Speichern',
+        initialText: yustFile.getFileNameWithoutExtension(),
+        validator: (value) => (_isNewFileNameValid(value, yustFile) &&
+                !fileExists('$value.${yustFile.getFilenameExtension()}'))
+            ? null
+            : 'Der Dateiname ist nicht valide!');
+
+    if (newFileName == null) {
+      return;
+    }
+    _processing[yustFile.name] = true;
+    setState(() {});
+
+    final newFileNameWithExtension =
+        '$newFileName.${yustFile.getFilenameExtension()}';
+
+    await _reuploadFileForRename(yustFile, newFileNameWithExtension);
+    await _doDeleteFile(yustFile);
+
+    _processing[yustFile.name] = false;
+    setState(() {});
+  }
+
+  Future<void> _reuploadFileForRename(
+      YustFile yustFile, String newFileName) async {
+    final bytes = await Yust.fileService.downloadFile(
+        path: yustFile.storageFolderPath ?? '', name: yustFile.name ?? '');
+    await uploadFile(
+      name: newFileName,
+      file: yustFile.file,
+      bytes: bytes,
+      callSetState: false,
+    );
+  }
+
+  Future<void> _doDeleteFile(YustFile yustFile) async {
+    await _fileHandler.deleteFile(yustFile);
+    if (!yustFile.cached) {
+      widget.onChanged!(_fileHandler.getOnlineFiles());
+    }
+  }
+
+  bool _isNewFileNameValid(String? filename, YustFile oldFile) {
+    return filename != null &&
+        filename.isNotEmpty &&
+        filename.length < 256 &&
+        YustUi.fileHelpers.isValidFileName(filename);
+  }
+
   Widget _buildDeleteButton(YustFile file) {
     if (!_enabled) {
       return const SizedBox.shrink();
@@ -268,7 +338,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     return IconButton(
       icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
-      onPressed: _enabled ? () => _deleteFile(file) : null,
+      onPressed: _enabled ? () => _deleteFileWithConfirmation(file) : null,
     );
   }
 
@@ -387,6 +457,7 @@ class YustFilePickerState extends State<YustFilePicker> {
     required String name,
     File? file,
     Uint8List? bytes,
+    callSetState = true,
   }) async {
     final extension = name.split('.').last;
     if (widget.allowedExtensions != null &&
@@ -411,8 +482,11 @@ class YustFilePickerState extends State<YustFilePicker> {
       linkedDocAttribute: widget.linkedDocAttribute,
     );
     _processing[newYustFile.name] = true;
+    if (mounted && callSetState) {
+      setState(() {});
+    }
 
-    if (_fileHandler.getFiles().any((file) => file.name == newYustFile.name)) {
+    if (fileExists(newYustFile.name)) {
       await YustUi.alertService.showAlert(
           LocaleKeys.notPossible.tr(),
           LocaleKeys.alertFileAlreadyExists
@@ -423,10 +497,13 @@ class YustFilePickerState extends State<YustFilePicker> {
     }
     _processing[newYustFile.name] = false;
     widget.onChanged!(_fileHandler.getOnlineFiles());
-    if (mounted) {
+    if (mounted && callSetState) {
       setState(() {});
     }
   }
+
+  bool fileExists(String? fileName) =>
+      _fileHandler.getFiles().any((file) => file.name == fileName);
 
   Future<void> _createDatabaseEntry() async {
     try {
@@ -439,16 +516,13 @@ class YustFilePickerState extends State<YustFilePicker> {
     } catch (e) {}
   }
 
-  Future<void> _deleteFile(YustFile yustFile) async {
+  Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService.showConfirmation(
         LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
     if (confirmed == true) {
       try {
-        await _fileHandler.deleteFile(yustFile);
-        if (!yustFile.cached) {
-          widget.onChanged!(_fileHandler.getOnlineFiles());
-        }
+        await _doDeleteFile(yustFile);
         if (mounted) {
           setState(() {});
         }

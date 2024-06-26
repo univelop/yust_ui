@@ -50,6 +50,7 @@ class YustImagePicker extends StatefulWidget {
   final bool showCentered;
   final bool showPreview;
   final bool overwriteSingleFile;
+  final Widget? suffixIcon;
 
   /// default is 15
   final int imageCount;
@@ -62,6 +63,7 @@ class YustImagePicker extends StatefulWidget {
     this.linkedDocAttribute,
     this.multiple = false,
     this.numberOfFiles,
+    this.suffixIcon,
     required this.images,
     this.zoomable = false,
     this.onChanged,
@@ -114,7 +116,13 @@ class YustImagePickerState extends State<YustImagePicker> {
       builder: (context, snapshot) {
         return YustListTile(
           label: widget.label,
-          suffixChild: _buildPickButtons(context),
+          suffixChild: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildPickButtons(context),
+              if (widget.suffixIcon != null) widget.suffixIcon!
+            ],
+          ),
           prefixIcon: widget.prefixIcon,
           below: widget.showPreview
               // ignore: deprecated_member_use_from_same_package
@@ -221,7 +229,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryIconTheme.color,
-                foregroundColor: Theme.of(context).colorScheme.background,
+                foregroundColor: Theme.of(context).colorScheme.surface,
               ),
               onPressed: () {
                 _currentImageNumber += widget.imageCount;

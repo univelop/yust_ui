@@ -27,6 +27,8 @@ class YustNumberField extends StatelessWidget {
   final FormFieldValidator<num?>? validator;
   final bool divider;
   final TextStyle? valueStyle;
+  final EdgeInsets contentPadding;
+  final bool completeOnUnfocus;
 
   const YustNumberField({
     super.key,
@@ -49,6 +51,8 @@ class YustNumberField extends StatelessWidget {
     this.hideKeyboardOnAutofocus = false,
     this.validator,
     this.divider = true,
+    this.contentPadding = const EdgeInsets.all(20.0),
+    this.completeOnUnfocus = true,
   });
 
   @override
@@ -85,7 +89,9 @@ class YustNumberField extends StatelessWidget {
                   ? null
                   : const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
+            allowDecimalInput
+                ? FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
+                : FilteringTextInputFormatter.allow(RegExp('[0-9-]'))
           ],
           textInputAction: TextInputAction.next,
           onTap: onTap,
@@ -100,6 +106,8 @@ class YustNumberField extends StatelessWidget {
               ? null
               : (value) => validator!(valueToNum(value)),
           divider: divider,
+          completeOnUnfocus: completeOnUnfocus,
+          contentPadding: contentPadding,
         );
       },
     );

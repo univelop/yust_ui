@@ -92,7 +92,8 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
 
   /// This Widget is a visual drag and drop indicator. It shows a dotted box, an icon as well as a button to manually upload files
   Widget _buildDropzoneInterface() {
-    const dropZoneColor = Colors.blue;
+    final dropZoneColor =
+        _isDragging ? Colors.blue : const Color.fromARGB(255, 116, 116, 116);
     return Center(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
@@ -112,11 +113,11 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  const Icon(Icons.cloud_upload_outlined,
+                  Icon(Icons.cloud_upload_outlined,
                       size: 35, color: dropZoneColor),
                   Text(
                     LocaleKeys.dragFilesHere.tr(),
-                    style: const TextStyle(fontSize: 20, color: dropZoneColor),
+                    style: TextStyle(fontSize: 20, color: dropZoneColor),
                   ),
                 ],
               ),

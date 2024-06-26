@@ -76,4 +76,6 @@ pubspec_overrides.yaml
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
 # Ignore Flutter Version Manager
-.fvm
+.fvmrc
+# FVM Version Cache
+.fvm/

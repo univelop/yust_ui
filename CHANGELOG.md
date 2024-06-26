@@ -1,7 +1,35 @@
+## 3.23.0 - 2024-06-11
+
+- Realign YustUI & Yust-Version
+
+## 3.22.3 - 2024-06-11
+
+- Added `completeOnUnfocus` to YustNumberField
+
+## 3.22.2 - 2024-06-07
+
+- Improvements of YustTextField
+- Improvements of YustNumberField
+- Improvements of YustTimePicker
+
+## 3.22.1 - 2024-05-31
+
+- Correctly show `suffixChild` in different YustWidgets
+
+## 3.22.0 - 2024-05-30
+
+- Make yust_ui ready for Flutter 3.22.1
+
+## 3.21.0 - 2024-05-14
+
+-   Improvements for alerts and number field
+
 ## 3.20.5 - 2024-04-25
+
 -   Improvements of YustImagePicker
 
 ## 3.20.4 - 2024-04-24
+
 -   Improvements of YustFilePicker
 
 ## 3.20.3 - 2024-04-19
