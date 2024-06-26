@@ -470,6 +470,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
+      await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
           LocaleKeys.alertMissingConnectionAddImages.tr());
       return;
@@ -480,6 +481,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
         pictureFiles.isNotEmpty) {
+      await EasyLoading.dismiss();
       final confirmed = await YustUi.alertService.showConfirmation(
           LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
       if (confirmed == false) return;
@@ -487,6 +489,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     // Image Limit overstepped
     else if (widget.numberOfFiles != null &&
         pictureFiles.length + images.length > widget.numberOfFiles!) {
+      await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
           widget.numberOfFiles == 1
@@ -502,6 +505,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       final fileExtension = path.split('.').lastOrNull?.toLowerCase();
 
       if (kIsWeb && fileExtension == 'heic') {
+        await EasyLoading.dismiss();
         await YustUi.alertService.showAlert(
             LocaleKeys.fileUpload.tr(),
             LocaleKeys.alertInvalidFileType.tr(namedArgs: {
@@ -511,6 +515,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       }
 
       if (!yustAllowedImageExtensions.contains(fileExtension)) {
+        await EasyLoading.dismiss();
         await YustUi.alertService.showAlert(
             LocaleKeys.fileUpload.tr(),
             LocaleKeys.alertInvalidFileType.tr(namedArgs: {
