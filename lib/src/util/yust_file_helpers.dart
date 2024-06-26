@@ -8,9 +8,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:http/http.dart' as http;
+import 'package:exif/exif.dart';
 import 'package:image/image.dart' as image_lib;
+import 'package:image/src/util/rational.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
@@ -128,95 +129,58 @@ class YustFileHelpers {
     }
   }
 
-  Future<File> resizeImage({required File file, int maxWidth = 1024}) async {
-    var properties = await FlutterNativeImage.getImageProperties(file.path);
-    if (properties.width! > properties.height! &&
-        properties.width! > maxWidth) {
-      file = await FlutterNativeImage.compressImage(
-        file.path,
-        quality: 80,
-        targetWidth: maxWidth,
-        targetHeight:
-            (properties.height! * maxWidth / properties.width!).round(),
-      );
-    } else if (properties.height! > properties.width! &&
-        properties.height! > maxWidth) {
-      file = await FlutterNativeImage.compressImage(
-        file.path,
-        quality: 80,
-        targetWidth:
-            (properties.width! * maxWidth / properties.height!).round(),
-        targetHeight: maxWidth,
-      );
-    }
-    return file;
-  }
-
-  Future<Uint8List?> resizeImageBytes(
-      {required String name,
-      required Uint8List bytes,
-      int maxWidth = 1024}) async {
-    if (kIsWeb) {
-      return await _resizeImageWeb(bytes, name, maxWidth);
-    } else {
-      return await _resizeImageMobile(name, bytes, maxWidth);
-    }
-  }
-
-  //Function uses non-native package image_lib which can work slow
-  //Await package for ios & android which works native
-  Future<Uint8List?> _resizeImageMobile(
-      String name, Uint8List bytes, int maxWidth) async {
-    var image = image_lib.decodeNamedImage(name, bytes)!;
-    if (image.width > image.height && image.width > maxWidth) {
-      image = image_lib.copyResize(image, width: maxWidth);
-    } else if (image.height > image.width && image.height > maxWidth) {
-      image = image_lib.copyResize(image, height: maxWidth);
-    }
-    return image_lib.encodeNamedImage(name, image);
-  }
-
-  Future<Uint8List?> _resizeImageWeb(
-      Uint8List image, String mimeType, int maxWidth) async {
-    int width, height;
-    var jpg64 = base64Encode(image);
-    var newImg = html.ImageElement();
-    // ignore: unsafe_html
-    newImg.src = 'data:$mimeType;base64,$jpg64';
-
-    await newImg.onLoad.first;
-
-    if (newImg.width! > newImg.height! && newImg.width! > maxWidth) {
-      width = maxWidth;
-      height = (width * newImg.height! / newImg.width!).round();
-    } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
-      height = maxWidth;
-      width = (height * newImg.width! / newImg.height!).round();
-    } else {
-      width = newImg.width!;
-      height = newImg.height!;
-    }
-
-    var canvas = html.CanvasElement(width: width, height: height);
-    var ctx = canvas.context2D;
-
-    ctx.drawImageScaled(newImg, 0, 0, width, height);
-
-    return _getBlobData(await canvas.toBlob(mimeType));
-  }
-
-  Future<Uint8List> _getBlobData(html.Blob blob) {
-    final completer = Completer<Uint8List>();
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(blob);
-    reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
-    return completer.future;
-  }
-
-
   bool isValidFileName(String filename) {
     final invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
 
     return invalidChars.none((element) => filename.contains(element));
   }
+
+
+Future<Uint8List?> resizeImage(
+    {required String name, required Uint8List bytes, int maxWidth = 1024}) async {
+  var image = image_lib.decodeNamedImage(name, bytes)!;
+  if (image.width > image.height && image.width > maxWidth) {
+    image = image_lib.copyResize(image, width: maxWidth);
+  } else if (image.height > image.width && image.height > maxWidth) {
+    image = image_lib.copyResize(image, height: maxWidth);
+  }
+
+  name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
+
+  //Read EXIF-data
+  final data = await readExifFromBytes(bytes);
+  final exifData = image_lib.ExifData();
+
+  for (final entry in data.entries) {
+    dynamic newValue;
+    switch (entry.value.tagType) {
+      case 'ASCII':
+        newValue = image_lib.IfdValueAscii(entry.value.toString());
+        break;
+      case 'Byte':
+        newValue = image_lib.IfdByteValue.list(
+            Uint8List.fromList(entry.value.values.toList() as List<int>));
+        break;
+      case 'Long':
+        newValue = image_lib.IfdValueLong(entry.value.values.firstAsInt());
+        break;
+      case 'Ratio':
+        newValue = image_lib.IfdValueRational.list(
+            (entry.value.values as IfdRatios)
+                .ratios
+                .map((e) => Rational(e.numerator, e.denominator))
+                .toList());
+        break;
+    }
+    if (entry.key.contains('GPS')) {
+      exifData.gpsIfd[entry.value.tag] = newValue;
+    } else {
+      exifData.imageIfd[entry.value.tag] = newValue;
+    }
+  }
+
+  image.exif = exifData;
+
+  return image_lib.encodeNamedImage(name, image);
+}
 }

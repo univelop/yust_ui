@@ -574,16 +574,11 @@ class YustImagePickerState extends State<YustImagePicker> {
     bool resize = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
-    final imageName =
-        '${Yust.helpers.randomString(length: 16)}.${sanitizedPath.split('.').last}';
+    final imageName = '${Yust.helpers.randomString(length: 16)}.jpeg';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
-      if (file != null) {
-        file = await YustUi.fileHelpers.resizeImage(file: file, maxWidth: size);
-      } else {
-        bytes = await YustUi.fileHelpers.resizeImageBytes(
-            name: sanitizedPath, bytes: bytes!, maxWidth: size);
-      }
+      bytes = await YustUi.fileHelpers
+          .resizeImage(name: sanitizedPath, bytes: bytes!, maxWidth: size);
     }
 
     final newYustFile = YustFile(
