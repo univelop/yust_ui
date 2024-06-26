@@ -20,6 +20,15 @@ final Map<String, Map<String, int>> yustImageQuality = {
   'low': {'quality': 80, 'size': 800},
 };
 
+final yustAllowedImageExtensions = [
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'tiff',
+  if (!kIsWeb) 'heic',
+];
+
 class YustImagePicker extends StatefulWidget {
   final String? label;
 
@@ -456,9 +465,12 @@ class YustImagePickerState extends State<YustImagePicker> {
     List<T> images,
     Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor,
   ) async {
+    await EasyLoading.show(status: LocaleKeys.addingImages.tr());
+
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
+      await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
           LocaleKeys.alertMissingConnectionAddImages.tr());
       return;
@@ -469,6 +481,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
         pictureFiles.isNotEmpty) {
+      await EasyLoading.dismiss();
       final confirmed = await YustUi.alertService.showConfirmation(
           LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
       if (confirmed == false) return;
@@ -476,6 +489,7 @@ class YustImagePickerState extends State<YustImagePicker> {
     // Image Limit overstepped
     else if (widget.numberOfFiles != null &&
         pictureFiles.length + images.length > widget.numberOfFiles!) {
+      await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
           widget.numberOfFiles == 1
@@ -487,6 +501,29 @@ class YustImagePickerState extends State<YustImagePicker> {
 
     for (final image in images) {
       final (path, file, bytes) = await imageDataExtractor(image);
+
+      final fileExtension = path.split('.').lastOrNull?.toLowerCase();
+
+      if (kIsWeb && fileExtension == 'heic') {
+        await EasyLoading.dismiss();
+        await YustUi.alertService.showAlert(
+            LocaleKeys.fileUpload.tr(),
+            LocaleKeys.alertInvalidFileType.tr(namedArgs: {
+              'supportedTypes': yustAllowedImageExtensions.join(', ')
+            }));
+        continue;
+      }
+
+      if (!yustAllowedImageExtensions.contains(fileExtension)) {
+        await EasyLoading.dismiss();
+        await YustUi.alertService.showAlert(
+            LocaleKeys.fileUpload.tr(),
+            LocaleKeys.alertInvalidFileType.tr(namedArgs: {
+              'supportedTypes': yustAllowedImageExtensions.join(', ')
+            }));
+        continue;
+      }
+
       await uploadFile(
         path: path,
         file: file,
@@ -499,6 +536,8 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(pictureFiles);
     }
+
+    await EasyLoading.dismiss();
   }
 
   Future<void> _pickImages(ImageSource imageSource) async {
@@ -574,15 +613,15 @@ class YustImagePickerState extends State<YustImagePicker> {
     bool resize = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
-    final imageName = '${Yust.helpers.randomString(length: 16)}.jpeg';
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       bytes = await YustUi.fileHelpers
           .resizeImage(name: sanitizedPath, bytes: bytes!, maxWidth: size);
     }
 
+    final newImageName = '${Yust.helpers.randomString(length: 16)}.jpeg';
     final newYustFile = YustFile(
-      name: imageName,
+      name: newImageName,
       file: file,
       bytes: bytes,
       storageFolderPath: widget.storageFolderPath,
