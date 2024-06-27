@@ -1,3 +1,7 @@
+## 3.23.1 - 2024-06-27
+
+- Add Drag & Drop to Image Picker
+  
 ## 3.23.0 - 2024-06-11
 
 - Realign YustUI & Yust-Version
