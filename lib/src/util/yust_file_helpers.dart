@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -147,6 +148,10 @@ class YustFileHelpers {
       newImage = image_lib.copyResize(originalImage, height: maxWidth);
     }
 
+    if (originalImage.hasAlpha) {
+      originalImage = _replaceTransparentBackground(originalImage);
+    }
+
     name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
 
     final exif = originalImage.exif;
@@ -163,5 +168,22 @@ class YustFileHelpers {
     newImage.exif = exif;
 
     return image_lib.encodeNamedImage(name, newImage);
+  }
+
+  image_lib.Image _replaceTransparentBackground(image_lib.Image image) {
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        final pixel = image.getPixel(x, y);
+        image.setPixel(
+            x,
+            y,
+            image_lib.ColorRgba8(
+                min(255, (pixel.r + 255 - pixel.a).toInt()),
+                min(255, (pixel.g + 255 - pixel.a).toInt()),
+                min(255, (pixel.b + 255 - pixel.a).toInt()),
+                255));
+      }
+    }
+    return image;
   }
 }
