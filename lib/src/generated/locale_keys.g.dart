@@ -307,6 +307,7 @@ abstract class LocaleKeys {
   static const alreadyUsingApp = 'alreadyUsingApp';
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
+  static const amount = 'amount';
   static const analysisFirstRows = 'analysisFirstRows';
   static const analysisFirstRowsWithLockedRecords = 'analysisFirstRowsWithLockedRecords';
   static const analyzingFirstRows = 'analyzingFirstRows';
@@ -325,6 +326,7 @@ abstract class LocaleKeys {
   static const appearanceRows = 'appearanceRows';
   static const appearanceRowsExplanation = 'appearanceRowsExplanation';
   static const appearanceType = 'appearanceType';
+  static const appliedBalance = 'appliedBalance';
   static const approval = 'approval';
   static const approvalBrickDescription = 'approvalBrickDescription';
   static const approvalOrDenial = 'approvalOrDenial';
@@ -684,6 +686,7 @@ abstract class LocaleKeys {
   static const drawingBrickDescription = 'drawingBrickDescription';
   static const dropDown = 'dropDown';
   static const dropDownBrickDescription = 'dropDownBrickDescription';
+  static const dueEuros = 'dueEuros';
   static const dummyMode = 'dummyMode';
   static const dummyModeDescription = 'dummyModeDescription';
   static const duplicate = 'duplicate';
@@ -748,6 +751,7 @@ abstract class LocaleKeys {
   static const entry = 'entry';
   static const error = 'error';
   static const errorCannotFindTile = 'errorCannotFindTile';
+  static const errorDuringLoading = 'errorDuringLoading';
   static const errorFlowStepSpec = 'errorFlowStepSpec';
   static const errorInExpression = 'errorInExpression';
   static const errorMissingSettings = 'errorMissingSettings';
@@ -1305,6 +1309,7 @@ abstract class LocaleKeys {
   static const invoice = 'invoice';
   static const invoiceApproved = 'invoiceApproved';
   static const invoiceBrickDescription = 'invoiceBrickDescription';
+  static const invoiceDetails = 'invoiceDetails';
   static const invoiceScreenTitle = 'invoiceScreenTitle';
   static const itManagement = 'itManagement';
   static const itemBrick = 'itemBrick';
@@ -1684,6 +1689,7 @@ abstract class LocaleKeys {
   static const processingRecords = 'processingRecords';
   static const processingRecordsProgress = 'processingRecordsProgress';
   static const processingSelectedRecords = 'processingSelectedRecords';
+  static const productName = 'productName';
   static const profile = 'profile';
   static const profilePicture = 'profilePicture';
   static const prohibitMultipleSubmit = 'prohibitMultipleSubmit';
@@ -1988,6 +1994,7 @@ abstract class LocaleKeys {
   static const submitButtonLabel = 'submitButtonLabel';
   static const submitIcon = 'submitIcon';
   static const subscribeToNewsletter = 'subscribeToNewsletter';
+  static const subtotal = 'subtotal';
   static const successMessage = 'successMessage';
   static const successful = 'successful';
   static const suffixForSum = 'suffixForSum';
@@ -2122,6 +2129,7 @@ abstract class LocaleKeys {
   static const unknownJobType = 'unknownJobType';
   static const unknownList = 'unknownList';
   static const unknownTeam = 'unknownTeam';
+  static const unknownUserName = 'unknownUserName';
   static const unknownVariable = 'unknownVariable';
   static const unlock = 'unlock';
   static const unlockFilter = 'unlockFilter';

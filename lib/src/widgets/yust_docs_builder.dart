@@ -2,6 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import 'yust_doc_builder.dart';
 
 class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
@@ -9,6 +11,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   final List<YustFilter>? filters;
   final List<YustOrderBy>? orderBy;
   final bool showLoadingSpinner;
+  final bool showErrorScreen;
   final Widget? loadingIndicator;
   final int? limit;
 
@@ -21,6 +24,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
     this.filters,
     this.orderBy,
     this.showLoadingSpinner = false,
+    this.showErrorScreen = true,
     this.loadingIndicator,
     this.limit,
     required this.builder,
@@ -72,14 +76,18 @@ class YustDocsBuilderState<T extends YustDoc>
     return StreamBuilder<List<T>>(
       stream: _docStream,
       builder: (context, snapshot) {
-        final opts = YustBuilderInsights.fromSnapshot(snapshot);
-        if (opts.status == YustBuilderStatus.waiting &&
+        final insights = YustBuilderInsights.fromSnapshot(snapshot);
+        if (insights.status == YustBuilderStatus.waiting &&
             widget.showLoadingSpinner) {
           return widget.loadingIndicator != null
               ? widget.loadingIndicator!
               : const Center(child: CircularProgressIndicator());
         }
-        return widget.builder(snapshot.data ?? [], opts, context);
+        if (insights.status == YustBuilderStatus.error &&
+            widget.showLoadingSpinner) {
+          return Center(child: Text(LocaleKeys.errorDuringLoading.tr(), style: const TextStyle(color: Colors.red)));
+        }
+        return widget.builder(snapshot.data ?? [], insights, context);
       },
     );
   }
