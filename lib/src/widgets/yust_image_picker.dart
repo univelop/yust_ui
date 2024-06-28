@@ -15,9 +15,9 @@ import '../generated/locale_keys.g.dart';
 
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
-  'high': {'quality': 100, 'size': 2000},
-  'medium': {'quality': 90, 'size': 1200},
-  'low': {'quality': 80, 'size': 800},
+  'high': {'quality': 90, 'size': 2000},
+  'medium': {'quality': 80, 'size': 1200},
+  'low': {'quality': 70, 'size': 800},
 };
 
 final yustAllowedImageExtensions = [
@@ -615,8 +615,12 @@ class YustImagePickerState extends State<YustImagePicker> {
     final sanitizedPath = _sanitizeFilePath(path);
     if (resize) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
-      bytes = await YustUi.fileHelpers
-          .resizeImage(name: sanitizedPath, bytes: bytes!, maxWidth: size);
+      final quality = yustImageQuality[widget.yustQuality]!['quality']!;
+
+      Future<Uint8List?> helper(_) => YustUi.fileHelpers.resizeImage(
+          name: sanitizedPath, bytes: bytes!, maxWidth: size, quality: quality);
+
+      bytes = await compute(helper, null);
     }
 
     final newImageName = '${Yust.helpers.randomString(length: 16)}.jpeg';
