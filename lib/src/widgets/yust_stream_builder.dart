@@ -30,10 +30,8 @@ class YustStreamBuilderState<T extends YustDoc>
     return StreamBuilder<T?>(
       stream: widget.stream,
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          throw snapshot.error!;
-        }
-        if (snapshot.connectionState == ConnectionState.waiting &&
+        final opts = YustBuilderInsights.fromSnapshot(snapshot);
+        if (opts.status == YustBuilderStatus.waiting &&
             widget.showLoadingSpinner) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -41,9 +39,6 @@ class YustStreamBuilderState<T extends YustDoc>
         if (doc == null && widget.createIfNull) {
           doc = widget.init();
         }
-        final opts = YustBuilderInsights(
-          waiting: snapshot.connectionState == ConnectionState.waiting,
-        );
         return widget.builder(doc, opts, context);
       },
     );

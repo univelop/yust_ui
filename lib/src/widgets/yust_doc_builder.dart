@@ -4,10 +4,31 @@ import 'package:yust/yust.dart';
 
 import 'yust_stream_builder.dart';
 
-class YustBuilderInsights {
-  bool? waiting;
+enum YustBuilderStatus {
+  waiting,
+  done,
+  error;
+}
 
-  YustBuilderInsights({this.waiting});
+class YustBuilderInsights {
+  final YustBuilderStatus status;
+  final Object? error;
+
+  YustBuilderInsights(
+    this.status, [
+    this.error,
+  ]);
+
+  static YustBuilderInsights fromSnapshot(AsyncSnapshot snapshot) {
+    return YustBuilderInsights(
+      snapshot.hasError
+          ? YustBuilderStatus.error
+          : snapshot.connectionState == ConnectionState.waiting
+              ? YustBuilderStatus.waiting
+              : YustBuilderStatus.done,
+      snapshot.error,
+    );
+  }
 }
 
 class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
