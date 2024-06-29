@@ -136,18 +136,34 @@ class YustFileHelpers {
   Future<Uint8List?> resizeImage(
       {required String name,
       required Uint8List bytes,
-      int maxWidth = 1024}) async {
+      int maxWidth = 1024,
+      int quality = 80}) async {
+    image_lib.Image? newImage;
     var originalImage = image_lib.decodeNamedImage(name, bytes)!;
-    image_lib.Image newImage = originalImage;
+
+    newImage = originalImage;
     if (originalImage.width > originalImage.height &&
         originalImage.width > maxWidth) {
-      newImage = image_lib.copyResize(originalImage, width: maxWidth);
+      newImage = kIsWeb
+          ? await _resizeWeb(
+              name: name,
+              bytes: bytes,
+              width: maxWidth,
+              height: (originalImage.height * maxWidth / originalImage.width)
+                  .round())
+          : image_lib.copyResize(originalImage, width: maxWidth);
     } else if (originalImage.height > originalImage.width &&
         originalImage.height > maxWidth) {
-      newImage = image_lib.copyResize(originalImage, height: maxWidth);
+      newImage = kIsWeb
+          ? await _resizeWeb(
+              name: name,
+              bytes: bytes,
+              width: (originalImage.width * maxWidth / originalImage.height)
+                  .round(),
+              height: maxWidth)
+          : image_lib.copyResize(originalImage, height: maxWidth);
     }
-
-    name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
+    if (newImage == null) return null;
 
     final exif = originalImage.exif;
 
@@ -162,6 +178,37 @@ class YustFileHelpers {
 
     newImage.exif = exif;
 
-    return image_lib.encodeNamedImage(name, newImage);
+    return image_lib.encodeJpg(newImage, quality: quality);
+  }
+
+  Future<image_lib.Image?> _resizeWeb(
+      {required String name,
+      required Uint8List bytes,
+      required int width,
+      required int height}) async {
+    var base64 = base64Encode(bytes);
+    var newImg = html.ImageElement();
+    var mimeType =
+        'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
+    newImg.src = 'data:$mimeType;base64,$base64';
+
+    await newImg.onLoad.first;
+
+    var canvas = html.CanvasElement(width: width, height: height);
+    var ctx = canvas.context2D;
+
+    ctx.drawImageScaled(newImg, 0, 0, width, height);
+
+    final newBytes = await _getBlobData(await canvas.toBlob('image/png'));
+
+    return image_lib.decodePng(newBytes);
+  }
+
+  Future<Uint8List> _getBlobData(html.Blob blob) {
+    final completer = Completer<Uint8List>();
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(blob);
+    reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
+    return completer.future;
   }
 }
