@@ -395,6 +395,13 @@ class YustFilePickerState extends State<YustFilePicker> {
 
     for (final fileData in fileData) {
       final (name, file, bytes) = await fileDataExtractor(fileData);
+
+      final filesExtensionsValid = await checkFileExtension(name);
+      if (!filesExtensionsValid) return;
+
+      final existingFileNamesValid = await _checkExistingFileNames(name);
+      if (!existingFileNamesValid) return;
+
       await uploadFile(
         name: name,
         file: file,
@@ -443,6 +450,38 @@ class YustFilePickerState extends State<YustFilePicker> {
     return true;
   }
 
+  Future<bool> checkFileExtension<T>(String fileName) async {
+    final extension = fileName.split('.').last;
+    if (widget.allowedExtensions != null &&
+        !widget.allowedExtensions!.contains(extension)) {
+      unawaited(YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          widget.allowedExtensions!.isEmpty
+              ? LocaleKeys.alertNoAllowedExtensions.tr()
+              : LocaleKeys.alertAllowedExtensions.tr(namedArgs: {
+                  'allowedExtensions': widget.allowedExtensions!.join(', ')
+                })));
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _checkExistingFileNames(String fileName) async {
+    if (_fileHandler.getFiles().any((file) => file.name == fileName)) {
+      final confirmed = await YustUi.alertService.showConfirmation(
+          LocaleKeys.alertFileAlreadyExists
+              .tr(namedArgs: {'fileName': fileName}),
+          LocaleKeys.continue_.tr());
+      if (confirmed == false) return false;
+
+      final fileToDelete = _fileHandler.getFiles().firstWhere(
+          (file) => file.name == fileName,
+          orElse: () => YustFile());
+      await _fileHandler.deleteFile(fileToDelete);
+    }
+    return true;
+  }
+
   Future<void> _deleteFiles(List<YustFile> files) async {
     for (final yustFile in files) {
       await _fileHandler.deleteFile(yustFile);
@@ -459,19 +498,6 @@ class YustFilePickerState extends State<YustFilePicker> {
     Uint8List? bytes,
     callSetState = true,
   }) async {
-    final extension = name.split('.').last;
-    if (widget.allowedExtensions != null &&
-        !widget.allowedExtensions!.contains(extension)) {
-      unawaited(YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          widget.allowedExtensions!.isEmpty
-              ? LocaleKeys.alertNoAllowedExtensions.tr()
-              : LocaleKeys.alertAllowedExtensions.tr(namedArgs: {
-                  'allowedExtensions': widget.allowedExtensions!.join(', ')
-                })));
-      return;
-    }
-
     final newYustFile = YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),
@@ -486,15 +512,9 @@ class YustFilePickerState extends State<YustFilePicker> {
       setState(() {});
     }
 
-    if (fileExists(newYustFile.name)) {
-      await YustUi.alertService.showAlert(
-          LocaleKeys.notPossible.tr(),
-          LocaleKeys.alertFileAlreadyExists
-              .tr(namedArgs: {'fileName': newYustFile.name ?? ''}));
-    } else {
-      await _createDatabaseEntry();
-      await _fileHandler.addFile(newYustFile);
-    }
+    await _createDatabaseEntry();
+    await _fileHandler.addFile(newYustFile);
+
     _processing[newYustFile.name] = false;
     widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted && callSetState) {
