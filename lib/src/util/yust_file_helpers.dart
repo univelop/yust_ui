@@ -138,54 +138,49 @@ class YustFileHelpers {
       required Uint8List bytes,
       int maxWidth = 1024,
       int quality = 80}) async {
-    image_lib.Image? newImage;
-    var originalImage = image_lib.decodeNamedImage(name, bytes)!;
+    final extension = name.split('.').last;
+    if (kIsWeb && ['jpg', 'jpeg'].contains(extension.toLowerCase())) {
+      final exif = image_lib.decodeJpgExif(bytes);
+      final newBytes =
+          await _resizeWeb(name: name, bytes: bytes, maxWidth: maxWidth);
+      if (exif == null) return newBytes;
+      final newBytesWithExif = image_lib.injectJpgExif(newBytes, exif);
+      return newBytesWithExif;
+    } else if (kIsWeb) {
+      return await _resizeWeb(name: name, bytes: bytes, maxWidth: maxWidth);
+    } else {
+      image_lib.Image? newImage;
+      var originalImage = image_lib.decodeNamedImage(name, bytes)!;
+      newImage = originalImage;
+      if (originalImage.width > originalImage.height &&
+          originalImage.width > maxWidth) {
+        newImage = image_lib.copyResize(originalImage, width: maxWidth);
+      } else if (originalImage.height > originalImage.width &&
+          originalImage.height > maxWidth) {
+        newImage = image_lib.copyResize(originalImage, height: maxWidth);
+      }
 
-    newImage = originalImage;
-    if (originalImage.width > originalImage.height &&
-        originalImage.width > maxWidth) {
-      newImage = kIsWeb
-          ? await _resizeWeb(
-              name: name,
-              bytes: bytes,
-              width: maxWidth,
-              height: (originalImage.height * maxWidth / originalImage.width)
-                  .round())
-          : image_lib.copyResize(originalImage, width: maxWidth);
-    } else if (originalImage.height > originalImage.width &&
-        originalImage.height > maxWidth) {
-      newImage = kIsWeb
-          ? await _resizeWeb(
-              name: name,
-              bytes: bytes,
-              width: (originalImage.width * maxWidth / originalImage.height)
-                  .round(),
-              height: maxWidth)
-          : image_lib.copyResize(originalImage, height: maxWidth);
+      final exif = originalImage.exif;
+
+      // Orientation is baked into the image, so we can set it to no rotation
+      exif.imageIfd.orientation = 1;
+      // Size is changed, so we need to update the resolution
+      exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
+      exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
+      exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
+      exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
+      exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+
+      newImage.exif = exif;
+
+      return image_lib.encodeJpg(newImage, quality: quality);
     }
-    if (newImage == null) return null;
-
-    final exif = originalImage.exif;
-
-    // Orientation is baked into the image, so we can set it to no rotation
-    exif.imageIfd.orientation = 1;
-    // Size is changed, so we need to update the resolution
-    exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
-    exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
-    exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
-    exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
-    exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
-
-    newImage.exif = exif;
-
-    return image_lib.encodeJpg(newImage, quality: quality);
   }
 
-  Future<image_lib.Image?> _resizeWeb(
+  Future<Uint8List> _resizeWeb(
       {required String name,
       required Uint8List bytes,
-      required int width,
-      required int height}) async {
+      required int maxWidth}) async {
     var base64 = base64Encode(bytes);
     var newImg = html.ImageElement();
     var mimeType =
@@ -194,14 +189,23 @@ class YustFileHelpers {
 
     await newImg.onLoad.first;
 
+    int width = newImg.width!;
+    int height = newImg.height!;
+
+    if (newImg.width! > newImg.height! && newImg.width! > maxWidth) {
+      width = maxWidth;
+      height = (width * newImg.height! / newImg.width!).round();
+    } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
+      height = maxWidth;
+      width = (height * newImg.width! / newImg.height!).round();
+    }
+
     var canvas = html.CanvasElement(width: width, height: height);
     var ctx = canvas.context2D;
 
     ctx.drawImageScaled(newImg, 0, 0, width, height);
 
-    final newBytes = await _getBlobData(await canvas.toBlob('image/png'));
-
-    return image_lib.decodePng(newBytes);
+    return await _getBlobData(await canvas.toBlob('image/png'));
   }
 
   Future<Uint8List> _getBlobData(html.Blob blob) {
