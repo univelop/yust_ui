@@ -133,21 +133,14 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
-  Future<Uint8List?> resizeImage(
+  Future<Uint8List> resizeImage(
       {required String name,
       required Uint8List bytes,
       int maxWidth = 1024,
       int quality = 80}) async {
-    final extension = name.split('.').last;
-    if (kIsWeb && ['jpg', 'jpeg'].contains(extension.toLowerCase())) {
-      final exif = image_lib.decodeJpgExif(bytes);
-      final newBytes =
-          await _resizeWeb(name: name, bytes: bytes, maxWidth: maxWidth);
-      if (exif == null) return newBytes;
-      final newBytesWithExif = image_lib.injectJpgExif(newBytes, exif);
-      return newBytesWithExif;
-    } else if (kIsWeb) {
-      return await _resizeWeb(name: name, bytes: bytes, maxWidth: maxWidth);
+    if (kIsWeb) {
+      return await _resizeWeb(
+          name: name, bytes: bytes, maxWidth: maxWidth, quality: quality);
     } else {
       image_lib.Image? newImage;
       var originalImage = image_lib.decodeNamedImage(name, bytes)!;
@@ -180,7 +173,8 @@ class YustFileHelpers {
   Future<Uint8List> _resizeWeb(
       {required String name,
       required Uint8List bytes,
-      required int maxWidth}) async {
+      required int maxWidth,
+      required int quality}) async {
     var base64 = base64Encode(bytes);
     var newImg = html.ImageElement();
     var mimeType =
@@ -205,7 +199,7 @@ class YustFileHelpers {
 
     ctx.drawImageScaled(newImg, 0, 0, width, height);
 
-    return await _getBlobData(await canvas.toBlob('image/png'));
+    return await _getBlobData(await canvas.toBlob('image/jpeg', quality / 100));
   }
 
   Future<Uint8List> _getBlobData(html.Blob blob) {
