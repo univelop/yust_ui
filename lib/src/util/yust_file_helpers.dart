@@ -133,35 +133,80 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
-  Future<Uint8List?> resizeImage(
+  Future<Uint8List> resizeImage(
       {required String name,
       required Uint8List bytes,
-      int maxWidth = 1024}) async {
-    var originalImage = image_lib.decodeNamedImage(name, bytes)!;
-    image_lib.Image newImage = originalImage;
-    if (originalImage.width > originalImage.height &&
-        originalImage.width > maxWidth) {
-      newImage = image_lib.copyResize(originalImage, width: maxWidth);
-    } else if (originalImage.height > originalImage.width &&
-        originalImage.height > maxWidth) {
-      newImage = image_lib.copyResize(originalImage, height: maxWidth);
+      int maxWidth = 1024,
+      int quality = 80}) async {
+    if (kIsWeb) {
+      return await _resizeWeb(
+          name: name, bytes: bytes, maxWidth: maxWidth, quality: quality);
+    } else {
+      image_lib.Image? newImage;
+      var originalImage = image_lib.decodeNamedImage(name, bytes)!;
+      newImage = originalImage;
+      if (originalImage.width > originalImage.height &&
+          originalImage.width > maxWidth) {
+        newImage = image_lib.copyResize(originalImage, width: maxWidth);
+      } else if (originalImage.height > originalImage.width &&
+          originalImage.height > maxWidth) {
+        newImage = image_lib.copyResize(originalImage, height: maxWidth);
+      }
+
+      final exif = originalImage.exif;
+
+      // Orientation is baked into the image, so we can set it to no rotation
+      exif.imageIfd.orientation = 1;
+      // Size is changed, so we need to update the resolution
+      exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
+      exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
+      exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
+      exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
+      exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+
+      newImage.exif = exif;
+
+      return image_lib.encodeJpg(newImage, quality: quality);
+    }
+  }
+
+  Future<Uint8List> _resizeWeb(
+      {required String name,
+      required Uint8List bytes,
+      required int maxWidth,
+      required int quality}) async {
+    var base64 = base64Encode(bytes);
+    var newImg = html.ImageElement();
+    var mimeType =
+        'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
+    newImg.src = 'data:$mimeType;base64,$base64';
+
+    await newImg.onLoad.first;
+
+    int width = newImg.width!;
+    int height = newImg.height!;
+
+    if (newImg.width! > newImg.height! && newImg.width! > maxWidth) {
+      width = maxWidth;
+      height = (width * newImg.height! / newImg.width!).round();
+    } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
+      height = maxWidth;
+      width = (height * newImg.width! / newImg.height!).round();
     }
 
-    name = name.replaceAll(RegExp(r'\.[^.]+$'), '.jpeg');
+    var canvas = html.CanvasElement(width: width, height: height);
+    var ctx = canvas.context2D;
 
-    final exif = originalImage.exif;
+    ctx.drawImageScaled(newImg, 0, 0, width, height);
 
-    // Orientation is baked into the image, so we can set it to no rotation
-    exif.imageIfd.orientation = 1;
-    // Size is changed, so we need to update the resolution
-    exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
-    exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
-    exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
-    exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
-    exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+    return await _getBlobData(await canvas.toBlob('image/jpeg', quality / 100));
+  }
 
-    newImage.exif = exif;
-
-    return image_lib.encodeNamedImage(name, newImage);
+  Future<Uint8List> _getBlobData(html.Blob blob) {
+    final completer = Completer<Uint8List>();
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(blob);
+    reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
+    return completer.future;
   }
 }
