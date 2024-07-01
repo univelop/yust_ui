@@ -1,3 +1,7 @@
+## 3.23.2 - 2024-07-01
+
+- Image Resizing Fixes
+
 ## 3.23.1 - 2024-06-27
 
 - Add Drag & Drop to Image Picker
