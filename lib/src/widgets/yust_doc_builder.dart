@@ -4,10 +4,31 @@ import 'package:yust/yust.dart';
 
 import 'yust_stream_builder.dart';
 
-class YustBuilderInsights {
-  bool? waiting;
+enum YustBuilderStatus {
+  waiting,
+  done,
+  error;
+}
 
-  YustBuilderInsights({this.waiting});
+class YustBuilderInsights {
+  final YustBuilderStatus status;
+  final Object? error;
+
+  YustBuilderInsights(
+    this.status, [
+    this.error,
+  ]);
+
+  static YustBuilderInsights fromSnapshot(AsyncSnapshot snapshot) {
+    return YustBuilderInsights(
+      snapshot.hasError
+          ? YustBuilderStatus.error
+          : snapshot.connectionState == ConnectionState.waiting
+              ? YustBuilderStatus.waiting
+              : YustBuilderStatus.done,
+      snapshot.error,
+    );
+  }
 }
 
 class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
@@ -16,6 +37,7 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
   final List<YustFilter>? filters;
   final List<YustOrderBy>? orderBy;
   final bool showLoadingSpinner;
+  final bool showErrorScreen;
   final bool createIfNull;
   final Widget Function(T?, YustBuilderInsights, BuildContext) builder;
 
@@ -26,6 +48,7 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
     this.filters,
     this.orderBy,
     this.showLoadingSpinner = false,
+    this.showErrorScreen = true,
     this.createIfNull = false,
     required this.builder,
   });
@@ -88,6 +111,7 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
     return YustStreamBuilder(
       stream: _docStream!,
       showLoadingSpinner: widget.showLoadingSpinner,
+      showErrorScreen: widget.showErrorScreen,
       createIfNull: widget.createIfNull,
       init: () => Yust.databaseService.initDoc<T>(widget.modelSetup),
       builder: widget.builder,
