@@ -1,3 +1,8 @@
+## 3.23.3 - 2024-07-09
+
+- Improve YustInsights
+
+
 ## 3.23.2 - 2024-07-01
 
 - Image Resizing Fixes
