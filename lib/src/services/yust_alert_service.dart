@@ -90,6 +90,7 @@ class YustAlertService {
     String initialText = '',
     bool obscureText = false,
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
+
     /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
     Widget Function({required TextEditingController controller})? suffixIcon,
@@ -344,13 +345,12 @@ class YustAlertService {
   }) async {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
-    var selectAll =
-        priorOptionValues.length == optionValues.length ? false : true;
     await showDialog<List<String>>(
         context: context,
         builder: (context) {
           return StatefulBuilder(
             builder: ((context, setState) {
+              var selectAll = newItemIds.length != optionValues.length;
               return SimpleDialog(
                 title: Text(title ?? LocaleKeys.mandatoryFields.tr()),
                 children: [
@@ -370,7 +370,6 @@ class YustAlertService {
                             if (selectAll) {
                               newItemIds.addAll(optionValues);
                             }
-                            selectAll = !selectAll;
                           });
                         },
                         child: selectAll
@@ -383,6 +382,9 @@ class YustAlertService {
                     optionValues: optionValues,
                     optionLabels: optionLabels,
                     selectedValues: newItemIds,
+                    onChanged: () {
+                      setState(() {});
+                    },
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
