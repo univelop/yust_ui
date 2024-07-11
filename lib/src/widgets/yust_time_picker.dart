@@ -174,7 +174,6 @@ class _YustTimePickerState extends State<YustTimePicker> {
   void _setTime(DateTime? dateTime) {
     setState(() {
       final oldValue = _controller.text;
-      _maskFormatter.clear();
       _controller.text = Yust.helpers.formatTime(dateTime);
       _maskFormatter.formatEditUpdate(TextEditingValue(text: oldValue),
           TextEditingValue(text: _controller.text));
