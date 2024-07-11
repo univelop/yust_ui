@@ -11,6 +11,9 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final bool Function(T doc)? hideItem;
   final ScrollController? scrollController;
   final Widget? emptyInfo;
+  final Widget? loadingWidget;
+  final Widget Function(BuildContext context, Object error, StackTrace trace)?
+      errorBuilder;
   final bool reverse;
 
   const YustPaginatedListView({
@@ -22,6 +25,8 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.hideItem,
     this.scrollController,
     this.emptyInfo,
+    this.loadingWidget,
+    this.errorBuilder,
     this.reverse = false,
   });
 
@@ -40,10 +45,16 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       query: query,
       reverse: reverse,
       pageSize: 50,
-      loadingBuilder: (_) => SingleChildScrollView(
-        controller: scrollController,
-        child: const Center(child: CircularProgressIndicator()),
-      ),
+      errorBuilder: errorBuilder ??
+          (context, error, trace) => Center(
+                child: Text(error.toString()),
+              ),
+      loadingBuilder: (_) =>
+          loadingWidget ??
+          SingleChildScrollView(
+            controller: scrollController,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
     );
   }
 
