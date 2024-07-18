@@ -1,37 +1,40 @@
+## 3.23.4 - 2024-07-18
+
+-   Support upload of non-converted images
+
 ## 3.23.3 - 2024-07-09
 
-- Improve YustInsights
-
+-   Improve YustInsights
 
 ## 3.23.2 - 2024-07-01
 
-- Image Resizing Fixes
+-   Image Resizing Fixes
 
 ## 3.23.1 - 2024-06-27
 
-- Add Drag & Drop to Image Picker
-  
+-   Add Drag & Drop to Image Picker
+
 ## 3.23.0 - 2024-06-11
 
-- Realign YustUI & Yust-Version
+-   Realign YustUI & Yust-Version
 
 ## 3.22.3 - 2024-06-11
 
-- Added `completeOnUnfocus` to YustNumberField
+-   Added `completeOnUnfocus` to YustNumberField
 
 ## 3.22.2 - 2024-06-07
 
-- Improvements of YustTextField
-- Improvements of YustNumberField
-- Improvements of YustTimePicker
+-   Improvements of YustTextField
+-   Improvements of YustNumberField
+-   Improvements of YustTimePicker
 
 ## 3.22.1 - 2024-05-31
 
-- Correctly show `suffixChild` in different YustWidgets
+-   Correctly show `suffixChild` in different YustWidgets
 
 ## 3.22.0 - 2024-05-30
 
-- Make yust_ui ready for Flutter 3.22.1
+-   Make yust_ui ready for Flutter 3.22.1
 
 ## 3.21.0 - 2024-05-14
 
