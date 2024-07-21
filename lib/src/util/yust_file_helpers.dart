@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
+// ignore: implementation_imports
 import 'package:image/src/util/rational.dart';
 
 import '../extensions/string_translate_extension.dart';

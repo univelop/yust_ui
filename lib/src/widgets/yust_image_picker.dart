@@ -544,7 +544,6 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Future<void> _pickImages(ImageSource imageSource) async {
     YustUi.helpers.unfocusCurrent();
-    final quality = yustImageQuality[widget.yustQuality]!['quality']!;
     if (!kIsWeb) {
       // Request Location Permission for GPS Data
       await Permission.accessMediaLocation.request();
