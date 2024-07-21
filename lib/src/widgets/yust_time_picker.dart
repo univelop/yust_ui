@@ -173,8 +173,10 @@ class _YustTimePickerState extends State<YustTimePicker> {
   // Make sure the [dateTime] is in utc
   void _setTime(DateTime? dateTime) {
     setState(() {
-      _maskFormatter.clear();
+      final oldValue = _controller.text;
       _controller.text = Yust.helpers.formatTime(dateTime);
+      _maskFormatter.formatEditUpdate(TextEditingValue(text: oldValue),
+          TextEditingValue(text: _controller.text));
     });
     widget.onChanged!(dateTime);
   }

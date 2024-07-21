@@ -62,6 +62,7 @@ class YustImagePicker extends StatefulWidget {
   final bool overwriteSingleFile;
   final bool enableDropzone;
   final Widget? suffixIcon;
+  final bool convertToJPEG;
 
   /// default is 15
   final int imageCount;
@@ -75,6 +76,7 @@ class YustImagePicker extends StatefulWidget {
     this.multiple = false,
     this.numberOfFiles,
     this.suffixIcon,
+    this.convertToJPEG = true,
     required this.images,
     this.zoomable = false,
     this.onChanged,
@@ -611,9 +613,10 @@ class YustImagePickerState extends State<YustImagePicker> {
     File? file,
     Uint8List? bytes,
     bool resize = false,
+    bool convertToJPEG = true,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
-    if (resize) {
+    if (resize && widget.convertToJPEG) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       final quality = yustImageQuality[widget.yustQuality]!['quality']!;
 
@@ -623,7 +626,11 @@ class YustImagePickerState extends State<YustImagePicker> {
       bytes = await compute(helper, null);
     }
 
-    final newImageName = '${Yust.helpers.randomString(length: 16)}.jpeg';
+    convertToJPEG = widget.convertToJPEG;
+    final newImageName = convertToJPEG
+        ? '${Yust.helpers.randomString(length: 16)}.jpeg'
+        : '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
+
     final newYustFile = YustFile(
       name: newImageName,
       file: file,
