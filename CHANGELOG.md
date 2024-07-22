@@ -1,3 +1,7 @@
+## 3.23.6 - 2024-07-22
+
+-   Bump dependency
+
 ## 3.23.5 - 2024-07-21
 
 -   Automatically add geo-location EXIF data to captured images

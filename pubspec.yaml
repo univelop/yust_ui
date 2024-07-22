@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.23.5
+version: 3.23.6
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -34,7 +34,7 @@ dependencies:
     shared_preferences: ^2.2.2
     universal_html: ^2.0.8
     url_launcher: ^6.2.2
-    firebase_ui_firestore: ^1.6.0
+    firebase_ui_firestore: ^1.6.3
     # Remove this, when the Samsung Keyboard Bug
     # (github.com/flutter/flutter/issues/61175) is resolved
     keyboard_name: ^0.0.1
