@@ -269,7 +269,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryIconTheme.color,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.surface,
               ),
               onPressed: () {
