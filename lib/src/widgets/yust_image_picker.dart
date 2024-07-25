@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_dropzone_list_tile.dart';
 import 'package:yust_ui/yust_ui.dart';
@@ -268,7 +269,7 @@ class YustImagePickerState extends State<YustImagePicker> {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryIconTheme.color,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.surface,
               ),
               onPressed: () {
@@ -463,10 +464,9 @@ class YustImagePickerState extends State<YustImagePicker> {
     );
   }
 
-  Future<void> checkAndUploadImages<T>(
-    List<T> images,
-    Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor,
-  ) async {
+  Future<void> checkAndUploadImages<T>(List<T> images,
+      Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor,
+      {bool setGPSToLocation = false}) async {
     await EasyLoading.show(status: LocaleKeys.addingImages.tr());
 
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -527,13 +527,13 @@ class YustImagePickerState extends State<YustImagePicker> {
       }
 
       await uploadFile(
-        path: path,
-        file: file,
-        bytes: bytes,
-        // Because of the reason stated above,
-        // we need to do the resizing ourself
-        resize: true,
-      );
+          path: path,
+          file: file,
+          bytes: bytes,
+          // Because of the reason stated above,
+          // we need to do the resizing ourself
+          resize: true,
+          setGPSToLocation: setGPSToLocation);
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(pictureFiles);
@@ -544,35 +544,28 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   Future<void> _pickImages(ImageSource imageSource) async {
     YustUi.helpers.unfocusCurrent();
-    final quality = yustImageQuality[widget.yustQuality]!['quality']!;
     if (!kIsWeb) {
+      // Request Location Permission for GPS Data
+      await Permission.accessMediaLocation.request();
+      await Permission.locationWhenInUse.request();
+
       final picker = ImagePicker();
       // ignore: deprecated_member_use_from_same_package
       if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
           imageSource == ImageSource.gallery) {
-        final images = await picker.pickMultiImage(
-          // We don't use maxHeight & maxWidth for now, as there are some
-          // image-orientation problems with iOS when the image is smaller(!),
-          // than maxHeight/-Width
-          imageQuality: quality,
-        );
+        final images = await picker.pickMultiImage();
 
         await checkAndUploadImages(images, (image) async {
           final file = File(image.path);
           return (image.path, file, null);
         });
       } else {
-        final image = await picker.pickImage(
-            source: imageSource,
-            // We don't use maxHeight & maxWidth for now, as there are some
-            // image-orientation problems with iOS when the image is smaller(!),
-            // than maxHeight/-Width
-            imageQuality: quality);
+        final image = await picker.pickImage(source: imageSource);
         if (image != null) {
           await checkAndUploadImages([image], (image) async {
             final file = File(image.path);
             return (image.path, file, null);
-          });
+          }, setGPSToLocation: imageSource == ImageSource.camera);
         }
       }
     }
@@ -614,16 +607,20 @@ class YustImagePickerState extends State<YustImagePicker> {
     Uint8List? bytes,
     bool resize = false,
     bool convertToJPEG = true,
+    bool setGPSToLocation = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
     if (resize && widget.convertToJPEG) {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       final quality = yustImageQuality[widget.yustQuality]!['quality']!;
 
-      Future<Uint8List?> helper(_) => YustUi.fileHelpers.resizeImage(
-          name: sanitizedPath, bytes: bytes!, maxWidth: size, quality: quality);
-
-      bytes = await compute(helper, null);
+      bytes = await YustUi.fileHelpers.resizeImage(
+          name: sanitizedPath,
+          bytes: bytes,
+          maxWidth: size,
+          quality: quality,
+          file: file,
+          setGPSToLocation: setGPSToLocation);
     }
 
     convertToJPEG = widget.convertToJPEG;
