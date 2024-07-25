@@ -436,4 +436,23 @@ class YustAlertService {
     if (context == null) return Future.value();
     return showSearch<T>(context: context, delegate: delegate);
   }
+
+  Future<T?> showMultiActionDialog<T>({
+    required String title,
+    required Widget body,
+    required List<Widget> actions,
+  }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<T?>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+            scrollable: true,
+            title: Text(title),
+            content: body,
+            actions: actions);
+      },
+    );
+  }
 }
