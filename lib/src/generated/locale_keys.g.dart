@@ -42,7 +42,8 @@ abstract class LocaleKeys {
   static const addingImage = 'addingImage';
   static const addingImages = 'addingImages';
   static const addingMemberToPortal = 'addingMemberToPortal';
-  static const addingMemberToPortalPleaseRefresh = 'addingMemberToPortalPleaseRefresh';
+  static const addingMemberToPortalPleaseRefresh =
+      'addingMemberToPortalPleaseRefresh';
   static const addingTilesExplanation = 'addingTilesExplanation';
   static const additionalQuantityBrick = 'additionalQuantityBrick';
   static const additionalScannerBrick = 'additionalScannerBrick';
@@ -69,29 +70,37 @@ abstract class LocaleKeys {
   static const alertBrickCannotBeAdded = 'alertBrickCannotBeAdded';
   static const alertBulkDeleteRecords = 'alertBulkDeleteRecords';
   static const alertCannotAddTransfer = 'alertCannotAddTransfer';
-  static const alertCannotAddUnimplementedTiles = 'alertCannotAddUnimplementedTiles';
+  static const alertCannotAddUnimplementedTiles =
+      'alertCannotAddUnimplementedTiles';
   static const alertCannotBulkDeleteMembers = 'alertCannotBulkDeleteMembers';
   static const alertCannotChangeLicense = 'alertCannotChangeLicense';
   static const alertCannotChangeLink = 'alertCannotChangeLink';
   static const alertCannotChangeOwner = 'alertCannotChangeOwner';
   static const alertCannotChangeOwnerTeam = 'alertCannotChangeOwnerTeam';
-  static const alertCannotChangeTechNameSharedList = 'alertCannotChangeTechNameSharedList';
-  static const alertCannotCreateBackgroundImage = 'alertCannotCreateBackgroundImage';
+  static const alertCannotChangeTechNameSharedList =
+      'alertCannotChangeTechNameSharedList';
+  static const alertCannotCreateBackgroundImage =
+      'alertCannotCreateBackgroundImage';
   static const alertCannotCreateFilteredTile = 'alertCannotCreateFilteredTile';
   static const alertCannotCreateFolder = 'alertCannotCreateFolder';
-  static const alertCannotCreateFolderInsideFolder = 'alertCannotCreateFolderInsideFolder';
+  static const alertCannotCreateFolderInsideFolder =
+      'alertCannotCreateFolderInsideFolder';
   static const alertCannotCreateWebTile = 'alertCannotCreateWebTile';
   static const alertCannotDelete = 'alertCannotDelete';
-  static const alertCannotDeleteBrickWithReferences = 'alertCannotDeleteBrickWithReferences';
-  static const alertCannotDeleteBrickWithRoleReferences = 'alertCannotDeleteBrickWithRoleReferences';
+  static const alertCannotDeleteBrickWithReferences =
+      'alertCannotDeleteBrickWithReferences';
+  static const alertCannotDeleteBrickWithRoleReferences =
+      'alertCannotDeleteBrickWithRoleReferences';
   static const alertCannotDeleteFile = 'alertCannotDeleteFile';
   static const alertCannotDeleteFlowStep = 'alertCannotDeleteFlowStep';
   static const alertCannotDeleteFolder = 'alertCannotDeleteFolder';
   static const alertCannotDeleteImage = 'alertCannotDeleteImage';
   static const alertCannotDeleteLastTab = 'alertCannotDeleteLastTab';
-  static const alertCannotDeleteListReferencedBricks = 'alertCannotDeleteListReferencedBricks';
+  static const alertCannotDeleteListReferencedBricks =
+      'alertCannotDeleteListReferencedBricks';
   static const alertCannotDeleteLockedRecord = 'alertCannotDeleteLockedRecord';
-  static const alertCannotDeleteLockedRecords = 'alertCannotDeleteLockedRecords';
+  static const alertCannotDeleteLockedRecords =
+      'alertCannotDeleteLockedRecords';
   static const alertCannotDeleteMembers = 'alertCannotDeleteMembers';
   static const alertCannotDeleteNotEmptyTab = 'alertCannotDeleteNotEmptyTab';
   static const alertCannotDeleteSharedList = 'alertCannotDeleteSharedList';
@@ -118,7 +127,8 @@ abstract class LocaleKeys {
   static const alertCannotSetMandatoryFields = 'alertCannotSetMandatoryFields';
   static const alertCannotSetStatus = 'alertCannotSetStatus';
   static const alertCannotShareTwice = 'alertCannotShareTwice';
-  static const alertCannotShareWithCurrentWorkspace = 'alertCannotShareWithCurrentWorkspace';
+  static const alertCannotShareWithCurrentWorkspace =
+      'alertCannotShareWithCurrentWorkspace';
   static const alertCannotStartSharing = 'alertCannotStartSharing';
   static const alertCannotStopSharing = 'alertCannotStopSharing';
   static const alertCannotUseBrick = 'alertCannotUseBrick';
@@ -129,17 +139,20 @@ abstract class LocaleKeys {
   static const alertCheckFields = 'alertCheckFields';
   static const alertComingSoon = 'alertComingSoon';
   static const alertConfirmDeleteUserByEmail = 'alertConfirmDeleteUserByEmail';
-  static const alertConfirmDeleteUserByPassword = 'alertConfirmDeleteUserByPassword';
+  static const alertConfirmDeleteUserByPassword =
+      'alertConfirmDeleteUserByPassword';
   static const alertConfirmOverwriteFile = 'alertConfirmOverwriteFile';
   static const alertCreateFormTile = 'alertCreateFormTile';
   static const alertCreateMemberTile = 'alertCreateMemberTile';
-  static const alertCreateMemberTileFromExistingRecords = 'alertCreateMemberTileFromExistingRecords';
+  static const alertCreateMemberTileFromExistingRecords =
+      'alertCreateMemberTileFromExistingRecords';
   static const alertCreatedTile = 'alertCreatedTile';
   static const alertCreatedUser = 'alertCreatedUser';
   static const alertCreatingRows = 'alertCreatingRows';
   static const alertDeleteAllImages = 'alertDeleteAllImages';
   static const alertDeleteBricksInPaths = 'alertDeleteBricksInPaths';
-  static const alertDeleteFilterMissingPermissions = 'alertDeleteFilterMissingPermissions';
+  static const alertDeleteFilterMissingPermissions =
+      'alertDeleteFilterMissingPermissions';
   static const alertDeleteFilteredRecords = 'alertDeleteFilteredRecords';
   static const alertDeleteList = 'alertDeleteList';
   static const alertDeleteLockedRecords = 'alertDeleteLockedRecords';
@@ -154,7 +167,8 @@ abstract class LocaleKeys {
   static const alertDirectoryNotSet = 'alertDirectoryNotSet';
   static const alertDocumentAlreadyExisting = 'alertDocumentAlreadyExisting';
   static const alertDuplicatesFound = 'alertDuplicatesFound';
-  static const alertEditFilterMissingPermissions = 'alertEditFilterMissingPermissions';
+  static const alertEditFilterMissingPermissions =
+      'alertEditFilterMissingPermissions';
   static const alertEditWorkflow = 'alertEditWorkflow';
   static const alertEditingLockedRecords = 'alertEditingLockedRecords';
   static const alertEmbeddingNotPossible = 'alertEmbeddingNotPossible';
@@ -166,7 +180,8 @@ abstract class LocaleKeys {
   static const alertErrorMaxBrickOne = 'alertErrorMaxBrickOne';
   static const alertErrorMaxBricks = 'alertErrorMaxBricks';
   static const alertErrorReasonColor = 'alertErrorReasonColor';
-  static const alertErrorWhileCheckingMemberTile = 'alertErrorWhileCheckingMemberTile';
+  static const alertErrorWhileCheckingMemberTile =
+      'alertErrorWhileCheckingMemberTile';
   static const alertExportError = 'alertExportError';
   static const alertExportWorkspace = 'alertExportWorkspace';
   static const alertFileAlreadyExists = 'alertFileAlreadyExists';
@@ -175,7 +190,8 @@ abstract class LocaleKeys {
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowException = 'alertFlowException';
   static const alertFlowSpecNotFound = 'alertFlowSpecNotFound';
-  static const alertFlowSpecNotFoundOrOutdated = 'alertFlowSpecNotFoundOrOutdated';
+  static const alertFlowSpecNotFoundOrOutdated =
+      'alertFlowSpecNotFoundOrOutdated';
   static const alertFolderName = 'alertFolderName';
   static const alertFormName = 'alertFormName';
   static const alertImportError = 'alertImportError';
@@ -203,14 +219,17 @@ abstract class LocaleKeys {
   static const alertMissingAddress = 'alertMissingAddress';
   static const alertMissingBackgroundImage = 'alertMissingBackgroundImage';
   static const alertMissingConnection = 'alertMissingConnection';
-  static const alertMissingConnectionAddImages = 'alertMissingConnectionAddImages';
+  static const alertMissingConnectionAddImages =
+      'alertMissingConnectionAddImages';
   static const alertMissingConnectionDrawing = 'alertMissingConnectionDrawing';
-  static const alertMissingConnectionPrintOut = 'alertMissingConnectionPrintOut';
+  static const alertMissingConnectionPrintOut =
+      'alertMissingConnectionPrintOut';
   static const alertMissingDirectory = 'alertMissingDirectory';
   static const alertMissingMemberTile = 'alertMissingMemberTile';
   static const alertMissingNewPassword = 'alertMissingNewPassword';
   static const alertMissingOldPassword = 'alertMissingOldPassword';
-  static const alertMissingPermissionMicrophone = 'alertMissingPermissionMicrophone';
+  static const alertMissingPermissionMicrophone =
+      'alertMissingPermissionMicrophone';
   static const alertMissingSheet = 'alertMissingSheet';
   static const alertMissingSignature = 'alertMissingSignature';
   static const alertMissingSignatureName = 'alertMissingSignatureName';
@@ -231,18 +250,22 @@ abstract class LocaleKeys {
   static const alertNotEnoughBricks = 'alertNotEnoughBricks';
   static const alertNumberAlreadyExists = 'alertNumberAlreadyExists';
   static const alertNumberNotFound = 'alertNumberNotFound';
-  static const alertOtherBelongsToBricksExists = 'alertOtherBelongsToBricksExists';
+  static const alertOtherBelongsToBricksExists =
+      'alertOtherBelongsToBricksExists';
   static const alertPageAlreadyOpen = 'alertPageAlreadyOpen';
   static const alertPrivateList = 'alertPrivateList';
   static const alertQueryFailed = 'alertQueryFailed';
   static const alertReachedLimitNumberBricks = 'alertReachedLimitNumberBricks';
   static const alertRecordIsLockedParent = 'alertRecordIsLockedParent';
-  static const alertRecordIsLockedPermissions = 'alertRecordIsLockedPermissions';
-  static const alertRegenerateServiceAccountKey = 'alertRegenerateServiceAccountKey';
+  static const alertRecordIsLockedPermissions =
+      'alertRecordIsLockedPermissions';
+  static const alertRegenerateServiceAccountKey =
+      'alertRegenerateServiceAccountKey';
   static const alertRemoveNumber = 'alertRemoveNumber';
   static const alertRemoveUser = 'alertRemoveUser';
   static const alertRemoveUserFirst = 'alertRemoveUserFirst';
-  static const alertRemovedInvalidRoleConfigurations = 'alertRemovedInvalidRoleConfigurations';
+  static const alertRemovedInvalidRoleConfigurations =
+      'alertRemovedInvalidRoleConfigurations';
   static const alertRequestError = 'alertRequestError';
   static const alertRequiredBricks = 'alertRequiredBricks';
   static const alertRoleName = 'alertRoleName';
@@ -265,7 +288,8 @@ abstract class LocaleKeys {
   static const alertTooManyFavorites = 'alertTooManyFavorites';
   static const alertTooManyRecords = 'alertTooManyRecords';
   static const alertTransferExistingData = 'alertTransferExistingData';
-  static const alertTransferExistingDataExplanation = 'alertTransferExistingDataExplanation';
+  static const alertTransferExistingDataExplanation =
+      'alertTransferExistingDataExplanation';
   static const alertTransferKeepSynced = 'alertTransferKeepSynced';
   static const alertUnknownContent = 'alertUnknownContent';
   static const alertUnlockRecord = 'alertUnlockRecord';
@@ -274,10 +298,12 @@ abstract class LocaleKeys {
   static const alertUrl = 'alertUrl';
   static const alertWebTileName = 'alertWebTileName';
   static const alertWhichTilesInFolder = 'alertWhichTilesInFolder';
-  static const alertWorkflowCompletedWithWarning = 'alertWorkflowCompletedWithWarning';
+  static const alertWorkflowCompletedWithWarning =
+      'alertWorkflowCompletedWithWarning';
   static const alertWorkflowError = 'alertWorkflowError';
   static const alertWorkflowErrorInStep = 'alertWorkflowErrorInStep';
-  static const alertWorkflowErrorInStepWithTechName = 'alertWorkflowErrorInStepWithTechName';
+  static const alertWorkflowErrorInStepWithTechName =
+      'alertWorkflowErrorInStepWithTechName';
   static const alertWorkflowErrorWithMessage = 'alertWorkflowErrorWithMessage';
   static const alertWorkflowName = 'alertWorkflowName';
   static const alertWorkflowNotStarted = 'alertWorkflowNotStarted';
@@ -297,7 +323,8 @@ abstract class LocaleKeys {
   static const allowImport = 'allowImport';
   static const allowNewRow = 'allowNewRow';
   static const allowPrefillRecord = 'allowPrefillRecord';
-  static const allowRegistrationWithoutInvitation = 'allowRegistrationWithoutInvitation';
+  static const allowRegistrationWithoutInvitation =
+      'allowRegistrationWithoutInvitation';
   static const allowSearch = 'allowSearch';
   static const allowSubmit = 'allowSubmit';
   static const allowUnlock = 'allowUnlock';
@@ -309,7 +336,8 @@ abstract class LocaleKeys {
   static const amazonSesSecretKey = 'amazonSesSecretKey';
   static const amount = 'amount';
   static const analysisFirstRows = 'analysisFirstRows';
-  static const analysisFirstRowsWithLockedRecords = 'analysisFirstRowsWithLockedRecords';
+  static const analysisFirstRowsWithLockedRecords =
+      'analysisFirstRowsWithLockedRecords';
   static const analyzingFirstRows = 'analyzingFirstRows';
   static const anyCity = 'anyCity';
   static const anyStreet = 'anyStreet';
@@ -378,7 +406,8 @@ abstract class LocaleKeys {
   static const bigQueryExplanation = 'bigQueryExplanation';
   static const billing = 'billing';
   static const billingAccount = 'billingAccount';
-  static const billingAccountConnectionFailed = 'billingAccountConnectionFailed';
+  static const billingAccountConnectionFailed =
+      'billingAccountConnectionFailed';
   static const billingAccountLinkedPartner = 'billingAccountLinkedPartner';
   static const billingAccountNoPartner = 'billingAccountNoPartner';
   static const billingAccountPartner = 'billingAccountPartner';
@@ -396,7 +425,8 @@ abstract class LocaleKeys {
   static const bookingsPreview = 'bookingsPreview';
   static const bookingsPreviewTitle = 'bookingsPreviewTitle';
   static const boolExpression = 'boolExpression';
-  static const boolExpressionBrickDescription = 'boolExpressionBrickDescription';
+  static const boolExpressionBrickDescription =
+      'boolExpressionBrickDescription';
   static const brick = 'brick';
   static const brickEmpty = 'brickEmpty';
   static const brickId = 'brickId';
@@ -451,7 +481,8 @@ abstract class LocaleKeys {
   static const changingEmail = 'changingEmail';
   static const changingPassword = 'changingPassword';
   static const chatGptBrickDescription = 'chatGptBrickDescription';
-  static const chatGptCurrentRecordPromptPart = 'chatGptCurrentRecordPromptPart';
+  static const chatGptCurrentRecordPromptPart =
+      'chatGptCurrentRecordPromptPart';
   static const chatGptEnabled = 'chatGptEnabled';
   static const chatGptError = 'chatGptError';
   static const chatGptErrorTitle = 'chatGptErrorTitle';
@@ -459,13 +490,18 @@ abstract class LocaleKeys {
   static const chatGptInstructionPromptPart = 'chatGptInstructionPromptPart';
   static const chatGptKeyMissing = 'chatGptKeyMissing';
   static const chatGptParsingError = 'chatGptParsingError';
-  static const chatGptRecordHistoryPromptPart = 'chatGptRecordHistoryPromptPart';
-  static const chatGptRecordSpecExplanationPromptPart = 'chatGptRecordSpecExplanationPromptPart';
-  static const chatGptSubListExplanationPromptPart = 'chatGptSubListExplanationPromptPart';
+  static const chatGptRecordHistoryPromptPart =
+      'chatGptRecordHistoryPromptPart';
+  static const chatGptRecordSpecExplanationPromptPart =
+      'chatGptRecordSpecExplanationPromptPart';
+  static const chatGptSubListExplanationPromptPart =
+      'chatGptSubListExplanationPromptPart';
   static const chatGptSystemPromptPart = 'chatGptSystemPromptPart';
   static const chatGptThinking = 'chatGptThinking';
-  static const chatGptTimeEnvironmentPromptPart = 'chatGptTimeEnvironmentPromptPart';
-  static const chatGptUserEnvironmentPromptPart = 'chatGptUserEnvironmentPromptPart';
+  static const chatGptTimeEnvironmentPromptPart =
+      'chatGptTimeEnvironmentPromptPart';
+  static const chatGptUserEnvironmentPromptPart =
+      'chatGptUserEnvironmentPromptPart';
   static const checkAborted = 'checkAborted';
   static const checkDuplicateTransferFailed = 'checkDuplicateTransferFailed';
   static const checkFailedFormula = 'checkFailedFormula';
@@ -479,7 +515,8 @@ abstract class LocaleKeys {
   static const checkResultErrors = 'checkResultErrors';
   static const checkResultWarnings = 'checkResultWarnings';
   static const checkWarningNoLinkedRecords = 'checkWarningNoLinkedRecords';
-  static const checkWarningTooManyLinkedRecords = 'checkWarningTooManyLinkedRecords';
+  static const checkWarningTooManyLinkedRecords =
+      'checkWarningTooManyLinkedRecords';
   static const checkbox = 'checkbox';
   static const checkedByDefault = 'checkedByDefault';
   static const checkingColumns = 'checkingColumns';
@@ -493,7 +530,8 @@ abstract class LocaleKeys {
   static const checksPassedLinkedRecordSpec = 'checksPassedLinkedRecordSpec';
   static const checksPassedNumberFields = 'checksPassedNumberFields';
   static const checksPassedTransfer = 'checksPassedTransfer';
-  static const checksPassedTransferDuplicates = 'checksPassedTransferDuplicates';
+  static const checksPassedTransferDuplicates =
+      'checksPassedTransferDuplicates';
   static const chooseBillingAccount = 'chooseBillingAccount';
   static const chooseColor = 'chooseColor';
   static const chooseFittingColor = 'chooseFittingColor';
@@ -515,7 +553,8 @@ abstract class LocaleKeys {
   static const columnPlural = 'columnPlural';
   static const columnTotal = 'columnTotal';
   static const columnTotalCapacity = 'columnTotalCapacity';
-  static const columnTotalCapacityExplanation = 'columnTotalCapacityExplanation';
+  static const columnTotalCapacityExplanation =
+      'columnTotalCapacityExplanation';
   static const columnWidth = 'columnWidth';
   static const columns = 'columns';
   static const comingSoon = 'comingSoon';
@@ -604,6 +643,8 @@ abstract class LocaleKeys {
   static const creditInfo = 'creditInfo';
   static const credits = 'credits';
   static const creditsApiCalls = 'creditsApiCalls';
+  static const creditsFromAllEnvs = 'creditsFromAllEnvs';
+  static const creditsFromCurrentEnv = 'creditsFromCurrentEnv';
   static const creditsBookedInfo = 'creditsBookedInfo';
   static const creditsInteraction = 'creditsInteraction';
   static const creditsNextResetInfo = 'creditsNextResetInfo';
@@ -624,7 +665,8 @@ abstract class LocaleKeys {
   static const dateAndTime = 'dateAndTime';
   static const dateBrick = 'dateBrick';
   static const dateExpression = 'dateExpression';
-  static const dateExpressionBrickDescription = 'dateExpressionBrickDescription';
+  static const dateExpressionBrickDescription =
+      'dateExpressionBrickDescription';
   static const dateLimitsExplanation = 'dateLimitsExplanation';
   static const datePickerBrickDescription = 'datePickerBrickDescription';
   static const defaultCamera = 'defaultCamera';
@@ -675,7 +717,8 @@ abstract class LocaleKeys {
   static const designModeMissingRecord = 'designModeMissingRecord';
   static const detailView = 'detailView';
   static const detailViewMultiSelect = 'detailViewMultiSelect';
-  static const detailViewMultiSelectExplanation = 'detailViewMultiSelectExplanation';
+  static const detailViewMultiSelectExplanation =
+      'detailViewMultiSelectExplanation';
   static const device = 'device';
   static const differentTextOrNothing = 'differentTextOrNothing';
   static const differingFileName = 'differingFileName';
@@ -707,7 +750,8 @@ abstract class LocaleKeys {
   static const duplicate = 'duplicate';
   static const duplicateDelete = 'duplicateDelete';
   static const duplicateRecord = 'duplicateRecord';
-  static const duplicateRecordStepDescription = 'duplicateRecordStepDescription';
+  static const duplicateRecordStepDescription =
+      'duplicateRecordStepDescription';
   static const duplicateTile = 'duplicateTile';
   static const duplicateWorkflow = 'duplicateWorkflow';
   static const duplicatesFound = 'duplicatesFound';
@@ -791,48 +835,72 @@ abstract class LocaleKeys {
   static const exceptionBrickNotFound = 'exceptionBrickNotFound';
   static const exceptionBrickSpecNoImport = 'exceptionBrickSpecNoImport';
   static const exceptionBrickSpecNotFound = 'exceptionBrickSpecNotFound';
-  static const exceptionBrickSpecNotFoundByAttrPath = 'exceptionBrickSpecNotFoundByAttrPath';
-  static const exceptionBrickSpecNotFoundById = 'exceptionBrickSpecNotFoundById';
-  static const exceptionBrickSpecNotFoundByIdInList = 'exceptionBrickSpecNotFoundByIdInList';
-  static const exceptionCannotAddAdminServiceAccountToWorkspace = 'exceptionCannotAddAdminServiceAccountToWorkspace';
-  static const exceptionCannotAssignOwnerLicense = 'exceptionCannotAssignOwnerLicense';
-  static const exceptionCannotChangeLicenseMaxNumberExceeded = 'exceptionCannotChangeLicenseMaxNumberExceeded';
-  static const exceptionCannotChangeLicenseUsersWithOldLicense = 'exceptionCannotChangeLicenseUsersWithOldLicense';
+  static const exceptionBrickSpecNotFoundByAttrPath =
+      'exceptionBrickSpecNotFoundByAttrPath';
+  static const exceptionBrickSpecNotFoundById =
+      'exceptionBrickSpecNotFoundById';
+  static const exceptionBrickSpecNotFoundByIdInList =
+      'exceptionBrickSpecNotFoundByIdInList';
+  static const exceptionCannotAddAdminServiceAccountToWorkspace =
+      'exceptionCannotAddAdminServiceAccountToWorkspace';
+  static const exceptionCannotAssignOwnerLicense =
+      'exceptionCannotAssignOwnerLicense';
+  static const exceptionCannotChangeLicenseMaxNumberExceeded =
+      'exceptionCannotChangeLicenseMaxNumberExceeded';
+  static const exceptionCannotChangeLicenseUsersWithOldLicense =
+      'exceptionCannotChangeLicenseUsersWithOldLicense';
   static const exceptionCannotConvertFile = 'exceptionCannotConvertFile';
-  static const exceptionCannotCreateQrBarcode = 'exceptionCannotCreateQrBarcode';
+  static const exceptionCannotCreateQrBarcode =
+      'exceptionCannotCreateQrBarcode';
   static const exceptionCannotCreateUser = 'exceptionCannotCreateUser';
-  static const exceptionCannotCreateUserWithMessage = 'exceptionCannotCreateUserWithMessage';
+  static const exceptionCannotCreateUserWithMessage =
+      'exceptionCannotCreateUserWithMessage';
   static const exceptionCannotDeleteBrick = 'exceptionCannotDeleteBrick';
-  static const exceptionCannotDeleteDefaultRole = 'exceptionCannotDeleteDefaultRole';
-  static const exceptionCannotDeleteEnabledRole = 'exceptionCannotDeleteEnabledRole';
+  static const exceptionCannotDeleteDefaultRole =
+      'exceptionCannotDeleteDefaultRole';
+  static const exceptionCannotDeleteEnabledRole =
+      'exceptionCannotDeleteEnabledRole';
   static const exceptionCannotDeleteOption = 'exceptionCannotDeleteOption';
-  static const exceptionCannotDeleteReferencedRole = 'exceptionCannotDeleteReferencedRole';
+  static const exceptionCannotDeleteReferencedRole =
+      'exceptionCannotDeleteReferencedRole';
   static const exceptionCannotEditOption = 'exceptionCannotEditOption';
-  static const exceptionCannotEnableRoleToManyReads = 'exceptionCannotEnableRoleToManyReads';
-  static const exceptionCannotEnableRoleToManyWrites = 'exceptionCannotEnableRoleToManyWrites';
-  static const exceptionCannotEvaluateRequestHeader = 'exceptionCannotEvaluateRequestHeader';
+  static const exceptionCannotEnableRoleToManyReads =
+      'exceptionCannotEnableRoleToManyReads';
+  static const exceptionCannotEnableRoleToManyWrites =
+      'exceptionCannotEnableRoleToManyWrites';
+  static const exceptionCannotEvaluateRequestHeader =
+      'exceptionCannotEvaluateRequestHeader';
   static const exceptionCannotFindRecord = 'exceptionCannotFindRecord';
-  static const exceptionCannotGenerateAzureToken = 'exceptionCannotGenerateAzureToken';
-  static const exceptionCannotGenerateAzureTokenWithMessage = 'exceptionCannotGenerateAzureTokenWithMessage';
-  static const exceptionCannotImportListIndividually = 'exceptionCannotImportListIndividually';
-  static const exceptionCannotImportListLinkedListNotFound = 'exceptionCannotImportListLinkedListNotFound';
+  static const exceptionCannotGenerateAzureToken =
+      'exceptionCannotGenerateAzureToken';
+  static const exceptionCannotGenerateAzureTokenWithMessage =
+      'exceptionCannotGenerateAzureTokenWithMessage';
+  static const exceptionCannotImportListIndividually =
+      'exceptionCannotImportListIndividually';
+  static const exceptionCannotImportListLinkedListNotFound =
+      'exceptionCannotImportListLinkedListNotFound';
   static const exceptionCannotLaunchLink = 'exceptionCannotLaunchLink';
   static const exceptionCannotLoadImage = 'exceptionCannotLoadImage';
   static const exceptionCannotLoadTemplate = 'exceptionCannotLoadTemplate';
-  static const exceptionCannotModifyRecordWhileShareTransfer = 'exceptionCannotModifyRecordWhileShareTransfer';
-  static const exceptionCannotModifyRolesWithoutUser = 'exceptionCannotModifyRolesWithoutUser';
+  static const exceptionCannotModifyRecordWhileShareTransfer =
+      'exceptionCannotModifyRecordWhileShareTransfer';
+  static const exceptionCannotModifyRolesWithoutUser =
+      'exceptionCannotModifyRolesWithoutUser';
   static const exceptionCannotModifyValue = 'exceptionCannotModifyValue';
   static const exceptionCannotOpenDocs = 'exceptionCannotOpenDocs';
   static const exceptionCannotProcessImage = 'exceptionCannotProcessImage';
   static const exceptionCannotProcessTile = 'exceptionCannotProcessTile';
   static const exceptionCannotRemoveUser = 'exceptionCannotRemoveUser';
   static const exceptionCannotSetValue = 'exceptionCannotSetValue';
-  static const exceptionCannotSetValueInBrick = 'exceptionCannotSetValueInBrick';
-  static const exceptionCannotWithdrawOwnerLicense = 'exceptionCannotWithdrawOwnerLicense';
+  static const exceptionCannotSetValueInBrick =
+      'exceptionCannotSetValueInBrick';
+  static const exceptionCannotWithdrawOwnerLicense =
+      'exceptionCannotWithdrawOwnerLicense';
   static const exceptionCellNotFound = 'exceptionCellNotFound';
   static const exceptionCheckConnection = 'exceptionCheckConnection';
   static const exceptionCorruptFile = 'exceptionCorruptFile';
-  static const exceptionCorruptedTemplateFile = 'exceptionCorruptedTemplateFile';
+  static const exceptionCorruptedTemplateFile =
+      'exceptionCorruptedTemplateFile';
   static const exceptionDivisionByZero = 'exceptionDivisionByZero';
   static const exceptionEmailOnFlowError = 'exceptionEmailOnFlowError';
   static const exceptionEmptyEmailContent = 'exceptionEmptyEmailContent';
@@ -841,16 +909,22 @@ abstract class LocaleKeys {
   static const exceptionEmptyRecipientEmail = 'exceptionEmptyRecipientEmail';
   static const exceptionError = 'exceptionError';
   static const exceptionErrorOccured = 'exceptionErrorOccured';
-  static const exceptionErrorWhileSendingRequest = 'exceptionErrorWhileSendingRequest';
-  static const exceptionErrorWhileSendingRequestWithMessage = 'exceptionErrorWhileSendingRequestWithMessage';
+  static const exceptionErrorWhileSendingRequest =
+      'exceptionErrorWhileSendingRequest';
+  static const exceptionErrorWhileSendingRequestWithMessage =
+      'exceptionErrorWhileSendingRequestWithMessage';
   static const exceptionExpectingList = 'exceptionExpectingList';
   static const exceptionExpression = 'exceptionExpression';
-  static const exceptionExpressionInvalidDate = 'exceptionExpressionInvalidDate';
-  static const exceptionExpressionInvalidNumber = 'exceptionExpressionInvalidNumber';
+  static const exceptionExpressionInvalidDate =
+      'exceptionExpressionInvalidDate';
+  static const exceptionExpressionInvalidNumber =
+      'exceptionExpressionInvalidNumber';
   static const exceptionFailedTransfer = 'exceptionFailedTransfer';
-  static const exceptionFileNameMultipleUsage = 'exceptionFileNameMultipleUsage';
+  static const exceptionFileNameMultipleUsage =
+      'exceptionFileNameMultipleUsage';
   static const exceptionFileNotFound = 'exceptionFileNotFound';
-  static const exceptionFileNotFoundInArchive = 'exceptionFileNotFoundInArchive';
+  static const exceptionFileNotFoundInArchive =
+      'exceptionFileNotFoundInArchive';
   static const exceptionFlowSpecNotFound = 'exceptionFlowSpecNotFound';
   static const exceptionFrontendFilters = 'exceptionFrontendFilters';
   static const exceptionHttp = 'exceptionHttp';
@@ -875,7 +949,8 @@ abstract class LocaleKeys {
   static const exceptionHttpTimeout = 'exceptionHttpTimeout';
   static const exceptionHttpUnknown = 'exceptionHttpUnknown';
   static const exceptionIfElseNeedsBoolean = 'exceptionIfElseNeedsBoolean';
-  static const exceptionIfElseNumberTwoArguments = 'exceptionIfElseNumberTwoArguments';
+  static const exceptionIfElseNumberTwoArguments =
+      'exceptionIfElseNumberTwoArguments';
   static const exceptionIfNeedsBoolean = 'exceptionIfNeedsBoolean';
   static const exceptionIfNumberArguments = 'exceptionIfNumberArguments';
   static const exceptionImportErrorForUser = 'exceptionImportErrorForUser';
@@ -887,29 +962,39 @@ abstract class LocaleKeys {
   static const exceptionInvalidCharacter = 'exceptionInvalidCharacter';
   static const exceptionInvalidColonsBccName = 'exceptionInvalidColonsBccName';
   static const exceptionInvalidColonsCcName = 'exceptionInvalidColonsCcName';
-  static const exceptionInvalidColonsRecipientName = 'exceptionInvalidColonsRecipientName';
-  static const exceptionInvalidColonsSenderName = 'exceptionInvalidColonsSenderName';
+  static const exceptionInvalidColonsRecipientName =
+      'exceptionInvalidColonsRecipientName';
+  static const exceptionInvalidColonsSenderName =
+      'exceptionInvalidColonsSenderName';
   static const exceptionInvalidCondition = 'exceptionInvalidCondition';
   static const exceptionInvalidDateFormat = 'exceptionInvalidDateFormat';
-  static const exceptionInvalidDateLowerBoundary = 'exceptionInvalidDateLowerBoundary';
+  static const exceptionInvalidDateLowerBoundary =
+      'exceptionInvalidDateLowerBoundary';
   static const exceptionInvalidDateOrMonth = 'exceptionInvalidDateOrMonth';
   static const exceptionInvalidDateOrWeek = 'exceptionInvalidDateOrWeek';
-  static const exceptionInvalidDateUpperBoundary = 'exceptionInvalidDateUpperBoundary';
+  static const exceptionInvalidDateUpperBoundary =
+      'exceptionInvalidDateUpperBoundary';
   static const exceptionInvalidExpression = 'exceptionInvalidExpression';
-  static const exceptionInvalidExpressionNumber = 'exceptionInvalidExpressionNumber';
-  static const exceptionInvalidExpressionString = 'exceptionInvalidExpressionString';
-  static const exceptionInvalidFirstCharacter = 'exceptionInvalidFirstCharacter';
+  static const exceptionInvalidExpressionNumber =
+      'exceptionInvalidExpressionNumber';
+  static const exceptionInvalidExpressionString =
+      'exceptionInvalidExpressionString';
+  static const exceptionInvalidFirstCharacter =
+      'exceptionInvalidFirstCharacter';
   static const exceptionInvalidFormatting = 'exceptionInvalidFormatting';
   static const exceptionInvalidLinkedBricks = 'exceptionInvalidLinkedBricks';
   static const exceptionInvalidName = 'exceptionInvalidName';
   static const exceptionInvalidNameEnding = 'exceptionInvalidNameEnding';
   static const exceptionInvalidNumber = 'exceptionInvalidNumber';
-  static const exceptionInvalidOperatorInExpression = 'exceptionInvalidOperatorInExpression';
+  static const exceptionInvalidOperatorInExpression =
+      'exceptionInvalidOperatorInExpression';
   static const exceptionInvalidPrefix = 'exceptionInvalidPrefix';
-  static const exceptionInvalidRecipientEmail = 'exceptionInvalidRecipientEmail';
+  static const exceptionInvalidRecipientEmail =
+      'exceptionInvalidRecipientEmail';
   static const exceptionInvalidRepeat = 'exceptionInvalidRepeat';
   static const exceptionInvalidRepeatBrick = 'exceptionInvalidRepeatBrick';
-  static const exceptionInvalidRepeatShowIfArg = 'exceptionInvalidRepeatShowIfArg';
+  static const exceptionInvalidRepeatShowIfArg =
+      'exceptionInvalidRepeatShowIfArg';
   static const exceptionInvalidRequestMethod = 'exceptionInvalidRequestMethod';
   static const exceptionInvalidRole = 'exceptionInvalidRole';
   static const exceptionInvalidSenderEmail = 'exceptionInvalidSenderEmail';
@@ -917,58 +1002,77 @@ abstract class LocaleKeys {
   static const exceptionInvalidShowIfBrick = 'exceptionInvalidShowIfBrick';
   static const exceptionInvalidValue = 'exceptionInvalidValue';
   static const exceptionInvitationLinkFailed = 'exceptionInvitationLinkFailed';
-  static const exceptionInvitationLinkNotValid = 'exceptionInvitationLinkNotValid';
+  static const exceptionInvitationLinkNotValid =
+      'exceptionInvitationLinkNotValid';
   static const exceptionIterationFailed = 'exceptionIterationFailed';
   static const exceptionLicenseNotFound = 'exceptionLicenseNotFound';
   static const exceptionLicenseTooLow = 'exceptionLicenseTooLow';
-  static const exceptionLinkedRecordSpecNotFound = 'exceptionLinkedRecordSpecNotFound';
+  static const exceptionLinkedRecordSpecNotFound =
+      'exceptionLinkedRecordSpecNotFound';
   static const exceptionListNotFound = 'exceptionListNotFound';
   static const exceptionListTooLong = 'exceptionListTooLong';
   static const exceptionMaxSecondsBreached = 'exceptionMaxSecondsBreached';
-  static const exceptionMemberRecordSpecNotFound = 'exceptionMemberRecordSpecNotFound';
-  static const exceptionMemberTileWithoutEmailBrick = 'exceptionMemberTileWithoutEmailBrick';
-  static const exceptionMemberTileWithoutStatusBrick = 'exceptionMemberTileWithoutStatusBrick';
+  static const exceptionMemberRecordSpecNotFound =
+      'exceptionMemberRecordSpecNotFound';
+  static const exceptionMemberTileWithoutEmailBrick =
+      'exceptionMemberTileWithoutEmailBrick';
+  static const exceptionMemberTileWithoutStatusBrick =
+      'exceptionMemberTileWithoutStatusBrick';
   static const exceptionMissingAzureClientId = 'exceptionMissingAzureClientId';
-  static const exceptionMissingAzureClientSecret = 'exceptionMissingAzureClientSecret';
+  static const exceptionMissingAzureClientSecret =
+      'exceptionMissingAzureClientSecret';
   static const exceptionMissingAzureTenantId = 'exceptionMissingAzureTenantId';
   static const exceptionMissingBrickLabels = 'exceptionMissingBrickLabels';
   static const exceptionMissingBrickSpecId = 'exceptionMissingBrickSpecId';
-  static const exceptionMissingEmailOrPassword = 'exceptionMissingEmailOrPassword';
+  static const exceptionMissingEmailOrPassword =
+      'exceptionMissingEmailOrPassword';
   static const exceptionMissingEmailProvider = 'exceptionMissingEmailProvider';
-  static const exceptionMissingEmailVerificationSendGrid = 'exceptionMissingEmailVerificationSendGrid';
+  static const exceptionMissingEmailVerificationSendGrid =
+      'exceptionMissingEmailVerificationSendGrid';
   static const exceptionMissingFile = 'exceptionMissingFile';
   static const exceptionMissingFileForImport = 'exceptionMissingFileForImport';
   static const exceptionMissingId = 'exceptionMissingId';
   static const exceptionMissingLabel = 'exceptionMissingLabel';
   static const exceptionMissingLink = 'exceptionMissingLink';
-  static const exceptionMissingLinkInSettings = 'exceptionMissingLinkInSettings';
+  static const exceptionMissingLinkInSettings =
+      'exceptionMissingLinkInSettings';
   static const exceptionMissingLinkToBrick = 'exceptionMissingLinkToBrick';
   static const exceptionMissingLinkToList = 'exceptionMissingLinkToList';
-  static const exceptionMissingLinkToListInBrick = 'exceptionMissingLinkToListInBrick';
+  static const exceptionMissingLinkToListInBrick =
+      'exceptionMissingLinkToListInBrick';
   static const exceptionMissingLinkedRecord = 'exceptionMissingLinkedRecord';
   static const exceptionMissingMailingApp = 'exceptionMissingMailingApp';
-  static const exceptionMissingNameOrStorageFolderPath = 'exceptionMissingNameOrStorageFolderPath';
-  static const exceptionMissingNewOrOldPassword = 'exceptionMissingNewOrOldPassword';
-  static const exceptionMissingNotificationMessage = 'exceptionMissingNotificationMessage';
-  static const exceptionMissingNotificationTitle = 'exceptionMissingNotificationTitle';
-  static const exceptionMissingPermissionsCreateList = 'exceptionMissingPermissionsCreateList';
+  static const exceptionMissingNameOrStorageFolderPath =
+      'exceptionMissingNameOrStorageFolderPath';
+  static const exceptionMissingNewOrOldPassword =
+      'exceptionMissingNewOrOldPassword';
+  static const exceptionMissingNotificationMessage =
+      'exceptionMissingNotificationMessage';
+  static const exceptionMissingNotificationTitle =
+      'exceptionMissingNotificationTitle';
+  static const exceptionMissingPermissionsCreateList =
+      'exceptionMissingPermissionsCreateList';
   static const exceptionMissingRecord = 'exceptionMissingRecord';
-  static const exceptionMissingSendGridApiKey = 'exceptionMissingSendGridApiKey';
+  static const exceptionMissingSendGridApiKey =
+      'exceptionMissingSendGridApiKey';
   static const exceptionMissingSesAccessKey = 'exceptionMissingSesAccessKey';
   static const exceptionMissingSesRegion = 'exceptionMissingSesRegion';
   static const exceptionMissingSesSecretKey = 'exceptionMissingSesSecretKey';
-  static const exceptionMissingStorageFolderPath = 'exceptionMissingStorageFolderPath';
+  static const exceptionMissingStorageFolderPath =
+      'exceptionMissingStorageFolderPath';
   static const exceptionMissingTableFile = 'exceptionMissingTableFile';
   static const exceptionMissingTechName = 'exceptionMissingTechName';
   static const exceptionMissingTemplate = 'exceptionMissingTemplate';
   static const exceptionMissingUrl = 'exceptionMissingUrl';
   static const exceptionMissingWorkspaceId = 'exceptionMissingWorkspaceId';
-  static const exceptionMultiRecordPickerBrickNotSupported = 'exceptionMultiRecordPickerBrickNotSupported';
+  static const exceptionMultiRecordPickerBrickNotSupported =
+      'exceptionMultiRecordPickerBrickNotSupported';
   static const exceptionNoActiveCellSelected = 'exceptionNoActiveCellSelected';
   static const exceptionNoRecordPermission = 'exceptionNoRecordPermission';
   static const exceptionNoRecordSelected = 'exceptionNoRecordSelected';
   static const exceptionNumberOfFilesReached = 'exceptionNumberOfFilesReached';
-  static const exceptionOptionListConstraints = 'exceptionOptionListConstraints';
+  static const exceptionOptionListConstraints =
+      'exceptionOptionListConstraints';
   static const exceptionOwnerAdminLicense = 'exceptionOwnerAdminLicense';
   static const exceptionPasswordRequired = 'exceptionPasswordRequired';
   static const exceptionRangeStep = 'exceptionRangeStep';
@@ -977,31 +1081,41 @@ abstract class LocaleKeys {
   static const exceptionRecordDoesNotExist = 'exceptionRecordDoesNotExist';
   static const exceptionRecordNotFound = 'exceptionRecordNotFound';
   static const exceptionRecordNotFoundById = 'exceptionRecordNotFoundById';
-  static const exceptionRecordNotFoundCannotImport = 'exceptionRecordNotFoundCannotImport';
+  static const exceptionRecordNotFoundCannotImport =
+      'exceptionRecordNotFoundCannotImport';
   static const exceptionRecordSpecNotFound = 'exceptionRecordSpecNotFound';
-  static const exceptionRecordSpecWithTemplateIdNotFound = 'exceptionRecordSpecWithTemplateIdNotFound';
+  static const exceptionRecordSpecWithTemplateIdNotFound =
+      'exceptionRecordSpecWithTemplateIdNotFound';
   static const exceptionRecordTitleSemicolon = 'exceptionRecordTitleSemicolon';
   static const exceptionRequest = 'exceptionRequest';
   static const exceptionRoleNotFound = 'exceptionRoleNotFound';
   static const exceptionRoleNotFoundById = 'exceptionRoleNotFoundById';
   static const exceptionRoleNotFoundByName = 'exceptionRoleNotFoundByName';
   static const exceptionServerOnly = 'exceptionServerOnly';
-  static const exceptionSettingValueNotPossible = 'exceptionSettingValueNotPossible';
-  static const exceptionSoundAssetPlayerNotInitialized = 'exceptionSoundAssetPlayerNotInitialized';
+  static const exceptionSettingValueNotPossible =
+      'exceptionSettingValueNotPossible';
+  static const exceptionSoundAssetPlayerNotInitialized =
+      'exceptionSoundAssetPlayerNotInitialized';
   static const exceptionStatusNotFound = 'exceptionStatusNotFound';
-  static const exceptionStatusNotFoundByNameOrId = 'exceptionStatusNotFoundByNameOrId';
+  static const exceptionStatusNotFoundByNameOrId =
+      'exceptionStatusNotFoundByNameOrId';
   static const exceptionStepNotFound = 'exceptionStepNotFound';
   static const exceptionTechnicalKey = 'exceptionTechnicalKey';
-  static const exceptionTechnicalNameAlreadyUsed = 'exceptionTechnicalNameAlreadyUsed';
-  static const exceptionTechnicalNameNotFound = 'exceptionTechnicalNameNotFound';
+  static const exceptionTechnicalNameAlreadyUsed =
+      'exceptionTechnicalNameAlreadyUsed';
+  static const exceptionTechnicalNameNotFound =
+      'exceptionTechnicalNameNotFound';
   static const exceptionTileIsNotMemberTile = 'exceptionTileIsNotMemberTile';
   static const exceptionTileNotFound = 'exceptionTileNotFound';
   static const exceptionTooManyFiles = 'exceptionTooManyFiles';
-  static const exceptionTooManyMatchingStatuses = 'exceptionTooManyMatchingStatuses';
+  static const exceptionTooManyMatchingStatuses =
+      'exceptionTooManyMatchingStatuses';
   static const exceptionTooManySheets = 'exceptionTooManySheets';
-  static const exceptionTypeIsDifferentInExpression = 'exceptionTypeIsDifferentInExpression';
+  static const exceptionTypeIsDifferentInExpression =
+      'exceptionTypeIsDifferentInExpression';
   static const exceptionUiComponentNotFound = 'exceptionUiComponentNotFound';
-  static const exceptionUnequalNumberOfOperators = 'exceptionUnequalNumberOfOperators';
+  static const exceptionUnequalNumberOfOperators =
+      'exceptionUnequalNumberOfOperators';
   static const exceptionUnknownFormType = 'exceptionUnknownFormType';
   static const exceptionUnknownValueKey = 'exceptionUnknownValueKey';
   static const exceptionUserExpressions = 'exceptionUserExpressions';
@@ -1012,7 +1126,8 @@ abstract class LocaleKeys {
   static const exceptionValueInvalidDate = 'exceptionValueInvalidDate';
   static const exceptionValueIsNull = 'exceptionValueIsNull';
   static const exceptionValueNotFound = 'exceptionValueNotFound';
-  static const exceptionWorkspaceMustHaveOwner = 'exceptionWorkspaceMustHaveOwner';
+  static const exceptionWorkspaceMustHaveOwner =
+      'exceptionWorkspaceMustHaveOwner';
   static const exceptionWorkspaceNotLoaded = 'exceptionWorkspaceNotLoaded';
   static const exceptionWrongFileFormatCsv = 'exceptionWrongFileFormatCsv';
   static const exceptionWrongFileFormatXlsx = 'exceptionWrongFileFormatXlsx';
@@ -1021,7 +1136,8 @@ abstract class LocaleKeys {
   static const exportToTable = 'exportToTable';
   static const exportWorkspace = 'exportWorkspace';
   static const exportWorkspaceWithData = 'exportWorkspaceWithData';
-  static const exportWorkspaceWithDataAndPdfs = 'exportWorkspaceWithDataAndPdfs';
+  static const exportWorkspaceWithDataAndPdfs =
+      'exportWorkspaceWithDataAndPdfs';
   static const exportWorkspaceWithoutData = 'exportWorkspaceWithoutData';
   static const exportingWorkspace = 'exportingWorkspace';
   static const expression = 'expression';
@@ -1070,87 +1186,144 @@ abstract class LocaleKeys {
   static const finished = 'finished';
   static const finishedAt = 'finishedAt';
   static const finishedEditing = 'finishedEditing';
-  static const firebaseErrorAccountExistsWithDifferentCredential = 'firebaseErrorAccountExistsWithDifferentCredential';
-  static const firebaseErrorAdminRestrictedOperation = 'firebaseErrorAdminRestrictedOperation';
+  static const firebaseErrorAccountExistsWithDifferentCredential =
+      'firebaseErrorAccountExistsWithDifferentCredential';
+  static const firebaseErrorAdminRestrictedOperation =
+      'firebaseErrorAdminRestrictedOperation';
   static const firebaseErrorAppDeleted = 'firebaseErrorAppDeleted';
   static const firebaseErrorAppNotAuthorized = 'firebaseErrorAppNotAuthorized';
   static const firebaseErrorAppNotInstalled = 'firebaseErrorAppNotInstalled';
   static const firebaseErrorArgumentError = 'firebaseErrorArgumentError';
-  static const firebaseErrorAuthDomainConfigRequired = 'firebaseErrorAuthDomainConfigRequired';
-  static const firebaseErrorCancelledPopupRequest = 'firebaseErrorCancelledPopupRequest';
-  static const firebaseErrorCaptchaCheckFailed = 'firebaseErrorCaptchaCheckFailed';
+  static const firebaseErrorAuthDomainConfigRequired =
+      'firebaseErrorAuthDomainConfigRequired';
+  static const firebaseErrorCancelledPopupRequest =
+      'firebaseErrorCancelledPopupRequest';
+  static const firebaseErrorCaptchaCheckFailed =
+      'firebaseErrorCaptchaCheckFailed';
   static const firebaseErrorCodeExpired = 'firebaseErrorCodeExpired';
   static const firebaseErrorCordovaNotReady = 'firebaseErrorCordovaNotReady';
   static const firebaseErrorCorsUnsupported = 'firebaseErrorCorsUnsupported';
-  static const firebaseErrorCredentialAlreadyInUse = 'firebaseErrorCredentialAlreadyInUse';
-  static const firebaseErrorCustomTokenMismatch = 'firebaseErrorCustomTokenMismatch';
-  static const firebaseErrorDynamicLinkNotActivated = 'firebaseErrorDynamicLinkNotActivated';
-  static const firebaseErrorEmailAlreadyInUse = 'firebaseErrorEmailAlreadyInUse';
-  static const firebaseErrorEmailChangeNeedsVerification = 'firebaseErrorEmailChangeNeedsVerification';
-  static const firebaseErrorExpiredActionCode = 'firebaseErrorExpiredActionCode';
+  static const firebaseErrorCredentialAlreadyInUse =
+      'firebaseErrorCredentialAlreadyInUse';
+  static const firebaseErrorCustomTokenMismatch =
+      'firebaseErrorCustomTokenMismatch';
+  static const firebaseErrorDynamicLinkNotActivated =
+      'firebaseErrorDynamicLinkNotActivated';
+  static const firebaseErrorEmailAlreadyInUse =
+      'firebaseErrorEmailAlreadyInUse';
+  static const firebaseErrorEmailChangeNeedsVerification =
+      'firebaseErrorEmailChangeNeedsVerification';
+  static const firebaseErrorExpiredActionCode =
+      'firebaseErrorExpiredActionCode';
   static const firebaseErrorInternalError = 'firebaseErrorInternalError';
-  static const firebaseErrorInvalidActionCode = 'firebaseErrorInvalidActionCode';
+  static const firebaseErrorInvalidActionCode =
+      'firebaseErrorInvalidActionCode';
   static const firebaseErrorInvalidApiKey = 'firebaseErrorInvalidApiKey';
-  static const firebaseErrorInvalidAppCredential = 'firebaseErrorInvalidAppCredential';
+  static const firebaseErrorInvalidAppCredential =
+      'firebaseErrorInvalidAppCredential';
   static const firebaseErrorInvalidAppId = 'firebaseErrorInvalidAppId';
   static const firebaseErrorInvalidAuthEvent = 'firebaseErrorInvalidAuthEvent';
   static const firebaseErrorInvalidCertHash = 'firebaseErrorInvalidCertHash';
-  static const firebaseErrorInvalidContinueUri = 'firebaseErrorInvalidContinueUri';
-  static const firebaseErrorInvalidCordovaConfiguration = 'firebaseErrorInvalidCordovaConfiguration';
-  static const firebaseErrorInvalidCredential = 'firebaseErrorInvalidCredential';
-  static const firebaseErrorInvalidCustomToken = 'firebaseErrorInvalidCustomToken';
-  static const firebaseErrorInvalidDynamicLinkDomain = 'firebaseErrorInvalidDynamicLinkDomain';
+  static const firebaseErrorInvalidContinueUri =
+      'firebaseErrorInvalidContinueUri';
+  static const firebaseErrorInvalidCordovaConfiguration =
+      'firebaseErrorInvalidCordovaConfiguration';
+  static const firebaseErrorInvalidCredential =
+      'firebaseErrorInvalidCredential';
+  static const firebaseErrorInvalidCustomToken =
+      'firebaseErrorInvalidCustomToken';
+  static const firebaseErrorInvalidDynamicLinkDomain =
+      'firebaseErrorInvalidDynamicLinkDomain';
   static const firebaseErrorInvalidEmail = 'firebaseErrorInvalidEmail';
-  static const firebaseErrorInvalidMessagePayload = 'firebaseErrorInvalidMessagePayload';
-  static const firebaseErrorInvalidMultiFactorSession = 'firebaseErrorInvalidMultiFactorSession';
-  static const firebaseErrorInvalidOauthClientId = 'firebaseErrorInvalidOauthClientId';
-  static const firebaseErrorInvalidOauthProvider = 'firebaseErrorInvalidOauthProvider';
-  static const firebaseErrorInvalidPersistenceType = 'firebaseErrorInvalidPersistenceType';
-  static const firebaseErrorInvalidPhoneNumber = 'firebaseErrorInvalidPhoneNumber';
-  static const firebaseErrorInvalidProviderId = 'firebaseErrorInvalidProviderId';
-  static const firebaseErrorInvalidRecipientEmail = 'firebaseErrorInvalidRecipientEmail';
+  static const firebaseErrorInvalidMessagePayload =
+      'firebaseErrorInvalidMessagePayload';
+  static const firebaseErrorInvalidMultiFactorSession =
+      'firebaseErrorInvalidMultiFactorSession';
+  static const firebaseErrorInvalidOauthClientId =
+      'firebaseErrorInvalidOauthClientId';
+  static const firebaseErrorInvalidOauthProvider =
+      'firebaseErrorInvalidOauthProvider';
+  static const firebaseErrorInvalidPersistenceType =
+      'firebaseErrorInvalidPersistenceType';
+  static const firebaseErrorInvalidPhoneNumber =
+      'firebaseErrorInvalidPhoneNumber';
+  static const firebaseErrorInvalidProviderId =
+      'firebaseErrorInvalidProviderId';
+  static const firebaseErrorInvalidRecipientEmail =
+      'firebaseErrorInvalidRecipientEmail';
   static const firebaseErrorInvalidSender = 'firebaseErrorInvalidSender';
   static const firebaseErrorInvalidTenantId = 'firebaseErrorInvalidTenantId';
   static const firebaseErrorInvalidUserToken = 'firebaseErrorInvalidUserToken';
-  static const firebaseErrorInvalidVerificationCode = 'firebaseErrorInvalidVerificationCode';
-  static const firebaseErrorInvalidVerificationId = 'firebaseErrorInvalidVerificationId';
-  static const firebaseErrorMaximumSecondFactorCountExceeded = 'firebaseErrorMaximumSecondFactorCountExceeded';
-  static const firebaseErrorMissingAndroidPkgName = 'firebaseErrorMissingAndroidPkgName';
-  static const firebaseErrorMissingAppCredential = 'firebaseErrorMissingAppCredential';
-  static const firebaseErrorMissingContinueUri = 'firebaseErrorMissingContinueUri';
-  static const firebaseErrorMissingIframeStart = 'firebaseErrorMissingIframeStart';
-  static const firebaseErrorMissingIosBundleId = 'firebaseErrorMissingIosBundleId';
-  static const firebaseErrorMissingMultiFactorInfo = 'firebaseErrorMissingMultiFactorInfo';
-  static const firebaseErrorMissingMultiFactorSession = 'firebaseErrorMissingMultiFactorSession';
-  static const firebaseErrorMissingOrInvalidNonce = 'firebaseErrorMissingOrInvalidNonce';
-  static const firebaseErrorMissingPhoneNumber = 'firebaseErrorMissingPhoneNumber';
-  static const firebaseErrorMissingVerificationCode = 'firebaseErrorMissingVerificationCode';
-  static const firebaseErrorMissingVerificationId = 'firebaseErrorMissingVerificationId';
-  static const firebaseErrorMultiFactorAuthRequired = 'firebaseErrorMultiFactorAuthRequired';
-  static const firebaseErrorMultiFactorInfoNotFound = 'firebaseErrorMultiFactorInfoNotFound';
-  static const firebaseErrorNetworkRequestFailed = 'firebaseErrorNetworkRequestFailed';
+  static const firebaseErrorInvalidVerificationCode =
+      'firebaseErrorInvalidVerificationCode';
+  static const firebaseErrorInvalidVerificationId =
+      'firebaseErrorInvalidVerificationId';
+  static const firebaseErrorMaximumSecondFactorCountExceeded =
+      'firebaseErrorMaximumSecondFactorCountExceeded';
+  static const firebaseErrorMissingAndroidPkgName =
+      'firebaseErrorMissingAndroidPkgName';
+  static const firebaseErrorMissingAppCredential =
+      'firebaseErrorMissingAppCredential';
+  static const firebaseErrorMissingContinueUri =
+      'firebaseErrorMissingContinueUri';
+  static const firebaseErrorMissingIframeStart =
+      'firebaseErrorMissingIframeStart';
+  static const firebaseErrorMissingIosBundleId =
+      'firebaseErrorMissingIosBundleId';
+  static const firebaseErrorMissingMultiFactorInfo =
+      'firebaseErrorMissingMultiFactorInfo';
+  static const firebaseErrorMissingMultiFactorSession =
+      'firebaseErrorMissingMultiFactorSession';
+  static const firebaseErrorMissingOrInvalidNonce =
+      'firebaseErrorMissingOrInvalidNonce';
+  static const firebaseErrorMissingPhoneNumber =
+      'firebaseErrorMissingPhoneNumber';
+  static const firebaseErrorMissingVerificationCode =
+      'firebaseErrorMissingVerificationCode';
+  static const firebaseErrorMissingVerificationId =
+      'firebaseErrorMissingVerificationId';
+  static const firebaseErrorMultiFactorAuthRequired =
+      'firebaseErrorMultiFactorAuthRequired';
+  static const firebaseErrorMultiFactorInfoNotFound =
+      'firebaseErrorMultiFactorInfoNotFound';
+  static const firebaseErrorNetworkRequestFailed =
+      'firebaseErrorNetworkRequestFailed';
   static const firebaseErrorNoAuthEvent = 'firebaseErrorNoAuthEvent';
   static const firebaseErrorNoSuchProvider = 'firebaseErrorNoSuchProvider';
   static const firebaseErrorNullUser = 'firebaseErrorNullUser';
-  static const firebaseErrorOperationNotAllowed = 'firebaseErrorOperationNotAllowed';
-  static const firebaseErrorOperationNotSupportedInThisEnvironment = 'firebaseErrorOperationNotSupportedInThisEnvironment';
+  static const firebaseErrorOperationNotAllowed =
+      'firebaseErrorOperationNotAllowed';
+  static const firebaseErrorOperationNotSupportedInThisEnvironment =
+      'firebaseErrorOperationNotSupportedInThisEnvironment';
   static const firebaseErrorPopupBlocked = 'firebaseErrorPopupBlocked';
-  static const firebaseErrorPopupClosedByUser = 'firebaseErrorPopupClosedByUser';
-  static const firebaseErrorProviderAlreadyLinked = 'firebaseErrorProviderAlreadyLinked';
+  static const firebaseErrorPopupClosedByUser =
+      'firebaseErrorPopupClosedByUser';
+  static const firebaseErrorProviderAlreadyLinked =
+      'firebaseErrorProviderAlreadyLinked';
   static const firebaseErrorQuotaExceeded = 'firebaseErrorQuotaExceeded';
-  static const firebaseErrorRedirectCancelledByUser = 'firebaseErrorRedirectCancelledByUser';
-  static const firebaseErrorRedirectOperationPending = 'firebaseErrorRedirectOperationPending';
-  static const firebaseErrorRejectedCredential = 'firebaseErrorRejectedCredential';
-  static const firebaseErrorRequiresRecentLogin = 'firebaseErrorRequiresRecentLogin';
-  static const firebaseErrorSecondFactorAlreadyInUse = 'firebaseErrorSecondFactorAlreadyInUse';
+  static const firebaseErrorRedirectCancelledByUser =
+      'firebaseErrorRedirectCancelledByUser';
+  static const firebaseErrorRedirectOperationPending =
+      'firebaseErrorRedirectOperationPending';
+  static const firebaseErrorRejectedCredential =
+      'firebaseErrorRejectedCredential';
+  static const firebaseErrorRequiresRecentLogin =
+      'firebaseErrorRequiresRecentLogin';
+  static const firebaseErrorSecondFactorAlreadyInUse =
+      'firebaseErrorSecondFactorAlreadyInUse';
   static const firebaseErrorTenantIdMismatch = 'firebaseErrorTenantIdMismatch';
   static const firebaseErrorTimeout = 'firebaseErrorTimeout';
   static const firebaseErrorTooManyRequests = 'firebaseErrorTooManyRequests';
-  static const firebaseErrorUnauthorizedContinueUri = 'firebaseErrorUnauthorizedContinueUri';
-  static const firebaseErrorUnauthorizedDomain = 'firebaseErrorUnauthorizedDomain';
-  static const firebaseErrorUnsupportedFirstFactor = 'firebaseErrorUnsupportedFirstFactor';
-  static const firebaseErrorUnsupportedPersistenceType = 'firebaseErrorUnsupportedPersistenceType';
-  static const firebaseErrorUnsupportedTenantOperation = 'firebaseErrorUnsupportedTenantOperation';
+  static const firebaseErrorUnauthorizedContinueUri =
+      'firebaseErrorUnauthorizedContinueUri';
+  static const firebaseErrorUnauthorizedDomain =
+      'firebaseErrorUnauthorizedDomain';
+  static const firebaseErrorUnsupportedFirstFactor =
+      'firebaseErrorUnsupportedFirstFactor';
+  static const firebaseErrorUnsupportedPersistenceType =
+      'firebaseErrorUnsupportedPersistenceType';
+  static const firebaseErrorUnsupportedTenantOperation =
+      'firebaseErrorUnsupportedTenantOperation';
   static const firebaseErrorUnverifiedEmail = 'firebaseErrorUnverifiedEmail';
   static const firebaseErrorUserCancelled = 'firebaseErrorUserCancelled';
   static const firebaseErrorUserDisabled = 'firebaseErrorUserDisabled';
@@ -1159,7 +1332,8 @@ abstract class LocaleKeys {
   static const firebaseErrorUserSignedOut = 'firebaseErrorUserSignedOut';
   static const firebaseErrorUserTokenExpired = 'firebaseErrorUserTokenExpired';
   static const firebaseErrorWeakPassword = 'firebaseErrorWeakPassword';
-  static const firebaseErrorWebStorageUnsupported = 'firebaseErrorWebStorageUnsupported';
+  static const firebaseErrorWebStorageUnsupported =
+      'firebaseErrorWebStorageUnsupported';
   static const firebaseErrorWrongPassword = 'firebaseErrorWrongPassword';
   static const firstName = 'firstName';
   static const firstRecordStepDescription = 'firstRecordStepDescription';
@@ -1183,8 +1357,10 @@ abstract class LocaleKeys {
   static const flowLogFinishedIteration = 'flowLogFinishedIteration';
   static const flowLogImportedRowsColumns = 'flowLogImportedRowsColumns';
   static const flowLogItemsFoundPlural = 'flowLogItemsFoundPlural';
-  static const flowLogMetAbortConditionForItem = 'flowLogMetAbortConditionForItem';
-  static const flowLogMetAbortConditionForRecord = 'flowLogMetAbortConditionForRecord';
+  static const flowLogMetAbortConditionForItem =
+      'flowLogMetAbortConditionForItem';
+  static const flowLogMetAbortConditionForRecord =
+      'flowLogMetAbortConditionForRecord';
   static const flowLogModifiedRecord = 'flowLogModifiedRecord';
   static const flowLogRanAction = 'flowLogRanAction';
   static const flowLogRanPaths = 'flowLogRanPaths';
@@ -1196,11 +1372,14 @@ abstract class LocaleKeys {
   static const flowLogSentApprovalRequest = 'flowLogSentApprovalRequest';
   static const flowLogSentEmail = 'flowLogSentEmail';
   static const flowLogSentRequest = 'flowLogSentRequest';
-  static const flowLogSentRequestSuccessfully = 'flowLogSentRequestSuccessfully';
+  static const flowLogSentRequestSuccessfully =
+      'flowLogSentRequestSuccessfully';
   static const flowLogSetVariable = 'flowLogSetVariable';
   static const flowLogShowedMessage = 'flowLogShowedMessage';
-  static const flowLogStartedIterationForItem = 'flowLogStartedIterationForItem';
-  static const flowLogStartedIterationForRecord = 'flowLogStartedIterationForRecord';
+  static const flowLogStartedIterationForItem =
+      'flowLogStartedIterationForItem';
+  static const flowLogStartedIterationForRecord =
+      'flowLogStartedIterationForRecord';
   static const flowLogTriggeredWebhook = 'flowLogTriggeredWebhook';
   static const flowLogWaitForApproval = 'flowLogWaitForApproval';
   static const flowLogWaiting = 'flowLogWaiting';
@@ -1261,7 +1440,8 @@ abstract class LocaleKeys {
   static const imageLink = 'imageLink';
   static const imageLinkBrickDescription = 'imageLinkBrickDescription';
   static const imagePickerBrickDescription = 'imagePickerBrickDescription';
-  static const imagePickerDuplicateExplanation = 'imagePickerDuplicateExplanation';
+  static const imagePickerDuplicateExplanation =
+      'imagePickerDuplicateExplanation';
   static const imagePlural = 'imagePlural';
   static const imageSignIn = 'imageSignIn';
   static const imageUpload = 'imageUpload';
@@ -1269,7 +1449,8 @@ abstract class LocaleKeys {
   static const import = 'import';
   static const importErrorForUser = 'importErrorForUser';
   static const importFinished = 'importFinished';
-  static const importFinishedAdditionalInfoPlural = 'importFinishedAdditionalInfoPlural';
+  static const importFinishedAdditionalInfoPlural =
+      'importFinishedAdditionalInfoPlural';
   static const importFromExcel = 'importFromExcel';
   static const importTable = 'importTable';
   static const importTableStepDescription = 'importTableStepDescription';
@@ -1284,26 +1465,32 @@ abstract class LocaleKeys {
   static const includingCountry = 'includingCountry';
   static const includingTime = 'includingTime';
   static const individualUsers = 'individualUsers';
-  static const industryAdvertisingAndMarketing = 'industryAdvertisingAndMarketing';
+  static const industryAdvertisingAndMarketing =
+      'industryAdvertisingAndMarketing';
   static const industryAgriculture = 'industryAgriculture';
-  static const industryChemicalAndRawMaterialsIndustry = 'industryChemicalAndRawMaterialsIndustry';
+  static const industryChemicalAndRawMaterialsIndustry =
+      'industryChemicalAndRawMaterialsIndustry';
   static const industryConstructionIndustry = 'industryConstructionIndustry';
   static const industryConsumerGoods = 'industryConsumerGoods';
   static const industryECommerce = 'industryECommerce';
   static const industryEconomyAndPolitics = 'industryEconomyAndPolitics';
   static const industryEnergyAndEnvironment = 'industryEnergyAndEnvironment';
-  static const industryFinanceRealEstateAndInsurance = 'industryFinanceRealEstateAndInsurance';
+  static const industryFinanceRealEstateAndInsurance =
+      'industryFinanceRealEstateAndInsurance';
   static const industryLabel = 'industryLabel';
   static const industryLeisureIndustry = 'industryLeisureIndustry';
   static const industryMedia = 'industryMedia';
   static const industryMetalAndElectronics = 'industryMetalAndElectronics';
   static const industryOther = 'industryOther';
-  static const industryPharmaceuticalsAndHealth = 'industryPharmaceuticalsAndHealth';
+  static const industryPharmaceuticalsAndHealth =
+      'industryPharmaceuticalsAndHealth';
   static const industryServicesIndustry = 'industryServicesIndustry';
   static const industrySportsAndFitness = 'industrySportsAndFitness';
-  static const industryTelecommunicationsAndIt = 'industryTelecommunicationsAndIt';
+  static const industryTelecommunicationsAndIt =
+      'industryTelecommunicationsAndIt';
   static const industryTourismAndGastronomy = 'industryTourismAndGastronomy';
-  static const industryTransportationAndLogistics = 'industryTransportationAndLogistics';
+  static const industryTransportationAndLogistics =
+      'industryTransportationAndLogistics';
   static const info = 'info';
   static const infoForPersonalization = 'infoForPersonalization';
   static const insertToday = 'insertToday';
@@ -1347,7 +1534,8 @@ abstract class LocaleKeys {
   static const iterateRecordsStepDescription = 'iterateRecordsStepDescription';
   static const janeDoe = 'janeDoe';
   static const jobCategoryDescriptionFlow = 'jobCategoryDescriptionFlow';
-  static const jobCategoryDescriptionRecordSpec = 'jobCategoryDescriptionRecordSpec';
+  static const jobCategoryDescriptionRecordSpec =
+      'jobCategoryDescriptionRecordSpec';
   static const jobCategoryDescriptionTeam = 'jobCategoryDescriptionTeam';
   static const jobCategoryFlow = 'jobCategoryFlow';
   static const jobCategoryRecordSpec = 'jobCategoryRecordSpec';
@@ -1420,7 +1608,8 @@ abstract class LocaleKeys {
   static const linkToListNoun = 'linkToListNoun';
   static const linkVia = 'linkVia';
   static const linkedRecordExplanation = 'linkedRecordExplanation';
-  static const linkedRecordForFileExplanation = 'linkedRecordForFileExplanation';
+  static const linkedRecordForFileExplanation =
+      'linkedRecordForFileExplanation';
   static const linkedRecordId = 'linkedRecordId';
   static const linkingOfRecords = 'linkingOfRecords';
   static const list = 'list';
@@ -1518,7 +1707,8 @@ abstract class LocaleKeys {
   static const multiSelectColumns = 'multiSelectColumns';
   static const multiSelectFavorites = 'multiSelectFavorites';
   static const multiSelectRows = 'multiSelectRows';
-  static const multiSelectionBrickDescription = 'multiSelectionBrickDescription';
+  static const multiSelectionBrickDescription =
+      'multiSelectionBrickDescription';
   static const mustSignIn = 'mustSignIn';
   static const myTiles = 'myTiles';
   static const name = 'name';
@@ -1571,7 +1761,8 @@ abstract class LocaleKeys {
   static const noCodeExperienceNovice = 'noCodeExperienceNovice';
   static const noColumns = 'noColumns';
   static const noComments = 'noComments';
-  static const noConnectedBillingAccountsForPartner = 'noConnectedBillingAccountsForPartner';
+  static const noConnectedBillingAccountsForPartner =
+      'noConnectedBillingAccountsForPartner';
   static const noConnectionToServer = 'noConnectionToServer';
   static const noDocumentsImported = 'noDocumentsImported';
   static const noEntriesFound = 'noEntriesFound';
@@ -1638,7 +1829,8 @@ abstract class LocaleKeys {
   static const numberDigits = 'numberDigits';
   static const numberEntries = 'numberEntries';
   static const numberExpression = 'numberExpression';
-  static const numberExpressionBrickDescription = 'numberExpressionBrickDescription';
+  static const numberExpressionBrickDescription =
+      'numberExpressionBrickDescription';
   static const numberFieldBrickDescription = 'numberFieldBrickDescription';
   static const numberHeaderRows = 'numberHeaderRows';
   static const numberHeaderRowsExplanation = 'numberHeaderRowsExplanation';
@@ -1702,7 +1894,8 @@ abstract class LocaleKeys {
   static const pipe = 'pipe';
   static const plain = 'plain';
   static const pleaseConnect = 'pleaseConnect';
-  static const pleaseSaveDesignModeChangesToContinue = 'pleaseSaveDesignModeChangesToContinue';
+  static const pleaseSaveDesignModeChangesToContinue =
+      'pleaseSaveDesignModeChangesToContinue';
   static const portalDomains = 'portalDomains';
   static const portalDomainsExplanation = 'portalDomainsExplanation';
   static const possibleColors = 'possibleColors';
@@ -1783,7 +1976,8 @@ abstract class LocaleKeys {
   static const recordNotFound = 'recordNotFound';
   static const recordNotFound404 = 'recordNotFound404';
   static const recordPickerBrickDescription = 'recordPickerBrickDescription';
-  static const recordSpecWithTemplateIdNotFound = 'recordSpecWithTemplateIdNotFound';
+  static const recordSpecWithTemplateIdNotFound =
+      'recordSpecWithTemplateIdNotFound';
   static const records = 'records';
   static const recordsAre = 'recordsAre';
   static const rectangle = 'rectangle';
@@ -1801,7 +1995,8 @@ abstract class LocaleKeys {
   static const remove = 'remove';
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
-  static const removedInvalidRoleConfigurations = 'removedInvalidRoleConfigurations';
+  static const removedInvalidRoleConfigurations =
+      'removedInvalidRoleConfigurations';
   static const removingUser = 'removingUser';
   static const repeatWorkflow = 'repeatWorkflow';
   static const request = 'request';
@@ -1827,11 +2022,13 @@ abstract class LocaleKeys {
   static const roleNameOrId = 'roleNameOrId';
   static const rolePlural = 'rolePlural';
   static const roleReferenceDeleteFilter = 'roleReferenceDeleteFilter';
-  static const roleReferenceDeletePermissions = 'roleReferenceDeletePermissions';
+  static const roleReferenceDeletePermissions =
+      'roleReferenceDeletePermissions';
   static const roleReferenceReadFilter = 'roleReferenceReadFilter';
   static const roleReferenceReadPermissions = 'roleReferenceReadPermissions';
   static const roleReferenceUnlockFilter = 'roleReferenceUnlockFilter';
-  static const roleReferenceUnlockPermissions = 'roleReferenceUnlockPermissions';
+  static const roleReferenceUnlockPermissions =
+      'roleReferenceUnlockPermissions';
   static const roleReferenceWriteFilter = 'roleReferenceWriteFilter';
   static const roleReferenceWritePermissions = 'roleReferenceWritePermissions';
   static const roles = 'roles';
@@ -1855,7 +2052,8 @@ abstract class LocaleKeys {
   static const saveAs = 'saveAs';
   static const saveChanges = 'saveChanges';
   static const saveForAllUsers = 'saveForAllUsers';
-  static const saveStripeSubscriptionItemError = 'saveStripeSubscriptionItemError';
+  static const saveStripeSubscriptionItemError =
+      'saveStripeSubscriptionItemError';
   static const saveToHomeScreen = 'saveToHomeScreen';
   static const saveToSentEmails = 'saveToSentEmails';
   static const savingDrawing = 'savingDrawing';
@@ -1909,15 +2107,18 @@ abstract class LocaleKeys {
   static const selectValue = 'selectValue';
   static const selectWorkspace = 'selectWorkspace';
   static const selectedOAuthMethod = 'selectedOAuthMethod';
-  static const selectedOAuthMethodExplanation = 'selectedOAuthMethodExplanation';
+  static const selectedOAuthMethodExplanation =
+      'selectedOAuthMethodExplanation';
   static const send = 'send';
-  static const sendApprovalRequestStepDescription = 'sendApprovalRequestStepDescription';
+  static const sendApprovalRequestStepDescription =
+      'sendApprovalRequestStepDescription';
   static const sendEmail = 'sendEmail';
   static const sendEmailStepDescription = 'sendEmailStepDescription';
   static const sendImmediately = 'sendImmediately';
   static const sendInBulk = 'sendInBulk';
   static const sendNotification = 'sendNotification';
-  static const sendNotificationStepDescription = 'sendNotificationStepDescription';
+  static const sendNotificationStepDescription =
+      'sendNotificationStepDescription';
   static const sendTo = 'sendTo';
   static const sendWebRequest = 'sendWebRequest';
   static const sendWorkflowErrors = 'sendWorkflowErrors';
@@ -1995,7 +2196,8 @@ abstract class LocaleKeys {
   static const solutionBuildVersion = 'solutionBuildVersion';
   static const solutionCanNotBeDeleted = 'solutionCanNotBeDeleted';
   static const solutionConfirmInstall = 'solutionConfirmInstall';
-  static const solutionIncludeEntireWorkspace = 'solutionIncludeEntireWorkspace';
+  static const solutionIncludeEntireWorkspace =
+      'solutionIncludeEntireWorkspace';
   static const solutionName = 'solutionName';
   static const solutionNamePlaceholder = 'solutionNamePlaceholder';
   static const solutionNew = 'solutionNew';
@@ -2088,7 +2290,8 @@ abstract class LocaleKeys {
   static const technicalName = 'technicalName';
   static const technicalNameEditWarning = 'technicalNameEditWarning';
   static const technicalNameExplanationBrick = 'technicalNameExplanationBrick';
-  static const technicalNameExplanationFlowStep = 'technicalNameExplanationFlowStep';
+  static const technicalNameExplanationFlowStep =
+      'technicalNameExplanationFlowStep';
   static const technicalNameNotSet = 'technicalNameNotSet';
   static const template = 'template';
   static const templateConstructionSite = 'templateConstructionSite';
@@ -2102,10 +2305,12 @@ abstract class LocaleKeys {
   static const text = 'text';
   static const textBrickDescription = 'textBrickDescription';
   static const textExpression = 'textExpression';
-  static const textExpressionBrickDescription = 'textExpressionBrickDescription';
+  static const textExpressionBrickDescription =
+      'textExpressionBrickDescription';
   static const textField = 'textField';
   static const textFieldBrickDescription = 'textFieldBrickDescription';
-  static const textFieldOrTextExpressionBrick = 'textFieldOrTextExpressionBrick';
+  static const textFieldOrTextExpressionBrick =
+      'textFieldOrTextExpressionBrick';
   static const textForPrintout = 'textForPrintout';
   static const thousandsSeparator = 'thousandsSeparator';
   static const thursdayAbbreviated = 'thursdayAbbreviated';
@@ -2120,7 +2325,8 @@ abstract class LocaleKeys {
   static const tileSectionHeading = 'tileSectionHeading';
   static const tileSettings = 'tileSettings';
   static const tileTechnicalNameExplanation = 'tileTechnicalNameExplanation';
-  static const tileVisibilitySettingsExplanation = 'tileVisibilitySettingsExplanation';
+  static const tileVisibilitySettingsExplanation =
+      'tileVisibilitySettingsExplanation';
   static const tiles = 'tiles';
   static const tilesInFolder = 'tilesInFolder';
   static const time = 'time';
@@ -2222,7 +2428,8 @@ abstract class LocaleKeys {
   static const validationFirstName = 'validationFirstName';
   static const validationLastName = 'validationLastName';
   static const validationLockingReason = 'validationLockingReason';
-  static const validationLockingReasonTooLong = 'validationLockingReasonTooLong';
+  static const validationLockingReasonTooLong =
+      'validationLockingReasonTooLong';
   static const validationNumber = 'validationNumber';
   static const validationNumberBounds = 'validationNumberBounds';
   static const validationNumberGreaterZero = 'validationNumberGreaterZero';
@@ -2231,19 +2438,23 @@ abstract class LocaleKeys {
   static const validationOption = 'validationOption';
   static const validationOptionAlreadyExists = 'validationOptionAlreadyExists';
   static const validationPassword = 'validationPassword';
-  static const validationPasswordConfirmation = 'validationPasswordConfirmation';
-  static const validationPasswordConfirmationWrong = 'validationPasswordConfirmationWrong';
+  static const validationPasswordConfirmation =
+      'validationPasswordConfirmation';
+  static const validationPasswordConfirmationWrong =
+      'validationPasswordConfirmationWrong';
   static const validationPasswordDigit = 'validationPasswordDigit';
   static const validationPasswordLength = 'validationPasswordLength';
   static const validationPasswordLengthOld = 'validationPasswordLengthOld';
   static const validationPasswordLowerCase = 'validationPasswordLowerCase';
-  static const validationPasswordSpecialCharacter = 'validationPasswordSpecialCharacter';
+  static const validationPasswordSpecialCharacter =
+      'validationPasswordSpecialCharacter';
   static const validationPasswordUpperCase = 'validationPasswordUpperCase';
   static const validationPhone = 'validationPhone';
   static const validationPositiveNumber = 'validationPositiveNumber';
   static const validationQuantity = 'validationQuantity';
   static const validationQuantityPositive = 'validationQuantityPositive';
-  static const validationTableWidthPortionNotInRange = 'validationTableWidthPortionNotInRange';
+  static const validationTableWidthPortionNotInRange =
+      'validationTableWidthPortionNotInRange';
   static const validationTimePicker = 'validationTimePicker';
   static const validationUrl = 'validationUrl';
   static const validationValueMustBeList = 'validationValueMustBeList';
@@ -2268,7 +2479,8 @@ abstract class LocaleKeys {
   static const waitFor = 'waitFor';
   static const waitForAllExecutions = 'waitForAllExecutions';
   static const waitForApproval = 'waitForApproval';
-  static const waitForApprovalStepDescription = 'waitForApprovalStepDescription';
+  static const waitForApprovalStepDescription =
+      'waitForApprovalStepDescription';
   static const waitForResponse = 'waitForResponse';
   static const waitForResponseExplanation = 'waitForResponseExplanation';
   static const waitForSave = 'waitForSave';
@@ -2329,5 +2541,4 @@ abstract class LocaleKeys {
   static const yearlyNominative = 'yearlyNominative';
   static const yes = 'yes';
   static const yesNo = 'yesNo';
-
 }
