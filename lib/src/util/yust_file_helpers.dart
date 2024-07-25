@@ -6,17 +6,26 @@ import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as image_lib;
+import 'package:image/image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:yust/yust.dart';
+import 'package:yust_ui/src/util/yust_ui_helpers.dart';
+// ignore: implementation_imports
+import 'package:image/src/util/rational.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
+
+/// exifTagPrecision to encode exif information, e.g. latitude.
+/// This number is the denominator of the fraction => increasing the number
+/// increases the exifTagPrecision.
+const exifTagPrecision = 10000;
 
 class YustFileHelpers {
   YustFileHelpers();
@@ -133,24 +142,39 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
+  /// Resizes an image to a maximum width and quality.
+  /// If [file] is not null, it will be used to load the image.
+  /// If [bytes] is not null, it will be used to load the image.
+  /// If [setGPSToLocation] is true, the GPS tags will be set to the current
+  /// location, if they are not set.
   Future<Uint8List> resizeImage(
       {required String name,
-      required Uint8List bytes,
+      Uint8List? bytes,
+      File? file,
       int maxWidth = 1024,
-      int quality = 80}) async {
+      int quality = 80,
+      bool setGPSToLocation = false}) async {
     if (kIsWeb) {
+      assert(bytes != null, 'bytes must not be null on web');
       return await _resizeWeb(
-          name: name, bytes: bytes, maxWidth: maxWidth, quality: quality);
+          name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
     } else {
-      image_lib.Image? newImage;
-      var originalImage = image_lib.decodeNamedImage(name, bytes)!;
+      assert((file != null || bytes != null),
+          'file or bytes must not be null on mobile');
+      Image? newImage;
+
+      var originalImage = file != null
+          ? await decodeImageFile(file.path)
+          : decodeNamedImage(name, bytes!);
+      if (originalImage == null) throw YustException('Could not load image.');
+
       newImage = originalImage;
       if (originalImage.width > originalImage.height &&
           originalImage.width > maxWidth) {
-        newImage = image_lib.copyResize(originalImage, width: maxWidth);
+        newImage = copyResize(originalImage, width: maxWidth);
       } else if (originalImage.height > originalImage.width &&
           originalImage.height > maxWidth) {
-        newImage = image_lib.copyResize(originalImage, height: maxWidth);
+        newImage = copyResize(originalImage, height: maxWidth);
       }
 
       final exif = originalImage.exif;
@@ -163,10 +187,64 @@ class YustFileHelpers {
       exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
       exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
       exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+      if (setGPSToLocation) {
+        try {
+          // Check if GPS tags are set by the camera
+          if (exif.gpsIfd['GPSLatitude'] == null) {
+            final position = await YustUiHelpers.getPosition();
+
+            exif.gpsIfd['GPSLatitudeRef'] =
+                IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
+            exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
+            exif.gpsIfd['GPSLongitudeRef'] =
+                IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
+            exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
+            exif.gpsIfd['GPSAltitudeRef'] =
+                IfdByteValue(position.altitude > 0 ? 0 : 1);
+            exif.gpsIfd['GPSAltitude'] = IfdValueRational(
+                (position.altitude * exifTagPrecision).toInt().abs(),
+                exifTagPrecision);
+            final date = DateTime.now().toUtc();
+            exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
+              Rational(date.hour, 1),
+              Rational(date.minute, 1),
+              Rational(date.second, 1)
+            ]);
+            if (position.speed != 0) {
+              exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
+              exif.gpsIfd['GPSSpeed'] = IfdValueRational(
+                  // Conversion m/s to km/h
+                  (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
+                      .toInt()
+                      .abs(),
+                  exifTagPrecision);
+            }
+            if (position.heading != 0 && position.heading != -1) {
+              exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
+              exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
+                  (position.heading * exifTagPrecision).toInt().abs(),
+                  exifTagPrecision);
+              exif.gpsIfd['GPSDestBearingRef'] =
+                  exif.gpsIfd['GPSImgDirectionRef'];
+              exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
+            }
+            exif.gpsIfd['GPSDate'] = IfdValueAscii(
+                '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
+            if (position.accuracy != 0) {
+              exif.gpsIfd[0x001f] = IfdValueRational(
+                  (position.accuracy * exifTagPrecision).toInt().abs(),
+                  exifTagPrecision);
+            }
+          }
+        } catch (e) {
+          // ignore: avoid_print
+          print('Error getting position: $e');
+        }
+      }
 
       newImage.exif = exif;
 
-      return image_lib.encodeJpg(newImage, quality: quality);
+      return encodeJpg(newImage, quality: quality);
     }
   }
 
@@ -208,5 +286,21 @@ class YustFileHelpers {
     reader.readAsArrayBuffer(blob);
     reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
     return completer.future;
+  }
+
+  /// Converts a double (Decimal Degree Format) to a [IfdValueRational]
+  /// in DMS (Degree Minute Second) Format.
+  IfdValueRational _dDtoDMS(double dd) {
+    final double degrees = dd.abs();
+    final int degreesInt = degrees.toInt();
+    final double minutes = (dd.abs() - degreesInt) * 60;
+    final int minutesInt = minutes.toInt();
+    final double seconds = (minutes - minutesInt) * 60;
+    final int secondsInt = (seconds * exifTagPrecision).toInt();
+    return IfdValueRational.list([
+      Rational(degreesInt, 1),
+      Rational(minutesInt, 1),
+      Rational(secondsInt, exifTagPrecision)
+    ]);
   }
 }
