@@ -1,4 +1,8 @@
-## 3.23.6 - 2024-07-22
+## 3.23.8 - 2024-07-26
+
+-   Further improved error handling for PaginatedListView
+
+## 3.23.7 - 2024-07-25
 
 -   Design Fixes
 -   Improved Error-Handling for PaginatedListView
