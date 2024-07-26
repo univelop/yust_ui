@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -614,13 +615,26 @@ class YustImagePickerState extends State<YustImagePicker> {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       final quality = yustImageQuality[widget.yustQuality]!['quality']!;
 
-      bytes = await YustUi.fileHelpers.resizeImage(
-          name: sanitizedPath,
-          bytes: bytes,
-          maxWidth: size,
-          quality: quality,
-          file: file,
-          setGPSToLocation: setGPSToLocation);
+      Future<Uint8List?> helper(RootIsolateToken? token) async {
+        // This is needed for the geolocator plugin to work
+        if (token != null) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        }
+
+        return await YustUi.fileHelpers.resizeImage(
+            name: sanitizedPath,
+            bytes: bytes,
+            maxWidth: size,
+            quality: quality,
+            file: file,
+            setGPSToLocation: setGPSToLocation);
+      }
+
+      RootIsolateToken? token;
+      if (!kIsWeb) {
+        token = RootIsolateToken.instance;
+      }
+      bytes = await compute(helper, token);
     }
 
     convertToJPEG = widget.convertToJPEG;
