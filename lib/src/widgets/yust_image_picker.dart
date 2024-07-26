@@ -616,9 +616,12 @@ class YustImagePickerState extends State<YustImagePicker> {
       final size = yustImageQuality[widget.yustQuality]!['size']!;
       final quality = yustImageQuality[widget.yustQuality]!['quality']!;
 
-      Future<Uint8List?> helper(RootIsolateToken token) async {
+      Future<Uint8List?> helper(RootIsolateToken? token) async {
         // This is needed for the geolocator plugin to work
-        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        if (token != null) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        }
+
         return await YustUi.fileHelpers.resizeImage(
             name: sanitizedPath,
             bytes: bytes,
@@ -628,9 +631,11 @@ class YustImagePickerState extends State<YustImagePicker> {
             setGPSToLocation: setGPSToLocation);
       }
 
-      final token = RootIsolateToken.instance;
-      assert(token != null, 'RootIsolateToken is null');
-      bytes = await compute(helper, token!);
+      RootIsolateToken? token;
+      if (!kIsWeb) {
+        token = RootIsolateToken.instance;
+      }
+      bytes = await compute(helper, token);
     }
 
     convertToJPEG = widget.convertToJPEG;
