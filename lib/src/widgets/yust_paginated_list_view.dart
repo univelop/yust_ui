@@ -69,8 +69,6 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
         Text(LocaleKeys.errorDuringLoading.tr()),
         const SizedBox(height: 8),
         SelectableText('${LocaleKeys.error.tr()}: $error'),
-        const SizedBox(height: 8),
-        if (trace.toString() != '') SelectableText('StackTrace: $trace'),
       ],
     );
   }
