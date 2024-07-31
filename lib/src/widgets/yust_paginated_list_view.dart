@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/extensions/string_translate_extension.dart';
+
+import '../generated/locale_keys.g.dart';
 
 class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final YustDocSetup<T> modelSetup;
@@ -11,6 +14,9 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final bool Function(T doc)? hideItem;
   final ScrollController? scrollController;
   final Widget? emptyInfo;
+  final Widget? loadingWidget;
+  final Widget Function(BuildContext context, Object error, StackTrace trace)?
+      errorBuilder;
   final bool reverse;
 
   const YustPaginatedListView({
@@ -22,6 +28,8 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.hideItem,
     this.scrollController,
     this.emptyInfo,
+    this.loadingWidget,
+    this.errorBuilder,
     this.reverse = false,
   });
 
@@ -40,10 +48,28 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
       query: query,
       reverse: reverse,
       pageSize: 50,
-      loadingBuilder: (_) => SingleChildScrollView(
-        controller: scrollController,
-        child: const Center(child: CircularProgressIndicator()),
-      ),
+      errorBuilder: errorBuilder ??
+          (context, error, trace) => _errorBuilder(error, trace),
+      loadingBuilder: (_) =>
+          loadingWidget ??
+          SingleChildScrollView(
+            controller: scrollController,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+    );
+  }
+
+  Widget _errorBuilder(Object error, StackTrace trace) {
+    // ignore: avoid_print
+    print('Error during loading: $error StackTrace: $trace');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(LocaleKeys.errorDuringLoading.tr()),
+        const SizedBox(height: 8),
+        SelectableText('${LocaleKeys.error.tr()}: $error'),
+      ],
     );
   }
 
