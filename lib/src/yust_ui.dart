@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/services/yust_location_service.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 
 import 'services/yust_alert_service.dart';
@@ -16,9 +17,10 @@ typedef DeleteCallback = Future<void> Function();
 
 class YustUi {
   static late YustAlertService alertService;
+  static late YustLocationService locationService;
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
   static late YustUiHelpers helpers;
-  static YustFileHelpers fileHelpers = YustFileHelpers();
+  static late YustFileHelpers fileHelpers;
   static String? storageUrl;
   static String? imagePlaceholderPath;
   static Function(
@@ -48,5 +50,7 @@ class YustUi {
   static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {
     YustUi.alertService = YustAlertService(navStateKey);
     YustUi.helpers = YustUiHelpers(navStateKey);
+    YustUi.fileHelpers = YustFileHelpers(navStateKey);
+    YustUi.locationService = YustLocationService(navStateKey);
   }
 }
