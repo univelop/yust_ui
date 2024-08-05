@@ -59,6 +59,7 @@ class YustLocationDialogState extends State<YustLocationDialog> {
                 _currentPosition == null
                     ? LocaleKeys.loadingLocation.tr()
                     : LocaleKeys.locationFound.tr(),
+                textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),

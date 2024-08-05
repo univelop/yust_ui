@@ -1253,6 +1253,7 @@ abstract class LocaleKeys {
   static const generateTechnicalName = 'generateTechnicalName';
   static const geoLocation = 'geoLocation';
   static const geoLocationBrickDescription = 'geoLocationBrickDescription';
+  static const geoLocationValueImportError = 'geoLocationValueImportError';
   static const german = 'german';
   static const germany = 'germany';
   static const getToKnowUnivelop = 'getToKnowUnivelop';
