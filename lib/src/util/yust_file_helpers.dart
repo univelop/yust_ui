@@ -185,8 +185,8 @@ class YustFileHelpers {
       if (originalImage == null) throw YustException('Could not load image.');
 
       newImage = originalImage;
-      if (originalImage.width > originalImage.height &&
-          originalImage.width > maxWidth) {
+      if (originalImage.width >= originalImage.height &&
+          originalImage.width >= maxWidth) {
         newImage = copyResize(originalImage, width: maxWidth);
       } else if (originalImage.height > originalImage.width &&
           originalImage.height > maxWidth) {
@@ -280,7 +280,7 @@ class YustFileHelpers {
     int width = newImg.width!;
     int height = newImg.height!;
 
-    if (newImg.width! > newImg.height! && newImg.width! > maxWidth) {
+    if (newImg.width! >= newImg.height! && newImg.width! >= maxWidth) {
       width = maxWidth;
       height = (width * newImg.height! / newImg.width!).round();
     } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {

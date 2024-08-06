@@ -617,10 +617,6 @@ class YustImagePickerState extends State<YustImagePicker> {
     }
   }
 
-  _sanitizeFilePath(String path) {
-    return path.replaceAll(RegExp(r'[,#]'), '_');
-  }
-
   Future<void> _createDatabaseEntry() async {
     try {
       if (widget.linkedDocPath != null &&
