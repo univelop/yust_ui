@@ -4,7 +4,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,22 +13,6 @@ import 'package:yust_ui/yust_ui.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-
-final Map<String, Map<String, int>> yustImageQuality = {
-  'original': {'quality': 100, 'size': 5000},
-  'high': {'quality': 90, 'size': 2000},
-  'medium': {'quality': 80, 'size': 1200},
-  'low': {'quality': 70, 'size': 800},
-};
-
-final yustAllowedImageExtensions = [
-  'jpg',
-  'jpeg',
-  'png',
-  'gif',
-  'tiff',
-  if (!kIsWeb) 'heic',
-];
 
 class YustImagePicker extends StatefulWidget {
   final String? label;
@@ -610,46 +593,17 @@ class YustImagePickerState extends State<YustImagePicker> {
     bool convertToJPEG = true,
     bool setGPSToLocation = false,
   }) async {
-    final sanitizedPath = _sanitizeFilePath(path);
-    if (resize && widget.convertToJPEG) {
-      final size = yustImageQuality[widget.yustQuality]!['size']!;
-      final quality = yustImageQuality[widget.yustQuality]!['quality']!;
-
-      Future<Uint8List?> helper(RootIsolateToken? token) async {
-        // This is needed for the geolocator plugin to work
-        if (token != null) {
-          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-        }
-
-        return await YustUi.fileHelpers.resizeImage(
-            name: sanitizedPath,
-            bytes: bytes,
-            maxWidth: size,
-            quality: quality,
-            file: file,
-            setGPSToLocation: setGPSToLocation);
-      }
-
-      RootIsolateToken? token;
-      if (!kIsWeb) {
-        token = RootIsolateToken.instance;
-      }
-      bytes = await compute(helper, token);
-    }
-
-    convertToJPEG = widget.convertToJPEG;
-    final newImageName = convertToJPEG
-        ? '${Yust.helpers.randomString(length: 16)}.jpeg'
-        : '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
-
-    final newYustFile = YustFile(
-      name: newImageName,
-      file: file,
-      bytes: bytes,
-      storageFolderPath: widget.storageFolderPath,
-      linkedDocPath: widget.linkedDocPath,
-      linkedDocAttribute: widget.linkedDocAttribute,
-    );
+    final YustFile newYustFile = await YustFileHelpers().resizeImageWithCompute(
+        file: file,
+        bytes: bytes,
+        path: path,
+        resize: resize,
+        convertToJPEG: convertToJPEG,
+        yustQuality: widget.yustQuality,
+        setGPSToLocation: setGPSToLocation,
+        storageFolderPath: widget.storageFolderPath,
+        linkedDocPath: widget.linkedDocPath,
+        linkedDocAttribute: widget.linkedDocAttribute);
 
     await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);
@@ -661,10 +615,6 @@ class YustImagePickerState extends State<YustImagePicker> {
     if (mounted) {
       setState(() {});
     }
-  }
-
-  _sanitizeFilePath(String path) {
-    return path.replaceAll(RegExp(r'[,#]'), '_');
   }
 
   Future<void> _createDatabaseEntry() async {
