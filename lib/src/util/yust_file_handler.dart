@@ -74,10 +74,11 @@ class YustFileHandler {
 
   Future<void> updateFiles(List<YustFile> onlineFiles,
       {bool loadFiles = false}) async {
-    _removeLocalDeletedFiles(onlineFiles);
-    _removeOnlineDeletedFiles(onlineFiles);
+    final copyOnlineFiles = List<YustFile>.from(onlineFiles);
+    _removeLocalDeletedFiles(copyOnlineFiles);
+    _removeOnlineDeletedFiles(copyOnlineFiles);
 
-    _mergeOnlineFiles(_yustFiles, onlineFiles, storageFolderPath);
+    _mergeOnlineFiles(_yustFiles, copyOnlineFiles, storageFolderPath);
     await _mergeCachedFiles(_yustFiles, linkedDocPath, linkedDocAttribute);
 
     if (loadFiles) _loadFiles();
@@ -100,10 +101,9 @@ class YustFileHandler {
   }
 
   void _removeLocalDeletedFiles(List<YustFile> onlineFiles) {
-    final copyRecentlyDeletedFiles = _recentlyDeletedFileUrls;
+    final copyRecentlyDeletedFiles = List.from(_recentlyDeletedFileUrls);
     onlineFiles.removeWhere((f) {
-      if (_recentlyDeletedFileUrls
-          .any((deletedFileurl) => deletedFileurl == f.url)) {
+      if (_recentlyDeletedFileUrls.contains(f.url)) {
         copyRecentlyDeletedFiles.remove(f.url);
         return true;
       }
