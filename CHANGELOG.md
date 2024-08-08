@@ -1,3 +1,7 @@
+## 3.24.1 - 2024-08-08
+
+-   Fix for OfflineFileHandler
+
 ## 3.24.0 - 2024-07-29
 
 -   Bump Version
