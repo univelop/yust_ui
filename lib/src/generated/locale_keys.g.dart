@@ -17,11 +17,13 @@ abstract class LocaleKeys {
   static const accountId = 'accountId';
   static const accountManagement = 'accountManagement';
   static const accountStatus = 'accountStatus';
+  static const accuracy = 'accuracy';
   static const action = 'action';
   static const active = 'active';
   static const activeInvitationLinks = 'activeInvitationLinks';
   static const activeRole = 'activeRole';
   static const activeTeam = 'activeTeam';
+  static const activity = 'activity';
   static const add = 'add';
   static const addAndDone = 'addAndDone';
   static const addAnyways = 'addAnyways';
@@ -52,7 +54,9 @@ abstract class LocaleKeys {
   static const additionalScannerBrick = 'additionalScannerBrick';
   static const address = 'address';
   static const addressBrick = 'addressBrick';
+  static const addressBrickDescription = 'addressBrickDescription';
   static const addressLine = 'addressLine';
+  static const addressValueImportError = 'addressValueImportError';
   static const adjustPosition = 'adjustPosition';
   static const admin = 'admin';
   static const adminCenter = 'adminCenter';
@@ -135,6 +139,7 @@ abstract class LocaleKeys {
   static const alertConfirmDeleteUserByEmail = 'alertConfirmDeleteUserByEmail';
   static const alertConfirmDeleteUserByPassword = 'alertConfirmDeleteUserByPassword';
   static const alertConfirmOverwriteFile = 'alertConfirmOverwriteFile';
+  static const alertConfirmOverwriteValue = 'alertConfirmOverwriteValue';
   static const alertCreateFormTile = 'alertCreateFormTile';
   static const alertCreateMemberTile = 'alertCreateMemberTile';
   static const alertCreateMemberTileFromExistingRecords = 'alertCreateMemberTileFromExistingRecords';
@@ -211,6 +216,7 @@ abstract class LocaleKeys {
   static const alertMissingConnectionDrawing = 'alertMissingConnectionDrawing';
   static const alertMissingConnectionPrintOut = 'alertMissingConnectionPrintOut';
   static const alertMissingDirectory = 'alertMissingDirectory';
+  static const alertMissingGeoLocation = 'alertMissingGeoLocation';
   static const alertMissingMemberTile = 'alertMissingMemberTile';
   static const alertMissingNewPassword = 'alertMissingNewPassword';
   static const alertMissingOldPassword = 'alertMissingOldPassword';
@@ -624,6 +630,7 @@ abstract class LocaleKeys {
   static const csvFile = 'csvFile';
   static const csvTextDelimiter = 'csvTextDelimiter';
   static const currentList = 'currentList';
+  static const currentLocation = 'currentLocation';
   static const currentMonth = 'currentMonth';
   static const currentRecord = 'currentRecord';
   static const currentWeek = 'currentWeek';
@@ -639,6 +646,7 @@ abstract class LocaleKeys {
   static const dateExpressionBrickDescription = 'dateExpressionBrickDescription';
   static const dateLimitsExplanation = 'dateLimitsExplanation';
   static const datePickerBrickDescription = 'datePickerBrickDescription';
+  static const decimalDegreeWithAbbreviation = 'decimalDegreeWithAbbreviation';
   static const defaultCamera = 'defaultCamera';
   static const defaultLanguage = 'defaultLanguage';
   static const defaultLocaleInfo = 'defaultLocaleInfo';
@@ -651,6 +659,7 @@ abstract class LocaleKeys {
   static const defaultStatusExplanation = 'defaultStatusExplanation';
   static const defaultText = 'defaultText';
   static const defaultToday = 'defaultToday';
+  static const degreeMinuteSecondsWithAbbreviation = 'degreeMinuteSecondsWithAbbreviation';
   static const delete = 'delete';
   static const deleteAccount = 'deleteAccount';
   static const deleteAll = 'deleteAll';
@@ -1238,9 +1247,13 @@ abstract class LocaleKeys {
   static const frontCamera = 'frontCamera';
   static const fullTextSearchForRecordList = 'fullTextSearchForRecordList';
   static const fullUser = 'fullUser';
+  static const functionOnlySupportsIosAndAndroid = 'functionOnlySupportsIosAndAndroid';
   static const general = 'general';
   static const generalReadAccess = 'generalReadAccess';
   static const generateTechnicalName = 'generateTechnicalName';
+  static const geoLocation = 'geoLocation';
+  static const geoLocationBrickDescription = 'geoLocationBrickDescription';
+  static const geoLocationValueImportError = 'geoLocationValueImportError';
   static const german = 'german';
   static const germany = 'germany';
   static const getToKnowUnivelop = 'getToKnowUnivelop';
@@ -1389,6 +1402,7 @@ abstract class LocaleKeys {
   static const lastTwoMonths = 'lastTwoMonths';
   static const latestFirst = 'latestFirst';
   static const latestPossibleDate = 'latestPossibleDate';
+  static const latitude = 'latitude';
   static const layout = 'layout';
   static const leaveDesignMode = 'leaveDesignMode';
   static const leaveWorkspace = 'leaveWorkspace';
@@ -1453,11 +1467,12 @@ abstract class LocaleKeys {
   static const loading = 'loading';
   static const loadingFile = 'loadingFile';
   static const loadingForm = 'loadingForm';
+  static const loadingLocation = 'loadingLocation';
   static const loadingWithName = 'loadingWithName';
   static const localFile = 'localFile';
   static const localImage = 'localImage';
-  static const locationBrickDescription = 'locationBrickDescription';
-  static const locationValueImportError = 'locationValueImportError';
+  static const locationFound = 'locationFound';
+  static const locationServicesDisabled = 'locationServicesDisabled';
   static const lock = 'lock';
   static const lockRecord = 'lockRecord';
   static const lockRecordAutomatically = 'lockRecordAutomatically';
@@ -1470,10 +1485,12 @@ abstract class LocaleKeys {
   static const log = 'log';
   static const login = 'login';
   static const loginMethod = 'loginMethod';
+  static const longitude = 'longitude';
   static const lookOnly = 'lookOnly';
   static const low = 'low';
   static const manageInvitations = 'manageInvitations';
   static const manageLicenses = 'manageLicenses';
+  static const manageMember = 'manageMember';
   static const management = 'management';
   static const mandatoryField = 'mandatoryField';
   static const mandatoryFields = 'mandatoryFields';
@@ -1494,6 +1511,7 @@ abstract class LocaleKeys {
   static const messageAndRecipient = 'messageAndRecipient';
   static const messageStepDescription = 'messageStepDescription';
   static const metered = 'metered';
+  static const meters = 'meters';
   static const method = 'method';
   static const mine = 'mine';
   static const minimumLicense = 'minimumLicense';
@@ -1630,6 +1648,7 @@ abstract class LocaleKeys {
   static const noTiles = 'noTiles';
   static const noTitle = 'noTitle';
   static const noTransfers = 'noTransfers';
+  static const noUserActivityInWorkspace = 'noUserActivityInWorkspace';
   static const noWaitingJobs = 'noWaitingJobs';
   static const noWorkflows = 'noWorkflows';
   static const none = 'none';
@@ -1725,6 +1744,8 @@ abstract class LocaleKeys {
   static const pipe = 'pipe';
   static const plain = 'plain';
   static const pleaseConnect = 'pleaseConnect';
+  static const pleaseEnableLocationAccessForApp = 'pleaseEnableLocationAccessForApp';
+  static const pleaseEnableLocationServices = 'pleaseEnableLocationServices';
   static const pleaseSaveDesignModeChangesToContinue = 'pleaseSaveDesignModeChangesToContinue';
   static const portalDomains = 'portalDomains';
   static const portalDomainsExplanation = 'portalDomainsExplanation';
@@ -1975,6 +1996,7 @@ abstract class LocaleKeys {
   static const showAllComments = 'showAllComments';
   static const showArrow = 'showArrow';
   static const showAsLink = 'showAsLink';
+  static const showCurrentLocationButton = 'showCurrentLocationButton';
   static const showDetailForSingleRecord = 'showDetailForSingleRecord';
   static const showDetailIfSingle = 'showDetailIfSingle';
   static const showDetailIfSingleExplanation = 'showDetailIfSingleExplanation';
@@ -1991,6 +2013,7 @@ abstract class LocaleKeys {
   static const showMessage = 'showMessage';
   static const showModifiedDate = 'showModifiedDate';
   static const showNotifications = 'showNotifications';
+  static const showOnMap = 'showOnMap';
   static const showTabs = 'showTabs';
   static const showTotal = 'showTotal';
   static const showUnderConditions = 'showUnderConditions';
@@ -2174,6 +2197,11 @@ abstract class LocaleKeys {
   static const timeZone = 'timeZone';
   static const timeout = 'timeout';
   static const timer = 'timer';
+  static const timerActionPause = 'timerActionPause';
+  static const timerActionResume = 'timerActionResume';
+  static const timerActionStart = 'timerActionStart';
+  static const timerActionStop = 'timerActionStop';
+  static const timerActionsToExecuteFlow = 'timerActionsToExecuteFlow';
   static const timerBrickDescription = 'timerBrickDescription';
   static const timestampSignature = 'timestampSignature';
   static const title = 'title';

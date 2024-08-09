@@ -13,22 +13,23 @@ class YustButtonTile extends StatelessWidget {
   final bool slimDesign;
   final bool inProgress;
   final Widget? suffixChild;
+  final String? tooltipMessage;
 
-  const YustButtonTile({
-    super.key,
-    this.label = '',
-    this.color,
-    this.textColor = Colors.white,
-    this.icon,
-    this.onPressed,
-    this.suffixChild,
-    this.above,
-    this.below,
-    this.elevated = true,
-    this.divider = true,
-    this.slimDesign = false,
-    this.inProgress = false,
-  });
+  const YustButtonTile(
+      {super.key,
+      this.label = '',
+      this.color,
+      this.textColor = Colors.white,
+      this.icon,
+      this.onPressed,
+      this.suffixChild,
+      this.above,
+      this.below,
+      this.elevated = true,
+      this.divider = true,
+      this.slimDesign = false,
+      this.inProgress = false,
+      this.tooltipMessage});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,7 @@ class YustButtonTile extends StatelessWidget {
   }
 
   Widget _buildButton() {
-    return elevated
+    var button = elevated
         ? ElevatedButton.icon(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
@@ -96,5 +97,14 @@ class YustButtonTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           );
+
+    if (tooltipMessage != null) {
+      return Tooltip(
+        message: tooltipMessage!,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }
