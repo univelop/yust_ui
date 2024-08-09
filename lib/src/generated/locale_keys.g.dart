@@ -2197,6 +2197,11 @@ abstract class LocaleKeys {
   static const timeZone = 'timeZone';
   static const timeout = 'timeout';
   static const timer = 'timer';
+  static const timerActionPause = 'timerActionPause';
+  static const timerActionResume = 'timerActionResume';
+  static const timerActionStart = 'timerActionStart';
+  static const timerActionStop = 'timerActionStop';
+  static const timerActionsToExecuteFlow = 'timerActionsToExecuteFlow';
   static const timerBrickDescription = 'timerBrickDescription';
   static const timestampSignature = 'timestampSignature';
   static const title = 'title';
