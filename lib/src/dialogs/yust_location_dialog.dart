@@ -89,10 +89,12 @@ class YustLocationDialogState extends State<YustLocationDialog> {
           },
         ),
         TextButton(
+          onPressed: _currentPosition == null
+              ? null
+              : () {
+                  Navigator.of(context).pop(_currentPosition);
+                },
           child: Text(LocaleKeys.ok.tr()),
-          onPressed: () {
-            Navigator.of(context).pop(_currentPosition);
-          },
         ),
       ],
     );
