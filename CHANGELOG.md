@@ -1,3 +1,7 @@
+## 3.24.2 - 2024-08-08
+
+-   Image Resize Improvements
+
 ## 3.24.1 - 2024-08-08
 
 -   Fix for OfflineFileHandler
