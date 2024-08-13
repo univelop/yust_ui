@@ -20,7 +20,7 @@ class YustUi {
   static late YustLocationService locationService;
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
   static late YustUiHelpers helpers;
-  static late YustFileHelpers fileHelpers;
+  static YustFileHelpers fileHelpers = YustFileHelpers();
   static String? storageUrl;
   static String? imagePlaceholderPath;
   static Function(
@@ -50,7 +50,6 @@ class YustUi {
   static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {
     YustUi.alertService = YustAlertService(navStateKey);
     YustUi.helpers = YustUiHelpers(navStateKey);
-    YustUi.fileHelpers = YustFileHelpers(navStateKey);
     YustUi.locationService = YustLocationService(navStateKey);
   }
 }

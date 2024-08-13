@@ -19,7 +19,6 @@ import 'package:image/src/util/rational.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-import '../services/yust_location_service.dart';
 import '../yust_ui.dart';
 
 /// exifTagPrecision to encode exif information, e.g. latitude.
@@ -28,9 +27,7 @@ import '../yust_ui.dart';
 const exifTagPrecision = 10000;
 
 class YustFileHelpers {
-  final GlobalKey<NavigatorState> navStateKey;
-
-  YustFileHelpers(this.navStateKey);
+  YustFileHelpers();
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
@@ -193,8 +190,7 @@ class YustFileHelpers {
         try {
           // Check if GPS tags are set by the camera
           if (exif.gpsIfd['GPSLatitude'] == null) {
-            final position =
-                await YustLocationService(navStateKey).getCurrentPosition();
+            final position = await YustUi.locationService.getCurrentPosition();
 
             exif.gpsIfd['GPSLatitudeRef'] =
                 IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
