@@ -194,29 +194,15 @@ class YustLocationService {
         return Future.value();
       }
 
-      final StreamController<Position> positionStreamController =
-          StreamController<Position>();
-
-      StreamSubscription<Position>? subscription;
-
-      subscription = Geolocator.getPositionStream().listen((Position position) {
-        positionStreamController.add(position);
-      });
-
       final dialogResult = await showDialog<Position?>(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return YustLocationDialog(
-            positionStream: positionStreamController.stream,
             locale: locale,
           );
         },
       );
-
-      await subscription.cancel();
-      await positionStreamController.close();
-
       return dialogResult;
     } catch (e) {
       throw YustException(e.toString());

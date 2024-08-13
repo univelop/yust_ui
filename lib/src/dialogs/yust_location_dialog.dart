@@ -3,30 +3,29 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:yust_ui/src/dialogs/location_loading_icon.dart';
+import 'package:yust_ui/src/widgets/yust_pulsating_icon.dart';
 import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 
 import '../generated/locale_keys.g.dart';
 
 class YustLocationDialog extends StatefulWidget {
-  final Stream<Position> positionStream;
   final String? locale;
 
-  const YustLocationDialog(
-      {super.key, required this.positionStream, this.locale});
+  const YustLocationDialog({super.key, this.locale});
 
   @override
   YustLocationDialogState createState() => YustLocationDialogState();
 }
 
 class YustLocationDialogState extends State<YustLocationDialog> {
-  late StreamSubscription<Position>? _positionStreamSubscription;
+  StreamSubscription<Position>? _positionStreamSubscription;
   Position? _currentPosition;
 
   @override
   void initState() {
     super.initState();
-    _positionStreamSubscription = widget.positionStream.handleError((error) {
+    _positionStreamSubscription =
+        Geolocator.getPositionStream().handleError((error) {
       _positionStreamSubscription?.cancel();
       _positionStreamSubscription = null;
     }).listen((position) {
@@ -66,7 +65,9 @@ class YustLocationDialogState extends State<YustLocationDialog> {
               ),
             ),
           ),
-          const LocationLoadingIcon(),
+          const YustPulsatingIcon(
+            iconData: Icons.location_on,
+          ),
           const SizedBox(height: 5),
           _currentPosition == null
               ? Transform.scale(

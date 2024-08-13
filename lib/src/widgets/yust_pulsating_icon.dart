@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-class LocationLoadingIcon extends StatefulWidget {
-  const LocationLoadingIcon({super.key});
+class YustPulsatingIcon extends StatefulWidget {
+  final IconData? iconData;
+  const YustPulsatingIcon({super.key, this.iconData});
 
   @override
-  LocationLoadingIconState createState() => LocationLoadingIconState();
+  YustPulsatingIconState createState() => YustPulsatingIconState();
 }
 
-class LocationLoadingIconState extends State<LocationLoadingIcon>
+class YustPulsatingIconState extends State<YustPulsatingIcon>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -34,7 +35,7 @@ class LocationLoadingIconState extends State<LocationLoadingIcon>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _animation,
-      child: Icon(Icons.location_on,
+      child: Icon(widget.iconData,
           size: 50.0, color: Theme.of(context).primaryColor),
     );
   }
