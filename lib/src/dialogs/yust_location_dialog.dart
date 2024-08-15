@@ -29,10 +29,6 @@ class YustLocationDialogState extends State<YustLocationDialog> {
       _positionStreamSubscription?.cancel();
       _positionStreamSubscription = null;
     }).listen((position) {
-      // Don't update if the new position is less accurate than the current one
-      if (_currentPosition != null &&
-          position.accuracy > _currentPosition!.accuracy) return;
-
       setState(() {
         _currentPosition = position;
       });
