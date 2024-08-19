@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Image;
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart';
@@ -20,6 +21,22 @@ import 'package:image/src/util/rational.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
+
+final Map<String, Map<String, int>> yustImageQuality = {
+  'original': {'quality': 100, 'size': 5000},
+  'high': {'quality': 90, 'size': 2000},
+  'medium': {'quality': 80, 'size': 1200},
+  'low': {'quality': 70, 'size': 800},
+};
+
+final yustAllowedImageExtensions = [
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'tiff',
+  if (!kIsWeb) 'heic',
+];
 
 /// exifTagPrecision to encode exif information, e.g. latitude.
 /// This number is the denominator of the fraction => increasing the number
@@ -168,8 +185,8 @@ class YustFileHelpers {
       if (originalImage == null) throw YustException('Could not load image.');
 
       newImage = originalImage;
-      if (originalImage.width > originalImage.height &&
-          originalImage.width > maxWidth) {
+      if (originalImage.width >= originalImage.height &&
+          originalImage.width >= maxWidth) {
         newImage = copyResize(originalImage, width: maxWidth);
       } else if (originalImage.height > originalImage.width &&
           originalImage.height > maxWidth) {
@@ -263,7 +280,7 @@ class YustFileHelpers {
     int width = newImg.width!;
     int height = newImg.height!;
 
-    if (newImg.width! > newImg.height! && newImg.width! > maxWidth) {
+    if (newImg.width! >= newImg.height! && newImg.width! >= maxWidth) {
       width = maxWidth;
       height = (width * newImg.height! / newImg.width!).round();
     } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
@@ -302,4 +319,61 @@ class YustFileHelpers {
       Rational(secondsInt, exifTagPrecision)
     ]);
   }
+
+  Future<YustFile> resizeImageWithCompute(
+      {required String path,
+      required bool resize,
+      required bool convertToJPEG,
+      required String yustQuality,
+      Uint8List? bytes,
+      File? file,
+      required bool setGPSToLocation,
+      String? storageFolderPath,
+      String? linkedDocPath,
+      String? linkedDocAttribute}) async {
+    final sanitizedPath = _sanitizeFilePath(path);
+    if (resize && convertToJPEG) {
+      final size = yustImageQuality[yustQuality]!['size']!;
+      final quality = yustImageQuality[yustQuality]!['quality']!;
+
+      Future<Uint8List?> helper(RootIsolateToken? token) async {
+        // This is needed for the geolocator plugin to work
+        if (token != null) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        }
+
+        return await YustUi.fileHelpers.resizeImage(
+            name: sanitizedPath,
+            bytes: bytes,
+            maxWidth: size,
+            quality: quality,
+            file: file,
+            setGPSToLocation: setGPSToLocation);
+      }
+
+      RootIsolateToken? token;
+      if (!kIsWeb) {
+        token = RootIsolateToken.instance;
+      }
+      bytes = await compute(helper, token);
+    }
+
+    convertToJPEG = convertToJPEG;
+    final newImageName = convertToJPEG
+        ? '${Yust.helpers.randomString(length: 16)}.jpeg'
+        : '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
+
+    return YustFile(
+      name: newImageName,
+      file: file,
+      bytes: bytes,
+      storageFolderPath: storageFolderPath,
+      linkedDocPath: linkedDocPath,
+      linkedDocAttribute: linkedDocAttribute,
+    );
+  }
+}
+
+_sanitizeFilePath(String path) {
+  return path.replaceAll(RegExp(r'[,#]'), '_');
 }
