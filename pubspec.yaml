@@ -40,6 +40,7 @@ dependencies:
     keyboard_name: ^0.0.1
     permission_handler: ^11.3.1
     geolocator: ^12.0.0
+    geocoding: ^3.0.0
 
 dev_dependencies:
     flutter_lints: ^3.0.1
