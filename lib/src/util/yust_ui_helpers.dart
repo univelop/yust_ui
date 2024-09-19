@@ -14,7 +14,9 @@ class YustUiHelpers {
     final context = navStateKey.currentContext;
     if (context == null) return;
     final currentFocus = Focus.of(context);
-    if (!currentFocus.hasPrimaryFocus) {
+    if (!currentFocus.hasPrimaryFocus &&
+        // Prevent the focus to jump higher than the shortcuts widget in the app
+        currentFocus.context?.widget.key != const Key('mainFocusNode')) {
       currentFocus.unfocus();
     }
   }

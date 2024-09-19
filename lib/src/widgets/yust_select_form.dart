@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
@@ -44,6 +45,9 @@ class YustSelectForm<T> extends StatelessWidget {
 
   final _maxOptionCountBeforeSearch = 10;
 
+  get showSearchBar =>
+      allowSearch && optionValues.length > _maxOptionCountBeforeSearch;
+
   @override
   Widget build(BuildContext context) {
     if (optionListConstraints.maxHeight == double.infinity) {
@@ -71,8 +75,7 @@ class YustSelectForm<T> extends StatelessWidget {
                 label: label,
                 divider: false,
               ),
-            if (allowSearch &&
-                optionValues.length > _maxOptionCountBeforeSearch)
+            if (showSearchBar)
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -104,30 +107,55 @@ class YustSelectForm<T> extends StatelessWidget {
                 thumbVisibility: true,
                 child: SingleChildScrollView(
                     controller: controller,
-                    child: Column(
-                      children: [
-                        if (allowSearch && foundValues.isEmpty)
-                          ListTile(
-                            title: Center(
-                                child: Text(LocaleKeys.noOptionsFound.tr())),
-                            titleAlignment: ListTileTitleAlignment.center,
-                          ),
-                        ...foundValues.map((value) {
-                          switch (formType) {
-                            case YustSelectFormType.single:
-                              return _listItemSingle(foundValues,
-                                  foundValues.indexOf(value), setState);
-                            case YustSelectFormType.multiple:
-                              return _listItemMultiple(foundValues,
-                                  foundValues.indexOf(value), setState);
-                            case YustSelectFormType.singleWithoutIndicator:
-                              return _listItemSingleNoIndicator(foundValues,
-                                  foundValues.indexOf(value), setState);
-                            default:
-                              throw Exception('Unknown form type');
+                    child: FocusTraversalGroup(
+                      policy: WidgetOrderTraversalPolicy(),
+                      child: Focus(
+                        skipTraversal: true,
+                        onKeyEvent: (node, event) {
+                          if (event is KeyDownEvent) {
+                            if (event.logicalKey ==
+                                LogicalKeyboardKey.arrowDown) {
+                              if (node.context != null) {
+                                FocusScope.of(node.context!).nextFocus();
+                              }
+                              return KeyEventResult.handled;
+                            } else if (event.logicalKey ==
+                                LogicalKeyboardKey.arrowUp) {
+                              if (node.context != null) {
+                                FocusScope.of(node.context!).previousFocus();
+                              }
+                              return KeyEventResult.handled;
+                            }
                           }
-                        }),
-                      ],
+                          return KeyEventResult.ignored;
+                        },
+                        child: Column(
+                          children: [
+                            if (allowSearch && foundValues.isEmpty)
+                              ListTile(
+                                title: Center(
+                                    child:
+                                        Text(LocaleKeys.noOptionsFound.tr())),
+                                titleAlignment: ListTileTitleAlignment.center,
+                              ),
+                            ...foundValues.map((value) {
+                              switch (formType) {
+                                case YustSelectFormType.single:
+                                  return _listItemSingle(foundValues,
+                                      foundValues.indexOf(value), setState);
+                                case YustSelectFormType.multiple:
+                                  return _listItemMultiple(foundValues,
+                                      foundValues.indexOf(value), setState);
+                                case YustSelectFormType.singleWithoutIndicator:
+                                  return _listItemSingleNoIndicator(foundValues,
+                                      foundValues.indexOf(value), setState);
+                                default:
+                                  throw Exception('Unknown form type');
+                              }
+                            }),
+                          ],
+                        ),
+                      ),
                     )),
               ),
             ),
@@ -147,6 +175,7 @@ class YustSelectForm<T> extends StatelessWidget {
   Widget _listItemMultiple(
       List<T> foundValues, int index, StateSetter setState) {
     return CheckboxListTile(
+      autofocus: index == 0 && !showSearchBar,
       enabled: !disabled,
       title: Text(_getOptionLabel(foundValues[index])),
       value: selectedValues.contains(foundValues[index]),
@@ -162,6 +191,7 @@ class YustSelectForm<T> extends StatelessWidget {
 
   Widget _listItemSingle(List<T> foundValues, int index, StateSetter setState) {
     return RadioListTile(
+      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       value: foundValues[index],
       groupValue: selectedValues.firstOrNull,
@@ -178,6 +208,7 @@ class YustSelectForm<T> extends StatelessWidget {
   Widget _listItemSingleNoIndicator(
       List<T> foundValues, int index, StateSetter setState) {
     return ListTile(
+      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       onTap: () => setState(() {
         final value = foundValues[index];

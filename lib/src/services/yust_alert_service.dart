@@ -22,6 +22,7 @@ class YustAlertService {
           content: Text(message),
           actions: <Widget>[
             TextButton(
+              autofocus: true,
               child: Text(LocaleKeys.ok.tr()),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -69,6 +70,7 @@ class YustAlertService {
               },
             ),
             TextButton(
+              autofocus: true,
               key: Key(action),
               child: Text(action),
               onPressed: () {
