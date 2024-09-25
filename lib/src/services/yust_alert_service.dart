@@ -127,6 +127,10 @@ class YustAlertService {
                             : (value) => validator(value!.trim()),
                         autofocus: true,
                         obscureText: obscureText,
+                        onFieldSubmitted: (value) {
+                          _submitTextFieldDialog(validator, context, controller,
+                              yustServiceValidationKey);
+                        },
                       ),
                     ),
                     if (suffixIcon != null) suffixIcon(controller: controller),
@@ -161,13 +165,8 @@ class YustAlertService {
               TextButton(
                 child: Text(action),
                 onPressed: () {
-                  if (validator == null) {
-                    Navigator.of(context).pop(controller.text);
-                  } else if (yustServiceValidationKey.currentState!
-                      .validate()) {
-                    //if ( validator(controller.text.trim()) == null
-                    Navigator.of(context).pop(controller.text);
-                  }
+                  _submitTextFieldDialog(
+                      validator, context, controller, yustServiceValidationKey);
                 },
               ),
             ],
@@ -175,6 +174,18 @@ class YustAlertService {
         );
       },
     );
+  }
+
+  void _submitTextFieldDialog(
+      FormFieldValidator<String>? validator,
+      BuildContext context,
+      TextEditingController controller,
+      GlobalKey<FormState> yustServiceValidationKey) {
+    if (validator == null) {
+      Navigator.of(context).pop(controller.text);
+    } else if (yustServiceValidationKey.currentState!.validate()) {
+      Navigator.of(context).pop(controller.text);
+    }
   }
 
   ///
