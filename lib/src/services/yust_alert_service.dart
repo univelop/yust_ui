@@ -81,7 +81,7 @@ class YustAlertService {
     );
   }
 
-  Future<String?> showTextFieldDialog(
+Future<String?> showTextFieldDialog(
     String title,
     String? placeholder,
     String action, {
@@ -89,7 +89,6 @@ class YustAlertService {
     String? warning,
     String initialText = '',
     bool obscureText = false,
-    bool scrollableContent = false,
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
 
     /// if validator is set, action gets only triggered if the validator returns null (means true)
@@ -104,85 +103,84 @@ class YustAlertService {
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        Widget content = AlertDialog(
-          title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (message != null) Text(message),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        hintText: placeholder,
-                        errorMaxLines: 5,
-                      ),
-                      autovalidateMode: validator == null ? null : validateMode,
-                      validator: validator == null
-                          ? null
-                          : (value) => validator(value!.trim()),
-                      autofocus: true,
-                      obscureText: obscureText,
-                    ),
-                  ),
-                  if (suffixIcon != null) suffixIcon(controller: controller),
-                ],
-              ),
-              if (warning != null) const SizedBox(height: 5),
-              if (warning != null)
-                Row(
-                  children: [
-                    const Icon(
-                      size: 15,
-                      Icons.info,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      warning,
-                      style: const TextStyle(
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(LocaleKeys.cancel.tr()),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            TextButton(
-              child: Text(action),
-              onPressed: () {
-                if (validator == null) {
-                  Navigator.of(context).pop(controller.text);
-                } else if (yustServiceValidationKey.currentState!.validate()) {
-                  Navigator.of(context).pop(controller.text);
-                }
-              },
-            ),
-          ],
-        );
-        // If scrollableContent is true wrap content with a SingleChildScrollView
-        if (scrollableContent) {
-          content = SingleChildScrollView(
-            reverse: true,
-            child: content,
-          );
-        }
-
         return Form(
           key: yustServiceValidationKey,
-          child: content,
+          child: SingleChildScrollView(
+            reverse: true,
+            child: AlertDialog(
+              title: Text(title),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (message != null) Text(message),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                                hintText: placeholder, errorMaxLines: 5),
+                            autovalidateMode:
+                                validator == null ? null : validateMode,
+                            validator: validator == null
+                                ? null
+                                : (value) => validator(value!.trim()),
+                            autofocus: true,
+                            obscureText: obscureText,
+                          ),
+                        ),
+                        if (suffixIcon != null)
+                          suffixIcon(controller: controller),
+                      ],
+                    ),
+                    if (warning != null) const SizedBox(height: 5),
+                    if (warning != null)
+                      Row(
+                        children: [
+                          const Icon(
+                            size: 15,
+                            Icons.info,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            warning,
+                            style: const TextStyle(
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text(LocaleKeys.cancel.tr()),
+                  onPressed: () {
+                    Navigator.of(context).pop(null);
+                  },
+                ),
+                TextButton(
+                  child: Text(action),
+                  onPressed: () {
+                    if (validator == null) {
+                      Navigator.of(context).pop(controller.text);
+                    } else if (yustServiceValidationKey.currentState!
+                        .validate()) {
+                      //if ( validator(controller.text.trim()) == null
+                      Navigator.of(context).pop(controller.text);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
   }
+
 
   ///
   /// initialSelectedValue: Initial selected value
