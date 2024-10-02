@@ -11,7 +11,7 @@ dependencies:
         sdk: flutter
     yust: ^3.24.5
     cached_network_image: ^3.3.1
-    cloud_firestore: ^4.5.0
+    cloud_firestore: ^5.4.4
     collection: ^1.18.0
     connectivity_plus: ^5.0.2
     crypto: ^3.0.1
