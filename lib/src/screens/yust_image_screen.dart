@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -22,7 +23,22 @@ class YustImageScreen extends StatefulWidget {
     this.activeImageIndex = 0,
   });
 
-  static const String routeName = '/imageScreen';
+  static void navigateToScreen({
+    required BuildContext context,
+    required List<YustFile> files,
+    int activeImageIndex = 0,
+    required void Function(YustFile file, Uint8List newImage) onSave,
+  }) {
+    unawaited(
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => YustImageScreen(
+          files: files,
+          onSave: onSave,
+          activeImageIndex: activeImageIndex,
+        ),
+      )),
+    );
+  }
 
   @override
   State<YustImageScreen> createState() => _YustImageScreenState();
@@ -170,19 +186,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   iconSize: 35,
                   color: Colors.white,
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => YustImageDrawingScreen(
-                          image: _getImageOfUrl(file),
-                          onSave: (image) async {
-                            if (image != null) {
-                              widget.onSave(file, image);
-                              setState(() {});
-                            }
-                          },
-                        ),
-                      ),
-                    );
+                    YustImageDrawingScreen.navigateToScreen(
+                        context: context,
+                        image: _getImageOfUrl(file),
+                        onSave: (image) async {
+                          if (image != null) {
+                            widget.onSave(file, image);
+                            setState(() {});
+                          }
+                        });
                   },
                   icon: const Icon(Icons.draw_outlined),
                 );
