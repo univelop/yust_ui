@@ -109,51 +109,54 @@ class YustAlertService {
           key: yustServiceValidationKey,
           child: AlertDialog(
             title: Text(title),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (message != null) Text(message),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                            hintText: placeholder, errorMaxLines: 5),
-                        autovalidateMode:
-                            validator == null ? null : validateMode,
-                        validator: validator == null
-                            ? null
-                            : (value) => validator(value!.trim()),
-                        autofocus: true,
-                        obscureText: obscureText,
-                        onFieldSubmitted: (value) {
-                          _submitTextFieldDialog(validator, context, controller,
-                              yustServiceValidationKey);
-                        },
-                      ),
-                    ),
-                    if (suffixIcon != null) suffixIcon(controller: controller),
-                  ],
-                ),
-                if (warning != null) const SizedBox(height: 5),
-                if (warning != null)
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (message != null) Text(message),
                   Row(
                     children: [
-                      const Icon(
-                        size: 15,
-                        Icons.info,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        warning,
-                        style: const TextStyle(
-                          fontSize: 11,
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          decoration: InputDecoration(
+                              hintText: placeholder, errorMaxLines: 5),
+                          autovalidateMode:
+                              validator == null ? null : validateMode,
+                          validator: validator == null
+                              ? null
+                              : (value) => validator(value!.trim()),
+                          autofocus: true,
+                          obscureText: obscureText,
+                          onFieldSubmitted: (value) {
+                            _submitTextFieldDialog(validator, context,
+                                controller, yustServiceValidationKey);
+                          },
                         ),
                       ),
+                      if (suffixIcon != null)
+                        suffixIcon(controller: controller),
                     ],
                   ),
-              ],
+                  if (warning != null) const SizedBox(height: 5),
+                  if (warning != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          size: 15,
+                          Icons.info,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          warning,
+                          style: const TextStyle(
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
             actions: <Widget>[
               TextButton(
