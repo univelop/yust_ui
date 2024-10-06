@@ -145,7 +145,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
                         ),
                       ...foundValues.asMap().entries.map((entry) {
                         final index = entry.key;
-                        final value = entry.value;
                         switch (widget.formType) {
                           case YustSelectFormType.single:
                             return _listItemSingle(foundValues, index);
@@ -157,7 +156,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
                           default:
                             throw Exception('Unknown form type');
                         }
-                      }).toList(),
+                      }),
                     ],
                   ),
                 ),
