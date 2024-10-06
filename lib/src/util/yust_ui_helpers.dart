@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:keyboard_name/keyboard_name.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/yust_ui.dart';
 
 class YustUiHelpers {
   final GlobalKey<NavigatorState> navStateKey;
@@ -14,9 +15,14 @@ class YustUiHelpers {
     final context = navStateKey.currentContext;
     if (context == null) return;
     final currentFocus = Focus.of(context);
-    if (!currentFocus.hasPrimaryFocus) {
-      currentFocus.unfocus();
+
+    // Prevent the focus to jump higher than the root of the app
+    if (currentFocus.hasPrimaryFocus ||
+        YustUi.appRootFocusKey == null ||
+        currentFocus.context?.widget.key == Key(YustUi.appRootFocusKey ?? '')) {
+      return;
     }
+    currentFocus.unfocus();
   }
 
   /// Does not return null.

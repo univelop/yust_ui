@@ -22,6 +22,7 @@ class YustAlertService {
           content: Text(message),
           actions: <Widget>[
             TextButton(
+              autofocus: true,
               child: Text(LocaleKeys.ok.tr()),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -69,6 +70,7 @@ class YustAlertService {
               },
             ),
             TextButton(
+              autofocus: true,
               key: Key(action),
               child: Text(action),
               onPressed: () {
@@ -81,7 +83,7 @@ class YustAlertService {
     );
   }
 
-Future<String?> showTextFieldDialog(
+  Future<String?> showTextFieldDialog(
     String title,
     String? placeholder,
     String action, {
@@ -126,6 +128,10 @@ Future<String?> showTextFieldDialog(
                               : (value) => validator(value!.trim()),
                           autofocus: true,
                           obscureText: obscureText,
+                          onFieldSubmitted: (value) {
+                            _submitTextFieldDialog(validator, context,
+                                controller, yustServiceValidationKey);
+                          },
                         ),
                       ),
                       if (suffixIcon != null)
@@ -162,13 +168,8 @@ Future<String?> showTextFieldDialog(
               TextButton(
                 child: Text(action),
                 onPressed: () {
-                  if (validator == null) {
-                    Navigator.of(context).pop(controller.text);
-                  } else if (yustServiceValidationKey.currentState!
-                      .validate()) {
-                    //if ( validator(controller.text.trim()) == null
-                    Navigator.of(context).pop(controller.text);
-                  }
+                  _submitTextFieldDialog(
+                      validator, context, controller, yustServiceValidationKey);
                 },
               ),
             ],
@@ -178,6 +179,17 @@ Future<String?> showTextFieldDialog(
     );
   }
 
+  void _submitTextFieldDialog(
+      FormFieldValidator<String>? validator,
+      BuildContext context,
+      TextEditingController controller,
+      GlobalKey<FormState> yustServiceValidationKey) {
+    if (validator == null) {
+      Navigator.of(context).pop(controller.text);
+    } else if (yustServiceValidationKey.currentState!.validate()) {
+      Navigator.of(context).pop(controller.text);
+    }
+  }
 
   ///
   /// initialSelectedValue: Initial selected value
