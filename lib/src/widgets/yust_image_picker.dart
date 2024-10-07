@@ -517,6 +517,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           // Because of the reason stated above,
           // we need to do the resizing ourself
           resize: true,
+          convertToJPEG: widget.convertToJPEG,
           setGPSToLocation: setGPSToLocation);
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {

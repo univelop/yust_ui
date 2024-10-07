@@ -1,3 +1,12 @@
+## 3.24.4 - 2024-09-18
+
+-   Fixes for YustSelect
+
+## 3.24.3 - 2024-09-14
+
+-   Add UI Components for Geo-Location
+-   Fixes for Image Conversion
+
 ## 3.24.2 - 2024-08-08
 
 -   Image Resize Improvements

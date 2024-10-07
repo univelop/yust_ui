@@ -84,7 +84,7 @@ class YustSelect<T> extends StatelessWidget {
         return _buildDialog(context, selectedValues);
       },
     );
-    final selectedValue = selectedValues.first;
+    final selectedValue = selectedValues.firstOrNull;
     if (selectedValue != null) {
       onSelected!(selectedValue);
     }
