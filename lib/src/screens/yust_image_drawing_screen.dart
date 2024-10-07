@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -17,6 +18,23 @@ class YustImageDrawingScreen extends StatefulWidget {
     required this.image,
     required this.onSave,
   });
+
+  static void navigateToScreen({
+    required BuildContext context,
+    required ImageProvider image,
+    required void Function(Uint8List? image) onSave,
+  }) {
+    unawaited(
+      Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => YustImageDrawingScreen(
+          image: image,
+          onSave: onSave,
+        ),
+      ),
+    )
+    );
+  }
 
   @override
   YustImageDrawingScreenState createState() => YustImageDrawingScreenState();

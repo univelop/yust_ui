@@ -631,22 +631,21 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   void _showImages(YustFile activeFile) {
     YustUi.helpers.unfocusCurrent();
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (context) => YustImageScreen(
-        files: _fileHandler.getFiles(),
-        activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
-        onSave: ((file, newImage) {
-          file.storageFolderPath = widget.storageFolderPath;
-          file.linkedDocPath = widget.linkedDocPath;
-          file.linkedDocAttribute = widget.linkedDocAttribute;
+    YustImageScreen.navigateToScreen(
+      context: context,
+      files: _fileHandler.getFiles(),
+      activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
+      onSave: (file, newImage) {
+        file.storageFolderPath = widget.storageFolderPath;
+        file.linkedDocPath = widget.linkedDocPath;
+        file.linkedDocAttribute = widget.linkedDocAttribute;
 
-          _fileHandler.updateFile(file, bytes: newImage);
+        _fileHandler.updateFile(file, bytes: newImage);
 
-          if (mounted) {
-            setState(() {});
-          }
-        }),
-      ),
-    ));
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
   }
 }
