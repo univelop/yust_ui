@@ -1,3 +1,7 @@
+## 3.25.0 - 2024-10-14
+
+-   Bump Version
+
 ## 3.24.4 - 2024-09-18
 
 -   Fixes for YustSelect
