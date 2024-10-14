@@ -30,6 +30,7 @@ class YustUi {
     Map<String, String>? namedArgs,
     String? gender,
   }) trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
+  static String? appRootFocusKey;
 
   static void initialize({
     String? storageUrl,
@@ -41,10 +42,12 @@ class YustUi {
       Map<String, String>? namedArgs,
       String? gender,
     })? trCallback,
+    String? appRootFocusKey,
   }) {
     YustUi.storageUrl = storageUrl;
     YustUi.imagePlaceholderPath = imagePlaceholderPath;
     YustUi.trCallback = trCallback ?? YustUi.trCallback;
+    YustUi.appRootFocusKey = appRootFocusKey;
   }
 
   static void setNavStateKey(GlobalKey<NavigatorState> navStateKey) {

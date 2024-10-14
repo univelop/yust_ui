@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_list_tile.dart';
 
@@ -47,9 +48,13 @@ class YustSelectForm<T> extends StatefulWidget {
 }
 
 class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
-  final _maxOptionCountBeforeSearch = 10;
+  final int _maxOptionCountBeforeSearch = 10;
   String searchValue = '';
-  late final controller = ScrollController();
+  late final ScrollController controller = ScrollController();
+
+  bool get showSearchBar =>
+      widget.allowSearch &&
+      widget.optionValues.length > _maxOptionCountBeforeSearch;
 
   @override
   void dispose() {
@@ -71,6 +76,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
     }
 
     final foundValues = _searchOptions(searchValue);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -79,8 +85,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
             label: widget.label,
             divider: false,
           ),
-        if (widget.allowSearch &&
-            widget.optionValues.length > _maxOptionCountBeforeSearch)
+        if (showSearchBar)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
             child: TextFormField(
@@ -96,11 +101,9 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
                 border: InputBorder.none,
               ),
               onChanged: (value) {
-                setState(
-                  () {
-                    searchValue = value;
-                  },
-                );
+                setState(() {
+                  searchValue = value;
+                });
               },
             ),
           ),
@@ -110,32 +113,55 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
             controller: controller,
             thumbVisibility: true,
             child: SingleChildScrollView(
-                controller: controller,
-                child: Column(
-                  children: [
-                    if (widget.allowSearch && foundValues.isEmpty)
-                      ListTile(
-                        title:
-                            Center(child: Text(LocaleKeys.noOptionsFound.tr())),
-                        titleAlignment: ListTileTitleAlignment.center,
-                      ),
-                    ...foundValues.map((value) {
-                      switch (widget.formType) {
-                        case YustSelectFormType.single:
-                          return _listItemSingle(foundValues,
-                              foundValues.indexOf(value), setState);
-                        case YustSelectFormType.multiple:
-                          return _listItemMultiple(foundValues,
-                              foundValues.indexOf(value), setState);
-                        case YustSelectFormType.singleWithoutIndicator:
-                          return _listItemSingleNoIndicator(foundValues,
-                              foundValues.indexOf(value), setState);
-                        default:
-                          throw Exception('Unknown form type');
+              controller: controller,
+              child: FocusTraversalGroup(
+                policy: WidgetOrderTraversalPolicy(),
+                child: Focus(
+                  skipTraversal: true,
+                  onKeyEvent: (node, event) {
+                    if (event is KeyDownEvent) {
+                      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                        if (node.context != null) {
+                          FocusScope.of(node.context!).nextFocus();
+                        }
+                        return KeyEventResult.handled;
+                      } else if (event.logicalKey ==
+                          LogicalKeyboardKey.arrowUp) {
+                        if (node.context != null) {
+                          FocusScope.of(node.context!).previousFocus();
+                        }
+                        return KeyEventResult.handled;
                       }
-                    }),
-                  ],
-                )),
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: Column(
+                    children: [
+                      if (widget.allowSearch && foundValues.isEmpty)
+                        ListTile(
+                          title: Center(
+                              child: Text(LocaleKeys.noOptionsFound.tr())),
+                          titleAlignment: ListTileTitleAlignment.center,
+                        ),
+                      ...foundValues.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        switch (widget.formType) {
+                          case YustSelectFormType.single:
+                            return _listItemSingle(foundValues, index);
+                          case YustSelectFormType.multiple:
+                            return _listItemMultiple(foundValues, index);
+                          case YustSelectFormType.singleWithoutIndicator:
+                            return _listItemSingleNoIndicator(
+                                foundValues, index);
+                          default:
+                            throw Exception('Unknown form type');
+                        }
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
         if (widget.divider)
@@ -149,47 +175,54 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
       .map((index) => widget.optionValues[index])
       .toList();
 
-  Widget _listItemMultiple(
-      List<T> foundValues, int index, StateSetter setState) {
+  Widget _listItemMultiple(List<T> foundValues, int index) {
     return CheckboxListTile(
+      autofocus: index == 0 && !showSearchBar,
       enabled: !widget.disabled,
       title: Text(_getOptionLabel(foundValues[index])),
       value: widget.selectedValues.contains(foundValues[index]),
       controlAffinity: ListTileControlAffinity.platform,
-      onChanged: (value) => setState(() {
-        (value ?? false)
-            ? _addOption(foundValues[index])
-            : widget.selectedValues.remove(foundValues[index]);
-        widget.onChanged?.call();
-      }),
+      onChanged: (value) {
+        setState(() {
+          (value ?? false)
+              ? _addOption(foundValues[index])
+              : widget.selectedValues.remove(foundValues[index]);
+          widget.onChanged?.call();
+        });
+      },
     );
   }
 
-  Widget _listItemSingle(List<T> foundValues, int index, StateSetter setState) {
+  Widget _listItemSingle(List<T> foundValues, int index) {
     return RadioListTile(
+      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       value: foundValues[index],
       groupValue: widget.selectedValues.firstOrNull,
       controlAffinity: ListTileControlAffinity.platform,
-      onChanged: (value) => setState(() {
+      onChanged: (value) {
         if (value == null) return;
-        widget.selectedValues.clear();
-        widget.selectedValues.add(value);
-        widget.onChanged?.call();
-      }),
+        setState(() {
+          widget.selectedValues.clear();
+          widget.selectedValues.add(value);
+          widget.onChanged?.call();
+        });
+      },
     );
   }
 
-  Widget _listItemSingleNoIndicator(
-      List<T> foundValues, int index, StateSetter setState) {
+  Widget _listItemSingleNoIndicator(List<T> foundValues, int index) {
     return ListTile(
+      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
-      onTap: () => setState(() {
-        final value = foundValues[index];
-        widget.selectedValues.clear();
-        widget.selectedValues.add(value);
-        widget.onChanged?.call();
-      }),
+      onTap: () {
+        setState(() {
+          final value = foundValues[index];
+          widget.selectedValues.clear();
+          widget.selectedValues.add(value);
+          widget.onChanged?.call();
+        });
+      },
     );
   }
 
@@ -202,12 +235,12 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
   }
 
   void _addOption(T option) {
-    Map<T, int> optionIndizes = {};
+    Map<T, int> optionIndices = {};
     for (int i = 0; i < widget.optionValues.length; i++) {
-      optionIndizes[widget.optionValues[i]] = i;
+      optionIndices[widget.optionValues[i]] = i;
     }
     widget.selectedValues.add(option);
     widget.selectedValues
-        .sort((a, b) => optionIndizes[a]!.compareTo(optionIndizes[b]!));
+        .sort((a, b) => optionIndices[a]!.compareTo(optionIndices[b]!));
   }
 }
