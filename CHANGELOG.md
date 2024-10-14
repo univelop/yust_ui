@@ -1,3 +1,7 @@
+## 3.25.1 - 2024-10-14
+
+-   Fixes & Improvements
+
 ## 3.25.0 - 2024-10-14
 
 -   Bump Version
