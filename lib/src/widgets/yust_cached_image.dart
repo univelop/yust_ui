@@ -56,8 +56,10 @@ class YustCachedImage extends StatelessWidget {
             fit: BoxFit.cover),
         progressIndicatorBuilder: (context, url, downloadProgress) => Container(
           margin: const EdgeInsets.all(50),
-          child: CircularProgressIndicator(
-            value: downloadProgress.progress,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: downloadProgress.progress,
+            ),
           ),
         ),
         fit: fit,
