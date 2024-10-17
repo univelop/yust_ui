@@ -32,6 +32,21 @@ class YustAlertService {
       },
     );
   }
+  Future<void> showAlertWithCustomActions(
+      String title, String message, List<Widget> actions) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: actions,
+        );
+      },
+    );
+  }
 
   Future<void> showCustomAlert(
       {required Widget Function(BuildContext) content,
