@@ -33,6 +33,26 @@ class YustAlertService {
     );
   }
 
+  Future<void> showAlertWithCustomActions(
+      {
+    required String title,
+    required String message,
+    required List<Widget> actions,
+  }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: actions,
+        );
+      },
+    );
+  }
+
   Future<void> showCustomAlert(
       {required Widget Function(BuildContext) content,
       bool dismissible = true}) async {
@@ -81,7 +101,7 @@ class YustAlertService {
     );
   }
 
-Future<String?> showTextFieldDialog(
+  Future<String?> showTextFieldDialog(
     String title,
     String? placeholder,
     String action, {
@@ -177,7 +197,6 @@ Future<String?> showTextFieldDialog(
       },
     );
   }
-
 
   ///
   /// initialSelectedValue: Initial selected value
