@@ -12,24 +12,17 @@ class YustAlertService {
   YustAlertService(this.navStateKey);
 
   Future<void> showAlert(String title, String message) {
-    final context = navStateKey.currentContext;
-    if (context == null) return Future.value();
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text(LocaleKeys.ok.tr()),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+    return showAlertWithCustomActions(
+      title: title,
+      message: message,
+      actions: [
+        TextButton(
+          child: Text(LocaleKeys.ok.tr()),
+          onPressed: () {
+            Navigator.of(navStateKey.currentContext!).pop();
+          },
+        ),
+      ],
     );
   }
 
