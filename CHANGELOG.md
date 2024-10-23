@@ -1,3 +1,8 @@
+## 3.25.2 - 2024-10-23
+
+-   Improvements for YustCachedImage
+-   Added YustAlertService.showAlertWithCustomActions
+
 ## 3.25.1 - 2024-10-14
 
 -   Fixes & Improvements
