@@ -1786,6 +1786,9 @@ abstract class LocaleKeys {
   static const linkedRecordId = 'linkedRecordId';
   static const linkingOfRecords = 'linkingOfRecords';
   static const list = 'list';
+  static const listExpression = 'listExpression';
+  static const listExpressionBrickDescription =
+      'listExpressionBrickDescription';
   static const listNameExampleContacts = 'listNameExampleContacts';
   static const listNameExampleTasks = 'listNameExampleTasks';
   static const listSharedByWorkspace = 'listSharedByWorkspace';
@@ -2659,6 +2662,7 @@ abstract class LocaleKeys {
   static const toLicenseBooking = 'toLicenseBooking';
   static const tooLargeNumbersUseTextfield = 'tooLargeNumbersUseTextfield';
   static const tooManyFavorites = 'tooManyFavorites';
+  static const tooManyListItems = 'tooManyListItems';
   static const tooManyRecords = 'tooManyRecords';
   static const tooManyRecordsFound = 'tooManyRecordsFound';
   static const tooManyRecordsLoaded = 'tooManyRecordsLoaded';
