@@ -1,3 +1,7 @@
+## 3.25.3 - 2024-10-25
+
+-   Add Keyboard-Shortcut support
+
 ## 3.25.2 - 2024-10-23
 
 -   Improvements for YustCachedImage
