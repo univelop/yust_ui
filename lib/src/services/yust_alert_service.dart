@@ -59,7 +59,7 @@ class YustAlertService {
     );
   }
 
-  Future<bool?> showConfirmation(
+Future<bool?> showConfirmation(
     String title,
     String action, {
     String? cancelText,
@@ -75,10 +75,16 @@ class YustAlertService {
           content: description != null ? Text(description) : null,
           actions: <Widget>[
             TextButton(
-              autofocus: true,
-              child: Text(LocaleKeys.ok.tr()),
+              child: Text(cancelText ?? LocaleKeys.cancel.tr()),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              key: Key(action),
+              child: Text(action),
+              onPressed: () {
+                Navigator.of(context).pop(true);
               },
             ),
           ],
@@ -86,6 +92,7 @@ class YustAlertService {
       },
     );
   }
+
 
   Future<String?> showTextFieldDialog(
     String title,
