@@ -561,7 +561,6 @@ abstract class LocaleKeys {
   static const checksPassedNumberFields = 'checksPassedNumberFields';
   static const checksPassedSecondaryKeyDuplicates =
       'checksPassedSecondaryKeyDuplicates';
-  static const checksPassedSyncSumTransfer = 'checksPassedSyncSumTransfer';
   static const checksPassedTransfer = 'checksPassedTransfer';
   static const checksPassedTransferDuplicates =
       'checksPassedTransferDuplicates';
@@ -641,6 +640,7 @@ abstract class LocaleKeys {
   static const copiedToClipboard = 'copiedToClipboard';
   static const copy = 'copy';
   static const copyInvitationLink = 'copyInvitationLink';
+  static const copyValue = 'copyValue';
   static const costsPerBillingInterval = 'costsPerBillingInterval';
   static const country = 'country';
   static const countryOfTaxIDNotAccepted = 'countryOfTaxIDNotAccepted';
@@ -869,7 +869,6 @@ abstract class LocaleKeys {
   static const errorMissingSettings = 'errorMissingSettings';
   static const errorOccured = 'errorOccured';
   static const errorPleaseTryAgain = 'errorPleaseTryAgain';
-  static const errorSolutionArchiveDeletion = 'errorSolutionArchiveDeletion';
   static const errorUnsupportedSetting = 'errorUnsupportedSetting';
   static const errorWhileCalculating = 'errorWhileCalculating';
   static const errorWhileEditing = 'errorWhileEditing';
@@ -935,8 +934,6 @@ abstract class LocaleKeys {
       'exceptionCannotImportListIndividually';
   static const exceptionCannotImportListLinkedListNotFound =
       'exceptionCannotImportListLinkedListNotFound';
-  static const exceptionCannotImportSharedRecordSpecs =
-      'exceptionCannotImportSharedRecordSpecs';
   static const exceptionCannotLaunchLink = 'exceptionCannotLaunchLink';
   static const exceptionCannotLoadImage = 'exceptionCannotLoadImage';
   static const exceptionCannotLoadTemplate = 'exceptionCannotLoadTemplate';
@@ -1501,6 +1498,8 @@ abstract class LocaleKeys {
       'getEmailsStepOnlySupportsAzure';
   static const getToKnowUnivelop = 'getToKnowUnivelop';
   static const google = 'google';
+  static const grantReadAccess = 'grantReadAccess';
+  static const grantWriteAccess = 'grantWriteAccess';
   static const grid = 'grid';
   static const header = 'header';
   static const heading = 'heading';
@@ -1862,6 +1861,7 @@ abstract class LocaleKeys {
   static const nextExecution = 'nextExecution';
   static const nextInvoice = 'nextInvoice';
   static const nextNumber = 'nextNumber';
+  static const nextWeek = 'nextWeek';
   static const no = 'no';
   static const noAccess = 'noAccess';
   static const noAccount = 'noAccount';
@@ -2043,6 +2043,7 @@ abstract class LocaleKeys {
   static const preview = 'preview';
   static const previewExplanation = 'previewExplanation';
   static const previewLimit = 'previewLimit';
+  static const previousWeek = 'previousWeek';
   static const primaryButton = 'primaryButton';
   static const primaryColor = 'primaryColor';
   static const printOutBrickDescription = 'printOutBrickDescription';
@@ -2124,6 +2125,7 @@ abstract class LocaleKeys {
   static const refresh = 'refresh';
   static const refused = 'refused';
   static const regenerate = 'regenerate';
+  static const regenerateServiceAccountKey = 'regenerateServiceAccountKey';
   static const region = 'region';
   static const register = 'register';
   static const registerNow = 'registerNow';
@@ -2133,8 +2135,10 @@ abstract class LocaleKeys {
   static const remove = 'remove';
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
+  static const removeReadAccess = 'removeReadAccess';
   static const removeRecordFromSolution = 'removeRecordFromSolution';
   static const removeValue = 'removeValue';
+  static const removeWriteAccess = 'removeWriteAccess';
   static const removedInvalidRoleConfigurations =
       'removedInvalidRoleConfigurations';
   static const removedRecordFromSolution = 'removedRecordFromSolution';
@@ -2229,10 +2233,8 @@ abstract class LocaleKeys {
   static const secondaryButton = 'secondaryButton';
   static const secondaryColor = 'secondaryColor';
   static const secondaryKey = 'secondaryKey';
-  static const secondaryKeyBrick = 'secondaryKeyBrick';
   static const secondaryKeyDuplicate = 'secondaryKeyDuplicate';
   static const secondaryKeyDuplicatesExist = 'secondaryKeyDuplicatesExist';
-  static const secondaryKeyExplanation = 'secondaryKeyExplanation';
   static const secondaryKeyReference = 'secondaryKeyReference';
   static const seconds = 'seconds';
   static const section = 'section';
@@ -2297,6 +2299,23 @@ abstract class LocaleKeys {
   static const shareList = 'shareList';
   static const shareTile = 'shareTile';
   static const shared = 'shared';
+  static const shortcutBack = 'shortcutBack';
+  static const shortcutBackDescription = 'shortcutBackDescription';
+  static const shortcutClose = 'shortcutClose';
+  static const shortcutCloseDescription = 'shortcutCloseDescription';
+  static const shortcutDebugMode = 'shortcutDebugMode';
+  static const shortcutDebugModeDescription = 'shortcutDebugModeDescription';
+  static const shortcutDelete = 'shortcutDelete';
+  static const shortcutDeleteDescription = 'shortcutDeleteDescription';
+  static const shortcutDeleteWithAlternatives =
+      'shortcutDeleteWithAlternatives';
+  static const shortcutDuplicate = 'shortcutDuplicate';
+  static const shortcutDuplicateDescription = 'shortcutDuplicateDescription';
+  static const shortcutHome = 'shortcutHome';
+  static const shortcutHomeDescription = 'shortcutHomeDescription';
+  static const shortcutSearch = 'shortcutSearch';
+  static const shortcutSearchDescription = 'shortcutSearchDescription';
+  static const shortcuts = 'shortcuts';
   static const showActiveInvitationLinks = 'showActiveInvitationLinks';
   static const showAdminMenu = 'showAdminMenu';
   static const showAllComments = 'showAllComments';
@@ -2307,10 +2326,12 @@ abstract class LocaleKeys {
   static const showDetailIfSingle = 'showDetailIfSingle';
   static const showDetailIfSingleExplanation = 'showDetailIfSingleExplanation';
   static const showDuplicates = 'showDuplicates';
+  static const showFilters = 'showFilters';
   static const showForRoles = 'showForRoles';
   static const showForTeams = 'showForTeams';
   static const showFromLinkedRecord = 'showFromLinkedRecord';
   static const showFromThisRecord = 'showFromThisRecord';
+  static const showInformation = 'showInformation';
   static const showIntermediateResults = 'showIntermediateResults';
   static const showLinkColumn = 'showLinkColumn';
   static const showLinkDetailView = 'showLinkDetailView';
@@ -2322,6 +2343,7 @@ abstract class LocaleKeys {
   static const showNotifications = 'showNotifications';
   static const showOnMap = 'showOnMap';
   static const showTabs = 'showTabs';
+  static const showTooltip = 'showTooltip';
   static const showTotal = 'showTotal';
   static const showUnderConditions = 'showUnderConditions';
   static const showWeekday = 'showWeekday';
