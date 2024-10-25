@@ -26,8 +26,7 @@ class YustAlertService {
     );
   }
 
-  Future<void> showAlertWithCustomActions(
-      {
+  Future<void> showAlertWithCustomActions({
     required String title,
     required String message,
     required List<Widget> actions,
@@ -76,16 +75,10 @@ class YustAlertService {
           content: description != null ? Text(description) : null,
           actions: <Widget>[
             TextButton(
-              child: Text(cancelText ?? LocaleKeys.cancel.tr()),
+              autofocus: true,
+              child: Text(LocaleKeys.ok.tr()),
               onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              key: Key(action),
-              child: Text(action),
-              onPressed: () {
-                Navigator.of(context).pop(true);
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -139,6 +132,10 @@ class YustAlertService {
                               : (value) => validator(value!.trim()),
                           autofocus: true,
                           obscureText: obscureText,
+                          onFieldSubmitted: (value) {
+                            _submitTextFieldDialog(validator, context,
+                                controller, yustServiceValidationKey);
+                          },
                         ),
                       ),
                       if (suffixIcon != null)
@@ -175,13 +172,8 @@ class YustAlertService {
               TextButton(
                 child: Text(action),
                 onPressed: () {
-                  if (validator == null) {
-                    Navigator.of(context).pop(controller.text);
-                  } else if (yustServiceValidationKey.currentState!
-                      .validate()) {
-                    //if ( validator(controller.text.trim()) == null
-                    Navigator.of(context).pop(controller.text);
-                  }
+                  _submitTextFieldDialog(
+                      validator, context, controller, yustServiceValidationKey);
                 },
               ),
             ],
@@ -189,6 +181,18 @@ class YustAlertService {
         );
       },
     );
+  }
+
+  void _submitTextFieldDialog(
+      FormFieldValidator<String>? validator,
+      BuildContext context,
+      TextEditingController controller,
+      GlobalKey<FormState> yustServiceValidationKey) {
+    if (validator == null) {
+      Navigator.of(context).pop(controller.text);
+    } else if (yustServiceValidationKey.currentState!.validate()) {
+      Navigator.of(context).pop(controller.text);
+    }
   }
 
   ///
