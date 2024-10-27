@@ -1,3 +1,7 @@
+## 3.25.4 - 2024-10-28
+
+-   Fixes for AlertService
+
 ## 3.25.3 - 2024-10-25
 
 -   Add Keyboard-Shortcut support
