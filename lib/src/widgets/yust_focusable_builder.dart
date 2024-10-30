@@ -9,15 +9,15 @@ import 'package:flutter/services.dart';
 ///
 /// Usage:
 /// ```dart
-/// YustFocusableWrapper(
+/// YustFocusableBuilder(
 ///   builder: (context) => YourWidget(),
 /// )
 /// ```
 ///
-/// The `YustFocusableWrapper` can be customized to handle specific focus
+/// The `YustFocusableBuilder` can be customized to handle specific focus
 /// behaviors as needed.
-class YustFocusableWrapper extends StatefulWidget {
-  const YustFocusableWrapper({
+class YustFocusableBuilder extends StatefulWidget {
+  const YustFocusableBuilder({
     super.key,
     required this.builder,
     this.onTap,
@@ -30,7 +30,7 @@ class YustFocusableWrapper extends StatefulWidget {
   final Function()? onTap;
 
   ///  A function that takes a `BuildContext` and returns the child widget.
-  final Function(BuildContext context) builder;
+  final Widget Function(BuildContext context) builder;
 
   ///  A map of custom actions that can be triggered by intents. Default to the enter action which call the onTap function.
   final Map<Type, Action<Intent>>? actions;
@@ -42,10 +42,10 @@ class YustFocusableWrapper extends StatefulWidget {
   final bool shouldHighlightFocusedWidget;
 
   @override
-  State<YustFocusableWrapper> createState() => _YustFucusableWrapperState();
+  State<YustFocusableBuilder> createState() => _YustFucusableBuilderState();
 }
 
-class _YustFucusableWrapperState extends State<YustFocusableWrapper> {
+class _YustFucusableBuilderState extends State<YustFocusableBuilder> {
   late final FocusNode _focusNode = FocusNode();
 
   @override
@@ -66,9 +66,7 @@ class _YustFucusableWrapperState extends State<YustFocusableWrapper> {
   }
 
   // trigger a rebuild when the focus changes
-  void _handleFocusChange() {
-    setState(() {});
-  }
+  void _handleFocusChange() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -93,9 +91,7 @@ class _YustFucusableWrapperState extends State<YustFocusableWrapper> {
               color: Colors.black.withOpacity(0.1),
             )),
           Builder(
-            builder: (builderContext) {
-              return widget.builder(builderContext);
-            },
+            builder: widget.builder,
           ),
         ],
       ),

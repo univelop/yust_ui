@@ -48,8 +48,8 @@ class YustSelect<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return YustFocusableWrapper(
-      onTap: (onSelected == null || readOnly) ? null : () => _selectValue(context) ,
+    return YustFocusableBuilder(
+      onTap: (onSelected == null || readOnly) ? null : () => _selectValue(context),
       builder: (_) =>
        YustInputTile(
         label: label ?? '',

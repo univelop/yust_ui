@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../yust_ui.dart';
+import 'yust_focused_highlight_wrapper.dart';
 
 class YustListTile extends StatelessWidget {
   final String? label;
@@ -24,6 +25,7 @@ class YustListTile extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? below;
   final bool divider;
+  final bool excludeFocus;
 
   const YustListTile({
     super.key,
@@ -40,26 +42,33 @@ class YustListTile extends StatelessWidget {
     this.prefixIcon,
     this.below,
     this.divider = true,
+    this.excludeFocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
     if (style == YustInputStyle.outlineBorder) {
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(4.0),
+      return ExcludeFocus(
+        excluding: excludeFocus,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: _buildInner(context),
         ),
-        child: _buildInner(context),
       );
     } else {
-      return Column(
-        children: <Widget>[
-          _buildInner(context),
-          below ?? const SizedBox(),
-          if (divider && !(heading || largeHeading))
-            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-        ],
+      return ExcludeFocus(
+        excluding: excludeFocus,
+        child: Column(
+          children: <Widget>[
+            _buildInner(context),
+            below ?? const SizedBox(),
+            if (divider && !(heading || largeHeading))
+              const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+          ],
+        ),
       );
     }
   }
@@ -87,36 +96,39 @@ class YustListTile extends StatelessWidget {
       overflow: labelOverflow ? TextOverflow.ellipsis : null,
     );
 
-    return ListTile(
-      title: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          if (prefixIcon != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 10.0, left: 3.0),
-              child: prefixIcon,
+    return YustFocusedHighlightWrapper(
+      focusContext: context,
+      child: ListTile(
+        title: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            if (prefixIcon != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, left: 3.0),
+                child: prefixIcon,
+              ),
+            Flexible(
+              child: center
+                  ? Center(
+                      child: text,
+                    )
+                  : text,
             ),
-          Flexible(
-            child: center
-                ? Center(
-                    child: text,
-                  )
-                : text,
-          ),
-        ],
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (navigate)
+              const Icon(
+                Icons.navigate_next,
+              ),
+            if (suffixChild != null) suffixChild!,
+          ],
+        ),
+        onTap: onTap,
+        contentPadding: padding,
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (navigate)
-            const Icon(
-              Icons.navigate_next,
-            ),
-          if (suffixChild != null) suffixChild!,
-        ],
-      ),
-      onTap: onTap,
-      contentPadding: padding,
     );
   }
 }
