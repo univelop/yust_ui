@@ -20,14 +20,14 @@ class YustFocusableBuilder extends StatefulWidget {
   const YustFocusableBuilder({
     super.key,
     required this.builder,
-    this.onTap,
+    this.onFocusAction,
     this.actions,
     this.shortcuts,
     this.shouldHighlightFocusedWidget = false,
   });
 
-  ///  A callback function that is triggered when the widget is tapped.
-  final Function()? onTap;
+  ///  A callback function that is triggered when the widget has its focus and the action intent is triggered. But it is only triggered when no other action is defined.
+  final Function()? onFocusAction;
 
   ///  A function that takes a `BuildContext` and returns the child widget.
   final Widget Function(BuildContext context) builder;
@@ -76,7 +76,7 @@ class _YustFucusableBuilderState extends State<YustFocusableBuilder> {
           {
             ActivateIntent: CallbackAction<Intent>(onInvoke: (_) {
               if (widget.shouldHighlightFocusedWidget) _focusNode.unfocus();
-              return widget.onTap?.call();
+              return widget.onFocusAction?.call();
             }),
           },
       shortcuts: widget.shortcuts ??

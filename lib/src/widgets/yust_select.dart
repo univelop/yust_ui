@@ -48,25 +48,21 @@ class YustSelect<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return YustFocusableBuilder(
-      onTap: (onSelected == null || readOnly) ? null : () => _selectValue(context),
-      builder: (_) =>
-       YustInputTile(
-        label: label ?? '',
-        text: _valueCaption(value),
-        prefixIcon: prefixIcon,
-        suffixChild: suffixChild,
-        validator: validator,
-        autovalidateMode: autovalidateMode,
-        style: style,
-        divider: divider,
-        maxLines: maxLines,
-        minLines: minLines,
-        onTap:
-            (onSelected == null || readOnly) ? null : () => _selectValue(context),
-        onDelete: readOnly ? null : onDelete,
-      ),
-    );
+    return YustInputTile(
+     label: label ?? '',
+     text: _valueCaption(value),
+     prefixIcon: prefixIcon,
+     suffixChild: suffixChild,
+     validator: validator,
+     autovalidateMode: autovalidateMode,
+     style: style,
+     divider: divider,
+     maxLines: maxLines,
+     minLines: minLines,
+     onTap:
+         (onSelected == null || readOnly) ? null : () => _selectValue(context),
+     onDelete: readOnly ? null : onDelete,
+          );
   }
 
   String _valueCaption(T value) {
