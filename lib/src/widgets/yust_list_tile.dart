@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../yust_ui.dart';
-import 'yust_focused_highlight_wrapper.dart';
+import 'yust_focusable_builder.dart';
 
 class YustListTile extends StatelessWidget {
   final String? label;
@@ -26,6 +26,7 @@ class YustListTile extends StatelessWidget {
   final Widget? below;
   final bool divider;
   final bool excludeFocus;
+  final bool showHighlightFocus;
 
   const YustListTile({
     super.key,
@@ -43,6 +44,7 @@ class YustListTile extends StatelessWidget {
     this.below,
     this.divider = true,
     this.excludeFocus = false,
+    this.showHighlightFocus = false,
   });
 
   @override
@@ -96,9 +98,9 @@ class YustListTile extends StatelessWidget {
       overflow: labelOverflow ? TextOverflow.ellipsis : null,
     );
 
-    return YustFocusedHighlightWrapper(
-      focusContext: context,
-      child: ListTile(
+    return YustFocusableBuilder(
+      shouldHighlightFocusedWidget: showHighlightFocus,
+      builder: (focusContext) =>  ListTile(
         title: Row(
           mainAxisSize: MainAxisSize.max,
           children: [

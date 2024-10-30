@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/widgets/yust_focused_highlight_wrapper.dart';
 
 import '../yust_ui.dart';
+import 'yust_focusable_builder.dart';
 import 'yust_text_field.dart';
 
 class YustInputTile extends StatelessWidget {
@@ -20,7 +20,8 @@ class YustInputTile extends StatelessWidget {
   final int? minLines;
   final AutovalidateMode? autovalidateMode;
   final bool excludeFocus;
-
+ final bool showHighlightFocus;
+ 
   const YustInputTile({
     super.key,
     this.label,
@@ -38,15 +39,15 @@ class YustInputTile extends StatelessWidget {
     this.minLines,
     this.autovalidateMode,
     this.excludeFocus = false,
+    this.showHighlightFocus = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return ExcludeFocus(
       excluding: excludeFocus,
-      child: YustFocusedHighlightWrapper(
-        focusContext: context,
-        child: YustTextField(
+      child: YustFocusableBuilder(
+        builder: (focusContext) => YustTextField(
           label: label,
           labelStyle: labelStyle,
           value: text,
