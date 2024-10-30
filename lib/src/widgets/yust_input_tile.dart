@@ -20,7 +20,7 @@ class YustInputTile extends StatelessWidget {
   final int? minLines;
   final AutovalidateMode? autovalidateMode;
   final bool excludeFocus;
- final bool showHighlightFocus;
+  final bool showHighlightFocus;
 
   const YustInputTile({
     super.key,
@@ -48,6 +48,7 @@ class YustInputTile extends StatelessWidget {
       excluding: excludeFocus,
       child: YustFocusableBuilder(
         shouldHighlightFocusedWidget: showHighlightFocus,
+        onFocusAction: onTap,
         builder: (focusContext) => YustTextField(
           label: label,
           labelStyle: labelStyle,
@@ -64,7 +65,6 @@ class YustInputTile extends StatelessWidget {
           onDelete: onDelete == null
               ? null
               : () async {
-                  FocusScope.of(context).unfocus();
                   await onDelete!();
                 },
           validator: validator,
