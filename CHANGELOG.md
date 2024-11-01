@@ -1,3 +1,7 @@
+## 3.25.5 - 2024-11-01
+
+-   Activate cSpell
+
 ## 3.25.4 - 2024-10-28
 
 -   Fixes for AlertService
