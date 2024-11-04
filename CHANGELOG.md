@@ -1,3 +1,28 @@
+## 3.25.5 - 2024-11-01
+
+-   Activate cSpell
+
+## 3.25.4 - 2024-10-28
+
+-   Fixes for AlertService
+
+## 3.25.3 - 2024-10-25
+
+-   Add Keyboard-Shortcut support
+
+## 3.25.2 - 2024-10-23
+
+-   Improvements for YustCachedImage
+-   Added YustAlertService.showAlertWithCustomActions
+
+## 3.25.1 - 2024-10-14
+
+-   Fixes & Improvements
+
+## 3.25.0 - 2024-10-14
+
+-   Bump Version
+
 ## 3.24.4 - 2024-09-18
 
 -   Fixes for YustSelect

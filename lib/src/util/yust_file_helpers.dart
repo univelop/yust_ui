@@ -109,7 +109,7 @@ class YustFileHelpers {
     File? file,
     Uint8List? data,
   }) async {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     // Get the Location of the widget (e.g. button), that called the method.
     final box = context.findRenderObject() as RenderBox?;
     await launchFileWithoutContext(
@@ -122,7 +122,7 @@ class YustFileHelpers {
       {required BuildContext context,
       required String url,
       required String name}) async {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     // Get the Location of the widget (e.g. button), that called the method.
     final box = context.findRenderObject() as RenderBox?;
     await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
