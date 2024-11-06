@@ -42,10 +42,10 @@ class YustFocusableBuilder extends StatefulWidget {
   final bool shouldHighlightFocusedWidget;
 
   @override
-  State<YustFocusableBuilder> createState() => _YustFucusableBuilderState();
+  State<YustFocusableBuilder> createState() => _YustFocusableBuilderState();
 }
 
-class _YustFucusableBuilderState extends State<YustFocusableBuilder> {
+class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
   late final FocusNode _focusNode = FocusNode();
 
   @override
