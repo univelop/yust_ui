@@ -17,6 +17,7 @@ class YustAlertService {
       message: message,
       actions: [
         TextButton(
+          autofocus: true,
           child: Text(LocaleKeys.ok.tr()),
           onPressed: () {
             Navigator.of(navStateKey.currentContext!).pop();
@@ -59,7 +60,7 @@ class YustAlertService {
     );
   }
 
-Future<bool?> showConfirmation(
+  Future<bool?> showConfirmation(
     String title,
     String action, {
     String? cancelText,
@@ -82,17 +83,17 @@ Future<bool?> showConfirmation(
             ),
             TextButton(
               key: Key(action),
-              child: Text(action),
+              autofocus: true,
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
+              child: Text(action),
             ),
           ],
         );
       },
     );
   }
-
 
   Future<String?> showTextFieldDialog(
     String title,
