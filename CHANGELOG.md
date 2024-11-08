@@ -1,3 +1,7 @@
+## 3.25.7 - 2024-11-08
+
+-   Fixes
+
 ## 3.25.6 - 2024-11-08
 
 -   Improvements for multiple widgets
