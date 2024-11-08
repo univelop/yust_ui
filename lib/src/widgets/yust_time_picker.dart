@@ -67,6 +67,7 @@ class _YustTimePickerState extends State<YustTimePicker>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (widget.value == null) {
       _controller.text = '';
     }

@@ -65,6 +65,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (widget.optionListConstraints.maxHeight == double.infinity) {
       throw Exception(LocaleKeys.exceptionOptionListConstraints.tr());
     }

@@ -109,6 +109,7 @@ class YustImagePickerState extends State<YustImagePicker>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return FutureBuilder(

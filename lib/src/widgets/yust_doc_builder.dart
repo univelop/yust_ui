@@ -109,6 +109,7 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return YustStreamBuilder(
       stream: _docStream!,
       showLoadingSpinner: widget.showLoadingSpinner,

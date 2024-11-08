@@ -105,6 +105,7 @@ class YustFilePickerState extends State<YustFilePicker>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
