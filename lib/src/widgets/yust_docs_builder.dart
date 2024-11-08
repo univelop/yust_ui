@@ -34,8 +34,8 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   YustDocsBuilderState<T> createState() => YustDocsBuilderState<T>();
 }
 
-class YustDocsBuilderState<T extends YustDoc>
-    extends State<YustDocsBuilder<T>> {
+class YustDocsBuilderState<T extends YustDoc> extends State<YustDocsBuilder<T>>
+    with AutomaticKeepAliveClientMixin {
   late Stream<List<T>> _docStream;
 
   void initStream() {
@@ -85,10 +85,15 @@ class YustDocsBuilderState<T extends YustDoc>
         }
         if (insights.status == YustBuilderStatus.error &&
             widget.showLoadingSpinner) {
-          return Center(child: Text(LocaleKeys.errorDuringLoading.tr(), style: const TextStyle(color: Colors.red)));
+          return Center(
+              child: Text(LocaleKeys.errorDuringLoading.tr(),
+                  style: const TextStyle(color: Colors.red)));
         }
         return widget.builder(snapshot.data ?? [], insights, context);
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

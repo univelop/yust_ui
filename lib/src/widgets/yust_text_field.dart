@@ -99,7 +99,8 @@ class YustTextField extends StatefulWidget {
   State<YustTextField> createState() => _YustTextFieldState();
 }
 
-class _YustTextFieldState extends State<YustTextField> {
+class _YustTextFieldState extends State<YustTextField>
+    with AutomaticKeepAliveClientMixin {
   late TextEditingController _controller;
   late FocusNode _focusNode = FocusNode();
   late String _initValue;
@@ -301,4 +302,7 @@ class _YustTextFieldState extends State<YustTextField> {
 
     return textField;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
