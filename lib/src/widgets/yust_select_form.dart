@@ -47,7 +47,8 @@ class YustSelectForm<T> extends StatefulWidget {
   State<YustSelectForm<T>> createState() => _YustSelectFormState<T>();
 }
 
-class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
+class _YustSelectFormState<T> extends State<YustSelectForm<T>>
+    with AutomaticKeepAliveClientMixin {
   final int _maxOptionCountBeforeSearch = 10;
   String searchValue = '';
   late final ScrollController controller = ScrollController();
@@ -64,6 +65,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (widget.optionListConstraints.maxHeight == double.infinity) {
       throw Exception(LocaleKeys.exceptionOptionListConstraints.tr());
     }
@@ -243,4 +245,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
     widget.selectedValues
         .sort((a, b) => optionIndices[a]!.compareTo(optionIndices[b]!));
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

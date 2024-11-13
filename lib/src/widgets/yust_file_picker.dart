@@ -80,7 +80,8 @@ class YustFilePicker extends StatefulWidget {
   YustFilePickerState createState() => YustFilePickerState();
 }
 
-class YustFilePickerState extends State<YustFilePicker> {
+class YustFilePickerState extends State<YustFilePicker>
+    with AutomaticKeepAliveClientMixin {
   late YustFileHandler _fileHandler;
   final Map<String?, bool> _processing = {};
   late bool _enabled;
@@ -104,6 +105,7 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
@@ -569,4 +571,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         ? File(platformFile.path!)
         : null;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

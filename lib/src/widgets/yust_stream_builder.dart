@@ -5,7 +5,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import 'yust_doc_builder.dart';
 
-class YustStreamBuilder<T extends YustDoc> extends StatefulWidget {
+class YustStreamBuilder<T extends YustDoc> extends StatelessWidget {
   final Stream<T?> stream;
   final bool showLoadingSpinner;
   final bool showErrorScreen;
@@ -24,30 +24,25 @@ class YustStreamBuilder<T extends YustDoc> extends StatefulWidget {
   });
 
   @override
-  YustStreamBuilderState<T> createState() => YustStreamBuilderState<T>();
-}
-
-class YustStreamBuilderState<T extends YustDoc>
-    extends State<YustStreamBuilder<T>> {
-  @override
   Widget build(BuildContext context) {
     return StreamBuilder<T?>(
-      stream: widget.stream,
+      stream: stream,
       builder: (context, snapshot) {
         final insights = YustBuilderInsights.fromSnapshot(snapshot);
         if (insights.status == YustBuilderStatus.waiting &&
-            widget.showLoadingSpinner) {
+            showLoadingSpinner) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (insights.status == YustBuilderStatus.error &&
-            widget.showLoadingSpinner) {
-          return Center(child: Text(LocaleKeys.errorDuringLoading.tr(), style: const TextStyle(color: Colors.red)));
+        if (insights.status == YustBuilderStatus.error && showLoadingSpinner) {
+          return Center(
+              child: Text(LocaleKeys.errorDuringLoading.tr(),
+                  style: const TextStyle(color: Colors.red)));
         }
         var doc = snapshot.data;
-        if (doc == null && widget.createIfNull) {
-          doc = widget.init();
+        if (doc == null && createIfNull) {
+          doc = init();
         }
-        return widget.builder(doc, insights, context);
+        return builder(doc, insights, context);
       },
     );
   }

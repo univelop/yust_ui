@@ -462,7 +462,6 @@ abstract class LocaleKeys {
   static const bricks = 'bricks';
   static const bricksForSetting = 'bricksForSetting';
   static const brokenFile = 'brokenFile';
-  static const businessEmail = 'businessEmail';
   static const by = 'by';
   static const calculatingPermissions = 'calculatingPermissions';
   static const calendar = 'calendar';
@@ -2541,6 +2540,7 @@ abstract class LocaleKeys {
   static const statusCode = 'statusCode';
   static const statusLabel = 'statusLabel';
   static const statusLabelAlreadyInUse = 'statusLabelAlreadyInUse';
+  static const statusLabelCannotBeEmpty = 'statusLabelCannotBeEmpty';
   static const statusSettings = 'statusSettings';
   static const statusWithNumber = 'statusWithNumber';
   static const stepMessageIterate = 'stepMessageIterate';
@@ -2708,6 +2708,7 @@ abstract class LocaleKeys {
   static const twoWeeks = 'twoWeeks';
   static const type = 'type';
   static const typeQrBarcode = 'typeQrBarcode';
+  static const uniAcademy = 'uniAcademy';
   static const uniCademy = 'uniCademy';
   static const unit = 'unit';
   static const unitPrice = 'unitPrice';

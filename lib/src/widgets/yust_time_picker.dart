@@ -44,7 +44,8 @@ class YustTimePicker extends StatefulWidget {
   State<YustTimePicker> createState() => _YustTimePickerState();
 }
 
-class _YustTimePickerState extends State<YustTimePicker> {
+class _YustTimePickerState extends State<YustTimePicker>
+    with AutomaticKeepAliveClientMixin {
   late TextEditingController _controller;
   late TimeInputFormatter _maskFormatter;
 
@@ -66,6 +67,7 @@ class _YustTimePickerState extends State<YustTimePicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (widget.value == null) {
       _controller.text = '';
     }
@@ -180,6 +182,9 @@ class _YustTimePickerState extends State<YustTimePicker> {
     });
     widget.onChanged!(dateTime);
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class TimeInputFormatter extends TextInputFormatter {

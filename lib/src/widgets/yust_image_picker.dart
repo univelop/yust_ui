@@ -80,7 +80,8 @@ class YustImagePicker extends StatefulWidget {
   YustImagePickerState createState() => YustImagePickerState();
 }
 
-class YustImagePickerState extends State<YustImagePicker> {
+class YustImagePickerState extends State<YustImagePicker>
+    with AutomaticKeepAliveClientMixin {
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
@@ -108,6 +109,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return FutureBuilder(
@@ -648,4 +650,7 @@ class YustImagePickerState extends State<YustImagePicker> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
