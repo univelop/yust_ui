@@ -11,6 +11,8 @@ import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_dropzone_list_tile.dart';
 import 'package:yust_ui/yust_ui.dart';
 
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
@@ -127,7 +129,8 @@ class YustImagePickerState extends State<YustImagePicker>
         below: _buildImages(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await checkAndUploadImages(ev ?? [], (fileData) async {
+          await checkAndUploadImages<DropzoneFileInterface>(ev ?? [],
+              (fileData) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
           });

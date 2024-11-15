@@ -5,7 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
-
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
@@ -127,7 +128,8 @@ class YustFilePickerState extends State<YustFilePicker>
         below: _buildFiles(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await checkAndUploadFiles(ev ?? [], (fileData) async {
+          await checkAndUploadFiles<DropzoneFileInterface>(ev ?? [],
+              (fileData) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
           });
