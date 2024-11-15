@@ -22,6 +22,7 @@ class YustSelect<T> extends StatelessWidget {
   final int? minLines;
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
+  final bool showHighlightFocus;
 
   static const maxVisibleOptions = 10;
 
@@ -44,25 +45,27 @@ class YustSelect<T> extends StatelessWidget {
     this.minLines,
     this.allowSearch = true,
     this.autovalidateMode,
+    this.showHighlightFocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return YustInputTile(
-      label: label ?? '',
-      text: _valueCaption(value),
-      prefixIcon: prefixIcon,
-      suffixChild: suffixChild,
-      validator: validator,
-      autovalidateMode: autovalidateMode,
-      style: style,
-      divider: divider,
-      maxLines: maxLines,
-      minLines: minLines,
-      onTap:
-          (onSelected == null || readOnly) ? null : () => _selectValue(context),
-      onDelete: readOnly ? null : onDelete,
-    );
+     label: label ?? '',
+     text: _valueCaption(value),
+     prefixIcon: prefixIcon,
+     suffixChild: suffixChild,
+     validator: validator,
+     autovalidateMode: autovalidateMode,
+     style: style,
+     showHighlightFocus: showHighlightFocus,
+     divider: divider,
+     maxLines: maxLines,
+     minLines: minLines,
+     onTap:
+         (onSelected == null || readOnly) ? null : () => _selectValue(context),
+     onDelete: readOnly ? null : onDelete,
+          );
   }
 
   String _valueCaption(T value) {
