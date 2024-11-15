@@ -1,3 +1,7 @@
+## 3.25.9 - 2024-11-15
+
+-   Upgrade of Dropzone Package
+
 ## 3.25.8 - 2024-11-15
 
 -   Improvements for Focus
