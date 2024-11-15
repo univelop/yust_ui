@@ -1,3 +1,7 @@
+## 3.25.8 - 2024-11-15
+
+-   Improvements for Focus
+
 ## 3.25.7 - 2024-11-08
 
 -   Fixes
