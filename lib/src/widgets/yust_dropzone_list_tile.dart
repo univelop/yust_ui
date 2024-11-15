@@ -1,6 +1,8 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 
 import '../generated/locale_keys.g.dart';
@@ -12,8 +14,9 @@ class YustDropzoneListTile extends StatefulWidget {
   final Widget? suffixChild;
   final Widget? below;
   final bool divider;
-  final Function(DropzoneViewController, dynamic)? onDrop;
-  final Function(DropzoneViewController, List<dynamic>?)? onDropMultiple;
+  final Function(DropzoneViewController, DropzoneFileInterface)? onDrop;
+  final Function(DropzoneViewController, List<DropzoneFileInterface>?)?
+      onDropMultiple;
 
   const YustDropzoneListTile(
       {super.key,
@@ -68,13 +71,13 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
               _isDragging = false;
             });
           },
-          onDrop: (ev) {
+          onDropFile: (ev) {
             setState(() {
               _isDragging = false;
             });
             widget.onDrop?.call(_controller, ev);
           },
-          onDropMultiple: (ev) {
+          onDropFiles: (ev) {
             setState(() {
               _isDragging = false;
             });
