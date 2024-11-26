@@ -32,45 +32,26 @@ class YustSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (switchRepresentation == 'checkbox') {
-      if (slimDesign) return _buildCheckbox(context);
-      return YustListTile(
-        label: label,
-        suffixChild: Row(
-          children: [
-            _buildCheckbox(context),
-            if (suffixIcon != null) suffixIcon!
-          ],
-        ),
-        onTap: readOnly || onChanged == null
-            ? null
-            : () {
-                YustUi.helpers.unfocusCurrent();
-                onChanged!(!value);
-              },
-        prefixIcon: prefixIcon,
-        divider: divider,
-      );
-    } else {
-      if (slimDesign) return _buildSwitch(context);
-      return YustListTile(
-        label: label,
-        suffixChild: Row(
-          children: [
-            _buildSwitch(context),
-            if (suffixIcon != null) suffixIcon!
-          ],
-        ),
-        onTap: readOnly || onChanged == null
-            ? null
-            : () {
-                YustUi.helpers.unfocusCurrent();
-                onChanged!(!value);
-              },
-        prefixIcon: prefixIcon,
-        divider: divider,
-      );
-    }
+    final checkboxOrSwitchBuilder =
+        switchRepresentation == 'checkbox' ? _buildCheckbox : _buildSwitch;
+    if (slimDesign) return checkboxOrSwitchBuilder(context);
+    return YustListTile(
+      label: label,
+      suffixChild: Row(
+        children: [
+          checkboxOrSwitchBuilder(context),
+          if (suffixIcon != null) suffixIcon!
+        ],
+      ),
+      onTap: readOnly || onChanged == null
+          ? null
+          : () {
+              YustUi.helpers.unfocusCurrent();
+              onChanged!(!value);
+            },
+      prefixIcon: prefixIcon,
+      divider: divider,
+    );
   }
 
   Widget _buildCheckbox(BuildContext context) {
