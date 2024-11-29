@@ -18,6 +18,8 @@ class YustDatePicker extends StatelessWidget {
   final YustInputStyle style;
   final Widget? prefixIcon;
   final bool readOnly;
+  final FormFieldValidator<DateTime?>? validator;
+  final AutovalidateMode? autovalidateMode;
 
   const YustDatePicker({
     super.key,
@@ -31,6 +33,8 @@ class YustDatePicker extends StatelessWidget {
     this.style = YustInputStyle.normal,
     this.prefixIcon,
     this.readOnly = false,
+    this.validator,
+    this.autovalidateMode,
   });
 
   @override
@@ -46,6 +50,8 @@ class YustDatePicker extends StatelessWidget {
           : () async {
               onChanged!(null);
             },
+      autovalidateMode: autovalidateMode,
+      validator: validator == null ? null : (_) => validator!(value),
     );
   }
 
