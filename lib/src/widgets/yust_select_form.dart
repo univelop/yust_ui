@@ -179,7 +179,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
 
   Widget _listItemMultiple(List<T> foundValues, int index) {
     return CheckboxListTile(
-      autofocus: index == 0 && !showSearchBar,
       enabled: !widget.disabled,
       title: Text(_getOptionLabel(foundValues[index])),
       value: widget.selectedValues.contains(foundValues[index]),
@@ -197,7 +196,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
 
   Widget _listItemSingle(List<T> foundValues, int index) {
     return RadioListTile(
-      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       value: foundValues[index],
       groupValue: widget.selectedValues.firstOrNull,
@@ -215,7 +213,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
 
   Widget _listItemSingleNoIndicator(List<T> foundValues, int index) {
     return ListTile(
-      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       onTap: () {
         setState(() {

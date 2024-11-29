@@ -16,7 +16,7 @@ class YustSelect<T> extends StatelessWidget {
   final Widget? suffixChild;
   final FormFieldValidator<String>? validator;
   final bool readOnly;
-  final bool showUnkownValue;
+  final bool showUnknownValue;
   final bool divider;
   final int? maxLines;
   final int? minLines;
@@ -39,7 +39,7 @@ class YustSelect<T> extends StatelessWidget {
     this.suffixChild,
     this.validator,
     this.readOnly = false,
-    this.showUnkownValue = false,
+    this.showUnknownValue = false,
     this.divider = true,
     this.maxLines,
     this.minLines,
@@ -51,27 +51,27 @@ class YustSelect<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return YustInputTile(
-     label: label ?? '',
-     text: _valueCaption(value),
-     prefixIcon: prefixIcon,
-     suffixChild: suffixChild,
-     validator: validator,
-     autovalidateMode: autovalidateMode,
-     style: style,
-     showHighlightFocus: showHighlightFocus,
-     divider: divider,
-     maxLines: maxLines,
-     minLines: minLines,
-     onTap:
-         (onSelected == null || readOnly) ? null : () => _selectValue(context),
-     onDelete: readOnly ? null : onDelete,
-          );
+      label: label ?? '',
+      text: _valueCaption(value),
+      prefixIcon: prefixIcon,
+      suffixChild: suffixChild,
+      validator: validator,
+      autovalidateMode: autovalidateMode,
+      style: style,
+      showHighlightFocus: showHighlightFocus,
+      divider: divider,
+      maxLines: maxLines,
+      minLines: minLines,
+      onTap:
+          (onSelected == null || readOnly) ? null : () => _selectValue(context),
+      onDelete: readOnly ? null : onDelete,
+    );
   }
 
   String _valueCaption(T value) {
     final index = optionValues.indexOf(value);
     if (index == -1) {
-      return showUnkownValue ? value.toString() : '';
+      return showUnknownValue ? value.toString() : '';
     }
     return optionLabels[index];
   }
