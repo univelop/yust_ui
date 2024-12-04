@@ -14,10 +14,10 @@ class YustUiHelpers {
   void unfocusCurrent() {
     final context = navStateKey.currentContext;
     if (context == null) return;
-    final currentFocus = Focus.of(context);
+    final currentFocus = FocusScope.of(context).focusedChild;
 
     // Prevent the focus to jump higher than the root of the app
-    if (currentFocus.hasPrimaryFocus ||
+    if (currentFocus == null ||
         YustUi.appRootFocusKey == null ||
         currentFocus.context?.widget.key == Key(YustUi.appRootFocusKey ?? '')) {
       return;

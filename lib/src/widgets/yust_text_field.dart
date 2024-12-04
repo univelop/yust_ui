@@ -102,7 +102,7 @@ class YustTextField extends StatefulWidget {
 class _YustTextFieldState extends State<YustTextField>
     with AutomaticKeepAliveClientMixin {
   late TextEditingController _controller;
-  late FocusNode _focusNode = FocusNode();
+  late FocusNode _focusNode;
   late String _initValue;
   late bool _valueDidChange;
 
@@ -131,7 +131,8 @@ class _YustTextFieldState extends State<YustTextField>
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode = widget.focusNode ??
+        FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
       // if (!_focusNode.hasFocus) onUnfocus();

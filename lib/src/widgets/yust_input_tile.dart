@@ -47,6 +47,7 @@ class YustInputTile extends StatelessWidget {
     return ExcludeFocus(
       excluding: excludeFocus,
       child: YustFocusableBuilder(
+        focusNodeDebugLabel: 'yust-input-tile-$label',
         shouldHighlightFocusedWidget: showHighlightFocus,
         onFocusAction: onTap,
         builder: (focusContext) => YustTextField(
