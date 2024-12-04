@@ -24,7 +24,9 @@ class YustFocusableBuilder extends StatefulWidget {
     this.actions,
     this.shortcuts,
     this.shouldHighlightFocusedWidget = false,
-  });
+    String? focusNodeDebugLabel,
+  }) : focusNodeDebugLabel =
+            focusNodeDebugLabel ?? 'yust-focusable-builder-$key';
 
   ///  A callback function that is triggered when the widget has its focus and the action intent is triggered. But it is only triggered when no other action is defined.
   final Function()? onFocusAction;
@@ -41,12 +43,16 @@ class YustFocusableBuilder extends StatefulWidget {
   /// A boolean value that determines whether the focused widget should be highlighted.
   final bool shouldHighlightFocusedWidget;
 
+  /// A string that is used to identify the focus node in the tree for debugging purposes.
+  final String focusNodeDebugLabel;
+
   @override
   State<YustFocusableBuilder> createState() => _YustFocusableBuilderState();
 }
 
 class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
-  late final FocusNode _focusNode = FocusNode();
+  late final FocusNode _focusNode =
+      FocusNode(debugLabel: widget.focusNodeDebugLabel);
 
   @override
   void initState() {

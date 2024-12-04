@@ -99,9 +99,10 @@ class YustListTile extends StatelessWidget {
     );
 
     return YustFocusableBuilder(
+      focusNodeDebugLabel: 'yust-list-tile-$label',
       shouldHighlightFocusedWidget: showHighlightFocus,
       onFocusAction: onTap,
-      builder: (focusContext) =>  ListTile(
+      builder: (focusContext) => ListTile(
         title: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
