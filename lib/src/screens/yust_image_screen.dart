@@ -56,11 +56,13 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.files.length == 1) {
-      return _buildSingle(context);
-    } else {
-      return _buildMultiple(context);
-    }
+    return Container(
+      color: Colors.black,
+      child: SafeArea(
+          child: widget.files.length == 1
+              ? _buildSingle(context)
+              : _buildMultiple(context)),
+    );
   }
 
   Widget _buildSingle(BuildContext context) {
