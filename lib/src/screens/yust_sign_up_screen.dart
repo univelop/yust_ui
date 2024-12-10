@@ -305,7 +305,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         await Yust.authService
-            .signUp(
+            .createAccount(
               _firstName!,
               _lastName!,
               _email!,
