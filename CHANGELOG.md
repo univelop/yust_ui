@@ -1,3 +1,7 @@
+## 3.25.12 - 2024-12-13
+
+-   Adds SafeArea to drawing screen
+
 ## 3.25.11 - 2024-12-04
 
 -   Fixes unfocusCurrent
