@@ -16,17 +16,24 @@ class YustImageScreen extends StatefulWidget {
   final int activeImageIndex;
   final void Function(YustFile file, Uint8List newImage) onSave;
 
+  /// Indicates whether drawing is allowed on the image.
+  ///
+  /// On web, this button will not be shown and only works for mobile/desktop app.
+  final bool allowDrawing;
+
   const YustImageScreen({
     super.key,
     required this.files,
     required this.onSave,
     this.activeImageIndex = 0,
+    this.allowDrawing = false,
   });
 
   static void navigateToScreen({
     required BuildContext context,
     required List<YustFile> files,
     int activeImageIndex = 0,
+    bool allowDrawing = false,
     required void Function(YustFile file, Uint8List newImage) onSave,
   }) {
     unawaited(
@@ -35,6 +42,7 @@ class YustImageScreen extends StatefulWidget {
           files: files,
           onSave: onSave,
           activeImageIndex: activeImageIndex,
+          allowDrawing: allowDrawing,
         ),
       )),
     );
@@ -83,7 +91,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
-      if (!kIsWeb) _buildDrawButton(context, file),
+      if (!kIsWeb && widget.allowDrawing) _buildDrawButton(context, file),
       if (kIsWeb) _buildCloseButton(context),
       _buildShareButton(context, file),
     ]);
@@ -162,7 +170,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (!kIsWeb) _buildDrawButton(context, widget.files[activeImageIndex]),
+        if (!kIsWeb && widget.allowDrawing)
+          _buildDrawButton(context, widget.files[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
         _buildShareButton(context, widget.files[activeImageIndex]),
       ],
