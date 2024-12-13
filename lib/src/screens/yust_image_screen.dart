@@ -18,7 +18,7 @@ class YustImageScreen extends StatefulWidget {
 
   /// Indicates whether drawing is allowed on the image.
   ///
-  /// On web, this button will not be shown and only works for mobile/desktop app.
+  /// This feature is only available on mobile and desktop apps.
   final bool allowDrawing;
 
   const YustImageScreen({
