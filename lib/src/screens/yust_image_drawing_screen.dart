@@ -24,16 +24,14 @@ class YustImageDrawingScreen extends StatefulWidget {
     required ImageProvider image,
     required void Function(Uint8List? image) onSave,
   }) {
-    unawaited(
-      Navigator.of(context).push(
+    unawaited(Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => YustImageDrawingScreen(
           image: image,
           onSave: onSave,
         ),
       ),
-    )
-    );
+    ));
   }
 
   @override
@@ -153,15 +151,17 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
           valueListenable: controller,
           builder: (context, _, __) => Container(
             color: Theme.of(context).colorScheme.surface,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildFreeStyleDrawing(context),
-                _buildAddText(context),
-                _buildAddShapes(context),
-                _buildFreeStyleEraser(context),
-                _buildOpenSettings(context),
-              ],
+            child: SafeArea(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildFreeStyleDrawing(context),
+                  _buildAddText(context),
+                  _buildAddShapes(context),
+                  _buildFreeStyleEraser(context),
+                  _buildOpenSettings(context),
+                ],
+              ),
             ),
           ),
         ));
