@@ -19,6 +19,8 @@ class YustUiHelpers {
     // Prevent the focus to jump higher than the root of the app
     if (currentFocus == null ||
         YustUi.appRootFocusKey == null ||
+        currentFocus.context == null ||
+        !currentFocus.context!.mounted ||
         currentFocus.context?.widget.key == Key(YustUi.appRootFocusKey ?? '')) {
       return;
     }
