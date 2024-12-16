@@ -57,7 +57,8 @@ class YustDocBuilder<T extends YustDoc> extends StatefulWidget {
   YustDocBuilderState<T> createState() => YustDocBuilderState<T>();
 }
 
-class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
+class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>>
+    with AutomaticKeepAliveClientMixin {
   // May not be null.
   Stream<T?>? _docStream;
 
@@ -108,6 +109,7 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return YustStreamBuilder(
       stream: _docStream!,
       showLoadingSpinner: widget.showLoadingSpinner,
@@ -117,4 +119,7 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>> {
       builder: widget.builder,
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

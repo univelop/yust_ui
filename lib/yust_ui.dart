@@ -23,6 +23,8 @@ export 'src/widgets/yust_doc_builder.dart';
 export 'src/widgets/yust_docs_builder.dart';
 export 'src/widgets/yust_file_picker.dart';
 export 'src/widgets/yust_focus_handler.dart';
+export 'src/widgets/yust_focusable_builder.dart';
+export 'src/widgets/yust_focused_highlight_wrapper.dart';
 export 'src/widgets/yust_image_picker.dart';
 export 'src/widgets/yust_input_tile.dart';
 export 'src/widgets/yust_list_tile.dart';

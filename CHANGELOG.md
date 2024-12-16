@@ -1,3 +1,31 @@
+## 3.25.12 - 2024-12-13
+
+-   Adds SafeArea to drawing screen
+
+## 3.25.11 - 2024-12-04
+
+-   Fixes unfocusCurrent
+
+## 3.25.10 - 2024-11-29
+
+-   Fixes
+
+## 3.25.9 - 2024-11-15
+
+-   Upgrade of Dropzone Package
+
+## 3.25.8 - 2024-11-15
+
+-   Improvements for Focus
+
+## 3.25.7 - 2024-11-08
+
+-   Fixes
+
+## 3.25.6 - 2024-11-08
+
+-   Improvements for multiple widgets
+
 ## 3.25.5 - 2024-11-01
 
 -   Activate cSpell

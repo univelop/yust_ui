@@ -48,6 +48,10 @@ class YustTextField extends StatefulWidget {
   final bool completeOnUnfocus;
   final Iterable<String>? autofillHints;
 
+  /// Whether the text field should be automatically wrapped with a [DefaultTextEditingShortcuts] widget or not.
+  /// Thus reserving the current platforms default text editing shortcuts and blocking them from being overridden by custom [Shortcuts] Widgets
+  final bool reserveDefaultTextEditingShortcuts;
+
   const YustTextField({
     super.key,
     this.label,
@@ -88,15 +92,17 @@ class YustTextField extends StatefulWidget {
     this.shouldCompleteNotValidInput = false,
     this.completeOnUnfocus = true,
     this.autofillHints,
+    this.reserveDefaultTextEditingShortcuts = true,
   });
 
   @override
   State<YustTextField> createState() => _YustTextFieldState();
 }
 
-class _YustTextFieldState extends State<YustTextField> {
+class _YustTextFieldState extends State<YustTextField>
+    with AutomaticKeepAliveClientMixin {
   late TextEditingController _controller;
-  late FocusNode _focusNode = FocusNode();
+  late FocusNode _focusNode;
   late String _initValue;
   late bool _valueDidChange;
 
@@ -125,7 +131,8 @@ class _YustTextFieldState extends State<YustTextField> {
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode = widget.focusNode ??
+        FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
       // if (!_focusNode.hasFocus) onUnfocus();
@@ -196,6 +203,7 @@ class _YustTextFieldState extends State<YustTextField> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final textValue = widget.value ?? '';
     if (textValue != _initValue &&
         textValue != _controller.text &&
@@ -232,7 +240,7 @@ class _YustTextFieldState extends State<YustTextField> {
   }
 
   Widget _buildTextField() {
-    return TextFormField(
+    final textField = TextFormField(
       decoration: InputDecoration(
         labelText: widget.label,
         labelStyle: widget.labelStyle ??
@@ -287,5 +295,16 @@ class _YustTextFieldState extends State<YustTextField> {
       autofocus: widget.autofocus,
       autofillHints: widget.autofillHints,
     );
+
+    if (widget.reserveDefaultTextEditingShortcuts) {
+      return DefaultTextEditingShortcuts(
+        child: textField,
+      );
+    }
+
+    return textField;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

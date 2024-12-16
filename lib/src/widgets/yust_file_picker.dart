@@ -5,7 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
-
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
@@ -80,7 +81,8 @@ class YustFilePicker extends StatefulWidget {
   YustFilePickerState createState() => YustFilePickerState();
 }
 
-class YustFilePickerState extends State<YustFilePicker> {
+class YustFilePickerState extends State<YustFilePicker>
+    with AutomaticKeepAliveClientMixin {
   late YustFileHandler _fileHandler;
   final Map<String?, bool> _processing = {};
   late bool _enabled;
@@ -104,6 +106,7 @@ class YustFilePickerState extends State<YustFilePicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     return FutureBuilder(
       future: _fileHandler.updateFiles(widget.files),
@@ -125,7 +128,8 @@ class YustFilePickerState extends State<YustFilePicker> {
         below: _buildFiles(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await checkAndUploadFiles(ev ?? [], (fileData) async {
+          await checkAndUploadFiles<DropzoneFileInterface>(ev ?? [],
+              (fileData) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
           });
@@ -569,4 +573,7 @@ class YustFilePickerState extends State<YustFilePicker> {
         ? File(platformFile.path!)
         : null;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

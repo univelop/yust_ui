@@ -47,7 +47,8 @@ class YustSelectForm<T> extends StatefulWidget {
   State<YustSelectForm<T>> createState() => _YustSelectFormState<T>();
 }
 
-class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
+class _YustSelectFormState<T> extends State<YustSelectForm<T>>
+    with AutomaticKeepAliveClientMixin {
   final int _maxOptionCountBeforeSearch = 10;
   String searchValue = '';
   late final ScrollController controller = ScrollController();
@@ -64,6 +65,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (widget.optionListConstraints.maxHeight == double.infinity) {
       throw Exception(LocaleKeys.exceptionOptionListConstraints.tr());
     }
@@ -177,7 +179,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
 
   Widget _listItemMultiple(List<T> foundValues, int index) {
     return CheckboxListTile(
-      autofocus: index == 0 && !showSearchBar,
       enabled: !widget.disabled,
       title: Text(_getOptionLabel(foundValues[index])),
       value: widget.selectedValues.contains(foundValues[index]),
@@ -195,7 +196,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
 
   Widget _listItemSingle(List<T> foundValues, int index) {
     return RadioListTile(
-      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       value: foundValues[index],
       groupValue: widget.selectedValues.firstOrNull,
@@ -213,7 +213,6 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
 
   Widget _listItemSingleNoIndicator(List<T> foundValues, int index) {
     return ListTile(
-      autofocus: index == 0 && !showSearchBar,
       title: Text(_getOptionLabel(foundValues[index])),
       onTap: () {
         setState(() {
@@ -243,4 +242,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>> {
     widget.selectedValues
         .sort((a, b) => optionIndices[a]!.compareTo(optionIndices[b]!));
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
