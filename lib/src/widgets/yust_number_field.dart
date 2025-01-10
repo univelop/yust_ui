@@ -30,6 +30,7 @@ class YustNumberField extends StatelessWidget {
   final TextStyle? valueStyle;
   final EdgeInsets contentPadding;
   final bool completeOnUnfocus;
+  final bool skipFocus;
 
   const YustNumberField({
     super.key,
@@ -54,6 +55,7 @@ class YustNumberField extends StatelessWidget {
     this.divider = true,
     this.contentPadding = const EdgeInsets.all(20.0),
     this.completeOnUnfocus = true,
+    this.skipFocus = false,
   });
 
   @override
@@ -67,7 +69,7 @@ class YustNumberField extends StatelessWidget {
         final allowDecimalInput = decimalCount != 0;
 
         return YustFocusableBuilder(
-          skipFocus: true,
+          skipFocus: skipFocus,
           focusNodeDebugLabel: 'yust-number-field-$label',
           builder: (focusContext) => YustTextField(
             style: style,

@@ -52,25 +52,25 @@ class YustListTile extends StatelessWidget {
     return YustFocusableBuilder(
       skipFocus: skipFocus,
       focusNodeDebugLabel: 'yust-list-tile-$label',
-      builder: (focusContext){
-if (style == YustInputStyle.outlineBorder) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: _buildInner(focusContext),
-      );
-    } else {
-      return Column(
-        children: <Widget>[
-          _buildInner(focusContext),
-          below ?? const SizedBox(),
-          if (divider && !(heading || largeHeading))
-            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-        ],
-      );
-    }
+      builder: (focusContext) {
+        if (style == YustInputStyle.outlineBorder) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: _buildInner(focusContext),
+          );
+        } else {
+          return Column(
+            children: <Widget>[
+              _buildInner(focusContext),
+              below ?? const SizedBox(),
+              if (divider && !(heading || largeHeading))
+                const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+            ],
+          );
+        }
       },
     );
   }
