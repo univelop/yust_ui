@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../yust_ui.dart';
+import 'yust_focusable_builder.dart';
 import 'yust_text_field.dart';
 
 typedef ChangeCallback = void Function(num?);
@@ -65,49 +66,53 @@ class YustNumberField extends StatelessWidget {
         final usesSamsungKeyboard = snapshot.data ?? false;
         final allowDecimalInput = decimalCount != 0;
 
-        return YustTextField(
-          style: style,
-          textStyle: valueStyle,
-          label: label,
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon,
-          value: numToString(value,
-              decimalCount: decimalCount,
-              thousandsSeparator: thousandsSeparator),
-          controller: controller,
-          onChanged: onChanged == null
-              ? null
-              : (value) => onChanged!(
-                  valueToNum(value?.trim() ?? '', decimalCount: decimalCount)),
-          onEditingComplete: onEditingComplete == null
-              ? null
-              : (value) => onEditingComplete!(
-                  valueToNum(value?.trim() ?? '', decimalCount: decimalCount)),
-          keyboardType: !allowDecimalInput
-              ? TextInputType.number
-              : usesSamsungKeyboard
-                  ? null
-                  : const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            allowDecimalInput
-                ? FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
-                : FilteringTextInputFormatter.allow(RegExp('[0-9-]'))
-          ],
-          textInputAction: TextInputAction.next,
-          onTap: onTap,
-          readOnly: readOnly,
-          enabled: enabled,
-          autovalidateMode:
-              validator != null ? AutovalidateMode.onUserInteraction : null,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          hideKeyboardOnAutofocus: hideKeyboardOnAutofocus,
-          validator: validator == null
-              ? null
-              : (value) => validator!(valueToNum(value)),
-          divider: divider,
-          completeOnUnfocus: completeOnUnfocus,
-          contentPadding: contentPadding,
+        return YustFocusableBuilder(
+          skipFocus: true,
+          focusNodeDebugLabel: 'yust-number-field-$label',
+          builder: (focusContext) => YustTextField(
+            style: style,
+            textStyle: valueStyle,
+            label: label,
+            prefixIcon: prefixIcon,
+            suffixIcon: suffixIcon,
+            value: numToString(value,
+                decimalCount: decimalCount,
+                thousandsSeparator: thousandsSeparator),
+            controller: controller,
+            onChanged: onChanged == null
+                ? null
+                : (value) => onChanged!(valueToNum(value?.trim() ?? '',
+                    decimalCount: decimalCount)),
+            onEditingComplete: onEditingComplete == null
+                ? null
+                : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '',
+                    decimalCount: decimalCount)),
+            keyboardType: !allowDecimalInput
+                ? TextInputType.number
+                : usesSamsungKeyboard
+                    ? null
+                    : const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              allowDecimalInput
+                  ? FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
+                  : FilteringTextInputFormatter.allow(RegExp('[0-9-]'))
+            ],
+            textInputAction: TextInputAction.next,
+            onTap: onTap,
+            readOnly: readOnly,
+            enabled: enabled,
+            autovalidateMode:
+                validator != null ? AutovalidateMode.onUserInteraction : null,
+            focusNode: focusNode,
+            autofocus: autofocus,
+            hideKeyboardOnAutofocus: hideKeyboardOnAutofocus,
+            validator: validator == null
+                ? null
+                : (value) => validator!(valueToNum(value)),
+            divider: divider,
+            completeOnUnfocus: completeOnUnfocus,
+            contentPadding: contentPadding,
+          ),
         );
       },
     );
