@@ -155,6 +155,8 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
                           case YustSelectFormType.singleWithoutIndicator:
                             return _listItemSingleNoIndicator(
                                 foundValues, index);
+                          default:
+                            throw Exception('Unknown form type');
                         }
                       }),
                     ],

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 /// A widget that wraps a child widget and displays a semi-transparent overlay
@@ -33,7 +34,7 @@ class YustFocusedHighlightWrapper extends StatelessWidget {
       children: [
         if (Focus.of(focusContext).hasFocus)
           Positioned.fill(
-            child: ColoredBox(color: Colors.black.withValues(alpha: .1)),
+            child: ColoredBox(color: Colors.black.withOpacity(0.1)),
           ),
         child,
       ],
