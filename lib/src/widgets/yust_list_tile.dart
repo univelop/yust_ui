@@ -25,7 +25,7 @@ class YustListTile extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? below;
   final bool divider;
-  final bool excludeFocus;
+  final bool skipFocus;
   final bool showHighlightFocus;
 
   const YustListTile({
@@ -43,36 +43,36 @@ class YustListTile extends StatelessWidget {
     this.prefixIcon,
     this.below,
     this.divider = true,
-    this.excludeFocus = false,
+    this.skipFocus = false,
     this.showHighlightFocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (style == YustInputStyle.outlineBorder) {
-      return ExcludeFocus(
-        excluding: excludeFocus,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: _buildInner(context),
-        ),
-      );
-    } else {
-      return ExcludeFocus(
-        excluding: excludeFocus,
-        child: Column(
-          children: <Widget>[
-            _buildInner(context),
-            below ?? const SizedBox(),
-            if (divider && !(heading || largeHeading))
-              const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-          ],
-        ),
-      );
-    }
+    return YustFocusableBuilder(
+      skipFocus: skipFocus,
+      focusNodeDebugLabel: 'yust-list-tile-$label',
+      builder: (focusContext) {
+        if (style == YustInputStyle.outlineBorder) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: _buildInner(focusContext),
+          );
+        } else {
+          return Column(
+            children: <Widget>[
+              _buildInner(focusContext),
+              below ?? const SizedBox(),
+              if (divider && !(heading || largeHeading))
+                const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+            ],
+          );
+        }
+      },
+    );
   }
 
   Widget _buildInner(BuildContext context) {
