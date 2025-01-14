@@ -2,7 +2,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 // ignore: depend_on_referenced_packages
-import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 
 import '../generated/locale_keys.g.dart';
