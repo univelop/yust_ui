@@ -24,6 +24,7 @@ class YustFocusableBuilder extends StatefulWidget {
     this.actions,
     this.shortcuts,
     this.shouldHighlightFocusedWidget = false,
+    this.skipFocus = false,
     String? focusNodeDebugLabel,
   }) : focusNodeDebugLabel =
             focusNodeDebugLabel ?? 'yust-focusable-builder-$key';
@@ -46,13 +47,18 @@ class YustFocusableBuilder extends StatefulWidget {
   /// A string that is used to identify the focus node in the tree for debugging purposes.
   final String focusNodeDebugLabel;
 
+  /// A boolean value that determines whether the focus should be skipped.
+  final bool skipFocus;
+
   @override
   State<YustFocusableBuilder> createState() => _YustFocusableBuilderState();
 }
 
 class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
-  late final FocusNode _focusNode =
-      FocusNode(debugLabel: widget.focusNodeDebugLabel);
+  late final FocusNode _focusNode = FocusNode(
+    debugLabel: widget.focusNodeDebugLabel,
+    skipTraversal: widget.skipFocus,
+  );
 
   @override
   void initState() {
