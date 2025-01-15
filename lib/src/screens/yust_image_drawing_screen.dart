@@ -297,7 +297,7 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
                     e.icon,
                     color: Colors.black,
                   ),
-                  Text(' ${e.title}')
+                  Text(' ${e.getLabel()}'),
                 ],
               )))
           .toList(),
@@ -530,15 +530,17 @@ enum StrokeColor {
 }
 
 enum Shapes {
-  line(icon: Icons.horizontal_rule),
-  arrow(icon: Icons.trending_flat),
-  doubleArrow(icon: Icons.open_in_full),
-  rectangle(icon: Icons.rectangle),
-  oval(icon: Icons.circle);
+  line(LocaleKeys.line, icon: Icons.horizontal_rule),
+  arrow(LocaleKeys.arrow, icon: Icons.trending_flat),
+  doubleArrow(LocaleKeys.doubleArrow, icon: Icons.open_in_full),
+  rectangle(LocaleKeys.rectangle, icon: Icons.rectangle),
+  oval(LocaleKeys.oval, icon: Icons.circle);
 
-  const Shapes({required this.icon});
+  const Shapes(this._localeKey, {required this.icon});
 
+  final String _localeKey;
   final IconData icon;
 
-  String get title => name.tr();
+  /// Returns the translated title of this shape
+  String getLabel() => _localeKey.tr();
 }
