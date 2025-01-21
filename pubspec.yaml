@@ -54,7 +54,7 @@ dependency_overrides:
     flutter_painter:
         git:
             url: https://github.com/Zazo032/flutter_painter.git
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: Fix-lints-25-01-10
+    # yust:
+    #     git:
+    #         url: https://github.com/univelop/yust.git
+    #         ref: master
