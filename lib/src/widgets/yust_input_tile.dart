@@ -19,7 +19,7 @@ class YustInputTile extends StatelessWidget {
   final int? maxLines;
   final int? minLines;
   final AutovalidateMode? autovalidateMode;
-  final bool excludeFocus;
+  final bool skipFocus;
   final bool showHighlightFocus;
 
   const YustInputTile({
@@ -38,39 +38,37 @@ class YustInputTile extends StatelessWidget {
     this.maxLines,
     this.minLines,
     this.autovalidateMode,
-    this.excludeFocus = false,
+    this.skipFocus = false,
     this.showHighlightFocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ExcludeFocus(
-      excluding: excludeFocus,
-      child: YustFocusableBuilder(
-        focusNodeDebugLabel: 'yust-input-tile-$label',
-        shouldHighlightFocusedWidget: showHighlightFocus,
-        onFocusAction: onTap,
-        builder: (focusContext) => YustTextField(
-          label: label,
-          labelStyle: labelStyle,
-          value: text,
-          textStyle: textStyle,
-          style: style,
-          readOnly: true,
-          divider: divider,
-          maxLines: maxLines,
-          minLines: minLines,
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixChild,
-          onTap: onTap,
-          onDelete: onDelete == null
-              ? null
-              : () async {
-                  await onDelete!();
-                },
-          validator: validator,
-          autovalidateMode: autovalidateMode,
-        ),
+    return YustFocusableBuilder(
+      skipFocus: skipFocus,
+      focusNodeDebugLabel: 'yust-input-tile-$label',
+      shouldHighlightFocusedWidget: showHighlightFocus,
+      onFocusAction: onTap,
+      builder: (focusContext) => YustTextField(
+        label: label,
+        labelStyle: labelStyle,
+        value: text,
+        textStyle: textStyle,
+        style: style,
+        readOnly: true,
+        divider: divider,
+        maxLines: maxLines,
+        minLines: minLines,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixChild,
+        onTap: onTap,
+        onDelete: onDelete == null
+            ? null
+            : () async {
+                await onDelete!();
+              },
+        validator: validator,
+        autovalidateMode: autovalidateMode,
       ),
     );
   }

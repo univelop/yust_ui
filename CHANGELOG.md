@@ -1,3 +1,11 @@
+## 3.26.2 - 2024-01-13
+
+-   Fixes
+
+## 3.26.1 - 2024-01-13
+
+-   Focus improvements
+
 ## 3.26.0 - 2024-12-16
 
 -   Further improvements for `unfocusCurrent`
