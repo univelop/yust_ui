@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.26.2
+version: 3.26.3
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -53,7 +53,7 @@ dependency_overrides:
     # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
-            url: https://github.com/Harishwarrior/flutter_painter.git
+            url: https://github.com/Zazo032/flutter_painter.git
     # yust:
     #     git:
     #         url: https://github.com/univelop/yust.git
