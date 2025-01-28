@@ -122,7 +122,7 @@ class YustAlertService {
                             validator == null ? null : validateMode,
                         validator: validator == null
                             ? null
-                            : (value) => validator(value!.trim()),
+                            : (value) => validator(value),
                         autofocus: true,
                         obscureText: obscureText,
                       ),
