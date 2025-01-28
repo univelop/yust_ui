@@ -15,7 +15,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 // ignore: implementation_imports
 import 'package:image/src/util/rational.dart';
 
@@ -110,7 +109,7 @@ class YustFileHelpers {
     File? file,
     Uint8List? data,
   }) async {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     // Get the Location of the widget (e.g. button), that called the method.
     final box = context.findRenderObject() as RenderBox?;
     await launchFileWithoutContext(
@@ -123,7 +122,7 @@ class YustFileHelpers {
       {required BuildContext context,
       required String url,
       required String name}) async {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     // Get the Location of the widget (e.g. button), that called the method.
     final box = context.findRenderObject() as RenderBox?;
     await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
@@ -208,7 +207,7 @@ class YustFileHelpers {
         try {
           // Check if GPS tags are set by the camera
           if (exif.gpsIfd['GPSLatitude'] == null) {
-            final position = await YustUiHelpers.getPosition();
+            final position = await YustUi.locationService.getCurrentPosition();
 
             exif.gpsIfd['GPSLatitudeRef'] =
                 IfdValueAscii(position.latitude > 0 ? 'N' : 'S');

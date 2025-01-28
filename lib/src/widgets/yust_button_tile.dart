@@ -13,6 +13,8 @@ class YustButtonTile extends StatelessWidget {
   final bool slimDesign;
   final bool inProgress;
   final Widget? suffixChild;
+  final String? tooltipMessage;
+  final double? maxWidth;
 
   const YustButtonTile({
     super.key,
@@ -28,6 +30,8 @@ class YustButtonTile extends StatelessWidget {
     this.divider = true,
     this.slimDesign = false,
     this.inProgress = false,
+    this.tooltipMessage,
+    this.maxWidth = 400,
   });
 
   @override
@@ -48,7 +52,13 @@ class YustButtonTile extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildButton(),
+                        Container(
+                            constraints: maxWidth == null
+                                ? null
+                                : BoxConstraints(
+                                    maxWidth: maxWidth!,
+                                  ),
+                            child: _buildButton()),
                         if (inProgress)
                           const Padding(
                             padding: EdgeInsets.only(left: 12.0),
@@ -72,7 +82,7 @@ class YustButtonTile extends StatelessWidget {
   }
 
   Widget _buildButton() {
-    return elevated
+    var button = elevated
         ? ElevatedButton.icon(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
@@ -96,5 +106,14 @@ class YustButtonTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           );
+
+    if (tooltipMessage != null) {
+      return Tooltip(
+        message: tooltipMessage!,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }

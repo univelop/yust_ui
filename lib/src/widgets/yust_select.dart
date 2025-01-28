@@ -16,12 +16,13 @@ class YustSelect<T> extends StatelessWidget {
   final Widget? suffixChild;
   final FormFieldValidator<String>? validator;
   final bool readOnly;
-  final bool showUnkownValue;
+  final bool showUnknownValue;
   final bool divider;
   final int? maxLines;
   final int? minLines;
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
+  final bool showHighlightFocus;
 
   static const maxVisibleOptions = 10;
 
@@ -38,12 +39,13 @@ class YustSelect<T> extends StatelessWidget {
     this.suffixChild,
     this.validator,
     this.readOnly = false,
-    this.showUnkownValue = false,
+    this.showUnknownValue = false,
     this.divider = true,
     this.maxLines,
     this.minLines,
     this.allowSearch = true,
     this.autovalidateMode,
+    this.showHighlightFocus = false,
   });
 
   @override
@@ -56,6 +58,7 @@ class YustSelect<T> extends StatelessWidget {
       validator: validator,
       autovalidateMode: autovalidateMode,
       style: style,
+      showHighlightFocus: showHighlightFocus,
       divider: divider,
       maxLines: maxLines,
       minLines: minLines,
@@ -68,7 +71,7 @@ class YustSelect<T> extends StatelessWidget {
   String _valueCaption(T value) {
     final index = optionValues.indexOf(value);
     if (index == -1) {
-      return showUnkownValue ? value.toString() : '';
+      return showUnknownValue ? value.toString() : '';
     }
     return optionLabels[index];
   }
@@ -84,7 +87,7 @@ class YustSelect<T> extends StatelessWidget {
         return _buildDialog(context, selectedValues);
       },
     );
-    final selectedValue = selectedValues.first;
+    final selectedValue = selectedValues.firstOrNull;
     if (selectedValue != null) {
       onSelected!(selectedValue);
     }

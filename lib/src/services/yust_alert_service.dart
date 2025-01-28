@@ -12,6 +12,26 @@ class YustAlertService {
   YustAlertService(this.navStateKey);
 
   Future<void> showAlert(String title, String message) {
+    return showAlertWithCustomActions(
+      title: title,
+      message: message,
+      actions: [
+        TextButton(
+          autofocus: true,
+          child: Text(LocaleKeys.ok.tr()),
+          onPressed: () {
+            Navigator.of(navStateKey.currentContext!).pop();
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> showAlertWithCustomActions({
+    required String title,
+    required String message,
+    required List<Widget> actions,
+  }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
@@ -20,14 +40,7 @@ class YustAlertService {
         return AlertDialog(
           title: Text(title),
           content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text(LocaleKeys.ok.tr()),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+          actions: actions,
         );
       },
     );
@@ -70,10 +83,11 @@ class YustAlertService {
             ),
             TextButton(
               key: Key(action),
-              child: Text(action),
+              autofocus: true,
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
+              child: Text(action),
             ),
           ],
         );
@@ -107,47 +121,54 @@ class YustAlertService {
           key: yustServiceValidationKey,
           child: AlertDialog(
             title: Text(title),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (message != null) Text(message),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                            hintText: placeholder, errorMaxLines: 5),
-                        autovalidateMode:
-                            validator == null ? null : validateMode,
-                        validator: validator == null
-                            ? null
-                            : (value) => validator(value),
-                        autofocus: true,
-                        obscureText: obscureText,
-                      ),
-                    ),
-                    if (suffixIcon != null) suffixIcon(controller: controller),
-                  ],
-                ),
-                if (warning != null) const SizedBox(height: 5),
-                if (warning != null)
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (message != null) Text(message),
                   Row(
                     children: [
-                      const Icon(
-                        size: 15,
-                        Icons.info,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        warning,
-                        style: const TextStyle(
-                          fontSize: 11,
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          decoration: InputDecoration(
+                              hintText: placeholder, errorMaxLines: 5),
+                          autovalidateMode:
+                              validator == null ? null : validateMode,
+                          validator: validator == null
+                              ? null
+                              : (value) => validator(value),
+                          autofocus: true,
+                          obscureText: obscureText,
+                          onFieldSubmitted: (value) {
+                            _submitTextFieldDialog(validator, context,
+                                controller, yustServiceValidationKey);
+                          },
                         ),
                       ),
+                      if (suffixIcon != null)
+                        suffixIcon(controller: controller),
                     ],
                   ),
-              ],
+                  if (warning != null) const SizedBox(height: 5),
+                  if (warning != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          size: 15,
+                          Icons.info,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          warning,
+                          style: const TextStyle(
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
             actions: <Widget>[
               TextButton(
@@ -159,13 +180,8 @@ class YustAlertService {
               TextButton(
                 child: Text(action),
                 onPressed: () {
-                  if (validator == null) {
-                    Navigator.of(context).pop(controller.text);
-                  } else if (yustServiceValidationKey.currentState!
-                      .validate()) {
-                    //if ( validator(controller.text.trim()) == null
-                    Navigator.of(context).pop(controller.text);
-                  }
+                  _submitTextFieldDialog(
+                      validator, context, controller, yustServiceValidationKey);
                 },
               ),
             ],
@@ -173,6 +189,18 @@ class YustAlertService {
         );
       },
     );
+  }
+
+  void _submitTextFieldDialog(
+      FormFieldValidator<String>? validator,
+      BuildContext context,
+      TextEditingController controller,
+      GlobalKey<FormState> yustServiceValidationKey) {
+    if (validator == null) {
+      Navigator.of(context).pop(controller.text);
+    } else if (yustServiceValidationKey.currentState!.validate()) {
+      Navigator.of(context).pop(controller.text);
+    }
   }
 
   ///

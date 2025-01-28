@@ -1,0 +1,9 @@
+{
+    "cSpell.dictionaryDefinitions": [
+        {
+            "name": "custom",
+            "path": "./.vscode/custom_dictionary.txt"
+        }
+    ],
+    "cSpell.dictionaries": [ "custom" ],
+}

@@ -18,6 +18,8 @@ class YustSelectMultiple<T> extends StatelessWidget {
   final Widget? suffixChild;
   final bool readOnly;
   final ButtonStyle buttonStyle;
+  final FormFieldValidator<List<T>>? validator;
+  final AutovalidateMode? autovalidateMode;
 
   const YustSelectMultiple({
     super.key,
@@ -32,6 +34,8 @@ class YustSelectMultiple<T> extends StatelessWidget {
     this.prefixIcon,
     this.suffixChild,
     this.readOnly = false,
+    this.validator,
+    this.autovalidateMode,
   });
 
   @override
@@ -45,6 +49,8 @@ class YustSelectMultiple<T> extends StatelessWidget {
       onTap:
           (onSelected == null || readOnly) ? null : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
+      autovalidateMode: autovalidateMode,
+      validator: validator == null ? null : (_) => validator!(values),
     );
   }
 

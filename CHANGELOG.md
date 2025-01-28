@@ -1,3 +1,86 @@
+## 3.26.4 - 2024-01-24
+
+-   Fixes for FilePicker
+
+## 3.26.3 - 2024-01-21
+
+-   Getting ready for flutter version upgrade
+
+## 3.26.2 - 2024-01-13
+
+-   Fixes
+
+## 3.26.1 - 2024-01-13
+
+-   Focus improvements
+
+## 3.26.0 - 2024-12-16
+
+-   Further improvements for `unfocusCurrent`
+-   Bump version
+
+## 3.25.12 - 2024-12-13
+
+-   Adds SafeArea to drawing screen
+
+## 3.25.11 - 2024-12-04
+
+-   Fixes unfocusCurrent
+
+## 3.25.10 - 2024-11-29
+
+-   Fixes
+
+## 3.25.9 - 2024-11-15
+
+-   Upgrade of Dropzone Package
+
+## 3.25.8 - 2024-11-15
+
+-   Improvements for Focus
+
+## 3.25.7 - 2024-11-08
+
+-   Fixes
+
+## 3.25.6 - 2024-11-08
+
+-   Improvements for multiple widgets
+
+## 3.25.5 - 2024-11-01
+
+-   Activate cSpell
+
+## 3.25.4 - 2024-10-28
+
+-   Fixes for AlertService
+
+## 3.25.3 - 2024-10-25
+
+-   Add Keyboard-Shortcut support
+
+## 3.25.2 - 2024-10-23
+
+-   Improvements for YustCachedImage
+-   Added YustAlertService.showAlertWithCustomActions
+
+## 3.25.1 - 2024-10-14
+
+-   Fixes & Improvements
+
+## 3.25.0 - 2024-10-14
+
+-   Bump Version
+
+## 3.24.4 - 2024-09-18
+
+-   Fixes for YustSelect
+
+## 3.24.3 - 2024-09-14
+
+-   Add UI Components for Geo-Location
+-   Fixes for Image Conversion
+
 ## 3.24.2 - 2024-08-08
 
 -   Image Resize Improvements

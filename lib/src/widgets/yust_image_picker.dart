@@ -11,6 +11,8 @@ import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_dropzone_list_tile.dart';
 import 'package:yust_ui/yust_ui.dart';
 
+// ignore: depend_on_referenced_packages
+import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
@@ -80,7 +82,8 @@ class YustImagePicker extends StatefulWidget {
   YustImagePickerState createState() => YustImagePickerState();
 }
 
-class YustImagePickerState extends State<YustImagePicker> {
+class YustImagePickerState extends State<YustImagePicker>
+    with AutomaticKeepAliveClientMixin {
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
@@ -108,6 +111,7 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return FutureBuilder(
@@ -125,7 +129,8 @@ class YustImagePickerState extends State<YustImagePicker> {
         below: _buildImages(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await checkAndUploadImages(ev ?? [], (fileData) async {
+          await checkAndUploadImages<DropzoneFileInterface>(ev ?? [],
+              (fileData) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
           });
@@ -517,6 +522,7 @@ class YustImagePickerState extends State<YustImagePicker> {
           // Because of the reason stated above,
           // we need to do the resizing ourself
           resize: true,
+          convertToJPEG: widget.convertToJPEG,
           setGPSToLocation: setGPSToLocation);
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
@@ -630,22 +636,25 @@ class YustImagePickerState extends State<YustImagePicker> {
 
   void _showImages(YustFile activeFile) {
     YustUi.helpers.unfocusCurrent();
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (context) => YustImageScreen(
-        files: _fileHandler.getFiles(),
-        activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
-        onSave: ((file, newImage) {
-          file.storageFolderPath = widget.storageFolderPath;
-          file.linkedDocPath = widget.linkedDocPath;
-          file.linkedDocAttribute = widget.linkedDocAttribute;
+    YustImageScreen.navigateToScreen(
+      context: context,
+      files: _fileHandler.getFiles(),
+      activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
+      allowDrawing: !widget.readOnly,
+      onSave: (file, newImage) {
+        file.storageFolderPath = widget.storageFolderPath;
+        file.linkedDocPath = widget.linkedDocPath;
+        file.linkedDocAttribute = widget.linkedDocAttribute;
 
-          _fileHandler.updateFile(file, bytes: newImage);
+        _fileHandler.updateFile(file, bytes: newImage);
 
-          if (mounted) {
-            setState(() {});
-          }
-        }),
-      ),
-    ));
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
