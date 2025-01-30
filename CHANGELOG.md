@@ -1,3 +1,7 @@
+## 3.26.5 - 2024-01-30
+
+-   Fix package versions
+
 ## 3.26.4 - 2024-01-24
 
 -   Fixes for FilePicker
