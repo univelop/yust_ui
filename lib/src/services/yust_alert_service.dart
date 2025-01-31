@@ -95,6 +95,8 @@ class YustAlertService {
     );
   }
 
+  /// Shows a text field dialog
+  /// if validator is set, action gets only triggered if the validator returns null (means true)
   Future<String?> showTextFieldDialog(
     String title,
     String? placeholder,
@@ -104,8 +106,6 @@ class YustAlertService {
     String initialText = '',
     bool obscureText = false,
     AutovalidateMode validateMode = AutovalidateMode.onUserInteraction,
-
-    /// if validator is set, action gets only triggered if the validator returns null (means true)
     FormFieldValidator<String>? validator,
     Widget Function({required TextEditingController controller})? suffixIcon,
   }) {
@@ -137,7 +137,7 @@ class YustAlertService {
                               validator == null ? null : validateMode,
                           validator: validator == null
                               ? null
-                              : (value) => validator(value!.trim()),
+                              : (value) => validator(value),
                           autofocus: true,
                           obscureText: obscureText,
                           onFieldSubmitted: (value) {
