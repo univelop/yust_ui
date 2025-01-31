@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.26.2
+version: 3.26.7
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.26.1
+    yust: ^3.26.4
     cached_network_image: ^3.3.1
     cloud_firestore: ^5.4.4
     collection: ^1.18.0
@@ -17,14 +17,14 @@ dependencies:
     crypto: ^3.0.1
     dio: ^5.4.0
     dotted_border: ^2.1.0
-    file_picker: ^6.1.1
+    file_picker: ^8.1.7
     flutter_dropzone: ^4.2.0
     flutter_easyloading: ^3.0.5
     flutter_native_image: ^0.0.5+3
     flutter_painter: ^1.0.1
     http: ^1.1.2
-    image_picker: ^1.0.6
-    image: ^4.1.3
+    image_picker: ^1.1.2
+    image: ^4.5.2
     intl: ^0.19.0
     mask_text_input_formatter: ^2.7.0
     open_filex: ^4.3.4
@@ -53,7 +53,7 @@ dependency_overrides:
     # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
-            url: https://github.com/Harishwarrior/flutter_painter.git
+            url: https://github.com/Zazo032/flutter_painter.git
     # yust:
     #     git:
     #         url: https://github.com/univelop/yust.git

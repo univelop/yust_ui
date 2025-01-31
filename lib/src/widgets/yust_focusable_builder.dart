@@ -100,7 +100,7 @@ class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
           if (widget.shouldHighlightFocusedWidget && _focusNode.hasFocus)
             Positioned.fill(
                 child: ColoredBox(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: .1),
             )),
           Builder(
             builder: widget.builder,

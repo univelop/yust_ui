@@ -1,3 +1,23 @@
+## 3.26.7 - 2024-01-31
+
+-   Upgrade Yust
+
+## 3.26.6 - 2024-01-31
+
+-   Do not trim before validation in `YustTextField`
+
+## 3.26.5 - 2024-01-30
+
+-   Fix package versions
+
+## 3.26.4 - 2024-01-24
+
+-   Fixes for FilePicker
+
+## 3.26.3 - 2024-01-21
+
+-   Getting ready for flutter version upgrade
+
 ## 3.26.2 - 2024-01-13
 
 -   Fixes
