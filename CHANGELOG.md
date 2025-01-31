@@ -1,3 +1,7 @@
+## 3.26.7 - 2024-01-31
+
+-   Upgrade Yust
+
 ## 3.26.6 - 2024-01-31
 
 -   Do not trim before validation in `YustTextField`
