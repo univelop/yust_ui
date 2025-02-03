@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.26.5
+version: 3.26.8
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.26.1
+    yust: ^3.26.6
     cached_network_image: ^3.3.1
     cloud_firestore: ^5.4.4
     collection: ^1.18.0
@@ -19,6 +19,7 @@ dependencies:
     dotted_border: ^2.1.0
     file_picker: ^8.1.7
     flutter_dropzone: ^4.2.0
+    flutter_dropzone_platform_interface: ^2.2.0
     flutter_easyloading: ^3.0.5
     flutter_native_image: ^0.0.5+3
     flutter_painter: ^1.0.1
@@ -29,7 +30,7 @@ dependencies:
     mask_text_input_formatter: ^2.7.0
     open_filex: ^4.3.4
     path_provider: ^2.0.1
-    photo_view: ^0.14.0
+    photo_view: ^0.15.0
     share_plus: ^7.2.1
     shared_preferences: ^2.2.2
     universal_html: ^2.0.8
@@ -41,7 +42,6 @@ dependencies:
     permission_handler: ^11.3.1
     geolocator: ^12.0.0
     geocoding: ^3.0.0
-    flutter_dropzone_platform_interface: ^2.2.0
 
 dev_dependencies:
     flutter_lints: ^3.0.1
