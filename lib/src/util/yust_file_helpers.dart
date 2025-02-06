@@ -158,169 +158,26 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
-  /// Resizes an image to a maximum width and quality.
-  /// If [file] is not null, it will be used to load the image.
-  /// If [bytes] is not null, it will be used to load the image.
-  /// If [setGPSToLocation] is true, the GPS tags will be set to the current
-  /// location, if they are not set.
-  Future<Uint8List> resizeImage(
-      {required String name,
+  Future<YustImage> processImage(
+      {required String path,
+      required bool resize,
+      required bool convertToJPEG,
+      required String yustQuality,
       Uint8List? bytes,
       File? file,
-      int maxWidth = 1024,
-      int quality = 80,
-      bool setGPSToLocation = false}) async {
-    if (kIsWeb) {
-      assert(bytes != null, 'bytes must not be null on web');
-      return await _resizeWeb(
-          name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
-    } else {
-      assert((file != null || bytes != null),
-          'file or bytes must not be null on mobile');
-      Image? newImage;
-
-      var originalImage = file != null
-          ? await decodeImageFile(file.path)
-          : decodeNamedImage(name, bytes!);
-      if (originalImage == null) throw YustException('Could not load image.');
-
-      newImage = originalImage;
-      if (originalImage.width >= originalImage.height &&
-          originalImage.width >= maxWidth) {
-        newImage = copyResize(originalImage, width: maxWidth);
-      } else if (originalImage.height > originalImage.width &&
-          originalImage.height > maxWidth) {
-        newImage = copyResize(originalImage, height: maxWidth);
-      }
-
-      final exif = originalImage.exif;
-
-      // Orientation is baked into the image, so we can set it to no rotation
-      exif.imageIfd.orientation = 1;
-      // Size is changed, so we need to update the resolution
-      exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
-      exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
-      exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
-      exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
-      exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
-      if (setGPSToLocation) {
-        try {
-          // Check if GPS tags are set by the camera
-          if (exif.gpsIfd['GPSLatitude'] == null) {
-            final position = await YustUi.locationService.getCurrentPosition();
-
-            exif.gpsIfd['GPSLatitudeRef'] =
-                IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
-            exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
-            exif.gpsIfd['GPSLongitudeRef'] =
-                IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
-            exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
-            exif.gpsIfd['GPSAltitudeRef'] =
-                IfdByteValue(position.altitude > 0 ? 0 : 1);
-            exif.gpsIfd['GPSAltitude'] = IfdValueRational(
-                (position.altitude * exifTagPrecision).toInt().abs(),
-                exifTagPrecision);
-            final date = DateTime.now().toUtc();
-            exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
-              Rational(date.hour, 1),
-              Rational(date.minute, 1),
-              Rational(date.second, 1)
-            ]);
-            if (position.speed != 0) {
-              exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
-              exif.gpsIfd['GPSSpeed'] = IfdValueRational(
-                  // Conversion m/s to km/h
-                  (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
-                      .toInt()
-                      .abs(),
-                  exifTagPrecision);
-            }
-            if (position.heading != 0 && position.heading != -1) {
-              exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
-              exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
-                  (position.heading * exifTagPrecision).toInt().abs(),
-                  exifTagPrecision);
-              exif.gpsIfd['GPSDestBearingRef'] =
-                  exif.gpsIfd['GPSImgDirectionRef'];
-              exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
-            }
-            exif.gpsIfd['GPSDate'] = IfdValueAscii(
-                '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
-            if (position.accuracy != 0) {
-              exif.gpsIfd[0x001f] = IfdValueRational(
-                  (position.accuracy * exifTagPrecision).toInt().abs(),
-                  exifTagPrecision);
-            }
-          }
-        } catch (e) {
-          // ignore: avoid_print
-          print('Error getting position: $e');
-        }
-      }
-
-      newImage.exif = exif;
-
-      return encodeJpg(newImage, quality: quality);
-    }
+      required bool setGPSToLocation,
+      String? storageFolderPath,
+      String? linkedDocPath,
+      String? linkedDocAttribute}) async {
+    return resizeImageWithCompute(
+        path: path,
+        resize: resize,
+        convertToJPEG: convertToJPEG,
+        yustQuality: yustQuality,
+        setGPSToLocation: setGPSToLocation);
   }
 
-  Future<Uint8List> _resizeWeb(
-      {required String name,
-      required Uint8List bytes,
-      required int maxWidth,
-      required int quality}) async {
-    var base64 = base64Encode(bytes);
-    var newImg = html.ImageElement();
-    var mimeType =
-        'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
-    newImg.src = 'data:$mimeType;base64,$base64';
-
-    await newImg.onLoad.first;
-
-    int width = newImg.width!;
-    int height = newImg.height!;
-
-    if (newImg.width! >= newImg.height! && newImg.width! >= maxWidth) {
-      width = maxWidth;
-      height = (width * newImg.height! / newImg.width!).round();
-    } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
-      height = maxWidth;
-      width = (height * newImg.width! / newImg.height!).round();
-    }
-
-    var canvas = html.CanvasElement(width: width, height: height);
-    var ctx = canvas.context2D;
-
-    ctx.drawImageScaled(newImg, 0, 0, width, height);
-
-    return await _getBlobData(await canvas.toBlob('image/jpeg', quality / 100));
-  }
-
-  Future<Uint8List> _getBlobData(html.Blob blob) {
-    final completer = Completer<Uint8List>();
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(blob);
-    reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
-    return completer.future;
-  }
-
-  /// Converts a double (Decimal Degree Format) to a [IfdValueRational]
-  /// in DMS (Degree Minute Second) Format.
-  IfdValueRational _dDtoDMS(double dd) {
-    final double degrees = dd.abs();
-    final int degreesInt = degrees.toInt();
-    final double minutes = (dd.abs() - degreesInt) * 60;
-    final int minutesInt = minutes.toInt();
-    final double seconds = (minutes - minutesInt) * 60;
-    final int secondsInt = (seconds * exifTagPrecision).toInt();
-    return IfdValueRational.list([
-      Rational(degreesInt, 1),
-      Rational(minutesInt, 1),
-      Rational(secondsInt, exifTagPrecision)
-    ]);
-  }
-
-  Future<YustFile> resizeImageWithCompute(
+  Future<YustImage> resizeImageWithCompute(
       {required String path,
       required bool resize,
       required bool convertToJPEG,
@@ -342,7 +199,7 @@ class YustFileHelpers {
           BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         }
 
-        return await YustUi.fileHelpers.resizeImage(
+        return await _resizeImage(
             name: sanitizedPath,
             bytes: bytes,
             maxWidth: size,
@@ -363,7 +220,7 @@ class YustFileHelpers {
         ? '${Yust.helpers.randomString(length: 16)}.jpeg'
         : '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
 
-    return YustFile(
+    return YustImage(
       name: newImageName,
       file: file,
       bytes: bytes,
@@ -374,6 +231,172 @@ class YustFileHelpers {
   }
 }
 
-_sanitizeFilePath(String path) {
+/// Resizes an image to a maximum width and quality.
+/// If [file] is not null, it will be used to load the image.
+/// If [bytes] is not null, it will be used to load the image.
+/// If [setGPSToLocation] is true, the GPS tags will be set to the current
+/// location, if they are not set.
+Future<Uint8List> _resizeImage(
+    {required String name,
+    Uint8List? bytes,
+    File? file,
+    int maxWidth = 1024,
+    int quality = 80,
+    bool setGPSToLocation = false}) async {
+  if (kIsWeb) {
+    assert(bytes != null, 'bytes must not be null on web');
+    return await _resizeWeb(
+        name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
+  }
+
+  assert((file != null || bytes != null),
+      'file or bytes must not be null on mobile');
+  Image? newImage;
+
+  var originalImage = file != null
+      ? await decodeImageFile(file.path)
+      : decodeNamedImage(name, bytes!);
+  if (originalImage == null) throw YustException('Could not load image.');
+
+  newImage = originalImage;
+  if (originalImage.width >= originalImage.height &&
+      originalImage.width >= maxWidth) {
+    newImage = copyResize(originalImage, width: maxWidth);
+  } else if (originalImage.height > originalImage.width &&
+      originalImage.height > maxWidth) {
+    newImage = copyResize(originalImage, height: maxWidth);
+  }
+
+  await _setImageExifData(originalImage, newImage, setGPSToLocation);
+
+  return encodeJpg(newImage, quality: quality);
+}
+
+Future<void> _setImageExifData(
+    Image originalImage, Image newImage, bool setGPSToLocation) async {
+  final exif = originalImage.exif;
+
+  // Orientation is baked into the image, so we can set it to no rotation
+  exif.imageIfd.orientation = 1;
+  // Size is changed, so we need to update the resolution
+  exif.imageIfd.xResolution = newImage.exif.imageIfd.xResolution;
+  exif.imageIfd.yResolution = newImage.exif.imageIfd.yResolution;
+  exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
+  exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
+  exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+  if (setGPSToLocation) {
+    try {
+      // Check if GPS tags are set by the camera
+      if (exif.gpsIfd['GPSLatitude'] == null) {
+        final position = await YustUi.locationService.getCurrentPosition();
+
+        exif.gpsIfd['GPSLatitudeRef'] =
+            IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
+        exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
+        exif.gpsIfd['GPSLongitudeRef'] =
+            IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
+        exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
+        exif.gpsIfd['GPSAltitudeRef'] =
+            IfdByteValue(position.altitude > 0 ? 0 : 1);
+        exif.gpsIfd['GPSAltitude'] = IfdValueRational(
+            (position.altitude * exifTagPrecision).toInt().abs(),
+            exifTagPrecision);
+        final date = DateTime.now().toUtc();
+        exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
+          Rational(date.hour, 1),
+          Rational(date.minute, 1),
+          Rational(date.second, 1)
+        ]);
+        if (position.speed != 0) {
+          exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
+          exif.gpsIfd['GPSSpeed'] = IfdValueRational(
+              // Conversion m/s to km/h
+              (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
+                  .toInt()
+                  .abs(),
+              exifTagPrecision);
+        }
+        if (position.heading != 0 && position.heading != -1) {
+          exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
+          exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
+              (position.heading * exifTagPrecision).toInt().abs(),
+              exifTagPrecision);
+          exif.gpsIfd['GPSDestBearingRef'] = exif.gpsIfd['GPSImgDirectionRef'];
+          exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
+        }
+        exif.gpsIfd['GPSDate'] = IfdValueAscii(
+            '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
+        if (position.accuracy != 0) {
+          exif.gpsIfd[0x001f] = IfdValueRational(
+              (position.accuracy * exifTagPrecision).toInt().abs(),
+              exifTagPrecision);
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error getting position: $e');
+    }
+  }
+
+  newImage.exif = exif;
+}
+
+Future<Uint8List> _resizeWeb(
+    {required String name,
+    required Uint8List bytes,
+    required int maxWidth,
+    required int quality}) async {
+  var base64 = base64Encode(bytes);
+  var newImg = html.ImageElement();
+  var mimeType =
+      'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
+  newImg.src = 'data:$mimeType;base64,$base64';
+
+  await newImg.onLoad.first;
+
+  int width = newImg.width!;
+  int height = newImg.height!;
+
+  if (newImg.width! >= newImg.height! && newImg.width! >= maxWidth) {
+    width = maxWidth;
+    height = (width * newImg.height! / newImg.width!).round();
+  } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
+    height = maxWidth;
+    width = (height * newImg.width! / newImg.height!).round();
+  }
+
+  var canvas = html.CanvasElement(width: width, height: height);
+  var ctx = canvas.context2D;
+
+  ctx.drawImageScaled(newImg, 0, 0, width, height);
+
+  return await _getBlobData(await canvas.toBlob('image/jpeg', quality / 100));
+}
+
+Future<Uint8List> _getBlobData(html.Blob blob) {
+  final completer = Completer<Uint8List>();
+  final reader = html.FileReader();
+  reader.readAsArrayBuffer(blob);
+  reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
+  return completer.future;
+}
+
+/// Converts a double (Decimal Degree Format) to a [IfdValueRational]
+/// in DMS (Degree Minute Second) Format.
+IfdValueRational _dDtoDMS(double dd) {
+  final double degrees = dd.abs();
+  final int degreesInt = degrees.toInt();
+  final double minutes = (dd.abs() - degreesInt) * 60;
+  final int minutesInt = minutes.toInt();
+  final double seconds = (minutes - minutesInt) * 60;
+  final int secondsInt = (seconds * exifTagPrecision).toInt();
+  return IfdValueRational.list([
+    Rational(degreesInt, 1),
+    Rational(minutesInt, 1),
+    Rational(secondsInt, exifTagPrecision)
+  ]);
+}
+
+String _sanitizeFilePath(String path) {
   return path.replaceAll(RegExp(r'[,#]'), '_');
 }
