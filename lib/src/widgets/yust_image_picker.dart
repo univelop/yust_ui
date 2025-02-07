@@ -599,7 +599,7 @@ class YustImagePickerState extends State<YustImagePicker>
     bool convertToJPEG = true,
     bool setGPSToLocation = false,
   }) async {
-    final YustFile newYustFile = await YustFileHelpers().resizeImageWithCompute(
+    final YustFile newYustFile = await YustFileHelpers().processImage(
         file: file,
         bytes: bytes,
         path: path,
@@ -609,7 +609,9 @@ class YustImagePickerState extends State<YustImagePicker>
         setGPSToLocation: setGPSToLocation,
         storageFolderPath: widget.storageFolderPath,
         linkedDocPath: widget.linkedDocPath,
-        linkedDocAttribute: widget.linkedDocAttribute);
+        linkedDocAttribute: widget.linkedDocAttribute,
+        addGpsWatermark: true,
+        addTimestampWatermark: true);
 
     await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);

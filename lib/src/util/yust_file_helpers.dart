@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,6 +38,14 @@ final yustAllowedImageExtensions = [
   'tiff',
   if (!kIsWeb) 'heic',
 ];
+
+// Must be in yust so it can be used in uni_core
+enum WatermarkPosition {
+  topLeft,
+  topRight,
+  bottomLeft,
+  bottomRight,
+}
 
 /// exifTagPrecision to encode exif information, e.g. latitude.
 /// This number is the denominator of the fraction => increasing the number
@@ -158,38 +167,36 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
-  Future<YustImage> processImage(
-      {required String path,
-      required bool resize,
-      required bool convertToJPEG,
-      required String yustQuality,
-      Uint8List? bytes,
-      File? file,
-      required bool setGPSToLocation,
-      String? storageFolderPath,
-      String? linkedDocPath,
-      String? linkedDocAttribute}) async {
-    return resizeImageWithCompute(
-        path: path,
-        resize: resize,
-        convertToJPEG: convertToJPEG,
-        yustQuality: yustQuality,
-        setGPSToLocation: setGPSToLocation);
-  }
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
+  /// -------------------------------------------------------------------------------------------
 
-  Future<YustImage> resizeImageWithCompute(
-      {required String path,
-      required bool resize,
-      required bool convertToJPEG,
-      required String yustQuality,
-      Uint8List? bytes,
-      File? file,
-      required bool setGPSToLocation,
-      String? storageFolderPath,
-      String? linkedDocPath,
-      String? linkedDocAttribute}) async {
+  Future<YustImage> processImage({
+    required String path,
+    required bool resize,
+    required bool convertToJPEG,
+    required String yustQuality,
+    Uint8List? bytes,
+    File? file,
+    required bool setGPSToLocation,
+    String? storageFolderPath,
+    String? linkedDocPath,
+    String? linkedDocAttribute,
+    bool addTimestampWatermark = false,
+    bool addGpsWatermark = false,
+  }) async {
     final sanitizedPath = _sanitizeFilePath(path);
-    if (resize && convertToJPEG) {
+    final mustTransform =
+        convertToJPEG && (resize || addTimestampWatermark || addGpsWatermark);
+
+    if (mustTransform) {
       final size = yustImageQuality[yustQuality]!['size']!;
       final quality = yustImageQuality[yustQuality]!['quality']!;
 
@@ -199,13 +206,15 @@ class YustFileHelpers {
           BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         }
 
-        return await _resizeImage(
+        return await _transformImage(
             name: sanitizedPath,
             bytes: bytes,
             maxWidth: size,
             quality: quality,
             file: file,
-            setGPSToLocation: setGPSToLocation);
+            setGPSToLocation: setGPSToLocation,
+            addTimestampWatermark: addTimestampWatermark,
+            addGpsWatermark: addGpsWatermark);
       }
 
       RootIsolateToken? token;
@@ -215,10 +224,9 @@ class YustFileHelpers {
       bytes = await compute(helper, token);
     }
 
-    convertToJPEG = convertToJPEG;
-    final newImageName = convertToJPEG
-        ? '${Yust.helpers.randomString(length: 16)}.jpeg'
-        : '${Yust.helpers.randomString(length: 16)}.${path.split('.').last}';
+    final newImageExtension = convertToJPEG ? 'jpeg' : path.split('.').last;
+    final newImageName =
+        '${Yust.helpers.randomString(length: 16)}.$newImageExtension';
 
     return YustImage(
       name: newImageName,
@@ -236,29 +244,49 @@ class YustFileHelpers {
 /// If [bytes] is not null, it will be used to load the image.
 /// If [setGPSToLocation] is true, the GPS tags will be set to the current
 /// location, if they are not set.
-Future<Uint8List> _resizeImage(
-    {required String name,
-    Uint8List? bytes,
-    File? file,
-    int maxWidth = 1024,
-    int quality = 80,
-    bool setGPSToLocation = false}) async {
+Future<Uint8List> _transformImage({
+  required String name,
+  Uint8List? bytes,
+  File? file,
+  int maxWidth = 1024,
+  int quality = 80,
+  bool setGPSToLocation = false,
+  bool addTimestampWatermark = false,
+  bool addGpsWatermark = false,
+  WatermarkPosition watermarkPosition = WatermarkPosition.bottomLeft,
+}) async {
+  // If we are on web, we rely purely on bytes. Watermarking will also not be possible.
   if (kIsWeb) {
     assert(bytes != null, 'bytes must not be null on web');
     return await _resizeWeb(
         name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
   }
 
+  // On mobile, either file or bytes must be provided.
   assert((file != null || bytes != null),
       'file or bytes must not be null on mobile');
   Image? newImage;
 
+  // Decode the image
   var originalImage = file != null
       ? await decodeImageFile(file.path)
       : decodeNamedImage(name, bytes!);
   if (originalImage == null) throw YustException('Could not load image.');
-
   newImage = originalImage;
+
+  // Check if we need to load the gps position for either
+  // watermarking or setting the GPS tags.
+  Position? position;
+  if (setGPSToLocation || addGpsWatermark) {
+    try {
+      position = await YustUi.locationService.getCurrentPosition();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error getting position: $e');
+    }
+  }
+
+  // Resize the image if needed
   if (originalImage.width >= originalImage.height &&
       originalImage.width >= maxWidth) {
     newImage = copyResize(originalImage, width: maxWidth);
@@ -267,13 +295,192 @@ Future<Uint8List> _resizeImage(
     newImage = copyResize(originalImage, height: maxWidth);
   }
 
-  await _setImageExifData(originalImage, newImage, setGPSToLocation);
+  // Set exif data
+  await _setImageExifData(originalImage, newImage, setGPSToLocation, position);
 
+  // Add watermark to image
+  if (addTimestampWatermark || addGpsWatermark) {
+    _addWatermarks(
+      newImage,
+      addTimestampWatermark,
+      addGpsWatermark,
+      position,
+      watermarkPosition,
+    );
+  }
+
+  // Encode as JPEG
   return encodeJpg(newImage, quality: quality);
 }
 
-Future<void> _setImageExifData(
-    Image originalImage, Image newImage, bool setGPSToLocation) async {
+void _addWatermarks(
+  Image image,
+  bool addTimestamp,
+  bool addGps,
+  Position? position,
+  WatermarkPosition corner,
+) {
+  final textBuffer = <String>[];
+  if (addTimestamp) {
+    textBuffer.add(_formattedTimestamp());
+  }
+  if (addGps && position != null) {
+    textBuffer.add('Lat: ${position.latitude.toStringAsFixed(6)}, '
+        'Lon: ${position.longitude.toStringAsFixed(6)}');
+  }
+
+  if (textBuffer.isEmpty) {
+    return;
+  }
+
+  // Join them with a line break if both are present.
+  final watermarkText = textBuffer.join('\n');
+  _drawTextInCorner(
+      image: image, text: watermarkText, corner: corner, font: arial14);
+}
+
+/// Simple helper to get the current local time in a readable format.
+String _formattedTimestamp() {
+  final now = DateTime.now();
+  return '${now.year}-${_twoDigits(now.month)}-${_twoDigits(now.day)} '
+      '${_twoDigits(now.hour)}:${_twoDigits(now.minute)}:${_twoDigits(now.second)}';
+}
+
+String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
+/// Draws [text] into [image] in the specified [corner],
+/// optionally drawing a background rectangle.
+void _drawTextInCorner({
+  required Image image,
+  required String text,
+  required BitmapFont font,
+  required WatermarkPosition corner,
+  bool withBackground = true,
+  int margin = 10,
+}) {
+  // 1) Measure the overall width/height of the multi-line text
+  final textSize = _measureMultiline(font, text);
+  final textWidth = textSize.width;
+  final textHeight = textSize.height;
+
+  // 2) Calculate the starting (x, y) for that corner
+  //    If image.width or image.height is a double in your environment,
+  //    add `.toInt()` conversions as needed.
+  late int x;
+  late int y;
+
+  switch (corner) {
+    case WatermarkPosition.topLeft:
+      x = margin;
+      y = margin;
+      break;
+    case WatermarkPosition.topRight:
+      x = image.width - textWidth - margin;
+      y = margin;
+      break;
+    case WatermarkPosition.bottomLeft:
+      x = margin;
+      y = image.height - textHeight - margin;
+      break;
+    case WatermarkPosition.bottomRight:
+      x = image.width - textWidth - margin;
+      y = image.height - textHeight - margin;
+      break;
+  }
+
+  // 3) Optionally fill a rectangle behind the text for readability.
+  //    If your version of `image` uses `getColor(...)` or a different color model, adapt accordingly.
+  if (withBackground) {
+    fillRect(
+      image,
+      x1: x,
+      y1: y,
+      x2: textWidth,
+      y2: textHeight,
+      // A semi-transparent black ARGB color:
+      color: ColorRgba8(0, 0, 0, 128),
+    );
+  }
+
+  // 4) Now draw the text line-by-line with drawString.
+  //    We'll keep track of our vertical offset as we go.
+  final lines = text.split(RegExp(r'[\n\r]'));
+  var currentY = y;
+  for (final line in lines) {
+    // Actually draw the line
+    drawString(
+      image,
+      line,
+      font: font,
+      x: x,
+      y: currentY,
+      color: ColorRgba8(255, 255, 255, 255), // White
+    );
+
+    // Move down by line's height
+    final size = _measureSingleLine(font, line);
+    currentY += size.height;
+  }
+}
+
+/// Measures **multi-line** text by splitting on newlines, summing height,
+/// and tracking the max width.
+_TextSize _measureMultiline(BitmapFont font, String text) {
+  final lines = text.split(RegExp(r'[\n\r]'));
+  var maxWidth = 0;
+  var totalHeight = 0;
+
+  for (final line in lines) {
+    final size = _measureSingleLine(font, line);
+    if (size.width > maxWidth) {
+      maxWidth = size.width;
+    }
+    // Add each line's height
+    totalHeight += size.height;
+  }
+
+  return _TextSize(maxWidth, totalHeight);
+}
+
+class _TextSize {
+  final int width;
+  final int height;
+  const _TextSize(this.width, this.height);
+}
+
+/// Measures a **single line** of text exactly like drawString would, using
+/// the same logic for xAdvance, width, and height.
+_TextSize _measureSingleLine(BitmapFont font, String line) {
+  var stringWidth = 0;
+  var stringHeight = 0;
+
+  // Convert to code units
+  final chars = line.codeUnits;
+  for (final c in chars) {
+    // If the font doesn't have this character, we'll do a fallback of (font.base ~/ 2),
+    // same as the code does for missing glyphs:
+    if (!font.characters.containsKey(c)) {
+      stringWidth += font.base ~/ 2;
+      continue;
+    }
+    final ch = font.characters[c]!;
+    stringWidth += ch.xAdvance;
+    final h = ch.height + ch.yOffset;
+    if (h > stringHeight) {
+      stringHeight = h;
+    }
+  }
+
+  // If you have an empty line, you might want at least `font.base` as height.
+  if (line.isEmpty) {
+    stringHeight = font.base;
+  }
+
+  return _TextSize(stringWidth, stringHeight);
+}
+
+Future<void> _setImageExifData(Image originalImage, Image newImage,
+    bool setGPSToLocation, Position? position) async {
   final exif = originalImage.exif;
 
   // Orientation is baked into the image, so we can set it to no rotation
@@ -284,57 +491,52 @@ Future<void> _setImageExifData(
   exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
   exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
   exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
-  if (setGPSToLocation) {
-    try {
-      // Check if GPS tags are set by the camera
-      if (exif.gpsIfd['GPSLatitude'] == null) {
-        final position = await YustUi.locationService.getCurrentPosition();
 
-        exif.gpsIfd['GPSLatitudeRef'] =
-            IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
-        exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
-        exif.gpsIfd['GPSLongitudeRef'] =
-            IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
-        exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
-        exif.gpsIfd['GPSAltitudeRef'] =
-            IfdByteValue(position.altitude > 0 ? 0 : 1);
-        exif.gpsIfd['GPSAltitude'] = IfdValueRational(
-            (position.altitude * exifTagPrecision).toInt().abs(),
+  // Set GPS tags if needed
+  if (setGPSToLocation && position != null) {
+    // Check if GPS tags are set by the camera
+    if (exif.gpsIfd['GPSLatitude'] == null) {
+      exif.gpsIfd['GPSLatitudeRef'] =
+          IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
+      exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
+      exif.gpsIfd['GPSLongitudeRef'] =
+          IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
+      exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
+      exif.gpsIfd['GPSAltitudeRef'] =
+          IfdByteValue(position.altitude > 0 ? 0 : 1);
+      exif.gpsIfd['GPSAltitude'] = IfdValueRational(
+          (position.altitude * exifTagPrecision).toInt().abs(),
+          exifTagPrecision);
+      final date = DateTime.now().toUtc();
+      exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
+        Rational(date.hour, 1),
+        Rational(date.minute, 1),
+        Rational(date.second, 1)
+      ]);
+      if (position.speed != 0) {
+        exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
+        exif.gpsIfd['GPSSpeed'] = IfdValueRational(
+            // Conversion m/s to km/h
+            (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
+                .toInt()
+                .abs(),
             exifTagPrecision);
-        final date = DateTime.now().toUtc();
-        exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
-          Rational(date.hour, 1),
-          Rational(date.minute, 1),
-          Rational(date.second, 1)
-        ]);
-        if (position.speed != 0) {
-          exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
-          exif.gpsIfd['GPSSpeed'] = IfdValueRational(
-              // Conversion m/s to km/h
-              (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
-                  .toInt()
-                  .abs(),
-              exifTagPrecision);
-        }
-        if (position.heading != 0 && position.heading != -1) {
-          exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
-          exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
-              (position.heading * exifTagPrecision).toInt().abs(),
-              exifTagPrecision);
-          exif.gpsIfd['GPSDestBearingRef'] = exif.gpsIfd['GPSImgDirectionRef'];
-          exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
-        }
-        exif.gpsIfd['GPSDate'] = IfdValueAscii(
-            '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
-        if (position.accuracy != 0) {
-          exif.gpsIfd[0x001f] = IfdValueRational(
-              (position.accuracy * exifTagPrecision).toInt().abs(),
-              exifTagPrecision);
-        }
       }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error getting position: $e');
+      if (position.heading != 0 && position.heading != -1) {
+        exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
+        exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
+            (position.heading * exifTagPrecision).toInt().abs(),
+            exifTagPrecision);
+        exif.gpsIfd['GPSDestBearingRef'] = exif.gpsIfd['GPSImgDirectionRef'];
+        exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
+      }
+      exif.gpsIfd['GPSDate'] = IfdValueAscii(
+          '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
+      if (position.accuracy != 0) {
+        exif.gpsIfd[0x001f] = IfdValueRational(
+            (position.accuracy * exifTagPrecision).toInt().abs(),
+            exifTagPrecision);
+      }
     }
   }
 
