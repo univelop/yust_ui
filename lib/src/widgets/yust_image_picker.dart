@@ -50,6 +50,11 @@ class YustImagePicker extends StatefulWidget {
   final bool enableDropzone;
   final Widget? suffixIcon;
   final bool convertToJPEG;
+  final bool addGpsWatermark;
+  final bool addTimestampWatermark;
+  final YustWatermarkPosition watermarkPosition;
+  final bool displayCoordinatesInDegreeMinuteSecond;
+  final Locale locale;
 
   /// default is 15
   final int imageCount;
@@ -76,6 +81,11 @@ class YustImagePicker extends StatefulWidget {
     this.showPreview = true,
     this.overwriteSingleFile = false,
     this.enableDropzone = false,
+    this.addGpsWatermark = false,
+    this.addTimestampWatermark = false,
+    this.displayCoordinatesInDegreeMinuteSecond = false,
+    this.locale = const Locale('de'),
+    this.watermarkPosition = YustWatermarkPosition.bottomLeft,
     int? imageCount,
   }) : imageCount = imageCount ?? 15;
   @override
@@ -516,14 +526,20 @@ class YustImagePickerState extends State<YustImagePicker>
       }
 
       await uploadFile(
-          path: path,
-          file: file,
-          bytes: bytes,
-          // Because of the reason stated above,
-          // we need to do the resizing ourself
-          resize: true,
-          convertToJPEG: widget.convertToJPEG,
-          setGPSToLocation: setGPSToLocation);
+        path: path,
+        file: file,
+        bytes: bytes,
+        // Because of the reason stated above,
+        // we need to do the resizing ourself
+        resize: true,
+        convertToJPEG: widget.convertToJPEG,
+        setGPSToLocation: setGPSToLocation,
+        addGpsWatermark: widget.addGpsWatermark,
+        addTimestampWatermark: widget.addTimestampWatermark,
+        watermarkPosition: widget.watermarkPosition,
+        displayCoordinatesInDegreeMinuteSecond:
+            widget.displayCoordinatesInDegreeMinuteSecond,
+      );
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(pictureFiles);
@@ -598,20 +614,30 @@ class YustImagePickerState extends State<YustImagePicker>
     bool resize = false,
     bool convertToJPEG = true,
     bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+    YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
+    bool displayCoordinatesInDegreeMinuteSecond = false,
+    Locale locale = const Locale('de'),
   }) async {
     final YustFile newYustFile = await YustFileHelpers().processImage(
-        file: file,
-        bytes: bytes,
-        path: path,
-        resize: resize,
-        convertToJPEG: convertToJPEG,
-        yustQuality: widget.yustQuality,
-        setGPSToLocation: setGPSToLocation,
-        storageFolderPath: widget.storageFolderPath,
-        linkedDocPath: widget.linkedDocPath,
-        linkedDocAttribute: widget.linkedDocAttribute,
-        addGpsWatermark: true,
-        addTimestampWatermark: true);
+      file: file,
+      bytes: bytes,
+      path: path,
+      resize: resize,
+      convertToJPEG: convertToJPEG,
+      yustQuality: widget.yustQuality,
+      setGPSToLocation: setGPSToLocation,
+      storageFolderPath: widget.storageFolderPath,
+      linkedDocPath: widget.linkedDocPath,
+      linkedDocAttribute: widget.linkedDocAttribute,
+      addGpsWatermark: addGpsWatermark,
+      addTimestampWatermark: addTimestampWatermark,
+      watermarkPosition: watermarkPosition,
+      locale: locale,
+      displayCoordinatesInDegreeMinuteSecond:
+          displayCoordinatesInDegreeMinuteSecond,
+    );
 
     await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);

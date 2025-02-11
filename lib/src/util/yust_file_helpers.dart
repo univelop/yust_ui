@@ -12,6 +12,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:universal_html/html.dart' as html;
@@ -19,9 +20,9 @@ import 'package:yust/yust.dart';
 // ignore: implementation_imports
 import 'package:image/src/util/rational.dart';
 
+import '../../yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-import '../yust_ui.dart';
 
 final Map<String, Map<String, int>> yustImageQuality = {
   'original': {'quality': 100, 'size': 5000},
@@ -40,7 +41,7 @@ final yustAllowedImageExtensions = [
 ];
 
 /// Position of the watermark on the image.
-enum WatermarkPosition {
+enum YustWatermarkPosition {
   topLeft,
   topRight,
   bottomLeft,
@@ -187,7 +188,9 @@ class YustFileHelpers {
     String? linkedDocAttribute,
     bool addTimestampWatermark = false,
     bool addGpsWatermark = false,
-    WatermarkPosition watermarkPosition = WatermarkPosition.bottomLeft,
+    YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
+    Locale locale = const Locale('de'),
+    bool displayCoordinatesInDegreeMinuteSecond = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
     final mustTransform =
@@ -197,6 +200,9 @@ class YustFileHelpers {
       final size = yustImageQuality[yustQuality]!['size']!;
       final quality = yustImageQuality[yustQuality]!['quality']!;
 
+      // This is required because we cannot access the static YustUi.[...] from the isolated process
+      final locationService = YustUi.locationService;
+
       Future<Uint8List?> helper(RootIsolateToken? token) async {
         // This is needed for the geolocator plugin to work
         if (token != null) {
@@ -204,15 +210,21 @@ class YustFileHelpers {
         }
 
         return await _transformImage(
-            name: sanitizedPath,
-            bytes: bytes,
-            maxWidth: size,
-            quality: quality,
-            file: file,
-            resize: resize,
-            setGPSToLocation: setGPSToLocation,
-            addTimestampWatermark: addTimestampWatermark,
-            addGpsWatermark: addGpsWatermark);
+          name: sanitizedPath,
+          bytes: bytes,
+          maxWidth: size,
+          quality: quality,
+          file: file,
+          resize: resize,
+          setGPSToLocation: setGPSToLocation,
+          addTimestampWatermark: addTimestampWatermark,
+          addGpsWatermark: addGpsWatermark,
+          locale: locale,
+          displayCoordinatesInDegreeMinuteSecond:
+              displayCoordinatesInDegreeMinuteSecond,
+          // This is required because we cannot access the static YustUi.[...] from the isolated process
+          locationService: locationService,
+        );
       }
 
       RootIsolateToken? token;
@@ -239,6 +251,8 @@ class YustFileHelpers {
 
 Future<Uint8List> _transformImage({
   required String name,
+  required YustLocationService locationService,
+  required Locale locale,
   Uint8List? bytes,
   File? file,
   int maxWidth = 1024,
@@ -247,7 +261,8 @@ Future<Uint8List> _transformImage({
   bool setGPSToLocation = false,
   bool addTimestampWatermark = false,
   bool addGpsWatermark = false,
-  WatermarkPosition watermarkPosition = WatermarkPosition.bottomLeft,
+  YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
+  bool displayCoordinatesInDegreeMinuteSecond = false,
 }) async {
   // If we are on web, we rely purely on bytes. Watermarking will also not be possible.
   if (kIsWeb) {
@@ -278,7 +293,7 @@ Future<Uint8List> _transformImage({
   Position? position;
   if (setGPSToLocation || addGpsWatermark) {
     try {
-      position = await YustUi.locationService.getCurrentPosition();
+      position = await locationService.getCurrentPosition();
     } catch (e) {
       // ignore: avoid_print
       print('Error getting position: $e');
@@ -302,11 +317,14 @@ Future<Uint8List> _transformImage({
   // Add watermark to image
   if (addTimestampWatermark || addGpsWatermark) {
     _addWatermarks(
-      newImage,
-      addTimestampWatermark,
-      addGpsWatermark,
-      position,
-      watermarkPosition,
+      image: newImage,
+      addTimestamp: addTimestampWatermark,
+      addGps: addGpsWatermark,
+      position: position,
+      watermarkPosition: watermarkPosition,
+      locale: locale,
+      displayCoordinatesInDegreeMinuteSecond:
+          displayCoordinatesInDegreeMinuteSecond,
     );
   }
 
@@ -314,51 +332,55 @@ Future<Uint8List> _transformImage({
   return encodeJpg(newImage, quality: quality);
 }
 
-void _addWatermarks(
-  Image image,
-  bool addTimestamp,
-  bool addGps,
+void _addWatermarks({
+  required Image image,
+  required bool addTimestamp,
+  required bool addGps,
+  required YustWatermarkPosition watermarkPosition,
+  required Locale locale,
   Position? position,
-  WatermarkPosition watermarkPosition,
-) {
+  bool displayCoordinatesInDegreeMinuteSecond = false,
+}) {
   final textBuffer = <String>[];
   if (addTimestamp) {
-    textBuffer.add(_formattedTimestamp());
+    final yustHelpers = YustHelpers();
+    final now = yustHelpers.utcNow();
+    textBuffer.add(
+        '${yustHelpers.formatDate(now, locale: locale.languageCode)} ${yustHelpers.formatTime(now)}');
   }
+
   if (addGps && position != null) {
-    textBuffer.add('Lat: ${position.latitude.toStringAsFixed(6)}, '
-        'Lon: ${position.longitude.toStringAsFixed(6)}');
+    if (displayCoordinatesInDegreeMinuteSecond) {
+      final yustLocationHelper = YustLocationHelper();
+      textBuffer.add(
+          '${yustLocationHelper.formatLatitudeToDMS(position.latitude)} ${yustLocationHelper.formatLongitudeToDMS(position.longitude)}');
+    } else {
+      textBuffer.add(
+          '${_formatDecimalCoordinate(position.latitude)} ${_formatDecimalCoordinate(position.longitude)}');
+    }
   }
 
   if (textBuffer.isEmpty) {
     return;
   }
 
-  // Join them with a line break if both are present.
-  final watermarkText = textBuffer.join('\n');
-  _drawTextInCorner(
+  _drawTextOnImage(
       image: image,
-      text: watermarkText,
+      text: textBuffer.join('\n'),
       watermarkPosition: watermarkPosition,
       font: arial14);
 }
 
-/// Simple helper to get the current local time in a readable format.
-String _formattedTimestamp() {
-  final now = DateTime.now();
-  return '${now.year}-${_twoDigits(now.month)}-${_twoDigits(now.day)} '
-      '${_twoDigits(now.hour)}:${_twoDigits(now.minute)}:${_twoDigits(now.second)}';
-}
-
-String _twoDigits(int n) => n.toString().padLeft(2, '0');
+String _formatDecimalCoordinate(double coordinate) =>
+    NumberFormat('0.######', 'en_US').format(coordinate);
 
 /// Draws [text] into [image] at [corner].
 /// If [withBackground] is true, draws a semi-transparent rectangle behind it.
-void _drawTextInCorner({
+void _drawTextOnImage({
   required Image image,
   required String text,
   required BitmapFont font,
-  required WatermarkPosition watermarkPosition,
+  required YustWatermarkPosition watermarkPosition,
   bool withBackground = true,
   int margin = 10,
 }) {
@@ -369,25 +391,25 @@ void _drawTextInCorner({
   late int x;
   late int y;
   switch (watermarkPosition) {
-    case WatermarkPosition.topLeft:
+    case YustWatermarkPosition.topLeft:
       x = margin;
       y = margin;
       break;
-    case WatermarkPosition.topRight:
+    case YustWatermarkPosition.topRight:
       x = image.width - textWidth - margin;
       y = margin;
       break;
-    case WatermarkPosition.bottomLeft:
+    case YustWatermarkPosition.bottomLeft:
       x = margin;
       y = image.height - textHeight - margin;
       break;
-    case WatermarkPosition.bottomRight:
+    case YustWatermarkPosition.bottomRight:
       x = image.width - textWidth - margin;
       y = image.height - textHeight - margin;
       break;
   }
 
-  // Optionally draw a semi-transparent background rectangle behind the text.
+  // Draw a semi-transparent background rectangle behind the text
   if (withBackground) {
     fillRect(
       image,
@@ -395,7 +417,7 @@ void _drawTextInCorner({
       y1: y,
       x2: x + textWidth,
       y2: y + textHeight,
-      color: ColorRgba8(0, 0, 0, 128), // black with alpha
+      color: ColorRgba8(0, 0, 0, 128),
     );
   }
 
@@ -409,7 +431,7 @@ void _drawTextInCorner({
       font: font,
       x: x,
       y: currentY,
-      color: ColorRgba8(255, 255, 255, 255), // white text
+      color: ColorRgba8(255, 255, 255, 255), // White text
     );
     final (width: _, height: lineHeight) = _measureSingleLine(font, line);
     currentY += lineHeight;
