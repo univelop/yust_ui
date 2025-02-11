@@ -39,7 +39,7 @@ final yustAllowedImageExtensions = [
   if (!kIsWeb) 'heic',
 ];
 
-// Must be in yust so it can be used in uni_core
+/// Position of the watermark on the image.
 enum WatermarkPosition {
   topLeft,
   topRight,
@@ -167,17 +167,13 @@ class YustFileHelpers {
     return invalidChars.none((element) => filename.contains(element));
   }
 
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-  /// -------------------------------------------------------------------------------------------
-
+  /// Processes an image.
+  ///
+  /// - If [resize] is true, the image will be resized to the fit the given [yustQuality].
+  /// - If [convertToJPEG] is true, the image will be converted to JPEG.
+  /// - If [setGPSToLocation] is true, the GPS tags will be set to the current location.
+  /// - If [addTimestampWatermark] is true, a timestamp watermark will be added.
+  /// - If [addGpsWatermark] is true, a GPS watermark will be added.
   Future<YustImage> processImage({
     required String path,
     required bool resize,
@@ -191,6 +187,7 @@ class YustFileHelpers {
     String? linkedDocAttribute,
     bool addTimestampWatermark = false,
     bool addGpsWatermark = false,
+    WatermarkPosition watermarkPosition = WatermarkPosition.bottomLeft,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
     final mustTransform =
@@ -212,6 +209,7 @@ class YustFileHelpers {
             maxWidth: size,
             quality: quality,
             file: file,
+            resize: resize,
             setGPSToLocation: setGPSToLocation,
             addTimestampWatermark: addTimestampWatermark,
             addGpsWatermark: addGpsWatermark);
@@ -239,17 +237,13 @@ class YustFileHelpers {
   }
 }
 
-/// Resizes an image to a maximum width and quality.
-/// If [file] is not null, it will be used to load the image.
-/// If [bytes] is not null, it will be used to load the image.
-/// If [setGPSToLocation] is true, the GPS tags will be set to the current
-/// location, if they are not set.
 Future<Uint8List> _transformImage({
   required String name,
   Uint8List? bytes,
   File? file,
   int maxWidth = 1024,
   int quality = 80,
+  bool resize = false,
   bool setGPSToLocation = false,
   bool addTimestampWatermark = false,
   bool addGpsWatermark = false,
@@ -258,6 +252,11 @@ Future<Uint8List> _transformImage({
   // If we are on web, we rely purely on bytes. Watermarking will also not be possible.
   if (kIsWeb) {
     assert(bytes != null, 'bytes must not be null on web');
+
+    if (!resize) {
+      return bytes!;
+    }
+
     return await _resizeWeb(
         name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
   }
@@ -287,12 +286,14 @@ Future<Uint8List> _transformImage({
   }
 
   // Resize the image if needed
-  if (originalImage.width >= originalImage.height &&
-      originalImage.width >= maxWidth) {
-    newImage = copyResize(originalImage, width: maxWidth);
-  } else if (originalImage.height > originalImage.width &&
-      originalImage.height > maxWidth) {
-    newImage = copyResize(originalImage, height: maxWidth);
+  if (resize) {
+    if (originalImage.width >= originalImage.height &&
+        originalImage.width >= maxWidth) {
+      newImage = copyResize(originalImage, width: maxWidth);
+    } else if (originalImage.height > originalImage.width &&
+        originalImage.height > maxWidth) {
+      newImage = copyResize(originalImage, height: maxWidth);
+    }
   }
 
   // Set exif data
@@ -318,7 +319,7 @@ void _addWatermarks(
   bool addTimestamp,
   bool addGps,
   Position? position,
-  WatermarkPosition corner,
+  WatermarkPosition watermarkPosition,
 ) {
   final textBuffer = <String>[];
   if (addTimestamp) {
@@ -336,7 +337,10 @@ void _addWatermarks(
   // Join them with a line break if both are present.
   final watermarkText = textBuffer.join('\n');
   _drawTextInCorner(
-      image: image, text: watermarkText, corner: corner, font: arial14);
+      image: image,
+      text: watermarkText,
+      watermarkPosition: watermarkPosition,
+      font: arial14);
 }
 
 /// Simple helper to get the current local time in a readable format.
@@ -348,28 +352,23 @@ String _formattedTimestamp() {
 
 String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
-/// Draws [text] into [image] in the specified [corner],
-/// optionally drawing a background rectangle.
+/// Draws [text] into [image] at [corner].
+/// If [withBackground] is true, draws a semi-transparent rectangle behind it.
 void _drawTextInCorner({
   required Image image,
   required String text,
   required BitmapFont font,
-  required WatermarkPosition corner,
+  required WatermarkPosition watermarkPosition,
   bool withBackground = true,
   int margin = 10,
 }) {
-  // 1) Measure the overall width/height of the multi-line text
-  final textSize = _measureMultiline(font, text);
-  final textWidth = textSize.width;
-  final textHeight = textSize.height;
+  // Measure total width and height of all lines in [text].
+  final (width: textWidth, height: textHeight) = _measureMultiline(font, text);
 
-  // 2) Calculate the starting (x, y) for that corner
-  //    If image.width or image.height is a double in your environment,
-  //    add `.toInt()` conversions as needed.
+  // Determine the top-left placement (x,y) based on the chosen corner.
   late int x;
   late int y;
-
-  switch (corner) {
+  switch (watermarkPosition) {
     case WatermarkPosition.topLeft:
       x = margin;
       y = margin;
@@ -388,95 +387,77 @@ void _drawTextInCorner({
       break;
   }
 
-  // 3) Optionally fill a rectangle behind the text for readability.
-  //    If your version of `image` uses `getColor(...)` or a different color model, adapt accordingly.
+  // Optionally draw a semi-transparent background rectangle behind the text.
   if (withBackground) {
     fillRect(
       image,
       x1: x,
       y1: y,
-      x2: textWidth,
-      y2: textHeight,
-      // A semi-transparent black ARGB color:
-      color: ColorRgba8(0, 0, 0, 128),
+      x2: x + textWidth,
+      y2: y + textHeight,
+      color: ColorRgba8(0, 0, 0, 128), // black with alpha
     );
   }
 
-  // 4) Now draw the text line-by-line with drawString.
-  //    We'll keep track of our vertical offset as we go.
+  // Draw each line, moving downward as needed.
   final lines = text.split(RegExp(r'[\n\r]'));
   var currentY = y;
   for (final line in lines) {
-    // Actually draw the line
     drawString(
       image,
       line,
       font: font,
       x: x,
       y: currentY,
-      color: ColorRgba8(255, 255, 255, 255), // White
+      color: ColorRgba8(255, 255, 255, 255), // white text
     );
-
-    // Move down by line's height
-    final size = _measureSingleLine(font, line);
-    currentY += size.height;
+    final (width: _, height: lineHeight) = _measureSingleLine(font, line);
+    currentY += lineHeight;
   }
 }
 
-/// Measures **multi-line** text by splitting on newlines, summing height,
-/// and tracking the max width.
-_TextSize _measureMultiline(BitmapFont font, String text) {
-  final lines = text.split(RegExp(r'[\n\r]'));
+/// Measures multi-line [text] by summing the heights of each line
+/// and tracking the maximum width among them.
+({int width, int height}) _measureMultiline(BitmapFont font, String text) {
   var maxWidth = 0;
   var totalHeight = 0;
 
-  for (final line in lines) {
-    final size = _measureSingleLine(font, line);
-    if (size.width > maxWidth) {
-      maxWidth = size.width;
+  for (final line in text.split(RegExp(r'[\n\r]'))) {
+    final (width: w, height: h) = _measureSingleLine(font, line);
+    if (w > maxWidth) {
+      maxWidth = w;
     }
-    // Add each line's height
-    totalHeight += size.height;
+    totalHeight += h;
   }
-
-  return _TextSize(maxWidth, totalHeight);
+  return (width: maxWidth, height: totalHeight);
 }
 
-class _TextSize {
-  final int width;
-  final int height;
-  const _TextSize(this.width, this.height);
-}
-
-/// Measures a **single line** of text exactly like drawString would, using
-/// the same logic for xAdvance, width, and height.
-_TextSize _measureSingleLine(BitmapFont font, String line) {
+/// Measures a single [line] by replicating the internal drawString logic.
+/// Returns a record with (width, height).
+({int width, int height}) _measureSingleLine(BitmapFont font, String line) {
   var stringWidth = 0;
   var stringHeight = 0;
 
-  // Convert to code units
-  final chars = line.codeUnits;
-  for (final c in chars) {
-    // If the font doesn't have this character, we'll do a fallback of (font.base ~/ 2),
-    // same as the code does for missing glyphs:
+  for (final c in line.codeUnits) {
     if (!font.characters.containsKey(c)) {
+      // Fallback width for missing glyphs
       stringWidth += font.base ~/ 2;
       continue;
     }
     final ch = font.characters[c]!;
     stringWidth += ch.xAdvance;
-    final h = ch.height + ch.yOffset;
-    if (h > stringHeight) {
-      stringHeight = h;
+    final candidateHeight = ch.height + ch.yOffset;
+    if (candidateHeight > stringHeight) {
+      stringHeight = candidateHeight;
     }
   }
 
-  // If you have an empty line, you might want at least `font.base` as height.
+  // If the line is empty, default to at least font.base in height.
   if (line.isEmpty) {
     stringHeight = font.base;
   }
 
-  return _TextSize(stringWidth, stringHeight);
+  return (width: stringWidth, height: stringHeight);
 }
 
 Future<void> _setImageExifData(Image originalImage, Image newImage,
@@ -491,6 +472,8 @@ Future<void> _setImageExifData(Image originalImage, Image newImage,
   exif.imageIfd.resolutionUnit = newImage.exif.imageIfd.resolutionUnit;
   exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
   exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
+
+  // TODO: Set createdAt timestamp here
 
   // Set GPS tags if needed
   if (setGPSToLocation && position != null) {
