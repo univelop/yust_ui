@@ -202,6 +202,9 @@ class YustFileHelpers {
 
       // This is required because we cannot access the static YustUi.[...] from the isolated process
       final locationService = YustUi.locationService;
+      final now = Yust.helpers.utcNow();
+      final timestampText =
+          '${Yust.helpers.formatDate(now, locale: locale.languageCode)} ${Yust.helpers.formatTime(now)}';
 
       Future<Uint8List?> helper(RootIsolateToken? token) async {
         // This is needed for the geolocator plugin to work
@@ -224,6 +227,7 @@ class YustFileHelpers {
               displayCoordinatesInDegreeMinuteSecond,
           // This is required because we cannot access the static YustUi.[...] from the isolated process
           locationService: locationService,
+          timestampText: timestampText,
         );
       }
 
@@ -263,6 +267,7 @@ Future<Uint8List> _transformImage({
   bool addGpsWatermark = false,
   YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
   bool displayCoordinatesInDegreeMinuteSecond = false,
+  String? timestampText,
 }) async {
   // If we are on web, we rely purely on bytes. Watermarking will also not be possible.
   if (kIsWeb) {
@@ -325,6 +330,7 @@ Future<Uint8List> _transformImage({
       locale: locale,
       displayCoordinatesInDegreeMinuteSecond:
           displayCoordinatesInDegreeMinuteSecond,
+      timestampText: timestampText,
     );
   }
 
@@ -340,13 +346,11 @@ void _addWatermarks({
   required Locale locale,
   Position? position,
   bool displayCoordinatesInDegreeMinuteSecond = false,
+  String? timestampText,
 }) {
   final textBuffer = <String>[];
-  if (addTimestamp) {
-    final yustHelpers = YustHelpers();
-    final now = yustHelpers.utcNow();
-    textBuffer.add(
-        '${yustHelpers.formatDate(now, locale: locale.languageCode)} ${yustHelpers.formatTime(now)}');
+  if (addTimestamp && timestampText != null) {
+    textBuffer.add(timestampText);
   }
 
   if (addGps && position != null) {
