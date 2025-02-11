@@ -58,12 +58,12 @@ class YustSwitch extends StatelessWidget {
     return Checkbox(
       checkColor: activeColor,
       value: value,
-      onChanged: (bool? value) {
-        YustUi.helpers.unfocusCurrent();
-        readOnly || value == null || onChanged == null
-            ? null
-            : onChanged!(value);
-      },
+      onChanged: readOnly || onChanged == null
+          ? null
+          : (bool? value) {
+              YustUi.helpers.unfocusCurrent();
+              onChanged!(value ?? false);
+            },
     );
   }
 
@@ -71,10 +71,12 @@ class YustSwitch extends StatelessWidget {
     return Switch(
       value: value,
       activeColor: activeColor ?? Theme.of(context).primaryColor,
-      onChanged: (value) {
-        YustUi.helpers.unfocusCurrent();
-        readOnly || onChanged == null ? null : onChanged!(value);
-      },
+      onChanged: readOnly || onChanged == null
+          ? null
+          : (value) {
+              YustUi.helpers.unfocusCurrent();
+              onChanged!(value);
+            },
     );
   }
 }
