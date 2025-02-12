@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -172,9 +173,14 @@ class YustFileHelpers {
   ///
   /// - If [resize] is true, the image will be resized to the fit the given [yustQuality].
   /// - If [convertToJPEG] is true, the image will be converted to JPEG.
+  ///
+  /// The following only works on mobile:
   /// - If [setGPSToLocation] is true, the GPS tags will be set to the current location.
   /// - If [addTimestampWatermark] is true, a timestamp watermark will be added.
   /// - If [addGpsWatermark] is true, a GPS watermark will be added.
+  /// - Use [watermarkPosition] to specify the position of the watermark. Default is [YustWatermarkPosition.bottomLeft].
+  /// - Use [locale] to specify the locale for the watermark timestamp.
+  /// - If [displayCoordinatesInDegreeMinuteSecond] is true, the GPS watermark will be displayed in DMS format. Default is in decimal degrees.
   Future<YustImage> processImage({
     required String path,
     required bool resize,
@@ -219,6 +225,7 @@ class YustFileHelpers {
           quality: quality,
           file: file,
           resize: resize,
+          convertToJPEG: convertToJPEG,
           setGPSToLocation: setGPSToLocation,
           addTimestampWatermark: addTimestampWatermark,
           addGpsWatermark: addGpsWatermark,
@@ -228,6 +235,7 @@ class YustFileHelpers {
           // This is required because we cannot access the static YustUi.[...] from the isolated process
           locationService: locationService,
           timestampText: timestampText,
+          watermarkPosition: watermarkPosition,
         );
       }
 
@@ -253,20 +261,22 @@ class YustFileHelpers {
   }
 }
 
+/// Transforms an image
 Future<Uint8List> _transformImage({
   required String name,
   required YustLocationService locationService,
   required Locale locale,
+  required bool resize,
+  required bool convertToJPEG,
+  required bool setGPSToLocation,
+  required bool addTimestampWatermark,
+  required bool addGpsWatermark,
+  required bool displayCoordinatesInDegreeMinuteSecond,
   Uint8List? bytes,
   File? file,
   int maxWidth = 1024,
   int quality = 80,
-  bool resize = false,
-  bool setGPSToLocation = false,
-  bool addTimestampWatermark = false,
-  bool addGpsWatermark = false,
   YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
-  bool displayCoordinatesInDegreeMinuteSecond = false,
   String? timestampText,
 }) async {
   // If we are on web, we rely purely on bytes. Watermarking will also not be possible.
@@ -334,8 +344,12 @@ Future<Uint8List> _transformImage({
     );
   }
 
-  // Encode as JPEG
-  return encodeJpg(newImage, quality: quality);
+  if (convertToJPEG) {
+    // Encode as JPEG
+    return encodeJpg(newImage, quality: quality);
+  }
+
+  return newImage.getBytes();
 }
 
 void _addWatermarks({
@@ -378,72 +392,102 @@ void _addWatermarks({
 String _formatDecimalCoordinate(double coordinate) =>
     NumberFormat('0.######', 'en_US').format(coordinate);
 
-/// Draws [text] into [image] at [corner].
-/// If [withBackground] is true, draws a semi-transparent rectangle behind it.
+/// Draws a string on an image.
+///
+/// Internally draws text on an offscreen image, then resize and places it at [watermarkPosition].
+/// - [fractionOfWidth] is the maximum fraction of [image.width]. Default is 20%
+/// - [minWidth] ensures a minimum pixel width for small images. Default is 150px
 void _drawTextOnImage({
   required Image image,
   required String text,
   required BitmapFont font,
   required YustWatermarkPosition watermarkPosition,
+  double fractionOfWidth = 0.2,
+  int minWidth = 150,
   bool withBackground = true,
   int margin = 10,
 }) {
-  // Measure total width and height of all lines in [text].
-  final (width: textWidth, height: textHeight) = _measureMultiline(font, text);
+  // Calculate text sizes
+  final (width: unscaledWidth, height: unscaledHeight) =
+      _measureMultiline(font, text);
+  if (unscaledWidth == 0 || unscaledHeight == 0) return;
 
-  // Determine the top-left placement (x,y) based on the chosen corner.
-  late int x;
-  late int y;
-  switch (watermarkPosition) {
-    case YustWatermarkPosition.topLeft:
-      x = margin;
-      y = margin;
-      break;
-    case YustWatermarkPosition.topRight:
-      x = image.width - textWidth - margin;
-      y = margin;
-      break;
-    case YustWatermarkPosition.bottomLeft:
-      x = margin;
-      y = image.height - textHeight - margin;
-      break;
-    case YustWatermarkPosition.bottomRight:
-      x = image.width - textWidth - margin;
-      y = image.height - textHeight - margin;
-      break;
-  }
+  final textCanvas = Image(width: unscaledWidth, height: unscaledHeight);
 
-  // Draw a semi-transparent background rectangle behind the text
+  // Add background
   if (withBackground) {
     fillRect(
-      image,
-      x1: x,
-      y1: y,
-      x2: x + textWidth,
-      y2: y + textHeight,
+      textCanvas,
+      x1: 0,
+      y1: 0,
+      x2: unscaledWidth,
+      y2: unscaledHeight,
       color: ColorRgba8(0, 0, 0, 128),
     );
   }
 
-  // Draw each line, moving downward as needed.
+  // Draw the text
+  var currentY = 0;
   final lines = text.split(RegExp(r'[\n\r]'));
-  var currentY = y;
   for (final line in lines) {
     drawString(
-      image,
+      textCanvas,
       line,
       font: font,
-      x: x,
+      x: 0,
       y: currentY,
-      color: ColorRgba8(255, 255, 255, 255), // White text
+      color: ColorRgba8(255, 255, 255, 255),
     );
     final (width: _, height: lineHeight) = _measureSingleLine(font, line);
     currentY += lineHeight;
   }
+
+  // Compute the maximum scaled width based on [fractionOfWidth]
+  final maxScaledWidth = (image.width * fractionOfWidth).round();
+  final scaledWidth = max(maxScaledWidth, minWidth);
+  if (scaledWidth < 1) return;
+
+  final scaleFactor = scaledWidth / unscaledWidth;
+  final scaledHeight = (unscaledHeight * scaleFactor).round();
+
+  // Scale the text
+  final scaledCanvas = copyResize(
+    textCanvas,
+    width: scaledWidth,
+    height: scaledHeight,
+    interpolation: Interpolation.cubic,
+  );
+
+  late int dstX;
+  late int dstY;
+  switch (watermarkPosition) {
+    case YustWatermarkPosition.topLeft:
+      dstX = margin;
+      dstY = margin;
+      break;
+    case YustWatermarkPosition.topRight:
+      dstX = image.width - scaledWidth - margin;
+      dstY = margin;
+      break;
+    case YustWatermarkPosition.bottomLeft:
+      dstX = margin;
+      dstY = image.height - scaledHeight - margin;
+      break;
+    case YustWatermarkPosition.bottomRight:
+      dstX = image.width - scaledWidth - margin;
+      dstY = image.height - scaledHeight - margin;
+      break;
+  }
+
+  compositeImage(
+    image,
+    scaledCanvas,
+    dstX: dstX,
+    dstY: dstY,
+  );
 }
 
-/// Measures multi-line [text] by summing the heights of each line
-/// and tracking the maximum width among them.
+/// Measures multi-line [text] separated by \n or \r, returns (width, height)
 ({int width, int height}) _measureMultiline(BitmapFont font, String text) {
   var maxWidth = 0;
   var totalHeight = 0;
@@ -455,18 +499,18 @@ void _drawTextOnImage({
     }
     totalHeight += h;
   }
+
   return (width: maxWidth, height: totalHeight);
 }
 
-/// Measures a single [line] by replicating the internal drawString logic.
-/// Returns a record with (width, height).
+/// Measures the size of a single line of text
+/// Returns (width, height).
 ({int width, int height}) _measureSingleLine(BitmapFont font, String line) {
   var stringWidth = 0;
   var stringHeight = 0;
 
   for (final c in line.codeUnits) {
     if (!font.characters.containsKey(c)) {
-      // Fallback width for missing glyphs
       stringWidth += font.base ~/ 2;
       continue;
     }
@@ -478,7 +522,6 @@ void _drawTextOnImage({
     }
   }
 
-  // If the line is empty, default to at least font.base in height.
   if (line.isEmpty) {
     stringHeight = font.base;
   }
