@@ -232,10 +232,10 @@ class YustFileHelpers {
           locale: locale,
           displayCoordinatesInDegreeMinuteSecond:
               displayCoordinatesInDegreeMinuteSecond,
+          watermarkPosition: watermarkPosition,
           // This is required because we cannot access the static YustUi.[...] from the isolated process
           locationService: locationService,
           timestampText: timestampText,
-          watermarkPosition: watermarkPosition,
         );
       }
 
@@ -371,7 +371,7 @@ void _addWatermarks({
     if (displayCoordinatesInDegreeMinuteSecond) {
       final yustLocationHelper = YustLocationHelper();
       textBuffer.add(
-          '${yustLocationHelper.formatLatitudeToDMS(position.latitude)} ${yustLocationHelper.formatLongitudeToDMS(position.longitude)}');
+          '${yustLocationHelper.formatLatitudeToDMS(position.latitude, degreeSymbol: '*')} ${yustLocationHelper.formatLongitudeToDMS(position.longitude, degreeSymbol: '*')}');
     } else {
       textBuffer.add(
           '${_formatDecimalCoordinate(position.latitude)} ${_formatDecimalCoordinate(position.longitude)}');
@@ -383,10 +383,10 @@ void _addWatermarks({
   }
 
   _drawTextOnImage(
-      image: image,
-      text: textBuffer.join('\n'),
-      watermarkPosition: watermarkPosition,
-      font: arial14);
+    image: image,
+    text: textBuffer.join('\n'),
+    watermarkPosition: watermarkPosition,
+  );
 }
 
 String _formatDecimalCoordinate(double coordinate) =>
@@ -400,31 +400,21 @@ String _formatDecimalCoordinate(double coordinate) =>
 void _drawTextOnImage({
   required Image image,
   required String text,
-  required BitmapFont font,
   required YustWatermarkPosition watermarkPosition,
   double fractionOfWidth = 0.2,
   int minWidth = 150,
   bool withBackground = true,
   int margin = 10,
+  int backgroundPadding = 5,
 }) {
+  final font = arial48;
+
   // Calculate text sizes
   final (width: unscaledWidth, height: unscaledHeight) =
       _measureMultiline(font, text);
   if (unscaledWidth == 0 || unscaledHeight == 0) return;
 
   final textCanvas = Image(width: unscaledWidth, height: unscaledHeight);
-
-  // Add background
-  if (withBackground) {
-    fillRect(
-      textCanvas,
-      x1: 0,
-      y1: 0,
-      x2: unscaledWidth,
-      y2: unscaledHeight,
-      color: ColorRgba8(0, 0, 0, 128),
-    );
-  }
 
   // Draw the text
   var currentY = 0;
@@ -479,6 +469,22 @@ void _drawTextOnImage({
       break;
   }
 
+  if (withBackground) {
+    final bgX1 = dstX - backgroundPadding;
+    final bgY1 = dstY - backgroundPadding;
+    final bgX2 = dstX + scaledWidth + backgroundPadding;
+    final bgY2 = dstY + scaledHeight + backgroundPadding;
+
+    fillRect(
+      image,
+      x1: bgX1,
+      y1: bgY1,
+      x2: bgX2,
+      y2: bgY2,
+      color: ColorRgba8(0, 0, 0, 128),
+    );
+  }
+
   compositeImage(
     image,
     scaledCanvas,
@@ -511,6 +517,7 @@ void _drawTextOnImage({
 
   for (final c in line.codeUnits) {
     if (!font.characters.containsKey(c)) {
+      // fallback for missing glyph
       stringWidth += font.base ~/ 2;
       continue;
     }

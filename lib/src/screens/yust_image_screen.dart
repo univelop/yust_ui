@@ -11,10 +11,10 @@ import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 import '../yust_ui.dart';
 
 class YustImageScreen extends StatefulWidget {
-  final List<YustFile> files;
+  final List<YustImage> images;
 
   final int activeImageIndex;
-  final void Function(YustFile file, Uint8List newImage) onSave;
+  final void Function(YustImage image, Uint8List newImage) onSave;
 
   /// Indicates whether drawing is allowed on the image.
   ///
@@ -23,7 +23,7 @@ class YustImageScreen extends StatefulWidget {
 
   const YustImageScreen({
     super.key,
-    required this.files,
+    required this.images,
     required this.onSave,
     this.activeImageIndex = 0,
     this.allowDrawing = false,
@@ -31,15 +31,15 @@ class YustImageScreen extends StatefulWidget {
 
   static void navigateToScreen({
     required BuildContext context,
-    required List<YustFile> files,
+    required List<YustImage> images,
     int activeImageIndex = 0,
     bool allowDrawing = false,
-    required void Function(YustFile file, Uint8List newImage) onSave,
+    required void Function(YustImage image, Uint8List newImage) onSave,
   }) {
     unawaited(
       Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (_) => YustImageScreen(
-          files: files,
+          images: images,
           onSave: onSave,
           activeImageIndex: activeImageIndex,
           allowDrawing: allowDrawing,
@@ -67,19 +67,19 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return Container(
       color: Colors.black,
       child: SafeArea(
-          child: widget.files.length == 1
+          child: widget.images.length == 1
               ? _buildSingle(context)
               : _buildMultiple(context)),
     );
   }
 
   Widget _buildSingle(BuildContext context) {
-    final file = widget.files.first;
+    final image = widget.images.first;
     return Stack(children: [
       PhotoView(
-        imageProvider: _getImageOfUrl(file),
+        imageProvider: _getImageOfUrl(image),
         minScale: PhotoViewComputedScale.contained,
-        heroAttributes: PhotoViewHeroAttributes(tag: file.url ?? ''),
+        heroAttributes: PhotoViewHeroAttributes(tag: image.url ?? ''),
         onTapUp: (context, details, controllerValue) {
           Navigator.pop(context);
         },
@@ -91,9 +91,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
-      if (!kIsWeb && widget.allowDrawing) _buildDrawButton(context, file),
+      if (!kIsWeb && widget.allowDrawing) _buildDrawButton(context, image),
       if (kIsWeb) _buildCloseButton(context),
-      _buildShareButton(context, file),
+      _buildShareButton(context, image),
     ]);
   }
 
@@ -101,7 +101,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return Stack(
       children: [
         PhotoViewGallery.builder(
-          itemCount: widget.files.length,
+          itemCount: widget.images.length,
           scrollPhysics: const BouncingScrollPhysics(),
           pageController: _pageController,
           onPageChanged: (index) {
@@ -111,10 +111,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
           },
           builder: (BuildContext context, int index) {
             return PhotoViewGalleryPageOptions(
-              imageProvider: _getImageOfUrl(widget.files[index]),
+              imageProvider: _getImageOfUrl(widget.images[index]),
               minScale: PhotoViewComputedScale.contained,
               heroAttributes:
-                  PhotoViewHeroAttributes(tag: widget.files[index].url ?? ''),
+                  PhotoViewHeroAttributes(tag: widget.images[index].url ?? ''),
               onTapUp: (context, details, controllerValue) {
                 Navigator.pop(context);
               },
@@ -171,15 +171,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
             ),
           ),
         if (!kIsWeb && widget.allowDrawing)
-          _buildDrawButton(context, widget.files[activeImageIndex]),
+          _buildDrawButton(context, widget.images[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
-        _buildShareButton(context, widget.files[activeImageIndex]),
+        _buildShareButton(context, widget.images[activeImageIndex]),
       ],
     );
   }
 
-  Widget _buildDrawButton(BuildContext context, YustFile file) {
-    if (file.url == null && file.devicePath == null) {
+  Widget _buildDrawButton(BuildContext context, YustImage image) {
+    if (image.url == null && image.devicePath == null) {
       return const SizedBox.shrink();
     }
 
@@ -199,10 +199,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   onPressed: () {
                     YustImageDrawingScreen.navigateToScreen(
                         context: context,
-                        image: _getImageOfUrl(file),
-                        onSave: (image) async {
-                          if (image != null) {
-                            widget.onSave(file, image);
+                        image: _getImageOfUrl(image),
+                        onSave: (imageBytes) async {
+                          if (imageBytes != null) {
+                            widget.onSave(image, imageBytes);
                             setState(() {});
                           }
                         });
@@ -235,7 +235,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     );
   }
 
-  Widget _buildShareButton(BuildContext context, YustFile file) {
+  Widget _buildShareButton(BuildContext context, YustImage image) {
     return Positioned(
       right: kIsWeb ? 70.0 : 0.0,
       child: RepaintBoundary(
@@ -251,7 +251,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   color: Colors.white,
                   onPressed: () {
                     YustUi.fileHelpers.downloadAndLaunchFile(
-                        context: context, url: file.url!, name: file.name!);
+                        context: context, url: image.url!, name: image.name!);
                   },
                   icon: kIsWeb
                       ? const Icon(Icons.download)
@@ -266,12 +266,12 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   /// because of the offline cache the file could be a stored online or on device
-  ImageProvider<Object> _getImageOfUrl(YustFile file) {
-    if (file.cached) {
-      var imageFile = File(file.devicePath!);
+  ImageProvider<Object> _getImageOfUrl(YustImage image) {
+    if (image.cached) {
+      var imageFile = File(image.devicePath!);
       return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
-      return NetworkImage(file.url!);
+      return NetworkImage(image.url!);
     }
   }
 }
