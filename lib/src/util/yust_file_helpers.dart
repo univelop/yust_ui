@@ -493,7 +493,7 @@ void _drawTextOnImage({
       y1: bgY1,
       x2: bgX2,
       y2: bgY2,
-      color: ColorRgba8(0, 0, 0, 128),
+      color: ColorRgba8(0, 0, 0, 255),
     );
   }
 
