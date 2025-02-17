@@ -339,7 +339,12 @@ Future<({Uint8List bytes, Position? position})> _transformImage({
   }
 
   // Set exif data
-  await _setImageExifData(originalImage, newImage, setGPSToLocation, position);
+  await _setImageExifData(
+      originalImage: originalImage,
+      newImage: newImage,
+      setGPSToLocation: setGPSToLocation,
+      position: position,
+      createdAt: Yust.helpers.utcNow());
 
   // Add watermark to image
   if (addTimestampWatermark || addGpsWatermark) {
@@ -548,8 +553,13 @@ void _drawTextOnImage({
   return (width: stringWidth, height: stringHeight);
 }
 
-Future<void> _setImageExifData(Image originalImage, Image newImage,
-    bool setGPSToLocation, Position? position) async {
+Future<void> _setImageExifData({
+  required Image originalImage,
+  required Image newImage,
+  required bool setGPSToLocation,
+  required DateTime createdAt,
+  Position? position,
+}) async {
   final exif = originalImage.exif;
 
   // Orientation is baked into the image, so we can set it to no rotation
@@ -561,7 +571,12 @@ Future<void> _setImageExifData(Image originalImage, Image newImage,
   exif.imageIfd.imageHeight = newImage.exif.imageIfd.imageHeight;
   exif.imageIfd.imageWidth = newImage.exif.imageIfd.imageWidth;
 
-  // TODO: Set createdAt timestamp here
+  const dateTimeOriginalKey = 0x9003;
+  if (!exif.exifIfd.containsKey(dateTimeOriginalKey) ||
+      exif.exifIfd[dateTimeOriginalKey] == null) {
+    final formattedDate = _formatExifDateTime(createdAt);
+    exif.exifIfd[0x9003] = IfdValueAscii(formattedDate);
+  }
 
   // Set GPS tags if needed
   if (setGPSToLocation && position != null) {
@@ -613,6 +628,15 @@ Future<void> _setImageExifData(Image originalImage, Image newImage,
 
   newImage.exif = exif;
 }
+
+/// Formats a DateTime to a string in the format 'YYYY:MM:DD HH:MM:SS'
+String _formatExifDateTime(DateTime dt) =>
+    '${dt.year.toString().padLeft(4, '0')}:'
+    '${dt.month.toString().padLeft(2, '0')}:'
+    '${dt.day.toString().padLeft(2, '0')} '
+    '${dt.hour.toString().padLeft(2, '0')}:'
+    '${dt.minute.toString().padLeft(2, '0')}:'
+    '${dt.second.toString().padLeft(2, '0')}';
 
 Future<Uint8List> _resizeWeb(
     {required String name,
