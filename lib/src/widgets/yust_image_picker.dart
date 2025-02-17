@@ -674,8 +674,8 @@ class YustImagePickerState extends State<YustImagePicker>
     YustImageScreen.navigateToScreen(
       context: context,
       images: YustImage.fromYustFiles(_fileHandler.getFiles()),
-      activeImageIndex:
-          YustImage.fromYustFiles(_fileHandler.getFiles()).indexOf(activeFile),
+      activeImageIndex: _fileHandler.getFiles().indexWhere((file) =>
+          file.hash == activeFile.hash && file.name == activeFile.name),
       allowDrawing: !widget.readOnly,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;

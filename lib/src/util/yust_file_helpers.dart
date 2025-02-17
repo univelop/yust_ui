@@ -182,6 +182,7 @@ class YustFileHelpers {
   /// - Use [locale] to specify the locale for the watermark timestamp.
   /// - If [displayCoordinatesInDegreeMinuteSecond] is true, the GPS watermark will be displayed in DMS format. Default is in decimal degrees.
   Future<YustImage> processImage({
+    // TODO: Add createdAt to YustFile, set it accordingly, set date in exif data
     required String path,
     required bool resize,
     required bool convertToJPEG,
@@ -201,6 +202,7 @@ class YustFileHelpers {
     final sanitizedPath = _sanitizeFilePath(path);
     final mustTransform =
         convertToJPEG && (resize || addTimestampWatermark || addGpsWatermark);
+    ({Uint8List bytes, Position? position})? computeResult;
 
     if (mustTransform) {
       final size = yustImageQuality[yustQuality]!['size']!;
@@ -212,7 +214,8 @@ class YustFileHelpers {
       final timestampText =
           '${Yust.helpers.formatDate(now, locale: locale.languageCode)} ${Yust.helpers.formatTime(now)}';
 
-      Future<Uint8List?> helper(RootIsolateToken? token) async {
+      Future<({Uint8List bytes, Position? position})?> helper(
+          RootIsolateToken? token) async {
         // This is needed for the geolocator plugin to work
         if (token != null) {
           BackgroundIsolateBinaryMessenger.ensureInitialized(token);
@@ -243,7 +246,7 @@ class YustFileHelpers {
       if (!kIsWeb) {
         token = RootIsolateToken.instance;
       }
-      bytes = await compute(helper, token);
+      computeResult = await compute(helper, token);
     }
 
     final newImageExtension = convertToJPEG ? 'jpeg' : path.split('.').last;
@@ -253,16 +256,23 @@ class YustFileHelpers {
     return YustImage(
       name: newImageName,
       file: file,
-      bytes: bytes,
+      bytes: computeResult?.bytes ?? bytes,
       storageFolderPath: storageFolderPath,
       linkedDocPath: linkedDocPath,
       linkedDocAttribute: linkedDocAttribute,
+      location: computeResult?.position != null
+          ? YustGeoLocation(
+              latitude: computeResult?.position?.latitude,
+              longitude: computeResult?.position?.longitude,
+              accuracy: computeResult?.position?.accuracy,
+            )
+          : null,
     );
   }
 }
 
 /// Transforms an image
-Future<Uint8List> _transformImage({
+Future<({Uint8List bytes, Position? position})> _transformImage({
   required String name,
   required YustLocationService locationService,
   required Locale locale,
@@ -284,11 +294,13 @@ Future<Uint8List> _transformImage({
     assert(bytes != null, 'bytes must not be null on web');
 
     if (!resize) {
-      return bytes!;
+      return (bytes: bytes!, position: null);
     }
 
-    return await _resizeWeb(
+    final resized = await _resizeWeb(
         name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
+
+    return (bytes: resized, position: null);
   }
 
   // On mobile, either file or bytes must be provided.
@@ -346,10 +358,10 @@ Future<Uint8List> _transformImage({
 
   if (convertToJPEG) {
     // Encode as JPEG
-    return encodeJpg(newImage, quality: quality);
+    return (bytes: encodeJpg(newImage, quality: quality), position: position);
   }
 
-  return newImage.getBytes();
+  return (bytes: newImage.getBytes(), position: position);
 }
 
 void _addWatermarks({
