@@ -439,7 +439,7 @@ class YustFilePickerState extends State<YustFilePicker>
       unawaited(YustUi.alertService.showAlert(
         LocaleKeys.fileUpload.tr(),
         LocaleKeys.fileTooBig.tr(
-            namedArgs: {'fileSize': name, 'maxFileSize': maxSizeKB.toString()}),
+            namedArgs: {'fileName': name, 'maxFileSize': maxSizeKB.toString()}),
       ));
       return false;
     }
