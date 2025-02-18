@@ -57,25 +57,32 @@ class YustFilePicker extends StatefulWidget {
 
   final bool overwriteSingleFile;
 
-  const YustFilePicker(
-      {super.key,
-      this.label,
-      this.showModifiedAt = false,
-      required this.files,
-      required this.storageFolderPath,
-      this.linkedDocPath,
-      this.linkedDocAttribute,
-      this.onChanged,
-      this.suffixIcon,
-      this.prefixIcon,
-      this.enableDropzone = false,
-      this.readOnly = false,
-      this.allowMultiple = true,
-      this.numberOfFiles,
-      this.allowedExtensions,
-      this.divider = true,
-      this.allowOnlyImages = false,
-      this.overwriteSingleFile = false});
+  /// Maximum size of each file in kilobytes.
+  ///
+  /// NULL means no limit.
+  final num? maximumFileSizeInKB;
+
+  const YustFilePicker({
+    super.key,
+    this.label,
+    this.showModifiedAt = false,
+    required this.files,
+    required this.storageFolderPath,
+    this.linkedDocPath,
+    this.linkedDocAttribute,
+    this.onChanged,
+    this.suffixIcon,
+    this.prefixIcon,
+    this.enableDropzone = false,
+    this.readOnly = false,
+    this.allowMultiple = true,
+    this.numberOfFiles,
+    this.allowedExtensions,
+    this.divider = true,
+    this.allowOnlyImages = false,
+    this.overwriteSingleFile = false,
+    this.maximumFileSizeInKB,
+  });
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -406,12 +413,37 @@ class YustFilePickerState extends State<YustFilePicker>
       final existingFileNamesValid = await _checkExistingFileNames(name);
       if (!existingFileNamesValid) return;
 
+      final fileSizeValid = await _checkFileSize(name, file, bytes);
+      if (!fileSizeValid) return;
+
       await uploadFile(
         name: name,
         file: file,
         bytes: bytes,
       );
     }
+  }
+
+  Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
+    final maxSizeKB = widget.maximumFileSizeInKB;
+    // No restriction on file size
+    if (maxSizeKB == null) return true;
+
+    final int fileSizeInKB = file != null
+        ? await file.length() ~/ 1024
+        : bytes != null
+            ? bytes.length ~/ 1024
+            : 0;
+
+    if (fileSizeInKB > maxSizeKB) {
+      unawaited(YustUi.alertService.showAlert(
+        LocaleKeys.fileUpload.tr(),
+        LocaleKeys.fileTooBig.tr(
+            namedArgs: {'fileSize': name, 'maxFileSize': maxSizeKB.toString()}),
+      ));
+      return false;
+    }
+    return true;
   }
 
   Future<bool> checkFileAmount(List<dynamic> fileElements) async {
