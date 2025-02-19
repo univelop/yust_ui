@@ -190,8 +190,10 @@ class YustFilePickerState extends State<YustFilePicker>
     }
 
     if (widget.maximumFileSizeInKB != null) {
-      messages.add(LocaleKeys.tooltipMaxFileSize.tr(
-          namedArgs: {'maxFileSize': widget.maximumFileSizeInKB.toString()}));
+      messages.add(LocaleKeys.tooltipMaxFileSize.tr(namedArgs: {
+        'maxFileSize':
+            YustUi.helpers.formatFileSize(widget.maximumFileSizeInKB ?? 0)
+      }));
     }
 
     return messages.isEmpty ? null : messages;
@@ -456,8 +458,10 @@ class YustFilePickerState extends State<YustFilePicker>
     if (fileSizeInKB > maxSizeKB) {
       unawaited(YustUi.alertService.showAlert(
         LocaleKeys.fileUpload.tr(),
-        LocaleKeys.fileTooBig.tr(
-            namedArgs: {'fileName': name, 'maxFileSize': maxSizeKB.toString()}),
+        LocaleKeys.alertFileTooBig.tr(namedArgs: {
+          'fileName': name,
+          'maxFileSize': YustUi.helpers.formatFileSize(maxSizeKB)
+        }),
       ));
       return false;
     }
