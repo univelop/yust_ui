@@ -6,7 +6,7 @@ import 'package:yust/yust.dart';
 import 'yust_file_handler.dart';
 
 class YustFileHandlerManager {
-  List<YustFileHandler> fileHandlers = [];
+  List<YustFileHandler> filehandlers = [];
 
   YustFileHandler createFileHandler({
     required String storageFolderPath,
@@ -14,21 +14,18 @@ class YustFileHandlerManager {
     String? linkedDocPath,
     bool newestFirst = false,
     void Function()? onFileUploaded,
-    bool forYustImages = false,
   }) {
     var newFileHandler = getFileHandler(linkedDocAttribute, linkedDocPath);
 
     if (newFileHandler == null) {
       newFileHandler = YustFileHandler(
-        storageFolderPath: storageFolderPath,
-        linkedDocAttribute: linkedDocAttribute,
-        linkedDocPath: linkedDocPath,
-        onFileUploaded: onFileUploaded,
-        newestFirst: newestFirst,
-        forYustImages: forYustImages,
-      );
+          storageFolderPath: storageFolderPath,
+          linkedDocAttribute: linkedDocAttribute,
+          linkedDocPath: linkedDocPath,
+          onFileUploaded: onFileUploaded,
+          newestFirst: newestFirst);
       if (linkedDocAttribute != null && linkedDocPath != null) {
-        fileHandlers.add(newFileHandler);
+        filehandlers.add(newFileHandler);
       }
     } else {
       newFileHandler.onFileUploaded = onFileUploaded ?? () {};
@@ -40,33 +37,31 @@ class YustFileHandlerManager {
 
   YustFileHandler? getFileHandler(
       String? linkedDocAttribute, String? linkedDocPath) {
-    var newFileHandler = fileHandlers.firstWhereOrNull(
-      (fileHandler) =>
-          fileHandler.linkedDocAttribute == linkedDocAttribute &&
-          fileHandler.linkedDocPath == linkedDocPath,
+    var newFileHandler = filehandlers.firstWhereOrNull(
+      (filehandler) =>
+          filehandler.linkedDocAttribute == linkedDocAttribute &&
+          filehandler.linkedDocPath == linkedDocPath,
     );
     return newFileHandler;
   }
 
   /// Uploads all cached files. Should be started after device restart
-  /// creates for each unique linkedDocPath + linkedDocAttribute address a fileHandler
+  /// creates for each unique linkedDocPath + linkedDocAttribute adress a fileHandler
   Future<void> uploadCachedFiles() async {
-    var cachedFiles =
-        await YustFileHandler.loadCachedFiles(forYustImages: true);
+    var cachedFiles = await YustFileHandler.loadCachedFiles();
     while (cachedFiles.isNotEmpty) {
       var file = cachedFiles.first;
-      var fileHandler = createFileHandler(
+      var filehandler = createFileHandler(
         storageFolderPath: file.storageFolderPath ?? '',
         linkedDocAttribute: file.linkedDocAttribute,
         linkedDocPath: file.linkedDocPath,
-        forYustImages: true, // TODO: Refactor this
       );
 
       cachedFiles.removeWhere((YustFile f) =>
           f.linkedDocAttribute == file.linkedDocAttribute &&
           f.linkedDocPath == file.linkedDocPath);
-      await fileHandler.updateFiles([]);
-      fileHandler.startUploadingCachedFiles();
+      await filehandler.updateFiles([]);
+      filehandler.startUploadingCachedFiles();
     }
   }
 }
