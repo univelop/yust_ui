@@ -203,6 +203,7 @@ class YustFileHelpers {
     final mustTransform =
         convertToJPEG && (resize || addTimestampWatermark || addGpsWatermark);
     ({Uint8List bytes, Position? position})? computeResult;
+    final now = Yust.helpers.utcNow();
 
     if (mustTransform) {
       final size = yustImageQuality[yustQuality]!['size']!;
@@ -210,7 +211,6 @@ class YustFileHelpers {
 
       // This is required because we cannot access the static YustUi.[...] from the isolated process
       final locationService = YustUi.locationService;
-      final now = Yust.helpers.utcNow();
       final timestampText =
           '${Yust.helpers.formatDate(now, locale: locale.languageCode)} ${Yust.helpers.formatTime(now)}';
 
@@ -236,6 +236,7 @@ class YustFileHelpers {
           displayCoordinatesInDegreeMinuteSecond:
               displayCoordinatesInDegreeMinuteSecond,
           watermarkPosition: watermarkPosition,
+          now: now,
           // This is required because we cannot access the static YustUi.[...] from the isolated process
           locationService: locationService,
           timestampText: timestampText,
@@ -267,6 +268,7 @@ class YustFileHelpers {
               accuracy: computeResult?.position?.accuracy,
             )
           : null,
+      createdAt: now,
     );
   }
 }
@@ -282,6 +284,7 @@ Future<({Uint8List bytes, Position? position})> _transformImage({
   required bool addTimestampWatermark,
   required bool addGpsWatermark,
   required bool displayCoordinatesInDegreeMinuteSecond,
+  required DateTime now,
   Uint8List? bytes,
   File? file,
   int maxWidth = 1024,
@@ -344,7 +347,7 @@ Future<({Uint8List bytes, Position? position})> _transformImage({
       newImage: newImage,
       setGPSToLocation: setGPSToLocation,
       position: position,
-      createdAt: Yust.helpers.utcNow());
+      createdAt: now);
 
   // Add watermark to image
   if (addTimestampWatermark || addGpsWatermark) {
