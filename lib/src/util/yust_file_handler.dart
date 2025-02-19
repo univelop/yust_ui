@@ -32,7 +32,7 @@ class YustFileHandler {
 
   bool newestFirst;
 
-  /// shows if the _uploadFiles-procces is currently running
+  /// shows if the _uploadFiles-process is currently running
   bool _uploadingCachedFiles = false;
 
   /// Steadily increasing by the [_reuploadFactor]. Indicates the next upload attempt.
@@ -46,15 +46,23 @@ class YustFileHandler {
 
   final List<String> _recentlyDeletedFileUrls = [];
 
-  /// gets triggerd after successful upload
+  /// gets triggered after successful upload
   void Function()? onFileUploaded;
 
-  YustFileHandler(
-      {required this.storageFolderPath,
-      this.linkedDocAttribute,
-      this.linkedDocPath,
-      this.onFileUploaded,
-      this.newestFirst = false});
+  /// Whether the file handler instance should be used for [YustImage]s.
+  ///
+  /// This has to be set to true, otherwise the extended properties of the [YustImage]
+  /// will be lost on internal serialization/deserialization of the files.
+  final bool forYustImages;
+
+  YustFileHandler({
+    required this.storageFolderPath,
+    this.linkedDocAttribute,
+    this.linkedDocPath,
+    this.onFileUploaded,
+    this.newestFirst = false,
+    this.forYustImages = false,
+  });
 
   List<YustFile> getFiles() {
     return _reverseListIfNewestFirst(_yustFiles);
@@ -144,7 +152,7 @@ class YustFileHandler {
   Future<void> _mergeCachedFiles(List<YustFile> yustFiles,
       String? linkedDocPath, String? linkedDocAttribute) async {
     if (linkedDocPath != null && linkedDocAttribute != null) {
-      var cachedFiles = await loadCachedFiles();
+      var cachedFiles = await loadCachedFiles(forYustImages: forYustImages);
       cachedFiles = cachedFiles
           .where((yustFile) =>
               yustFile.linkedDocPath == linkedDocPath &&
@@ -357,7 +365,7 @@ class YustFileHandler {
     yustFile.url = url;
     await _addFileHash(yustFile);
     if (yustFile.cached) {
-      await _updateDocAttribute(yustFile, url, yustFile.hash);
+      await _updateDocAttribute(yustFile);
     }
   }
 
@@ -370,16 +378,10 @@ class YustFileHandler {
     }
   }
 
-  Future<void> _updateDocAttribute(
-      YustFile cachedFile, String url, String hash) async {
+  Future<void> _updateDocAttribute(YustFile cachedFile) async {
     var attribute = await _getDocAttribute(cachedFile);
 
-    var fileData = _getFileData(cachedFile.name!, attribute);
-
-    fileData['name'] = cachedFile.name;
-    fileData['modifiedAt'] = cachedFile.modifiedAt;
-    fileData['url'] = url;
-    fileData['hash'] = hash;
+    var fileData = cachedFile.toJson();
 
     if (attribute is Map) {
       if (attribute['url'] == null) {
@@ -399,22 +401,6 @@ class YustFileHandler {
     await FirebaseFirestore.instance
         .doc(cachedFile.linkedDocPath!)
         .update({cachedFile.linkedDocAttribute!: attribute});
-  }
-
-  Map<dynamic, dynamic> _getFileData(String fileName, dynamic attribute) {
-    if (attribute is Map) {
-      return Map.from(attribute);
-    }
-    if (attribute is List) {
-      var result = attribute.firstWhereOrNull((f) {
-        if (f['name'] == null) {
-          return false;
-        }
-        return f['name'] == fileName;
-      });
-      return Map.from(result ?? {});
-    }
-    return {};
   }
 
   Future<dynamic> _getDocAttribute(YustFile yustFile) async {
@@ -451,7 +437,7 @@ class YustFileHandler {
     }
   }
 
-  /// deletes cached file and devicepath. File is no longer cached
+  /// deletes cached file and device path. File is no longer cached
   Future<void> _deleteCachedInformations(YustFile yustFile) async {
     if (yustFile.devicePath != null &&
         File(yustFile.devicePath!).existsSync()) {
@@ -465,13 +451,16 @@ class YustFileHandler {
   }
 
   /// Loads a list of all cached [YustFile]s.
-  static Future<List<YustFile>> loadCachedFiles() async {
-    var prefs = await SharedPreferences.getInstance();
-    var temporaryJsonFiles = prefs.getString('YustCachedFiles') ?? '[]';
+  static Future<List<YustFile>> loadCachedFiles(
+      {bool forYustImages = false}) async {
+    var preferences = await SharedPreferences.getInstance();
+    var temporaryJsonFiles = preferences.getString('YustCachedFiles') ?? '[]';
 
     var cachedFiles = <YustFile>[];
     jsonDecode(temporaryJsonFiles).forEach((dynamic fileJson) =>
-        cachedFiles.add(YustFile.fromLocalJson(fileJson)));
+        cachedFiles.add(forYustImages
+            ? YustImage.fromLocalJson(fileJson)
+            : YustFile.fromLocalJson(fileJson)));
 
     return cachedFiles;
   }
@@ -479,9 +468,9 @@ class YustFileHandler {
   /// Saves all cached [YustFile]s.
   Future<void> _saveCachedFiles() async {
     var yustFiles = getCachedFiles();
-    var cachedFiles = await loadCachedFiles();
+    var cachedFiles = await loadCachedFiles(forYustImages: forYustImages);
 
-    // only change the files from THIS filehandler (identity: linkedDocPath and -Attribute)
+    // only change the files from THIS file handler (identity: linkedDocPath and -Attribute)
     cachedFiles.removeWhere(((yustFile) =>
         yustFile.linkedDocPath == linkedDocPath &&
         yustFile.linkedDocAttribute == linkedDocAttribute));
@@ -489,8 +478,8 @@ class YustFileHandler {
 
     var jsonFiles = cachedFiles.map((file) => file.toLocalJson()).toList();
 
-    var prefs = await SharedPreferences.getInstance();
-    await prefs.setString('YustCachedFiles', jsonEncode(jsonFiles));
+    var preferences = await SharedPreferences.getInstance();
+    await preferences.setString('YustCachedFiles', jsonEncode(jsonFiles));
   }
 
   Future<void> _launchBrowser(YustFile file) async {

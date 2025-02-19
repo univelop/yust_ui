@@ -36,9 +36,9 @@ class YustImagePicker extends StatefulWidget {
   /// When [numberOfFiles] is null, the user can upload as many files as he
   /// wants. Otherwise the user can only upload [numberOfFiles] files.
   final num? numberOfFiles;
-  final List<YustFile> images;
+  final List<YustImage> images;
   final bool zoomable;
-  final void Function(List<YustFile> images)? onChanged;
+  final void Function(List<YustImage> images)? onChanged;
   final Widget? prefixIcon;
   final bool newestFirst;
   final bool readOnly;
@@ -50,6 +50,11 @@ class YustImagePicker extends StatefulWidget {
   final bool enableDropzone;
   final Widget? suffixIcon;
   final bool convertToJPEG;
+  final bool addGpsWatermark;
+  final bool addTimestampWatermark;
+  final YustWatermarkPosition watermarkPosition;
+  final bool displayCoordinatesInDegreeMinuteSecond;
+  final Locale locale;
 
   /// default is 15
   final int imageCount;
@@ -76,6 +81,11 @@ class YustImagePicker extends StatefulWidget {
     this.showPreview = true,
     this.overwriteSingleFile = false,
     this.enableDropzone = false,
+    this.addGpsWatermark = false,
+    this.addTimestampWatermark = false,
+    this.displayCoordinatesInDegreeMinuteSecond = false,
+    this.locale = const Locale('de'),
+    this.watermarkPosition = YustWatermarkPosition.bottomLeft,
     int? imageCount,
   }) : imageCount = imageCount ?? 15;
   @override
@@ -99,7 +109,8 @@ class YustImagePickerState extends State<YustImagePicker>
         if (mounted) {
           setState(() {});
         }
-        widget.onChanged!(_fileHandler.getOnlineFiles());
+        widget
+            .onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
       },
     );
 
@@ -155,7 +166,10 @@ class YustImagePickerState extends State<YustImagePicker>
           : Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
               child: _buildSingleImage(
-                  context, _fileHandler.getFiles().firstOrNull),
+                  context,
+                  _fileHandler.getFiles().firstOrNull != null
+                      ? YustImage.fromYustFile(_fileHandler.getFiles().first)
+                      : null),
             );
     } else {
       return const SizedBox.shrink();
@@ -209,7 +223,8 @@ class YustImagePickerState extends State<YustImagePicker>
                     for (final yustFile in pictureFiles) {
                       await _fileHandler.deleteFile(yustFile);
                     }
-                    widget.onChanged!(_fileHandler.getOnlineFiles());
+                    widget.onChanged!(
+                        YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
                     if (mounted) {
                       setState(() {});
                     }
@@ -289,13 +304,13 @@ class YustImagePickerState extends State<YustImagePicker>
       primary: false,
       mainAxisSpacing: 2,
       crossAxisSpacing: 2,
-      children: pictureFiles.map((file) {
+      children: YustImage.fromYustFiles(pictureFiles).map((file) {
         return _buildSingleImage(context, file);
       }).toList(),
     );
   }
 
-  Widget _buildSingleImage(BuildContext context, YustFile? file) {
+  Widget _buildSingleImage(BuildContext context, YustImage? file) {
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
@@ -307,7 +322,7 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  Widget _buildImagePreview(BuildContext context, YustFile? file) {
+  Widget _buildImagePreview(BuildContext context, YustImage? file) {
     if (file == null) {
       return const SizedBox.shrink();
     }
@@ -368,7 +383,7 @@ class YustImagePickerState extends State<YustImagePicker>
     }
   }
 
-  Widget _buildProgressIndicator(BuildContext context, YustFile? file) {
+  Widget _buildProgressIndicator(BuildContext context, YustImage? file) {
     if (file?.processing != true) {
       return const SizedBox.shrink();
     }
@@ -396,7 +411,7 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  Widget _buildRemoveButton(BuildContext context, YustFile? yustFile) {
+  Widget _buildRemoveButton(BuildContext context, YustImage? yustFile) {
     if (yustFile == null || !_enabled) {
       return const SizedBox.shrink();
     }
@@ -417,7 +432,8 @@ class YustImagePickerState extends State<YustImagePicker>
               try {
                 await _fileHandler.deleteFile(yustFile);
                 if (!yustFile.cached) {
-                  widget.onChanged!(_fileHandler.getOnlineFiles());
+                  widget.onChanged!(
+                      YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
                 }
                 if (mounted) {
                   setState(() {});
@@ -435,7 +451,7 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  Widget _buildCachedIndicator(BuildContext context, YustFile? yustFile) {
+  Widget _buildCachedIndicator(BuildContext context, YustImage? yustFile) {
     if (yustFile == null || !yustFile.cached || !_enabled) {
       return const SizedBox.shrink();
     }
@@ -466,7 +482,7 @@ class YustImagePickerState extends State<YustImagePicker>
           LocaleKeys.alertMissingConnectionAddImages.tr());
       return;
     }
-    final pictureFiles = List<YustFile>.from(_fileHandler.getFiles());
+    final pictureFiles = List<YustImage>.from(_fileHandler.getFiles());
 
     // Single Image with Override
     if (widget.numberOfFiles == 1 &&
@@ -516,14 +532,20 @@ class YustImagePickerState extends State<YustImagePicker>
       }
 
       await uploadFile(
-          path: path,
-          file: file,
-          bytes: bytes,
-          // Because of the reason stated above,
-          // we need to do the resizing ourself
-          resize: true,
-          convertToJPEG: widget.convertToJPEG,
-          setGPSToLocation: setGPSToLocation);
+        path: path,
+        file: file,
+        bytes: bytes,
+        // Because of the reason stated above,
+        // we need to do the resizing ourself
+        resize: true,
+        convertToJPEG: widget.convertToJPEG,
+        setGPSToLocation: setGPSToLocation,
+        addGpsWatermark: widget.addGpsWatermark,
+        addTimestampWatermark: widget.addTimestampWatermark,
+        watermarkPosition: widget.watermarkPosition,
+        displayCoordinatesInDegreeMinuteSecond:
+            widget.displayCoordinatesInDegreeMinuteSecond,
+      );
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await _deleteFiles(pictureFiles);
@@ -581,11 +603,11 @@ class YustImagePickerState extends State<YustImagePicker>
     }
   }
 
-  Future<void> _deleteFiles(List<YustFile> pictureFiles) async {
+  Future<void> _deleteFiles(List<YustImage> pictureFiles) async {
     for (final yustFile in pictureFiles) {
       await _fileHandler.deleteFile(yustFile);
     }
-    widget.onChanged!(_fileHandler.getOnlineFiles());
+    widget.onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
     if (mounted) {
       setState(() {});
     }
@@ -598,18 +620,30 @@ class YustImagePickerState extends State<YustImagePicker>
     bool resize = false,
     bool convertToJPEG = true,
     bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+    YustWatermarkPosition watermarkPosition = YustWatermarkPosition.bottomLeft,
+    bool displayCoordinatesInDegreeMinuteSecond = false,
+    Locale locale = const Locale('de'),
   }) async {
-    final YustFile newYustFile = await YustFileHelpers().resizeImageWithCompute(
-        file: file,
-        bytes: bytes,
-        path: path,
-        resize: resize,
-        convertToJPEG: convertToJPEG,
-        yustQuality: widget.yustQuality,
-        setGPSToLocation: setGPSToLocation,
-        storageFolderPath: widget.storageFolderPath,
-        linkedDocPath: widget.linkedDocPath,
-        linkedDocAttribute: widget.linkedDocAttribute);
+    final YustImage newYustFile = await YustFileHelpers().processImage(
+      file: file,
+      bytes: bytes,
+      path: path,
+      resize: resize,
+      convertToJPEG: convertToJPEG,
+      yustQuality: widget.yustQuality,
+      setGPSToLocation: setGPSToLocation,
+      storageFolderPath: widget.storageFolderPath,
+      linkedDocPath: widget.linkedDocPath,
+      linkedDocAttribute: widget.linkedDocAttribute,
+      addGpsWatermark: addGpsWatermark,
+      addTimestampWatermark: addTimestampWatermark,
+      watermarkPosition: watermarkPosition,
+      locale: locale,
+      displayCoordinatesInDegreeMinuteSecond:
+          displayCoordinatesInDegreeMinuteSecond,
+    );
 
     await _createDatabaseEntry();
     await _fileHandler.addFile(newYustFile);
@@ -617,7 +651,7 @@ class YustImagePickerState extends State<YustImagePicker>
     if (_currentImageNumber < _fileHandler.getFiles().length) {
       _currentImageNumber += widget.imageCount;
     }
-    widget.onChanged!(_fileHandler.getOnlineFiles());
+    widget.onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
     if (mounted) {
       setState(() {});
     }
@@ -628,18 +662,20 @@ class YustImagePickerState extends State<YustImagePicker>
       if (widget.linkedDocPath != null &&
           !_fileHandler.existsDocData(
               await _fileHandler.getFirebaseDoc(widget.linkedDocPath!))) {
-        widget.onChanged!(_fileHandler.getOnlineFiles());
+        widget
+            .onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
       }
       // ignore: empty_catches
     } catch (e) {}
   }
 
-  void _showImages(YustFile activeFile) {
+  void _showImages(YustImage activeFile) {
     YustUi.helpers.unfocusCurrent();
     YustImageScreen.navigateToScreen(
       context: context,
-      files: _fileHandler.getFiles(),
-      activeImageIndex: _fileHandler.getFiles().indexOf(activeFile),
+      images: YustImage.fromYustFiles(_fileHandler.getFiles()),
+      activeImageIndex: _fileHandler.getFiles().indexWhere((file) =>
+          file.hash == activeFile.hash && file.name == activeFile.name),
       allowDrawing: !widget.readOnly,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;
