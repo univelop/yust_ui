@@ -3228,6 +3228,7 @@ abstract class LocaleKeys {
   static const tooSmallNumbersUseTextfield = 'tooSmallNumbersUseTextfield';
   static const tooltip = 'tooltip';
   static const tooltipAllowedExtensions = 'tooltipAllowedExtensions';
+  static const tooltipMaxFileSize = 'tooltipMaxFileSize';
   static const tooltipNoAllowedExtensions = 'tooltipNoAllowedExtensions';
   static const total = 'total';
   static const totalAmount = 'totalAmount';

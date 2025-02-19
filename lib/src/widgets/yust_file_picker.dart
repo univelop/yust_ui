@@ -155,7 +155,9 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildSuffixChild() {
     return Wrap(children: [
-      if (widget.allowedExtensions != null) _buildInfoIcon(context),
+      if (widget.allowedExtensions != null ||
+          widget.maximumFileSizeInKB != null)
+        _buildInfoIcon(context),
       _buildAddButton(context),
       if (widget.suffixIcon != null) widget.suffixIcon!
     ]);
@@ -166,17 +168,33 @@ class YustFilePickerState extends State<YustFilePicker>
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Tooltip(
           preferBelow: false,
-          message: widget.allowedExtensions?.isEmpty ?? true
-              ? LocaleKeys.tooltipNoAllowedExtensions.tr()
-              : LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
-                  'allowedExtensions':
-                      widget.allowedExtensions?.join(', ') ?? ''
-                }),
+          message: _getTooltipMessages()?.join('\n'),
           child: Icon(
               size: 40,
               Icons.info,
               color: Theme.of(context).colorScheme.primary),
         ));
+  }
+
+  List<String>? _getTooltipMessages() {
+    final messages = <String>[];
+
+    if (widget.allowedExtensions != null) {
+      if (widget.allowedExtensions!.isEmpty) {
+        messages.add(LocaleKeys.tooltipNoAllowedExtensions.tr());
+      } else {
+        messages.add(LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
+          'allowedExtensions': widget.allowedExtensions!.join(', ')
+        }));
+      }
+    }
+
+    if (widget.maximumFileSizeInKB != null) {
+      messages.add(LocaleKeys.tooltipMaxFileSize.tr(
+          namedArgs: {'maxFileSize': widget.maximumFileSizeInKB.toString()}));
+    }
+
+    return messages.isEmpty ? null : messages;
   }
 
   Widget _buildAddButton(BuildContext context) {
