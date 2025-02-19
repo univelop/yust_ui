@@ -1226,6 +1226,7 @@ abstract class LocaleKeys {
   static const exceptionFileNotFound = 'exceptionFileNotFound';
   static const exceptionFileNotFoundInArchive =
       'exceptionFileNotFoundInArchive';
+  static const exceptionFileTooBig = 'exceptionFileTooBig';
   static const exceptionFlowSpecNotFound = 'exceptionFlowSpecNotFound';
   static const exceptionForbiddenFileExtension =
       'exceptionForbiddenFileExtension';
