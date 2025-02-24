@@ -446,22 +446,22 @@ class YustFilePickerState extends State<YustFilePicker>
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
-    final maxSizeKB = widget.maximumFileSizeInKiB;
+    final maxSizeKiB = widget.maximumFileSizeInKiB;
     // No restriction on file size
-    if (maxSizeKB == null) return true;
+    if (maxSizeKiB == null) return true;
 
-    final int fileSizeInKB = file != null
+    final int fileSizeInKiB = file != null
         ? await file.length() ~/ 1024
         : bytes != null
             ? bytes.length ~/ 1024
             : 0;
 
-    if (fileSizeInKB > maxSizeKB) {
+    if (fileSizeInKiB > maxSizeKiB) {
       unawaited(YustUi.alertService.showAlert(
         LocaleKeys.fileUpload.tr(),
         LocaleKeys.alertFileTooBig.tr(namedArgs: {
           'fileName': name,
-          'maxFileSize': YustUi.helpers.formatFileSize(maxSizeKB)
+          'maxFileSize': YustUi.helpers.formatFileSize(maxSizeKiB)
         }),
       ));
       return false;
