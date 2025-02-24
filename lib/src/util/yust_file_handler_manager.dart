@@ -14,7 +14,6 @@ class YustFileHandlerManager {
     String? linkedDocPath,
     bool newestFirst = false,
     void Function()? onFileUploaded,
-    bool forYustImages = false,
   }) {
     var newFileHandler = getFileHandler(linkedDocAttribute, linkedDocPath);
 
@@ -25,7 +24,6 @@ class YustFileHandlerManager {
         linkedDocPath: linkedDocPath,
         onFileUploaded: onFileUploaded,
         newestFirst: newestFirst,
-        forYustImages: forYustImages,
       );
       if (linkedDocAttribute != null && linkedDocPath != null) {
         fileHandlers.add(newFileHandler);
@@ -52,14 +50,13 @@ class YustFileHandlerManager {
   /// creates for each unique linkedDocPath + linkedDocAttribute address a fileHandler
   Future<void> uploadCachedFiles() async {
     var cachedFiles =
-        await YustFileHandler.loadCachedFiles(forYustImages: true);
+        await YustFileHandler.loadCachedFiles();
     while (cachedFiles.isNotEmpty) {
       var file = cachedFiles.first;
       var fileHandler = createFileHandler(
         storageFolderPath: file.storageFolderPath ?? '',
         linkedDocAttribute: file.linkedDocAttribute,
         linkedDocPath: file.linkedDocPath,
-        forYustImages: true, // TODO: Refactor this
       );
 
       cachedFiles.removeWhere((YustFile f) =>

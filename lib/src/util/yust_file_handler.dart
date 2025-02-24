@@ -49,19 +49,12 @@ class YustFileHandler {
   /// gets triggered after successful upload
   void Function()? onFileUploaded;
 
-  /// Whether the file handler instance should be used for [YustImage]s.
-  ///
-  /// This has to be set to true, otherwise the extended properties of the [YustImage]
-  /// will be lost on internal serialization/deserialization of the files.
-  final bool forYustImages;
-
   YustFileHandler({
     required this.storageFolderPath,
     this.linkedDocAttribute,
     this.linkedDocPath,
     this.onFileUploaded,
     this.newestFirst = false,
-    this.forYustImages = false,
   });
 
   List<YustFile> getFiles() {
@@ -152,7 +145,7 @@ class YustFileHandler {
   Future<void> _mergeCachedFiles(List<YustFile> yustFiles,
       String? linkedDocPath, String? linkedDocAttribute) async {
     if (linkedDocPath != null && linkedDocAttribute != null) {
-      var cachedFiles = await loadCachedFiles(forYustImages: forYustImages);
+      var cachedFiles = await loadCachedFiles();
       cachedFiles = cachedFiles
           .where((yustFile) =>
               yustFile.linkedDocPath == linkedDocPath &&
@@ -451,14 +444,14 @@ class YustFileHandler {
   }
 
   /// Loads a list of all cached [YustFile]s.
-  static Future<List<YustFile>> loadCachedFiles(
-      {bool forYustImages = false}) async {
+  static Future<List<YustFile>> loadCachedFiles() async {
     var preferences = await SharedPreferences.getInstance();
     var temporaryJsonFiles = preferences.getString('YustCachedFiles') ?? '[]';
 
     var cachedFiles = <YustFile>[];
     jsonDecode(temporaryJsonFiles).forEach((dynamic fileJson) =>
-        cachedFiles.add(forYustImages
+        cachedFiles.add((fileJson is Map<String, dynamic> &&
+                fileJson['type'] == 'YustImage')
             ? YustImage.fromLocalJson(fileJson)
             : YustFile.fromLocalJson(fileJson)));
 
@@ -468,7 +461,7 @@ class YustFileHandler {
   /// Saves all cached [YustFile]s.
   Future<void> _saveCachedFiles() async {
     var yustFiles = getCachedFiles();
-    var cachedFiles = await loadCachedFiles(forYustImages: forYustImages);
+    var cachedFiles = await loadCachedFiles();
 
     // only change the files from THIS file handler (identity: linkedDocPath and -Attribute)
     cachedFiles.removeWhere(((yustFile) =>
