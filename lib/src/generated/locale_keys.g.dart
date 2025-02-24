@@ -2181,7 +2181,7 @@ abstract class LocaleKeys {
   static const matrixBrickDescription = 'matrixBrickDescription';
   static const matrixSetSettings = 'matrixSetSettings';
   static const max30Chars = 'max30Chars';
-  static const maxFileSizeInKB = 'maxFileSizeInKB';
+  static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
   static const maxNumberImages = 'maxNumberImages';
   static const maximumPreviewExceeded = 'maximumPreviewExceeded';

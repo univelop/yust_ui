@@ -60,16 +60,16 @@ class YustUiHelpers {
           .toLowerCase()
           .contains('samsung');
 
-  /// Returns a string with the size in KB, MB or GB.
+  /// Returns a string with the size in KiB, MiB or GiB.
   ///
-  /// - [sizeInKB] The size in KB.
-  String formatFileSize(num sizeInKB) {
-    if (sizeInKB >= 1024 * 1024) {
-      return '${(sizeInKB / (1024 * 1024)).toStringAsFixed(2)} GB';
-    } else if (sizeInKB >= 1024) {
-      return '${(sizeInKB / 1024).toStringAsFixed(2)} MB';
+  /// - [sizeInKB] The size in KiB.
+  String formatFileSize(num sizeInKiB) {
+    if (sizeInKiB >= 1024 * 1024) {
+      return '${(sizeInKiB / (1024 * 1024)).toStringAsFixed(2)} GiB';
+    } else if (sizeInKiB >= 1024) {
+      return '${(sizeInKiB / 1024).toStringAsFixed(2)} MiB';
     } else {
-      return '$sizeInKB KB';
+      return '$sizeInKiB KiB';
     }
   }
 }

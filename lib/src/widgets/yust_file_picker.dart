@@ -57,10 +57,11 @@ class YustFilePicker extends StatefulWidget {
 
   final bool overwriteSingleFile;
 
-  /// Maximum size of each file in kilobytes.
+// cspell:disable-next-line
+  /// Maximum size of each file in kibibytes.
   ///
   /// NULL means no limit.
-  final num? maximumFileSizeInKB;
+  final num? maximumFileSizeInKiB;
 
   const YustFilePicker({
     super.key,
@@ -81,7 +82,7 @@ class YustFilePicker extends StatefulWidget {
     this.divider = true,
     this.allowOnlyImages = false,
     this.overwriteSingleFile = false,
-    this.maximumFileSizeInKB,
+    this.maximumFileSizeInKiB,
   });
 
   @override
@@ -156,7 +157,7 @@ class YustFilePickerState extends State<YustFilePicker>
   Widget _buildSuffixChild() {
     return Wrap(children: [
       if (widget.allowedExtensions != null ||
-          widget.maximumFileSizeInKB != null)
+          widget.maximumFileSizeInKiB != null)
         _buildInfoIcon(context),
       _buildAddButton(context),
       if (widget.suffixIcon != null) widget.suffixIcon!
@@ -189,10 +190,10 @@ class YustFilePickerState extends State<YustFilePicker>
       }
     }
 
-    if (widget.maximumFileSizeInKB != null) {
+    if (widget.maximumFileSizeInKiB != null) {
       messages.add(LocaleKeys.tooltipMaxFileSize.tr(namedArgs: {
         'maxFileSize':
-            YustUi.helpers.formatFileSize(widget.maximumFileSizeInKB ?? 0)
+            YustUi.helpers.formatFileSize(widget.maximumFileSizeInKiB ?? 0)
       }));
     }
 
@@ -445,7 +446,7 @@ class YustFilePickerState extends State<YustFilePicker>
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
-    final maxSizeKB = widget.maximumFileSizeInKB;
+    final maxSizeKB = widget.maximumFileSizeInKiB;
     // No restriction on file size
     if (maxSizeKB == null) return true;
 
