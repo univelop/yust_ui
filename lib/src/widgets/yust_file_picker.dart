@@ -169,7 +169,7 @@ class YustFilePickerState extends State<YustFilePicker>
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Tooltip(
           preferBelow: false,
-          message: _getTooltipMessages()?.join('\n'),
+          message: _getTooltipMessage(),
           child: Icon(
               size: 40,
               Icons.info,
@@ -177,7 +177,7 @@ class YustFilePickerState extends State<YustFilePicker>
         ));
   }
 
-  List<String>? _getTooltipMessages() {
+  String? _getTooltipMessage() {
     final messages = <String>[];
 
     if (widget.allowedExtensions != null) {
@@ -197,7 +197,7 @@ class YustFilePickerState extends State<YustFilePicker>
       }));
     }
 
-    return messages.isEmpty ? null : messages;
+    return messages.isEmpty ? null : messages.join('\n');
   }
 
   Widget _buildAddButton(BuildContext context) {
