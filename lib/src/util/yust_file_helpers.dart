@@ -92,6 +92,7 @@ class YustFileHelpers {
       if (file != null) {
         final buttonLocation = box!.localToGlobal(Offset.zero) & box.size;
         // Alternatively create a Location in the center of the Screen
+        // c-spell: disable-next-line
         final centerLocation = Rect.fromLTWH(0, 0, size.width, size.height / 2);
 
         // If we don't have a useful button location, use the center position
@@ -182,7 +183,6 @@ class YustFileHelpers {
   /// - Use [locale] to specify the locale for the watermark timestamp.
   /// - If [displayCoordinatesInDegreeMinuteSecond] is true, the GPS watermark will be displayed in DMS format. Default is in decimal degrees.
   Future<YustImage> processImage({
-    // TODO: Add createdAt to YustFile, set it accordingly, set date in exif data
     required String path,
     required bool resize,
     required bool convertToJPEG,
