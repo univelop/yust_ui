@@ -335,12 +335,18 @@ class YustFileHelpers {
     if (resize && convertToJPEG) {
       final size = yustImageQuality[yustQuality]!['size']!;
       final quality = yustImageQuality[yustQuality]!['quality']!;
+      // Save file helpers instance, so compute doesn't cause problems
+      final fileHelpers = YustUi.fileHelpers;
+      final locationService = YustUi.locationService;
 
       Future<Uint8List?> helper(RootIsolateToken? token) async {
         // This is needed for the geolocator plugin to work
         if (token != null) {
           BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         }
+        // Make sure the YustUI statics are initialized for this thread too
+        YustUi.fileHelpers = fileHelpers;
+        YustUi.locationService = locationService;
 
         return await YustUi.fileHelpers.resizeImage(
             name: sanitizedPath,
