@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_location_service.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
@@ -13,7 +15,7 @@ enum YustInputStyle {
 
 typedef TapCallback = void Function();
 typedef StringCallback = void Function(String?);
-typedef DeleteCallback = Future<void> Function();
+typedef DeleteCallback = FutureOr<void> Function();
 
 class YustUi {
   static late YustAlertService alertService;
