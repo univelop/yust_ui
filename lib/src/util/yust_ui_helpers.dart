@@ -59,17 +59,4 @@ class YustUiHelpers {
       (await KeyboardName.getVendorName ?? '')
           .toLowerCase()
           .contains('samsung');
-
-  /// Returns a string with the size in KiB, MiB or GiB.
-  ///
-  /// - [sizeInKB] The size in KiB.
-  String formatFileSize(num sizeInKiB) {
-    if (sizeInKiB >= 1024 * 1024) {
-      return '${(sizeInKiB / (1024 * 1024)).toStringAsFixed(2)} GiB';
-    } else if (sizeInKiB >= 1024) {
-      return '${(sizeInKiB / 1024).toStringAsFixed(2)} MiB';
-    } else {
-      return '$sizeInKiB KiB';
-    }
-  }
 }

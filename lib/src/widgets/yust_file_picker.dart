@@ -57,7 +57,6 @@ class YustFilePicker extends StatefulWidget {
 
   final bool overwriteSingleFile;
 
-// cspell:disable-next-line
   /// Maximum size of each file in kibibytes.
   ///
   /// NULL means no limit.
@@ -193,7 +192,7 @@ class YustFilePickerState extends State<YustFilePicker>
     if (widget.maximumFileSizeInKiB != null) {
       messages.add(LocaleKeys.tooltipMaxFileSize.tr(namedArgs: {
         'maxFileSize':
-            YustUi.helpers.formatFileSize(widget.maximumFileSizeInKiB ?? 0)
+            YustUi.fileHelpers.formatFileSize(widget.maximumFileSizeInKiB ?? 0)
       }));
     }
 
@@ -461,7 +460,7 @@ class YustFilePickerState extends State<YustFilePicker>
         LocaleKeys.fileUpload.tr(),
         LocaleKeys.alertFileTooBig.tr(namedArgs: {
           'fileName': name,
-          'maxFileSize': YustUi.helpers.formatFileSize(maxSizeKiB)
+          'maxFileSize': YustUi.fileHelpers.formatFileSize(maxSizeKiB)
         }),
       ));
       return false;
