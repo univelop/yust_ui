@@ -578,7 +578,7 @@ Future<void> _setImageExifData({
   if (!exif.exifIfd.containsKey(dateTimeOriginalKey) ||
       exif.exifIfd[dateTimeOriginalKey] == null) {
     final formattedDate = _formatExifDateTime(createdAt);
-    exif.exifIfd[0x9003] = IfdValueAscii(formattedDate);
+    exif.exifIfd[dateTimeOriginalKey] = IfdValueAscii(formattedDate);
   }
 
   // Set GPS tags if needed
