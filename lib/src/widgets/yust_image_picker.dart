@@ -15,6 +15,7 @@ import 'package:yust_ui/yust_ui.dart';
 import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../util/yust_image_helpers.dart';
 
 class YustImagePicker extends StatefulWidget {
   final String? label;
@@ -50,10 +51,20 @@ class YustImagePicker extends StatefulWidget {
   final bool enableDropzone;
   final Widget? suffixIcon;
   final bool convertToJPEG;
+
+  /// Whether the current location should be watermarked on the image or not
   final bool addGpsWatermark;
+
+  /// Whether the current timestamp should be watermarked on the image or not
   final bool addTimestampWatermark;
+
+  /// Position (corner) of the watermark in the image
   final YustWatermarkPosition watermarkPosition;
-  final bool displayCoordinatesInDegreeMinuteSecond;
+
+  /// Appearance of the coordinates in the watermarks
+  final YustLocationAppearance watermarkLocationAppearance;
+
+  /// Locale in which the timestamp watermark should be formatted
   final Locale locale;
 
   /// default is 15
@@ -83,7 +94,7 @@ class YustImagePicker extends StatefulWidget {
     this.enableDropzone = false,
     this.addGpsWatermark = false,
     this.addTimestampWatermark = false,
-    this.displayCoordinatesInDegreeMinuteSecond = false,
+    this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
     int? imageCount,
@@ -469,9 +480,13 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  Future<void> checkAndUploadImages<T>(List<T> images,
-      Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor,
-      {bool setGPSToLocation = false}) async {
+  Future<void> checkAndUploadImages<T>(
+    List<T> images,
+    Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor, {
+    bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+  }) async {
     await EasyLoading.show(status: LocaleKeys.addingImages.tr());
 
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -540,6 +555,8 @@ class YustImagePickerState extends State<YustImagePicker>
         resize: true,
         convertToJPEG: widget.convertToJPEG,
         setGPSToLocation: setGPSToLocation,
+        addGpsWatermark: addGpsWatermark,
+        addTimestampWatermark: addTimestampWatermark,
       );
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
@@ -569,10 +586,16 @@ class YustImagePickerState extends State<YustImagePicker>
       } else {
         final image = await picker.pickImage(source: imageSource);
         if (image != null) {
-          await checkAndUploadImages([image], (image) async {
-            final file = File(image.path);
-            return (image.path, file, null);
-          }, setGPSToLocation: imageSource == ImageSource.camera);
+          await checkAndUploadImages(
+            [image],
+            (image) async {
+              final file = File(image.path);
+              return (image.path, file, null);
+            },
+            setGPSToLocation: true,
+            addGpsWatermark: widget.addGpsWatermark,
+            addTimestampWatermark: widget.addTimestampWatermark,
+          );
         }
       }
     }
@@ -615,8 +638,10 @@ class YustImagePickerState extends State<YustImagePicker>
     bool resize = false,
     bool convertToJPEG = true,
     bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
   }) async {
-    final YustImage newYustFile = await YustFileHelpers().processImage(
+    final YustImage newYustFile = await YustImageHelpers().processImage(
       file: file,
       bytes: bytes,
       path: path,
@@ -627,12 +652,11 @@ class YustImagePickerState extends State<YustImagePicker>
       storageFolderPath: widget.storageFolderPath,
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
-      addGpsWatermark: widget.addGpsWatermark,
-      addTimestampWatermark: widget.addTimestampWatermark,
+      addGpsWatermark: addGpsWatermark,
+      addTimestampWatermark: addTimestampWatermark,
       watermarkPosition: widget.watermarkPosition,
       locale: widget.locale,
-      displayCoordinatesInDegreeMinuteSecond:
-          widget.displayCoordinatesInDegreeMinuteSecond,
+      watermarkLocationAppearance: widget.watermarkLocationAppearance,
     );
 
     await _createDatabaseEntry();

@@ -50,9 +50,9 @@ abstract class LocaleKeys {
   static const addMember = 'addMember';
   static const addMinutesDescription = 'addMinutesDescription';
   static const addMonthsDescription = 'addMonthsDescription';
+  static const addNewEntry = 'addNewEntry';
   static const addOption = 'addOption';
   static const addPath = 'addPath';
-  static const addRecordToSolution = 'addRecordToSolution';
   static const addRole = 'addRole';
   static const addSendingTime = 'addSendingTime';
   static const addStatus = 'addStatus';
@@ -70,7 +70,6 @@ abstract class LocaleKeys {
   static const addXmlFileLong = 'addXmlFileLong';
   static const addYearsDescription = 'addYearsDescription';
   static const addedRecord = 'addedRecord';
-  static const addedRecordToSolution = 'addedRecordToSolution';
   static const addingImage = 'addingImage';
   static const addingImages = 'addingImages';
   static const addingMemberTileViaDesignModeNotPossible =
@@ -349,6 +348,7 @@ abstract class LocaleKeys {
   static const alertSettingLeadsToCircle = 'alertSettingLeadsToCircle';
   static const alertSettingsLargeScreen = 'alertSettingsLargeScreen';
   static const alertShareList = 'alertShareList';
+  static const alertSolutionFolder = 'alertSolutionFolder';
   static const alertStartWorkflow = 'alertStartWorkflow';
   static const alertStopSharing = 'alertStopSharing';
   static const alertStopSharingWithWorkspace = 'alertStopSharingWithWorkspace';
@@ -407,6 +407,7 @@ abstract class LocaleKeys {
   static const amazonAws = 'amazonAws';
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
+  static const anErrorOccurred = 'anErrorOccurred';
   static const analysisFirstRows = 'analysisFirstRows';
   static const analysisFirstRowsWithLockedRecords =
       'analysisFirstRowsWithLockedRecords';
@@ -598,6 +599,7 @@ abstract class LocaleKeys {
   static const chatGptError = 'chatGptError';
   static const chatGptErrorTitle = 'chatGptErrorTitle';
   static const chatGptExamplePrompt = 'chatGptExamplePrompt';
+  static const chatGptExecutionCanceled = 'chatGptExecutionCanceled';
   static const chatGptExplanation = 'chatGptExplanation';
   static const chatGptImageBrickDescription = 'chatGptImageBrickDescription';
   static const chatGptImageInstructionPromptPart =
@@ -715,6 +717,9 @@ abstract class LocaleKeys {
   static const comingSoon = 'comingSoon';
   static const comma = 'comma';
   static const comment = 'comment';
+  static const commentCannotBeEdited = 'commentCannotBeEdited';
+  static const commentCannotBeEmpty = 'commentCannotBeEmpty';
+  static const commentIsTooOld = 'commentIsTooOld';
   static const commentWithNumber = 'commentWithNumber';
   static const comments = 'comments';
   static const commentsBrickDescription = 'commentsBrickDescription';
@@ -816,6 +821,7 @@ abstract class LocaleKeys {
   static const creatingBackground = 'creatingBackground';
   static const creatingDemoWorkspace = 'creatingDemoWorkspace';
   static const creatingDocument = 'creatingDocument';
+  static const creatingRoles = 'creatingRoles';
   static const creatingTile = 'creatingTile';
   static const creatingTiles = 'creatingTiles';
   static const creatingWorkflows = 'creatingWorkflows';
@@ -997,6 +1003,7 @@ abstract class LocaleKeys {
   static const editBillingInformation = 'editBillingInformation';
   static const editBricks = 'editBricks';
   static const editCalendarShare = 'editCalendarShare';
+  static const editComment = 'editComment';
   static const editExistingTaxIdDenied = 'editExistingTaxIdDenied';
   static const editHeadline = 'editHeadline';
   static const editInvitationLink = 'editInvitationLink';
@@ -1063,6 +1070,8 @@ abstract class LocaleKeys {
   static const enteringWorkspace = 'enteringWorkspace';
   static const entries = 'entries';
   static const entry = 'entry';
+  static const entryPreview = 'entryPreview';
+  static const entryPreviewTitle = 'entryPreviewTitle';
   static const equalsDescription = 'equalsDescription';
   static const error = 'error';
   static const errorBehavior = 'errorBehavior';
@@ -1311,6 +1320,7 @@ abstract class LocaleKeys {
   static const exceptionInvalidTemplate = 'exceptionInvalidTemplate';
   static const exceptionInvalidTime = 'exceptionInvalidTime';
   static const exceptionInvalidTimeFormat = 'exceptionInvalidTimeFormat';
+  static const exceptionInvalidUrl = 'exceptionInvalidUrl';
   static const exceptionInvalidValue = 'exceptionInvalidValue';
   static const exceptionInvitationLinkFailed = 'exceptionInvitationLinkFailed';
   static const exceptionInvitationLinkNotValid =
@@ -1440,7 +1450,6 @@ abstract class LocaleKeys {
       'exceptionUnequalNumberOfOperators';
   static const exceptionUnknownFormType = 'exceptionUnknownFormType';
   static const exceptionUnknownValueKey = 'exceptionUnknownValueKey';
-  static const exceptionUserAlreadyExists = 'exceptionUserAlreadyExists';
   static const exceptionUserExpressions = 'exceptionUserExpressions';
   static const exceptionUserIsMissingEnabledRole =
       'exceptionUserIsMissingEnabledRole';
@@ -1448,6 +1457,8 @@ abstract class LocaleKeys {
   static const exceptionUserNotFound = 'exceptionUserNotFound';
   static const exceptionUserNotFoundByEmail = 'exceptionUserNotFoundByEmail';
   static const exceptionUserNotFoundByValue = 'exceptionUserNotFoundByValue';
+  static const exceptionUserWithIdAlreadyExists =
+      'exceptionUserWithIdAlreadyExists';
   static const exceptionValueInvalidDate = 'exceptionValueInvalidDate';
   static const exceptionValueIsNull = 'exceptionValueIsNull';
   static const exceptionValueNotFound = 'exceptionValueNotFound';
@@ -1531,6 +1542,7 @@ abstract class LocaleKeys {
   static const finished = 'finished';
   static const finishedAt = 'finishedAt';
   static const finishedEditing = 'finishedEditing';
+  static const finishingImport = 'finishingImport';
   static const firebaseErrorAccountExistsWithDifferentCredential =
       'firebaseErrorAccountExistsWithDifferentCredential';
   static const firebaseErrorAdminRestrictedOperation =
@@ -1875,6 +1887,7 @@ abstract class LocaleKeys {
   static const icon = 'icon';
   static const id = 'id';
   static const idBrickTooltip = 'idBrickTooltip';
+  static const ids = 'ids';
   static const ifDescription = 'ifDescription';
   static const ifElseDescription = 'ifElseDescription';
   static const ignore = 'ignore';
@@ -2023,6 +2036,9 @@ abstract class LocaleKeys {
   static const joiningSettingsExplanation = 'joiningSettingsExplanation';
   static const json = 'json';
   static const jsonEncodeDescription = 'jsonEncodeDescription';
+  static const kanbanBoard = 'kanbanBoard';
+  static const kanbanDescription = 'kanbanDescription';
+  static const kanbanSetSettings = 'kanbanSetSettings';
   static const key = 'key';
   static const label = 'label';
   static const labelOrNothing = 'labelOrNothing';
@@ -2197,6 +2213,7 @@ abstract class LocaleKeys {
   static const minusDescription = 'minusDescription';
   static const minutesDescription = 'minutesDescription';
   static const missingBackgroundImage = 'missingBackgroundImage';
+  static const missingChatGptKey = 'missingChatGptKey';
   static const missingConnection = 'missingConnection';
   static const missingDirectory = 'missingDirectory';
   static const missingFile = 'missingFile';
@@ -2663,14 +2680,12 @@ abstract class LocaleKeys {
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
   static const removeReadAccess = 'removeReadAccess';
-  static const removeRecordFromSolution = 'removeRecordFromSolution';
   static const removeUser = 'removeUser';
   static const removeUserStepDescription = 'removeUserStepDescription';
   static const removeValue = 'removeValue';
   static const removeWriteAccess = 'removeWriteAccess';
   static const removedInvalidRoleConfigurations =
       'removedInvalidRoleConfigurations';
-  static const removedRecordFromSolution = 'removedRecordFromSolution';
   static const removingUser = 'removingUser';
   static const repairNowBtn = 'repairNowBtn';
   static const repeatWorkflow = 'repeatWorkflow';
@@ -3402,6 +3417,7 @@ abstract class LocaleKeys {
   static const warning = 'warning';
   static const warningForUnmetCondition = 'warningForUnmetCondition';
   static const warnings = 'warnings';
+  static const watermarkExplanation = 'watermarkExplanation';
   static const watermarks = 'watermarks';
   static const web = 'web';
   static const webButtonBrickDescription = 'webButtonBrickDescription';

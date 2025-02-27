@@ -375,6 +375,8 @@ class YustFileHandler {
     var attribute = await _getDocAttribute(cachedFile);
 
     var fileData = cachedFile.toJson();
+    fileData['createdAt'] =
+        _getCreatedAtOfExistingFile(cachedFile.name!, attribute);
 
     if (attribute is Map) {
       if (attribute['url'] == null) {
@@ -394,6 +396,23 @@ class YustFileHandler {
     await FirebaseFirestore.instance
         .doc(cachedFile.linkedDocPath!)
         .update({cachedFile.linkedDocAttribute!: attribute});
+  }
+
+  /// When updating the file, we dont want to overwrite the createdAt attribute
+  ///
+  /// Therefore this function can be used to load the existing createdAt value
+  String? _getCreatedAtOfExistingFile(
+      String fileName, dynamic yustFileOrYustFiles) {
+    if (yustFileOrYustFiles is Map) {
+      return yustFileOrYustFiles['createdAt'];
+    }
+
+    if (yustFileOrYustFiles is List) {
+      return yustFileOrYustFiles
+          .firstWhere((f) => f['name'] == fileName)['createdAt'];
+    }
+
+    return null;
   }
 
   Future<dynamic> _getDocAttribute(YustFile yustFile) async {
@@ -451,7 +470,7 @@ class YustFileHandler {
     var cachedFiles = <YustFile>[];
     jsonDecode(temporaryJsonFiles).forEach((dynamic fileJson) =>
         cachedFiles.add((fileJson is Map<String, dynamic> &&
-                fileJson['type'] == 'YustImage')
+                fileJson['type'] == YustImage.type)
             ? YustImage.fromLocalJson(fileJson)
             : YustFile.fromLocalJson(fileJson)));
 

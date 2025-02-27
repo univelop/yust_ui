@@ -111,11 +111,38 @@ class YustLocationService {
     }
   }
 
+  /// Determine the current location of the device.
+  ///
+  /// When the location services are not enabled or permissions
+  /// are denied the `Future` will return an error.
+  Future<YustGeoLocation> getCurrentLocation({bool loadAddress = true}) async {
+    try {
+      final position = await getCurrentPosition();
+
+      YustAddress? address;
+      if (loadAddress) {
+        address = await getAddressFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+      }
+
+      return YustGeoLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+        address: address,
+      );
+    } catch (e) {
+      throw YustException(e.toString());
+    }
+  }
+
   /// According to the geocoding package, there are some rare cases in which the placemark lookup can return
   /// more than one result. If you need these additional results, you can use this method.
   ///
-  /// Otherwise you should use [getPlacemarkFromCoordinates] which returns only the first result.
-  Future<List<Placemark>> getPlacemarksFromCoordinates(
+  /// Otherwise you should use [getAddressFromCoordinates] which returns only the first result.
+  Future<List<YustAddress>> getAddressesFromCoordinates(
     double latitude,
     double longitude,
   ) async {
@@ -123,23 +150,30 @@ class YustLocationService {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(latitude, longitude);
 
-      return placemarks;
+      return placemarks.map((placemark) {
+        return YustAddress(
+          city: placemark.locality,
+          country: placemark.country,
+          postcode: placemark.postalCode,
+          street: placemark.thoroughfare,
+          number: placemark.subThoroughfare,
+        );
+      }).toList();
     } catch (e) {
       throw YustException(e.toString());
     }
   }
 
-  /// Returns the first placemark or null for the given coordinates.
+  /// Returns the first address or null for the given coordinates.
   ///
   /// On rare occasions, there may be more than one placemark for the given coordinates.
-  /// Use [getPlacemarksFromCoordinates] if you these.
-  Future<Placemark?> getPlacemarkFromCoordinates(
+  /// Use [getAddressesFromCoordinates] if you these.
+  Future<YustAddress?> getAddressFromCoordinates(
     double latitude,
     double longitude,
   ) async {
-    final placemarks = await getPlacemarksFromCoordinates(latitude, longitude);
-
-    return placemarks.firstOrNull;
+    final addresses = await getAddressesFromCoordinates(latitude, longitude);
+    return addresses.firstOrNull;
   }
 
   /// Returns true if there is a geocoder implementation present that may return results.
@@ -153,10 +187,11 @@ class YustLocationService {
   /// The user can then choose to accept the current position, wait for a better accuracy or cancel the dialog.
   /// The [locale] parameter can be used to set the locale of the dialog
   ///
-  /// Returns the position the user accepted or null if the user canceled the dialog or no position was found
+  /// Returns the location the user accepted or null if the user canceled the dialog or no position was found
   ///
   /// Before calling this function, make sure to call [checkPermissions] to ensure that the location services are enabled and the app has the necessary permissions.
-  Future<Position?> showPositionDialog({String? locale}) async {
+  Future<YustGeoLocation?> showLocationDialog(
+      {String? locale, bool loadAddress = true}) async {
     try {
       final context = navStateKey.currentContext;
       if (context == null) {
@@ -172,7 +207,22 @@ class YustLocationService {
           );
         },
       );
-      return dialogResult;
+
+      YustAddress? address;
+
+      if (loadAddress && dialogResult != null) {
+        address = await getAddressFromCoordinates(
+          dialogResult.latitude,
+          dialogResult.longitude,
+        );
+      }
+
+      return YustGeoLocation(
+        latitude: dialogResult?.latitude,
+        longitude: dialogResult?.longitude,
+        accuracy: dialogResult?.accuracy,
+        address: address,
+      );
     } catch (e) {
       throw YustException(e.toString());
     }
