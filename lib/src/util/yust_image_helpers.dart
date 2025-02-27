@@ -356,6 +356,7 @@ void _addWatermarks({
 /// Internally draws text on an offscreen image, then resize and places it at [watermarkPosition].
 /// - [fractionOfWidth] is the maximum fraction of [image.width]. Default is 20%
 /// - [minWidth] ensures a minimum pixel width for small images. Default is 150px
+/// - [lineSpacing] extra vertical space between lines of text.
 void _drawTextOnImage({
   required Image image,
   required String text,
@@ -365,6 +366,7 @@ void _drawTextOnImage({
   bool withBackground = true,
   int margin = 10,
   int backgroundPadding = 5,
+  int lineSpacing = 4,
 }) {
   if (image.width < minWidth) {
     return;
@@ -374,7 +376,7 @@ void _drawTextOnImage({
 
   // Calculate text sizes
   final (width: unscaledWidth, height: unscaledHeight) =
-      _measureMultiline(font, text);
+      _measureMultiline(font, text, lineSpacing);
   if (unscaledWidth == 0 || unscaledHeight == 0) return;
 
   final textCanvas = Image(width: unscaledWidth, height: unscaledHeight);
@@ -382,7 +384,8 @@ void _drawTextOnImage({
   // Draw the text
   var currentY = 0;
   final lines = text.split(RegExp(r'[\n\r]'));
-  for (final line in lines) {
+  for (var i = 0; i < lines.length; i++) {
+    final line = lines[i];
     drawString(
       textCanvas,
       line,
@@ -393,6 +396,10 @@ void _drawTextOnImage({
     );
     final (width: _, height: lineHeight) = _measureSingleLine(font, line);
     currentY += lineHeight;
+
+    if (i < lines.length - 1) {
+      currentY += lineSpacing;
+    }
   }
 
   // Compute the maximum scaled width based on [fractionOfWidth]
@@ -457,16 +464,24 @@ void _drawTextOnImage({
 }
 
 /// Measures multi-line [text] separated by \n or \r, returns (width, height)
-({int width, int height}) _measureMultiline(BitmapFont font, String text) {
+({int width, int height}) _measureMultiline(
+    BitmapFont font, String text, int lineSpacing) {
   var maxWidth = 0;
   var totalHeight = 0;
 
-  for (final line in text.split(RegExp(r'[\n\r]'))) {
+  final lines = text.split(RegExp(r'[\n\r]'));
+  for (var i = 0; i < lines.length; i++) {
+    final line = lines[i];
     final (width: w, height: h) = _measureSingleLine(font, line);
     if (w > maxWidth) {
       maxWidth = w;
     }
     totalHeight += h;
+
+    // For all but the last line, add spacing
+    if (i < lines.length - 1) {
+      totalHeight += lineSpacing;
+    }
   }
 
   return (width: maxWidth, height: totalHeight);
