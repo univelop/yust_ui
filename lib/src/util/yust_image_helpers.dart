@@ -326,17 +326,11 @@ void _addWatermarks({
     final yustLocationHelper = YustLocationHelper();
 
     if (watermarkLocationAppearance == YustLocationAppearance.decimalDegree) {
-      textBuffer.add(yustLocationHelper.formatLatitudeToDMS(position.latitude,
-          degreeSymbol: '*'));
-      textBuffer.add(' ');
-      textBuffer.add(yustLocationHelper.formatLongitudeToDMS(position.longitude,
-          degreeSymbol: '*'));
+      textBuffer.add(
+          '${yustLocationHelper.formatLatitudeToDMS(position.latitude, degreeSymbol: '*')} ${yustLocationHelper.formatLongitudeToDMS(position.longitude, degreeSymbol: '*')}');
     } else {
-      textBuffer
-          .add(yustLocationHelper.formatDecimalCoordinate(position.latitude));
-      textBuffer.add(' ');
-      textBuffer
-          .add(yustLocationHelper.formatDecimalCoordinate(position.longitude));
+      textBuffer.add(
+          '${yustLocationHelper.formatDecimalCoordinate(position.latitude)} ${yustLocationHelper.formatDecimalCoordinate(position.longitude)}');
     }
   }
 
