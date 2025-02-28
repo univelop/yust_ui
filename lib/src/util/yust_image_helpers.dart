@@ -361,7 +361,7 @@ void _drawTextOnImage({
   bool withBackground = true,
   int margin = 10,
   int backgroundPadding = 5,
-  int lineSpacing = 4,
+  int lineSpacing = 6,
 }) {
   if (image.width < minWidth) {
     return;
@@ -486,17 +486,27 @@ void _drawTextOnImage({
 /// Returns (width, height).
 ({int width, int height}) _measureSingleLine(BitmapFont font, String line) {
   var stringWidth = 0;
+  var stringHeight = 0;
 
-  for (final c in line.characters) {
-    final characterWidth = font.characterXAdvance(c);
-    stringWidth += characterWidth;
+  for (final c in line.codeUnits) {
+    if (!font.characters.containsKey(c)) {
+      // fallback for missing glyph
+      stringWidth += font.base ~/ 2;
+      continue;
+    }
+    final ch = font.characters[c]!;
+    stringWidth += ch.xAdvance;
+    final candidateHeight = ch.height + ch.yOffset;
+    if (candidateHeight > stringHeight) {
+      stringHeight = candidateHeight;
+    }
   }
 
   if (line.isEmpty) {
-    stringWidth = font.base;
+    stringHeight = font.base;
   }
 
-  return (width: stringWidth, height: font.lineHeight);
+  return (width: stringWidth, height: stringHeight);
 }
 
 Future<void> _setImageExifData({
