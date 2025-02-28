@@ -57,25 +57,32 @@ class YustFilePicker extends StatefulWidget {
 
   final bool overwriteSingleFile;
 
-  const YustFilePicker(
-      {super.key,
-      this.label,
-      this.showModifiedAt = false,
-      required this.files,
-      required this.storageFolderPath,
-      this.linkedDocPath,
-      this.linkedDocAttribute,
-      this.onChanged,
-      this.suffixIcon,
-      this.prefixIcon,
-      this.enableDropzone = false,
-      this.readOnly = false,
-      this.allowMultiple = true,
-      this.numberOfFiles,
-      this.allowedExtensions,
-      this.divider = true,
-      this.allowOnlyImages = false,
-      this.overwriteSingleFile = false});
+  /// Maximum size of each file in kibibytes.
+  ///
+  /// NULL means no limit.
+  final num? maximumFileSizeInKiB;
+
+  const YustFilePicker({
+    super.key,
+    this.label,
+    this.showModifiedAt = false,
+    required this.files,
+    required this.storageFolderPath,
+    this.linkedDocPath,
+    this.linkedDocAttribute,
+    this.onChanged,
+    this.suffixIcon,
+    this.prefixIcon,
+    this.enableDropzone = false,
+    this.readOnly = false,
+    this.allowMultiple = true,
+    this.numberOfFiles,
+    this.allowedExtensions,
+    this.divider = true,
+    this.allowOnlyImages = false,
+    this.overwriteSingleFile = false,
+    this.maximumFileSizeInKiB,
+  });
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -148,7 +155,9 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildSuffixChild() {
     return Wrap(children: [
-      if (widget.allowedExtensions != null) _buildInfoIcon(context),
+      if (widget.allowedExtensions != null ||
+          widget.maximumFileSizeInKiB != null)
+        _buildInfoIcon(context),
       _buildAddButton(context),
       if (widget.suffixIcon != null) widget.suffixIcon!
     ]);
@@ -159,17 +168,35 @@ class YustFilePickerState extends State<YustFilePicker>
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Tooltip(
           preferBelow: false,
-          message: widget.allowedExtensions?.isEmpty ?? true
-              ? LocaleKeys.tooltipNoAllowedExtensions.tr()
-              : LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
-                  'allowedExtensions':
-                      widget.allowedExtensions?.join(', ') ?? ''
-                }),
+          message: _getTooltipMessage(),
           child: Icon(
               size: 40,
               Icons.info,
               color: Theme.of(context).colorScheme.primary),
         ));
+  }
+
+  String? _getTooltipMessage() {
+    final messages = <String>[];
+
+    if (widget.allowedExtensions != null) {
+      if (widget.allowedExtensions!.isEmpty) {
+        messages.add(LocaleKeys.tooltipNoAllowedExtensions.tr());
+      } else {
+        messages.add(LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
+          'allowedExtensions': widget.allowedExtensions!.join(', ')
+        }));
+      }
+    }
+
+    if (widget.maximumFileSizeInKiB != null) {
+      messages.add(LocaleKeys.tooltipMaxFileSize.tr(namedArgs: {
+        'maxFileSize':
+            YustUi.fileHelpers.formatFileSize(widget.maximumFileSizeInKiB ?? 0)
+      }));
+    }
+
+    return messages.isEmpty ? null : messages.join('\n');
   }
 
   Widget _buildAddButton(BuildContext context) {
@@ -406,12 +433,39 @@ class YustFilePickerState extends State<YustFilePicker>
       final existingFileNamesValid = await _checkExistingFileNames(name);
       if (!existingFileNamesValid) return;
 
+      final fileSizeValid = await _checkFileSize(name, file, bytes);
+      if (!fileSizeValid) return;
+
       await uploadFile(
         name: name,
         file: file,
         bytes: bytes,
       );
     }
+  }
+
+  Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
+    final maxSizeKiB = widget.maximumFileSizeInKiB;
+    // No restriction on file size
+    if (maxSizeKiB == null) return true;
+
+    final int fileSizeInKiB = file != null
+        ? await file.length() ~/ 1024
+        : bytes != null
+            ? bytes.length ~/ 1024
+            : 0;
+
+    if (fileSizeInKiB > maxSizeKiB) {
+      unawaited(YustUi.alertService.showAlert(
+        LocaleKeys.fileUpload.tr(),
+        LocaleKeys.alertFileTooBig.tr(namedArgs: {
+          'fileName': name,
+          'maxFileSize': YustUi.fileHelpers.formatFileSize(maxSizeKiB)
+        }),
+      ));
+      return false;
+    }
+    return true;
   }
 
   Future<bool> checkFileAmount(List<dynamic> fileElements) async {
