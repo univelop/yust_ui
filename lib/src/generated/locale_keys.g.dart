@@ -384,6 +384,7 @@ abstract class LocaleKeys {
   static const alertWrongName = 'alertWrongName';
   static const all = 'all';
   static const allDayEvent = 'allDayEvent';
+  static const allDone = 'allDone';
   static const allOrNone = 'allOrNone';
   static const allTeams = 'allTeams';
   static const allowAccess = 'allowAccess';
@@ -664,9 +665,12 @@ abstract class LocaleKeys {
       'checkWarningTooManyLinkedRecords';
   static const checkbox = 'checkbox';
   static const checkedByDefault = 'checkedByDefault';
+  static const checkedItems = 'checkedItems';
   static const checkingColumns = 'checkingColumns';
   static const checkingRecord = 'checkingRecord';
   static const checkingStatus = 'checkingStatus';
+  static const checklist = 'checklist';
+  static const checklistDescription = 'checklistDescription';
   static const checkout = 'checkout';
   static const checkoutStepDescription = 'checkoutStepDescription';
   static const checksPassedCorruptFiles = 'checksPassedCorruptFiles';
@@ -2279,6 +2283,7 @@ abstract class LocaleKeys {
   static const newCalendarShare = 'newCalendarShare';
   static const newEmailAddress = 'newEmailAddress';
   static const newFolder = 'newFolder';
+  static const newItem = 'newItem';
   static const newParameter = 'newParameter';
   static const newPassword = 'newPassword';
   static const newRole = 'newRole';
@@ -3245,6 +3250,7 @@ abstract class LocaleKeys {
   static const totalCosts = 'totalCosts';
   static const totalDuration = 'totalDuration';
   static const totalExpression = 'totalExpression';
+  static const totalItems = 'totalItems';
   static const totalLabel = 'totalLabel';
   static const totalMinutesDescription = 'totalMinutesDescription';
   static const transferAddress = 'transferAddress';
@@ -3274,6 +3280,7 @@ abstract class LocaleKeys {
   static const twoWeeks = 'twoWeeks';
   static const type = 'type';
   static const typeQrBarcode = 'typeQrBarcode';
+  static const uncheckedItems = 'uncheckedItems';
   static const unhappyUserPlaceholder = 'unhappyUserPlaceholder';
   static const uniCademy = 'uniCademy';
   static const unit = 'unit';

@@ -201,7 +201,7 @@ class YustImageHelpers {
     return YustImage(
       name: newImageName,
       file: file,
-      bytes: transformedBytes,
+      bytes: transformedBytes ?? bytes,
       storageFolderPath: storageFolderPath,
       linkedDocPath: linkedDocPath,
       linkedDocAttribute: linkedDocAttribute,
