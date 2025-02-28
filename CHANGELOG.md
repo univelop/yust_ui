@@ -1,3 +1,7 @@
+## 3.26.11 - 2024-02-28
+
+-   Set maximal upload size for FilePicker
+
 ## 3.26.10 - 2024-02-25
 
 -   Fixes
