@@ -325,7 +325,8 @@ void _addWatermarks({
   if (addGps && position != null) {
     final yustLocationHelper = YustLocationHelper();
 
-    if (watermarkLocationAppearance == YustLocationAppearance.decimalDegree) {
+    if (watermarkLocationAppearance ==
+        YustLocationAppearance.degreeMinutesSeconds) {
       textBuffer.add(
           '${yustLocationHelper.formatLatitudeToDMS(position.latitude, degreeSymbol: '*')} ${yustLocationHelper.formatLongitudeToDMS(position.longitude, degreeSymbol: '*')}');
     } else {
