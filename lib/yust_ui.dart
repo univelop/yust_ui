@@ -15,6 +15,7 @@ export 'src/services/yust_alert_result.dart';
 export 'src/services/yust_alert_service.dart';
 export 'src/util/yust_file_handler.dart';
 export 'src/util/yust_file_helpers.dart';
+export 'src/util/yust_image_helpers.dart';
 export 'src/widgets/yust_badge.dart';
 export 'src/widgets/yust_button_tile.dart';
 export 'src/widgets/yust_cached_image.dart';

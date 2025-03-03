@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_location_service.dart';
+import 'package:yust_ui/src/util/yust_image_helpers.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 
 import 'services/yust_alert_service.dart';
@@ -23,6 +24,7 @@ class YustUi {
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
   static late YustUiHelpers helpers;
   static YustFileHelpers fileHelpers = YustFileHelpers();
+  static YustImageHelpers imageHelpers = YustImageHelpers();
   static String? storageUrl;
   static String? imagePlaceholderPath;
   static Function(
