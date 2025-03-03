@@ -256,6 +256,7 @@ abstract class LocaleKeys {
   static const alertFileAlreadyExists = 'alertFileAlreadyExists';
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
   static const alertFileNotFound = 'alertFileNotFound';
+  static const alertFileTooBig = 'alertFileTooBig';
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowException = 'alertFlowException';
   static const alertFlowSpecNotFound = 'alertFlowSpecNotFound';
@@ -1237,6 +1238,7 @@ abstract class LocaleKeys {
   static const exceptionFileNotFound = 'exceptionFileNotFound';
   static const exceptionFileNotFoundInArchive =
       'exceptionFileNotFoundInArchive';
+  static const exceptionFileTooBig = 'exceptionFileTooBig';
   static const exceptionFlowSpecNotFound = 'exceptionFlowSpecNotFound';
   static const exceptionForbiddenFileExtension =
       'exceptionForbiddenFileExtension';
@@ -2099,6 +2101,7 @@ abstract class LocaleKeys {
   static const lightUserPlus3 = 'lightUserPlus3';
   static const limitAccess = 'limitAccess';
   static const limitFileExtensions = 'limitFileExtensions';
+  static const limitFileSize = 'limitFileSize';
   static const limitRoleAccess = 'limitRoleAccess';
   static const limited = 'limited';
   static const line = 'line';
@@ -2194,6 +2197,7 @@ abstract class LocaleKeys {
   static const matrixBrickDescription = 'matrixBrickDescription';
   static const matrixSetSettings = 'matrixSetSettings';
   static const max30Chars = 'max30Chars';
+  static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
   static const maxNumberImages = 'maxNumberImages';
   static const maximumPreviewExceeded = 'maximumPreviewExceeded';
@@ -3242,6 +3246,7 @@ abstract class LocaleKeys {
   static const tooSmallNumbersUseTextfield = 'tooSmallNumbersUseTextfield';
   static const tooltip = 'tooltip';
   static const tooltipAllowedExtensions = 'tooltipAllowedExtensions';
+  static const tooltipMaxFileSize = 'tooltipMaxFileSize';
   static const tooltipNoAllowedExtensions = 'tooltipNoAllowedExtensions';
   static const topLeft = 'topLeft';
   static const topRight = 'topRight';
