@@ -1,3 +1,8 @@
+## 3.27.0 - 2024-03-04
+
+-   Add a YustImage Class
+-   Refactor Image Handling
+
 ## 3.26.11 - 2024-02-28
 
 -   Set maximal upload size for FilePicker
