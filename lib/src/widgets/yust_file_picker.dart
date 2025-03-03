@@ -62,6 +62,8 @@ class YustFilePicker extends StatefulWidget {
   /// NULL means no limit.
   final num? maximumFileSizeInKiB;
 
+  final void Function()? onUserInteraction;
+
   const YustFilePicker({
     super.key,
     this.label,
@@ -82,6 +84,7 @@ class YustFilePicker extends StatefulWidget {
     this.allowOnlyImages = false,
     this.overwriteSingleFile = false,
     this.maximumFileSizeInKiB,
+    this.onUserInteraction,
   });
 
   @override
@@ -264,6 +267,7 @@ class YustFilePickerState extends State<YustFilePicker>
       ),
       trailing: _buildTrailing(file),
       onTap: () {
+        widget.onUserInteraction?.call();
         YustUi.helpers.unfocusCurrent();
         if (!isBroken) {
           _fileHandler.showFile(context, file);
@@ -287,6 +291,7 @@ class YustFilePickerState extends State<YustFilePicker>
         icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
         color: Theme.of(context).primaryColor,
         onPressed: () async {
+          widget.onUserInteraction?.call();
           if (file.isValid()) {
             await YustUi.fileHelpers.downloadAndLaunchFile(
                 context: context, url: file.url!, name: file.name!);
@@ -309,6 +314,7 @@ class YustFilePickerState extends State<YustFilePicker>
   }
 
   Future<void> _renameFile(YustFile yustFile) async {
+    widget.onUserInteraction?.call();
     final newFileName = await YustUi.alertService.showTextFieldDialog(
         'Wie soll die Datei heißen?', '', 'Speichern',
         initialText: yustFile.getFileNameWithoutExtension(),
@@ -595,6 +601,7 @@ class YustFilePickerState extends State<YustFilePicker>
   }
 
   Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
+    widget.onUserInteraction?.call();
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService.showConfirmation(
         LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());

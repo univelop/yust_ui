@@ -54,6 +54,8 @@ class YustImagePicker extends StatefulWidget {
   /// default is 15
   final int imageCount;
 
+  final void Function()? onUserInteraction;
+
   const YustImagePicker({
     super.key,
     this.label,
@@ -77,6 +79,7 @@ class YustImagePicker extends StatefulWidget {
     this.overwriteSingleFile = false,
     this.enableDropzone = false,
     int? imageCount,
+    this.onUserInteraction,
   }) : imageCount = imageCount ?? 15;
   @override
   YustImagePickerState createState() => YustImagePickerState();
@@ -410,6 +413,7 @@ class YustImagePickerState extends State<YustImagePicker>
           icon: const Icon(Icons.delete),
           color: Colors.black,
           onPressed: () async {
+            widget.onUserInteraction?.call();
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
                 LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
@@ -635,6 +639,7 @@ class YustImagePickerState extends State<YustImagePicker>
   }
 
   void _showImages(YustFile activeFile) {
+    widget.onUserInteraction?.call();
     YustUi.helpers.unfocusCurrent();
     YustImageScreen.navigateToScreen(
       context: context,
