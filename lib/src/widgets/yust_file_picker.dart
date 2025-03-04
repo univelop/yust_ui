@@ -62,6 +62,7 @@ class YustFilePicker extends StatefulWidget {
   /// NULL means no limit.
   final num? maximumFileSizeInKiB;
 
+  //A function that gets called before a file gets opened, downloaded or deleted.
   final void Function()? onUserInteraction;
 
   const YustFilePicker({

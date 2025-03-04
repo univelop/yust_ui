@@ -54,6 +54,7 @@ class YustImagePicker extends StatefulWidget {
   /// default is 15
   final int imageCount;
 
+  //A function that gets called before a image gets renamed, opened, downloaded or deleted.
   final void Function()? onUserInteraction;
 
   const YustImagePicker({
