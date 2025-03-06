@@ -47,10 +47,8 @@ class YustCachedImage extends StatelessWidget {
         width: width,
         height: height,
         imageUrl: file.url!,
-        // maxWidthDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
-        // maxHeightDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
-        maxWidthDiskCache: 300,
-        maxHeightDiskCache: 300,
+        maxWidthDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
+        maxHeightDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
         imageBuilder: (context, image) {
           return Image(
             image: image,
