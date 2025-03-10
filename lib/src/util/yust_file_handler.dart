@@ -408,9 +408,8 @@ class YustFileHandler {
     }
 
     if (yustFileOrYustFiles is List) {
-      final file =
-          yustFileOrYustFiles.firstWhereOrNull((f) => f['name'] == fileName);
-      return file == null ? null : file['createdAt'];
+      return yustFileOrYustFiles
+          .firstWhereOrNull((f) => f['name'] == fileName)?['createdAt'];
     }
 
     return null;
