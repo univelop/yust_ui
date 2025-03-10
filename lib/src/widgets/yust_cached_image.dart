@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
@@ -45,6 +47,8 @@ class YustCachedImage extends StatelessWidget {
         width: width,
         height: height,
         imageUrl: file.url!,
+        maxWidthDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
+        maxHeightDiskCache: (Platform.isAndroid || Platform.isIOS) ? 300 : null,
         imageBuilder: (context, image) {
           return Image(
             image: image,
