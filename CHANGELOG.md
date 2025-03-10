@@ -1,3 +1,7 @@
+## 3.27.1 - 2024-03-10
+
+-   Fixes for Image Handling
+
 ## 3.27.0 - 2024-03-04
 
 -   Add a YustImage Class
