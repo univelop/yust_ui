@@ -1,3 +1,7 @@
+# 3.26.12 - 2024-03-10
+
+-   Use resized images in YustCachedImage
+
 ## 3.26.9 - 2024-02-08
 
 -   Remove unused package
