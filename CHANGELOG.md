@@ -1,3 +1,7 @@
+## 3.27.2 - 2024-03-11
+
+-   Fixes for Image Preview in Web
+
 ## 3.27.1 - 2024-03-10
 
 -   Fixes for Image Handling
