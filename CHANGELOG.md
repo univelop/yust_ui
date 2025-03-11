@@ -1,3 +1,7 @@
+# 3.26.13 - 2024-03-11
+
+-   Fixes
+
 # 3.26.12 - 2024-03-10
 
 -   Use resized images in YustCachedImage
