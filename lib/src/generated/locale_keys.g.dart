@@ -462,6 +462,8 @@ abstract class LocaleKeys {
   static const autodiscoverFailed = 'autodiscoverFailed';
   static const automatic = 'automatic';
   static const automaticBilling = 'automaticBilling';
+  static const automaticCleanup = 'automaticCleanup';
+  static const automaticCleanupExplanation = 'automaticCleanupExplanation';
   static const back = 'back';
   static const backCamera = 'backCamera';
   static const backToHome = 'backToHome';
@@ -2198,6 +2200,7 @@ abstract class LocaleKeys {
   static const matrixBrickDeleteRecordsExplanation =
       'matrixBrickDeleteRecordsExplanation';
   static const matrixBrickDescription = 'matrixBrickDescription';
+  static const matrixHideTotalOnSmallScreens = 'matrixHideTotalOnSmallScreens';
   static const matrixSetSettings = 'matrixSetSettings';
   static const max30Chars = 'max30Chars';
   static const maxFileSizeInKiB = 'maxFileSizeInKiB';
@@ -2827,6 +2830,7 @@ abstract class LocaleKeys {
   static const seconds = 'seconds';
   static const section = 'section';
   static const sectionBrickDescription = 'sectionBrickDescription';
+  static const select = 'select';
   static const selectAll = 'selectAll';
   static const selectApprovalBrick = 'selectApprovalBrick';
   static const selectBrick = 'selectBrick';

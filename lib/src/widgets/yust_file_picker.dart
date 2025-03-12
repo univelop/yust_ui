@@ -62,6 +62,11 @@ class YustFilePicker extends StatefulWidget {
   /// NULL means no limit.
   final num? maximumFileSizeInKiB;
 
+  /// Whether to allow multiple files to be selected and processed at once.
+  ///
+  /// Defaults to false.
+  final bool allowMultiSelection;
+
   const YustFilePicker({
     super.key,
     this.label,
@@ -82,6 +87,7 @@ class YustFilePicker extends StatefulWidget {
     this.allowOnlyImages = false,
     this.overwriteSingleFile = false,
     this.maximumFileSizeInKiB,
+    this.allowMultiSelection = false,
   });
 
   @override
@@ -93,6 +99,8 @@ class YustFilePickerState extends State<YustFilePicker>
   late YustFileHandler _fileHandler;
   final Map<String?, bool> _processing = {};
   late bool _enabled;
+  late bool _selecting;
+  final List<YustFile> _selectedFiles = [];
 
   @override
   void initState() {
@@ -107,6 +115,7 @@ class YustFilePickerState extends State<YustFilePicker>
       },
     );
     _enabled = (widget.onChanged != null && !widget.readOnly);
+    _selecting = false;
 
     super.initState();
   }
@@ -154,13 +163,38 @@ class YustFilePickerState extends State<YustFilePicker>
   }
 
   Widget _buildSuffixChild() {
-    return Wrap(children: [
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+      if (widget.allowMultiSelection) _buildSelectButton(context),
+      if (_selecting) ...[
+        _buildDownloadSelectedButton(context),
+        _buildDeleteSelectedButton(context)
+      ],
       if (widget.allowedExtensions != null ||
           widget.maximumFileSizeInKiB != null)
         _buildInfoIcon(context),
-      _buildAddButton(context),
+      if (!_selecting) _buildAddButton(context),
       if (widget.suffixIcon != null) widget.suffixIcon!
     ]);
+  }
+
+  Widget _buildDownloadSelectedButton(BuildContext context) {
+    return IconButton(
+      iconSize: 40,
+      color: Theme.of(context).colorScheme.primary,
+      icon: const Icon(Icons.download),
+      onPressed:
+          _enabled && _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
+    );
+  }
+
+  Widget _buildDeleteSelectedButton(BuildContext context) {
+    return IconButton(
+      iconSize: 40,
+      color: Theme.of(context).colorScheme.primary,
+      icon: const Icon(Icons.delete),
+      onPressed:
+          _enabled && _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
+    );
   }
 
   Widget _buildInfoIcon(BuildContext context) {
@@ -197,6 +231,29 @@ class YustFilePickerState extends State<YustFilePicker>
     }
 
     return messages.isEmpty ? null : messages.join('\n');
+  }
+
+  Widget _buildSelectButton(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+      ),
+      onPressed: _enabled
+          ? () {
+              setState(() {
+                _selecting = !_selecting;
+                if (!_selecting) {
+                  _selectedFiles.clear();
+                }
+              });
+            }
+          : null,
+      child: Text(_selecting ? LocaleKeys.cancel.tr() : LocaleKeys.select.tr()),
+    );
   }
 
   Widget _buildAddButton(BuildContext context) {
@@ -240,6 +297,10 @@ class YustFilePickerState extends State<YustFilePicker>
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (_selecting)
+            Checkbox(
+                value: _selectedFiles.contains(file),
+                onChanged: (_) => _toggleFileSelection(file)),
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
           const SizedBox(width: 8),
           Expanded(
@@ -262,9 +323,15 @@ class YustFilePickerState extends State<YustFilePicker>
           _buildCachedIndicator(file),
         ],
       ),
-      trailing: _buildTrailing(file),
+      trailing: _selecting ? null : _buildTrailing(file),
       onTap: () {
         YustUi.helpers.unfocusCurrent();
+
+        if (_selecting) {
+          _toggleFileSelection(file);
+          return;
+        }
+
         if (!isBroken) {
           _fileHandler.showFile(context, file);
         }
@@ -272,6 +339,16 @@ class YustFilePickerState extends State<YustFilePicker>
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
+  }
+
+  void _toggleFileSelection(YustFile file) {
+    setState(() {
+      if (_selectedFiles.contains(file)) {
+        _selectedFiles.remove(file);
+      } else {
+        _selectedFiles.add(file);
+      }
+    });
   }
 
   Widget _buildTrailing(YustFile file) => Row(
@@ -327,10 +404,21 @@ class YustFilePickerState extends State<YustFilePicker>
         '$newFileName.${yustFile.getFilenameExtension()}';
 
     await _reuploadFileForRename(yustFile, newFileNameWithExtension);
-    await _doDeleteFile(yustFile);
+    await _deleteFileAndCallOnChanged(yustFile);
 
     _processing[yustFile.name] = false;
     setState(() {});
+  }
+
+  Future<void> _deleteSelectedFiles() async {
+    final confirmed = await YustUi.alertService.showConfirmation(
+        LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
+    if (confirmed != true) return;
+
+    for (final file in _selectedFiles) {
+      await _deleteFileAndCallOnChanged(file);
+    }
+    _selectedFiles.clear();
   }
 
   Future<void> _reuploadFileForRename(
@@ -345,7 +433,7 @@ class YustFilePickerState extends State<YustFilePicker>
     );
   }
 
-  Future<void> _doDeleteFile(YustFile yustFile) async {
+  Future<void> _deleteFileAndCallOnChanged(YustFile yustFile) async {
     await _fileHandler.deleteFile(yustFile);
     if (!yustFile.cached) {
       widget.onChanged!(_fileHandler.getOnlineFiles());
@@ -600,7 +688,7 @@ class YustFilePickerState extends State<YustFilePicker>
         LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
     if (confirmed == true) {
       try {
-        await _doDeleteFile(yustFile);
+        await _deleteFileAndCallOnChanged(yustFile);
         if (mounted) {
           setState(() {});
         }
