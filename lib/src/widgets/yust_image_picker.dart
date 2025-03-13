@@ -69,6 +69,16 @@ class YustImagePicker extends StatefulWidget {
   /// default is 15
   final int imageCount;
 
+  /// Whether to allow multiple files to be downloaded at once.
+  ///
+  /// Defaults to false.
+  final bool allowMultiSelectDownload;
+
+  /// Whether to allow multiple files to be deleted at once.
+  ///
+  /// Defaults to false.
+  final bool allowMultiSelectDeletion;
+
   const YustImagePicker({
     super.key,
     this.label,
@@ -97,6 +107,8 @@ class YustImagePicker extends StatefulWidget {
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
     int? imageCount,
+    this.allowMultiSelectDownload = false,
+    this.allowMultiSelectDeletion = false,
   }) : imageCount = imageCount ?? 15;
   @override
   YustImagePickerState createState() => YustImagePickerState();
@@ -107,6 +119,9 @@ class YustImagePickerState extends State<YustImagePicker>
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
+  late bool _selecting;
+  late bool _allSelected;
+  final List<YustFile> _selectedImages = [];
 
   @override
   void initState() {
@@ -126,6 +141,8 @@ class YustImagePickerState extends State<YustImagePicker>
 
     _enabled = (widget.onChanged != null && !widget.readOnly);
     _currentImageNumber = widget.imageCount;
+    _selecting = false;
+    _allSelected = false;
 
     super.initState();
   }
@@ -186,22 +203,34 @@ class YustImagePickerState extends State<YustImagePicker>
     }
   }
 
-  Widget _buildSuffixChild(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildSuffixChild(BuildContext context) => Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          _buildPickButtons(context),
-          if (widget.suffixIcon != null) widget.suffixIcon!
+          if (_selecting) _buildSelectAllButton(),
+          if (widget.allowMultiSelectDownload ||
+              widget.allowMultiSelectDeletion)
+            _buildSelectButton(),
+          if (!_selecting) ...[
+            ..._buildPickButtons(context),
+            if (widget.suffixIcon != null) widget.suffixIcon!
+          ],
+          if (_selecting) ...[
+            if (widget.allowMultiSelectDownload)
+              _buildDownloadSelectedButton(context),
+            if (widget.allowMultiSelectDeletion)
+              _buildDeleteSelectedButton(context),
+          ],
         ],
       );
 
-  Widget _buildPickButtons(BuildContext context) {
+  List<Widget> _buildPickButtons(BuildContext context) {
     if (!_enabled ||
         (widget.showPreview &&
             // ignore: deprecated_member_use_from_same_package
             widget.numberOfFiles == 1 &&
             _fileHandler.getFiles().firstOrNull != null &&
             !widget.overwriteSingleFile)) {
-      return const SizedBox.shrink();
+      return [];
     }
 
     final pictureFiles = [..._fileHandler.getFiles()];
@@ -210,61 +239,104 @@ class YustImagePickerState extends State<YustImagePicker>
             (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
         : true;
 
-    return SizedBox(
-      width: 150,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          if (!widget.showPreview && pictureFiles.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              color: Theme.of(context).colorScheme.primary,
-              iconSize: 40,
-              onPressed: () async {
-                YustUi.helpers.unfocusCurrent();
-                final confirmed = await YustUi.alertService.showConfirmation(
-                    // ignore: deprecated_member_use_from_same_package
-                    widget.multiple
-                        ? LocaleKeys.alertDeleteAllImages.tr()
-                        : LocaleKeys.confirmDelete.tr(),
-                    LocaleKeys.delete.tr());
-                if (confirmed == true) {
-                  try {
-                    for (final yustFile in pictureFiles) {
-                      await _fileHandler.deleteFile(yustFile);
-                    }
-                    widget.onChanged!(
-                        YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  } catch (e) {
-                    await YustUi.alertService.showAlert(
-                        LocaleKeys.oops.tr(),
-                        LocaleKeys.alertCannotDeleteImage
-                            .tr(namedArgs: {'error': e.toString()}));
-                  }
+    return [
+      if (!widget.showPreview && pictureFiles.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.delete),
+          color: Theme.of(context).colorScheme.primary,
+          onPressed: () async {
+            YustUi.helpers.unfocusCurrent();
+            final confirmed = await YustUi.alertService.showConfirmation(
+                // ignore: deprecated_member_use_from_same_package
+                widget.multiple
+                    ? LocaleKeys.alertDeleteAllImages.tr()
+                    : LocaleKeys.confirmDelete.tr(),
+                LocaleKeys.delete.tr());
+            if (confirmed == true) {
+              try {
+                for (final yustFile in pictureFiles) {
+                  await _fileHandler.deleteFile(yustFile);
                 }
-              },
-            ),
-          if (!kIsWeb && canAddMore)
-            IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              iconSize: 40,
-              icon: const Icon(Icons.camera_alt),
-              onPressed:
-                  _enabled ? () => _pickImages(ImageSource.camera) : null,
-            ),
-          if (canAddMore)
-            IconButton(
-              color: Theme.of(context).colorScheme.primary,
-              iconSize: 40,
-              icon: const Icon(Icons.image),
-              onPressed:
-                  _enabled ? () => _pickImages(ImageSource.gallery) : null,
-            ),
-        ],
-      ),
+                widget.onChanged!(
+                    YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
+                if (mounted) {
+                  setState(() {});
+                }
+              } catch (e) {
+                await YustUi.alertService.showAlert(
+                    LocaleKeys.oops.tr(),
+                    LocaleKeys.alertCannotDeleteImage
+                        .tr(namedArgs: {'error': e.toString()}));
+              }
+            }
+          },
+        ),
+      if (!kIsWeb && canAddMore)
+        IconButton(
+          color: Theme.of(context).colorScheme.primary,
+          icon: const Icon(Icons.camera_alt),
+          onPressed: _enabled ? () => _pickImages(ImageSource.camera) : null,
+        ),
+      if (canAddMore)
+        IconButton(
+          color: Theme.of(context).colorScheme.primary,
+          icon: const Icon(Icons.image),
+          onPressed: _enabled ? () => _pickImages(ImageSource.gallery) : null,
+        ),
+    ];
+  }
+
+  Widget _buildDownloadSelectedButton(BuildContext context) {
+    return IconButton(
+      color: Theme.of(context).colorScheme.primary,
+      icon: const Icon(Icons.download),
+      tooltip: LocaleKeys.download.tr(),
+      onPressed: _selectedImages.isNotEmpty ? null : null,
+    );
+  }
+
+  Widget _buildDeleteSelectedButton(BuildContext context) {
+    return IconButton(
+      color: Theme.of(context).colorScheme.primary,
+      icon: const Icon(Icons.delete),
+      tooltip: LocaleKeys.delete.tr(),
+      onPressed: _enabled && _selectedImages.isNotEmpty ? null : null,
+    );
+  }
+
+  Widget _buildSelectAllButton() {
+    return TextButton.icon(
+      onPressed: _enabled
+          ? () {
+              setState(() {
+                _allSelected = !_allSelected;
+                if (!_allSelected) {
+                  _selectedImages.clear();
+                } else {
+                  _selectedImages.addAll(_fileHandler.getFiles());
+                }
+              });
+            }
+          : null,
+      icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
+      label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
+    );
+  }
+
+  Widget _buildSelectButton() {
+    return TextButton(
+      onPressed: _enabled
+          ? () {
+              setState(() {
+                _selecting = !_selecting;
+                if (!_selecting) {
+                  _selectedImages.clear();
+                  _allSelected = false;
+                }
+              });
+            }
+          : null,
+      child: Text(_selecting ? LocaleKeys.cancel.tr() : LocaleKeys.select.tr()),
     );
   }
 

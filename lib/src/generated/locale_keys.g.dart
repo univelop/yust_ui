@@ -198,6 +198,8 @@ abstract class LocaleKeys {
   static const alertConfirmChangeIntegrationType =
       'alertConfirmChangeIntegrationType';
   static const alertConfirmDeleteIntegration = 'alertConfirmDeleteIntegration';
+  static const alertConfirmDeleteSelectedFiles =
+      'alertConfirmDeleteSelectedFiles';
   static const alertConfirmDeleteUserByEmail = 'alertConfirmDeleteUserByEmail';
   static const alertConfirmDeleteUserByPassword =
       'alertConfirmDeleteUserByPassword';

@@ -62,10 +62,15 @@ class YustFilePicker extends StatefulWidget {
   /// NULL means no limit.
   final num? maximumFileSizeInKiB;
 
-  /// Whether to allow multiple files to be selected and processed at once.
+  /// Whether to allow multiple files to be downloaded at once.
   ///
   /// Defaults to false.
-  final bool allowMultiSelection;
+  final bool allowMultiSelectDownload;
+
+  /// Whether to allow multiple files to be deleted at once.
+  ///
+  /// Defaults to false.
+  final bool allowMultiSelectDeletion;
 
   const YustFilePicker({
     super.key,
@@ -87,7 +92,8 @@ class YustFilePicker extends StatefulWidget {
     this.allowOnlyImages = false,
     this.overwriteSingleFile = false,
     this.maximumFileSizeInKiB,
-    this.allowMultiSelection = false,
+    this.allowMultiSelectDownload = false,
+    this.allowMultiSelectDeletion = false,
   });
 
   @override
@@ -100,6 +106,7 @@ class YustFilePickerState extends State<YustFilePicker>
   final Map<String?, bool> _processing = {};
   late bool _enabled;
   late bool _selecting;
+  late bool _allSelected;
   final List<YustFile> _selectedFiles = [];
 
   @override
@@ -116,6 +123,7 @@ class YustFilePickerState extends State<YustFilePicker>
     );
     _enabled = (widget.onChanged != null && !widget.readOnly);
     _selecting = false;
+    _allSelected = false;
 
     super.initState();
   }
@@ -164,50 +172,38 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildSuffixChild() {
     return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-      if (widget.allowMultiSelection) _buildSelectButton(context),
+      if (_selecting) _buildSelectAllButton(),
+      if (widget.allowMultiSelectDownload || widget.allowMultiSelectDeletion)
+        _buildSelectButton(),
       if (_selecting) ...[
-        _buildDownloadSelectedButton(context),
-        _buildDeleteSelectedButton(context)
+        if (widget.allowMultiSelectDownload)
+          _buildDownloadSelectedButton(context),
+        if (widget.allowMultiSelectDeletion) _buildDeleteSelectedButton(context)
       ],
       if (widget.allowedExtensions != null ||
           widget.maximumFileSizeInKiB != null)
-        _buildInfoIcon(context),
-      if (!_selecting) _buildAddButton(context),
-      if (widget.suffixIcon != null) widget.suffixIcon!
+        if (!_selecting) _buildAddButton(context),
+      if (widget.suffixIcon != null && !_selecting) widget.suffixIcon!
     ]);
   }
 
   Widget _buildDownloadSelectedButton(BuildContext context) {
     return IconButton(
-      iconSize: 40,
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
-      onPressed:
-          _enabled && _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
+      tooltip: LocaleKeys.download.tr(),
+      onPressed: _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
     );
   }
 
   Widget _buildDeleteSelectedButton(BuildContext context) {
     return IconButton(
-      iconSize: 40,
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.delete),
+      tooltip: LocaleKeys.delete.tr(),
       onPressed:
           _enabled && _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
     );
-  }
-
-  Widget _buildInfoIcon(BuildContext context) {
-    return Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Tooltip(
-          preferBelow: false,
-          message: _getTooltipMessage(),
-          child: Icon(
-              size: 40,
-              Icons.info,
-              color: Theme.of(context).colorScheme.primary),
-        ));
   }
 
   String? _getTooltipMessage() {
@@ -233,25 +229,36 @@ class YustFilePickerState extends State<YustFilePicker>
     return messages.isEmpty ? null : messages.join('\n');
   }
 
-  Widget _buildSelectButton(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-      ),
+  Widget _buildSelectAllButton() {
+    return TextButton.icon(
       onPressed: _enabled
           ? () {
               setState(() {
-                _selecting = !_selecting;
-                if (!_selecting) {
+                _allSelected = !_allSelected;
+                if (!_allSelected) {
                   _selectedFiles.clear();
+                } else {
+                  _selectedFiles.addAll(_fileHandler.getFiles());
                 }
               });
             }
           : null,
+      icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
+      label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
+    );
+  }
+
+  Widget _buildSelectButton() {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selecting = !_selecting;
+          if (!_selecting) {
+            _selectedFiles.clear();
+            _allSelected = false;
+          }
+        });
+      },
       child: Text(_selecting ? LocaleKeys.cancel.tr() : LocaleKeys.select.tr()),
     );
   }
@@ -264,7 +271,7 @@ class YustFilePickerState extends State<YustFilePicker>
 
     if (_enabled && canAddMore) {
       return IconButton(
-        iconSize: 40,
+        tooltip: _getTooltipMessage(),
         color: Theme.of(context).colorScheme.primary,
         icon: const Icon(Icons.add_circle),
         onPressed: _enabled && (widget.allowedExtensions?.isNotEmpty ?? true)
@@ -412,12 +419,17 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Future<void> _deleteSelectedFiles() async {
     final confirmed = await YustUi.alertService.showConfirmation(
-        LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
+      LocaleKeys.confirm.tr(),
+      LocaleKeys.delete.tr(),
+      description: LocaleKeys.alertConfirmDeleteSelectedFiles
+          .tr(namedArgs: {'count': _selectedFiles.length.toString()}),
+    );
     if (confirmed != true) return;
 
     for (final file in _selectedFiles) {
       await _deleteFileAndCallOnChanged(file);
     }
+
     _selectedFiles.clear();
   }
 
