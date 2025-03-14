@@ -44,6 +44,39 @@ class YustCachedImage extends StatelessWidget {
         fit: fit,
       );
     } else if (file.url != null) {
+      if (kIsWeb) {
+        return Image.network(
+          file.url!,
+          width: width,
+          height: height,
+          fit: fit,
+          cacheHeight: 300,
+          cacheWidth: 300,
+          frameBuilder: (context, child, frame, sync) {
+            if (frame != null) return child;
+
+            return const Center(
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+
+            return const Center(
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
+        );
+      }
+
       preview = CachedNetworkImage(
         width: width,
         height: height,
