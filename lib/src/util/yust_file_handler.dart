@@ -409,7 +409,7 @@ class YustFileHandler {
 
     if (yustFileOrYustFiles is List) {
       return yustFileOrYustFiles
-          .firstWhere((f) => f['name'] == fileName)['createdAt'];
+          .firstWhereOrNull((f) => f['name'] == fileName)?['createdAt'];
     }
 
     return null;

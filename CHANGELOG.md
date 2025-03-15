@@ -1,7 +1,23 @@
+## 3.27.2 - 2024-03-11
+
+-   Fixes for Image Preview in Web
+
+## 3.27.1 - 2024-03-10
+
+-   Fixes for Image Handling
+
 ## 3.27.0 - 2024-03-04
 
 -   Add a YustImage Class
 -   Refactor Image Handling
+
+# 3.26.13 - 2024-03-11
+
+-   Fixes
+
+# 3.26.12 - 2024-03-10
+
+-   Use resized images in YustCachedImage
 
 ## 3.26.11 - 2024-02-28
 
