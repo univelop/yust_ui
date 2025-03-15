@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -291,7 +292,7 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed: _selectedImages.isNotEmpty ? null : null,
+      onPressed: _selectedImages.isNotEmpty ? _deleteSelectedImages : null,
     );
   }
 
@@ -300,27 +301,52 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.delete),
       tooltip: LocaleKeys.delete.tr(),
-      onPressed: _enabled && _selectedImages.isNotEmpty ? null : null,
+      onPressed:
+          _enabled && _selectedImages.isNotEmpty ? _deleteSelectedImages : null,
     );
   }
 
   Widget _buildSelectAllButton() {
     return TextButton.icon(
-      onPressed: _enabled
-          ? () {
-              setState(() {
-                _allSelected = !_allSelected;
-                if (!_allSelected) {
-                  _selectedImages.clear();
-                } else {
-                  _selectedImages.addAll(_fileHandler.getFiles());
-                }
-              });
-            }
-          : null,
+      onPressed: _enabled ? () => unawaited(_toggleSelectAll()) : null,
       icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
       label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
     );
+  }
+
+  Future<void> _toggleSelectAll() async {
+    if (_allSelected) {
+      setState(() {
+        _allSelected = false;
+        _selectedImages.clear();
+      });
+
+      return;
+    }
+
+    final hiddenImagesExists =
+        _fileHandler.getFiles().length > _currentImageNumber;
+    bool? includeHiddenImages = false;
+
+    if (hiddenImagesExists) {
+      includeHiddenImages = await YustUi.alertService.showConfirmation(
+        LocaleKeys.selectAll.tr(),
+        LocaleKeys.all.tr(),
+        description: LocaleKeys.alsoSelectHiddenImages.tr(),
+        cancelText: LocaleKeys.onlyVisibleImages.tr(),
+      );
+    }
+
+    if (includeHiddenImages == null) return;
+
+    final allImages = _fileHandler.getFiles();
+
+    setState(() {
+      _allSelected = !_allSelected;
+      _selectedImages.addAll(includeHiddenImages == true
+          ? allImages
+          : allImages.take(_currentImageNumber));
+    });
   }
 
   Widget _buildSelectButton() {
@@ -398,7 +424,8 @@ class YustImagePickerState extends State<YustImagePicker>
       children: [
         _buildImagePreview(context, file),
         _buildProgressIndicator(context, file),
-        _buildRemoveButton(context, file),
+        if (_selecting) _buildSelectionCheckbox(context, file),
+        if (!_selecting) _buildRemoveButton(context, file),
         _buildCachedIndicator(context, file),
       ],
     );
@@ -421,7 +448,16 @@ class YustImagePickerState extends State<YustImagePicker>
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
-          onTap: zoomEnabled ? () => _showImages(file) : null,
+          onTap: () {
+            if (_selecting) {
+              _toggleSelectionForImage(file);
+              return;
+            }
+
+            if (zoomEnabled) {
+              _showImages(file);
+            }
+          },
           child: file.url != null
               ? Hero(
                   tag: file.url!,
@@ -452,7 +488,16 @@ class YustImagePickerState extends State<YustImagePicker>
                 maxWidth: 400,
               ),
               child: GestureDetector(
-                onTap: zoomEnabled ? () => _showImages(file) : null,
+                onTap: () {
+                  if (_selecting) {
+                    _toggleSelectionForImage(file);
+                    return;
+                  }
+
+                  if (zoomEnabled) {
+                    _showImages(file);
+                  }
+                },
                 child: file.url != null
                     ? Hero(
                         tag: file.url!,
@@ -491,6 +536,40 @@ class YustImagePickerState extends State<YustImagePicker>
         ],
       ),
     );
+  }
+
+  Widget _buildSelectionCheckbox(BuildContext context, YustImage? yustFile) {
+    if (!_selecting) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      top: 10,
+      left: 10,
+      child: Checkbox(
+        value: _selectedImages.contains(yustFile),
+        shape: const CircleBorder(),
+        onChanged: (value) => _toggleSelectionForImage(yustFile),
+        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Theme.of(context).primaryColor;
+          }
+          return Colors.grey.shade300;
+        }),
+      ),
+    );
+  }
+
+  void _toggleSelectionForImage(YustImage? yustFile) {
+    if (yustFile == null) return;
+
+    setState(() {
+      if (_selectedImages.contains(yustFile)) {
+        _selectedImages.remove(yustFile);
+      } else {
+        _selectedImages.add(yustFile);
+      }
+    });
   }
 
   Widget _buildRemoveButton(BuildContext context, YustImage? yustFile) {
@@ -774,6 +853,26 @@ class YustImagePickerState extends State<YustImagePicker>
         }
       },
     );
+  }
+
+  Future<void> _deleteSelectedImages() async {
+    final confirmed = await YustUi.alertService.showConfirmation(
+      LocaleKeys.confirm.tr(),
+      LocaleKeys.delete.tr(),
+      description: LocaleKeys.alertConfirmDeleteSelectedImages
+          .tr(namedArgs: {'count': _selectedImages.length.toString()}),
+    );
+    if (confirmed != true) return;
+
+    for (final image in _selectedImages) {
+      await _fileHandler.deleteFile(image);
+      if (!image.cached && widget.onChanged != null) {
+        widget
+            .onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
+      }
+    }
+
+    _selectedImages.clear();
   }
 
   @override

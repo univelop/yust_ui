@@ -200,6 +200,8 @@ abstract class LocaleKeys {
   static const alertConfirmDeleteIntegration = 'alertConfirmDeleteIntegration';
   static const alertConfirmDeleteSelectedFiles =
       'alertConfirmDeleteSelectedFiles';
+  static const alertConfirmDeleteSelectedImages =
+      'alertConfirmDeleteSelectedImages';
   static const alertConfirmDeleteUserByEmail = 'alertConfirmDeleteUserByEmail';
   static const alertConfirmDeleteUserByPassword =
       'alertConfirmDeleteUserByPassword';
@@ -408,6 +410,7 @@ abstract class LocaleKeys {
   static const alreadyMember = 'alreadyMember';
   static const alreadyRegistered = 'alreadyRegistered';
   static const alreadyUsingApp = 'alreadyUsingApp';
+  static const alsoSelectHiddenImages = 'alsoSelectHiddenImages';
   static const amazonAws = 'amazonAws';
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
@@ -2473,6 +2476,7 @@ abstract class LocaleKeys {
   static const onlyChangeableByOwner = 'onlyChangeableByOwner';
   static const onlyShowOwnTeam = 'onlyShowOwnTeam';
   static const onlyUnread = 'onlyUnread';
+  static const onlyVisibleImages = 'onlyVisibleImages';
   static const oops = 'oops';
   static const open = 'open';
   static const openDocs = 'openDocs';
