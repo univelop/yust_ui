@@ -419,7 +419,7 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Future<void> _deleteSelectedFiles() async {
     final confirmed = await YustUi.alertService.showConfirmation(
-      LocaleKeys.confirm.tr(),
+      LocaleKeys.confirmationNeeded.tr(),
       LocaleKeys.delete.tr(),
       description: LocaleKeys.alertConfirmDeleteSelectedFiles
           .tr(namedArgs: {'count': _selectedFiles.length.toString()}),

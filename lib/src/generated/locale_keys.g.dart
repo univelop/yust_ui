@@ -772,6 +772,7 @@ abstract class LocaleKeys {
   static const confirmStopSharing = 'confirmStopSharing';
   static const confirmUnlock = 'confirmUnlock';
   static const confirmationMessage = 'confirmationMessage';
+  static const confirmationNeeded = 'confirmationNeeded';
   static const confirmedPassword = 'confirmedPassword';
   static const connectBillingAccount = 'connectBillingAccount';
   static const connectBillingAccount2 = 'connectBillingAccount2';

@@ -857,7 +857,7 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Future<void> _deleteSelectedImages() async {
     final confirmed = await YustUi.alertService.showConfirmation(
-      LocaleKeys.confirm.tr(),
+      LocaleKeys.confirmationNeeded.tr(),
       LocaleKeys.delete.tr(),
       description: LocaleKeys.alertConfirmDeleteSelectedImages
           .tr(namedArgs: {'count': _selectedImages.length.toString()}),
