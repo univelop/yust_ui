@@ -238,6 +238,7 @@ class YustFilePickerState extends State<YustFilePicker>
                 if (!_allSelected) {
                   _selectedFiles.clear();
                 } else {
+                  _selectedFiles.clear();
                   _selectedFiles.addAll(_fileHandler.getFiles());
                 }
               });

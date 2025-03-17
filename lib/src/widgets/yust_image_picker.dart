@@ -342,6 +342,7 @@ class YustImagePickerState extends State<YustImagePicker>
     final allImages = _fileHandler.getFiles();
 
     setState(() {
+      _selectedImages.clear();
       _allSelected = !_allSelected;
       _selectedImages.addAll(includeHiddenImages == true
           ? allImages
