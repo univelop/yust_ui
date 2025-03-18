@@ -50,8 +50,6 @@ class YustCachedImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
-          cacheHeight: 300,
-          cacheWidth: 300,
           frameBuilder: (context, child, frame, sync) {
             if (frame != null) return child;
 
