@@ -15,7 +15,7 @@ class YustAlertService {
     return showAlertWithCustomActions(
       title: title,
       message: message,
-      actions: (context) => [
+      actionBuilder: (context) => [
         TextButton(
           autofocus: true,
           child: Text(LocaleKeys.ok.tr()),
@@ -30,7 +30,7 @@ class YustAlertService {
   Future<void> showAlertWithCustomActions({
     required String title,
     required String message,
-    required List<Widget> Function(BuildContext) actions,
+    required List<Widget> Function(BuildContext) actionBuilder,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
@@ -40,7 +40,7 @@ class YustAlertService {
         return AlertDialog(
           title: Text(title),
           content: Text(message),
-          actions: actions(context),
+          actions: actionBuilder(context),
         );
       },
     );
