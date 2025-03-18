@@ -72,6 +72,10 @@ class YustFilePicker extends StatefulWidget {
   /// Defaults to false.
   final bool allowMultiSelectDeletion;
 
+  /// Callback for multi-select download.
+  /// Called when the user selects multiple files and clicks the download button.
+  final Future<void> Function(List<YustFile>)? onMultiSelectDownload;
+
   const YustFilePicker({
     super.key,
     this.label,
@@ -94,6 +98,7 @@ class YustFilePicker extends StatefulWidget {
     this.maximumFileSizeInKiB,
     this.allowMultiSelectDownload = false,
     this.allowMultiSelectDeletion = false,
+    this.onMultiSelectDownload,
   });
 
   @override
@@ -192,7 +197,10 @@ class YustFilePickerState extends State<YustFilePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed: _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
+      onPressed:
+          _selectedFiles.isNotEmpty && widget.onMultiSelectDownload != null
+              ? () => widget.onMultiSelectDownload!(_selectedFiles)
+              : null,
     );
   }
 

@@ -80,6 +80,10 @@ class YustImagePicker extends StatefulWidget {
   /// Defaults to false.
   final bool allowMultiSelectDeletion;
 
+  /// Callback for multi-select download.
+  /// Called when the user selects multiple files and clicks the download button.
+  final Future<void> Function(List<YustImage>)? onMultiSelectDownload;
+
   const YustImagePicker({
     super.key,
     this.label,
@@ -110,6 +114,7 @@ class YustImagePicker extends StatefulWidget {
     int? imageCount,
     this.allowMultiSelectDownload = false,
     this.allowMultiSelectDeletion = false,
+    this.onMultiSelectDownload,
   }) : imageCount = imageCount ?? 15;
   @override
   YustImagePickerState createState() => YustImagePickerState();
@@ -122,7 +127,7 @@ class YustImagePickerState extends State<YustImagePicker>
   late int _currentImageNumber;
   late bool _selecting;
   late bool _allSelected;
-  final List<YustFile> _selectedImages = [];
+  final List<YustImage> _selectedImages = [];
 
   @override
   void initState() {
@@ -292,7 +297,10 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed: _selectedImages.isNotEmpty ? _deleteSelectedImages : null,
+      onPressed:
+          _selectedImages.isNotEmpty && widget.onMultiSelectDownload != null
+              ? () => widget.onMultiSelectDownload!(_selectedImages)
+              : null,
     );
   }
 
@@ -339,7 +347,7 @@ class YustImagePickerState extends State<YustImagePicker>
 
     if (includeHiddenImages == null) return;
 
-    final allImages = _fileHandler.getFiles();
+    final allImages = YustImage.fromYustFiles(_fileHandler.getFiles());
 
     setState(() {
       _selectedImages.clear();
