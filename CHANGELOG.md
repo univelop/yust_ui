@@ -1,3 +1,7 @@
+# 3.27.3 - 2024-03-18
+
+-   Better Performance for YustCachedImage in Web
+
 ## 3.27.2 - 2024-03-11
 
 -   Fixes for Image Preview in Web
