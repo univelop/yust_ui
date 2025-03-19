@@ -207,6 +207,7 @@ abstract class LocaleKeys {
       'alertConfirmDeleteUserByPassword';
   static const alertConfirmOverwriteFile = 'alertConfirmOverwriteFile';
   static const alertConfirmOverwriteValue = 'alertConfirmOverwriteValue';
+  static const alertConfirmRemovalOfTime = 'alertConfirmRemovalOfTime';
   static const alertConfirmResetIntegrationSettings =
       'alertConfirmResetIntegrationSettings';
   static const alertConnectionTestFailed = 'alertConnectionTestFailed';
@@ -272,6 +273,7 @@ abstract class LocaleKeys {
   static const alertImportErrorWithMessage = 'alertImportErrorWithMessage';
   static const alertImportFinished = 'alertImportFinished';
   static const alertImportSuccessful = 'alertImportSuccessful';
+  static const alertImportSuccessfulRoles = 'alertImportSuccessfulRoles';
   static const alertInvalidBricks = 'alertInvalidBricks';
   static const alertInvalidDates = 'alertInvalidDates';
   static const alertInvalidFileType = 'alertInvalidFileType';
@@ -2723,6 +2725,7 @@ abstract class LocaleKeys {
   static const requestBody = 'requestBody';
   static const requestHeader = 'requestHeader';
   static const reset = 'reset';
+  static const resetAppData = 'resetAppData';
   static const resetCredentials = 'resetCredentials';
   static const resetNow = 'resetNow';
   static const resetPassword = 'resetPassword';

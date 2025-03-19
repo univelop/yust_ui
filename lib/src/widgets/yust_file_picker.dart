@@ -185,9 +185,7 @@ class YustFilePickerState extends State<YustFilePicker>
           _buildDownloadSelectedButton(context),
         if (widget.allowMultiSelectDeletion) _buildDeleteSelectedButton(context)
       ],
-      if (widget.allowedExtensions != null ||
-          widget.maximumFileSizeInKiB != null)
-        if (!_selecting) _buildAddButton(context),
+      if (!_selecting) _buildAddButton(context),
       if (widget.suffixIcon != null && !_selecting) widget.suffixIcon!
     ]);
   }
