@@ -138,7 +138,7 @@ class YustButtonTile extends StatelessWidget {
           icon: icon ?? const SizedBox(),
           label: Text(
             label ?? '',
-            style: TextStyle(color: textColor),
+            style: TextStyle(decorationColor: color),
             overflow: TextOverflow.ellipsis,
           ),
         );
