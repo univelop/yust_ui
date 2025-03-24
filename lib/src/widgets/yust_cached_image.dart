@@ -13,6 +13,12 @@ class YustCachedImage extends StatelessWidget {
   final BoxFit? fit;
   final double? width;
   final double? height;
+
+  /// Resize image in cache to 300x300
+  ///
+  /// This may destroy the aspect ratio of the image
+  final bool? resizeInCache;
+
   const YustCachedImage({
     super.key,
     required this.file,
@@ -20,6 +26,7 @@ class YustCachedImage extends StatelessWidget {
     this.height,
     this.width,
     this.placeholder,
+    this.resizeInCache,
   });
 
   @override
@@ -50,6 +57,8 @@ class YustCachedImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
+          cacheHeight: resizeInCache == true ? 300 : null,
+          cacheWidth: resizeInCache == true ? 300 : null,
           frameBuilder: (context, child, frame, sync) {
             if (frame != null) return child;
 
