@@ -300,8 +300,9 @@ void _addWatermarks({
       longitude: position.longitude,
       accuracy: position.accuracy,
     );
-    textBuffer.add(yustGeoLocation.toReadableString(
-        appearance: watermarkLocationAppearance, degreeSymbol: '*'));
+    final formattedText = yustGeoLocation.toReadableString(
+        appearance: watermarkLocationAppearance, degreeSymbol: '*');
+    if (formattedText != null) textBuffer.add(formattedText);
   }
 
   if (textBuffer.isEmpty) {
