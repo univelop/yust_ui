@@ -301,7 +301,13 @@ void _addWatermarks({
       accuracy: position.accuracy,
     );
     final formattedText = yustGeoLocation.toReadableString(
-        appearance: watermarkLocationAppearance, degreeSymbol: '*');
+      appearance: watermarkLocationAppearance,
+      degreeSymbol: '*',
+      northAbbreviation: LocaleKeys.directionNorthAbbreviation.tr(),
+      eastAbbreviation: LocaleKeys.directionEastAbbreviation.tr(),
+      westAbbreviation: LocaleKeys.directionWestAbbreviation.tr(),
+      southAbbreviation: LocaleKeys.directionSouthAbbreviation.tr(),
+    );
     if (formattedText != null) textBuffer.add(formattedText);
   }
 
