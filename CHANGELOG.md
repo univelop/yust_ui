@@ -1,3 +1,7 @@
+## 3.27.5 - 2024-03-25
+
+-   Use image cache for YustCachedImage in Web for original quality
+
 ## 3.27.4 - 2024-03-18
 
 -   Disable image cache for YustCachedImage in Web
