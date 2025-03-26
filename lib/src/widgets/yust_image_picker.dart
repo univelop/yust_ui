@@ -213,8 +213,9 @@ class YustImagePickerState extends State<YustImagePicker>
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           if (_selecting) _buildSelectAllButton(),
-          if (widget.allowMultiSelectDownload ||
-              widget.allowMultiSelectDeletion)
+          if ((widget.allowMultiSelectDownload ||
+                  widget.allowMultiSelectDeletion) &&
+              _fileHandler.getFiles().isNotEmpty)
             _buildSelectButton(),
           if (!_selecting) ...[
             ..._buildPickButtons(context),
@@ -299,7 +300,7 @@ class YustImagePickerState extends State<YustImagePicker>
       tooltip: LocaleKeys.download.tr(),
       onPressed:
           _selectedImages.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => widget.onMultiSelectDownload!(_selectedImages)
+              ? () => unawaited(widget.onMultiSelectDownload!(_selectedImages))
               : null,
     );
   }
@@ -873,6 +874,8 @@ class YustImagePickerState extends State<YustImagePicker>
     );
     if (confirmed != true) return;
 
+    await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
+
     for (final image in _selectedImages) {
       await _fileHandler.deleteFile(image);
       if (!image.cached && widget.onChanged != null) {
@@ -881,7 +884,16 @@ class YustImagePickerState extends State<YustImagePicker>
       }
     }
 
+    await EasyLoading.dismiss();
+
     _selectedImages.clear();
+
+    if (_fileHandler.getFiles().isEmpty) {
+      setState(() {
+        _selecting = false;
+        _allSelected = false;
+      });
+    }
   }
 
   @override

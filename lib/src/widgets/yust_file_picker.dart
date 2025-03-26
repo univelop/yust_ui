@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
@@ -178,7 +179,9 @@ class YustFilePickerState extends State<YustFilePicker>
   Widget _buildSuffixChild() {
     return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
       if (_selecting) _buildSelectAllButton(),
-      if (widget.allowMultiSelectDownload || widget.allowMultiSelectDeletion)
+      if ((widget.allowMultiSelectDownload ||
+              widget.allowMultiSelectDeletion) &&
+          _fileHandler.getFiles().isNotEmpty)
         _buildSelectButton(),
       if (_selecting) ...[
         if (widget.allowMultiSelectDownload)
@@ -197,7 +200,7 @@ class YustFilePickerState extends State<YustFilePicker>
       tooltip: LocaleKeys.download.tr(),
       onPressed:
           _selectedFiles.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => widget.onMultiSelectDownload!(_selectedFiles)
+              ? () => unawaited(widget.onMultiSelectDownload!(_selectedFiles))
               : null,
     );
   }
@@ -433,11 +436,22 @@ class YustFilePickerState extends State<YustFilePicker>
     );
     if (confirmed != true) return;
 
+    await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
+
     for (final file in _selectedFiles) {
       await _deleteFileAndCallOnChanged(file);
     }
 
+    await EasyLoading.dismiss();
+
     _selectedFiles.clear();
+
+    if (_fileHandler.getFiles().isEmpty) {
+      setState(() {
+        _selecting = false;
+        _allSelected = false;
+      });
+    }
   }
 
   Future<void> _reuploadFileForRename(
