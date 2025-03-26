@@ -150,7 +150,8 @@ class YustFilePickerState extends State<YustFilePicker>
     if (kIsWeb &&
         widget.enableDropzone &&
         _enabled &&
-        (widget.allowedExtensions?.isNotEmpty ?? true)) {
+        (widget.allowedExtensions?.isNotEmpty ?? true) &&
+        !_selecting) {
       return YustDropzoneListTile(
         suffixChild: _buildSuffixChild(),
         label: widget.label,
@@ -176,22 +177,26 @@ class YustFilePickerState extends State<YustFilePicker>
     }
   }
 
-  Widget _buildSuffixChild() {
-    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-      if (_selecting) _buildSelectAllButton(),
-      if ((widget.allowMultiSelectDownload ||
-              widget.allowMultiSelectDeletion) &&
-          _fileHandler.getFiles().isNotEmpty)
-        _buildSelectButton(),
-      if (_selecting) ...[
-        if (widget.allowMultiSelectDownload)
-          _buildDownloadSelectedButton(context),
-        if (widget.allowMultiSelectDeletion) _buildDeleteSelectedButton(context)
-      ],
-      if (!_selecting) _buildAddButton(context),
-      if (widget.suffixIcon != null && !_selecting) widget.suffixIcon!
-    ]);
-  }
+  Widget _buildSuffixChild() => Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: _selecting
+            ? [
+                _buildSelectAllButton(),
+                _buildCancelSelectionButton(),
+                if (widget.allowMultiSelectDownload)
+                  _buildDownloadSelectedButton(context),
+                if (widget.allowMultiSelectDeletion)
+                  _buildDeleteSelectedButton(context),
+              ]
+            : [
+                if ((widget.allowMultiSelectDownload ||
+                        widget.allowMultiSelectDeletion) &&
+                    _fileHandler.getFiles().length > 1)
+                  _buildStartSelectionButton(),
+                _buildAddButton(context),
+                if (widget.suffixIcon != null) widget.suffixIcon!,
+              ],
+      );
 
   Widget _buildDownloadSelectedButton(BuildContext context) {
     return IconButton(
@@ -210,8 +215,9 @@ class YustFilePickerState extends State<YustFilePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.delete),
       tooltip: LocaleKeys.delete.tr(),
-      onPressed:
-          _enabled && _selectedFiles.isNotEmpty ? _deleteSelectedFiles : null,
+      onPressed: _enabled && _selectedFiles.isNotEmpty
+          ? () => unawaited(_deleteSelectedFiles())
+          : null,
     );
   }
 
@@ -240,34 +246,41 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildSelectAllButton() {
     return TextButton.icon(
-      onPressed: _enabled
-          ? () {
-              setState(() {
-                if (_allSelected) {
-                  _selectedFiles.clear();
-                } else {
-                  _selectedFiles.clear();
-                  _selectedFiles.addAll(_fileHandler.getFiles());
-                }
-              });
-            }
-          : null,
+      onPressed: () {
+        setState(() {
+          if (_allSelected) {
+            _selectedFiles.clear();
+          } else {
+            _selectedFiles.clear();
+            _selectedFiles.addAll(_fileHandler.getFiles());
+          }
+        });
+      },
       icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
       label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
     );
   }
 
-  Widget _buildSelectButton() {
+  Widget _buildStartSelectionButton() {
     return TextButton(
       onPressed: () {
         setState(() {
-          _selecting = !_selecting;
-          if (!_selecting) {
-            _selectedFiles.clear();
-          }
+          _selecting = true;
         });
       },
-      child: Text(_selecting ? LocaleKeys.cancel.tr() : LocaleKeys.select.tr()),
+      child: Text(LocaleKeys.select.tr()),
+    );
+  }
+
+  Widget _buildCancelSelectionButton() {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selecting = false;
+          _selectedFiles.clear();
+        });
+      },
+      child: Text(LocaleKeys.cancel.tr()),
     );
   }
 
@@ -436,13 +449,13 @@ class YustFilePickerState extends State<YustFilePicker>
 
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
-    for (final file in _selectedFiles) {
-      await _deleteFileAndCallOnChanged(file);
-    }
+    await _deleteFiles(_selectedFiles);
+
+    setState(() {
+      _selectedFiles.clear();
+    });
 
     await EasyLoading.dismiss();
-
-    _selectedFiles.clear();
 
     if (_fileHandler.getFiles().isEmpty) {
       setState(() {
@@ -661,6 +674,10 @@ class YustFilePickerState extends State<YustFilePicker>
   Future<void> _deleteFiles(List<YustFile> files) async {
     for (final yustFile in files) {
       await _fileHandler.deleteFile(yustFile);
+
+      if (mounted) {
+        setState(() {});
+      }
     }
     widget.onChanged!(_fileHandler.getOnlineFiles());
     if (mounted) {

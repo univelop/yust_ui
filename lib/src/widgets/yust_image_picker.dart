@@ -164,7 +164,7 @@ class YustImagePickerState extends State<YustImagePicker>
   bool get _allSelected => _selectedImages.length >= _currentImageNumber;
 
   Widget _buildImagePicker(BuildContext context) {
-    if (kIsWeb && widget.enableDropzone && _enabled) {
+    if (kIsWeb && widget.enableDropzone && _enabled && !_selecting) {
       return YustDropzoneListTile(
         suffixChild: _buildSuffixChild(context),
         label: widget.label,
@@ -210,23 +210,23 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildSuffixChild(BuildContext context) => Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (_selecting) _buildSelectAllButton(),
-          if ((widget.allowMultiSelectDownload ||
-                  widget.allowMultiSelectDeletion) &&
-              _fileHandler.getFiles().isNotEmpty)
-            _buildSelectButton(),
-          if (!_selecting) ...[
-            ..._buildPickButtons(context),
-            if (widget.suffixIcon != null) widget.suffixIcon!
-          ],
-          if (_selecting) ...[
-            if (widget.allowMultiSelectDownload)
-              _buildDownloadSelectedButton(context),
-            if (widget.allowMultiSelectDeletion)
-              _buildDeleteSelectedButton(context),
-          ],
-        ],
+        children: _selecting
+            ? [
+                _buildSelectAllButton(),
+                _buildCancelSelectionButton(),
+                if (widget.allowMultiSelectDownload)
+                  _buildDownloadSelectedButton(context),
+                if (widget.allowMultiSelectDeletion)
+                  _buildDeleteSelectedButton(context),
+              ]
+            : [
+                if ((widget.allowMultiSelectDownload ||
+                        widget.allowMultiSelectDeletion) &&
+                    _fileHandler.getFiles().length > 1)
+                  _buildStartSelectionButton(),
+                ..._buildPickButtons(context),
+                if (widget.suffixIcon != null) widget.suffixIcon!,
+              ],
       );
 
   List<Widget> _buildPickButtons(BuildContext context) {
@@ -309,8 +309,9 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.delete),
       tooltip: LocaleKeys.delete.tr(),
-      onPressed:
-          _enabled && _selectedImages.isNotEmpty ? _deleteSelectedImages : null,
+      onPressed: _enabled && _selectedImages.isNotEmpty
+          ? () => unawaited(_deleteSelectedImages())
+          : null,
     );
   }
 
@@ -356,19 +357,28 @@ class YustImagePickerState extends State<YustImagePicker>
     });
   }
 
-  Widget _buildSelectButton() {
+  Widget _buildCancelSelectionButton() {
     return TextButton(
       onPressed: _enabled
           ? () {
               setState(() {
-                _selecting = !_selecting;
-                if (!_selecting) {
-                  _selectedImages.clear();
-                }
+                _selecting = false;
+                _selectedImages.clear();
               });
             }
           : null,
-      child: Text(_selecting ? LocaleKeys.cancel.tr() : LocaleKeys.select.tr()),
+      child: Text(LocaleKeys.cancel.tr()),
+    );
+  }
+
+  Widget _buildStartSelectionButton() {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          _selecting = true;
+        });
+      },
+      child: Text(LocaleKeys.select.tr()),
     );
   }
 
@@ -430,8 +440,9 @@ class YustImagePickerState extends State<YustImagePicker>
       children: [
         _buildImagePreview(context, file),
         _buildProgressIndicator(context, file),
-        if (_selecting) _buildSelectionCheckbox(context, file),
-        if (!_selecting) _buildRemoveButton(context, file),
+        _selecting
+            ? _buildSelectionCheckbox(context, file)
+            : _buildRemoveButton(context, file),
         _buildCachedIndicator(context, file),
       ],
     );
@@ -780,6 +791,10 @@ class YustImagePickerState extends State<YustImagePicker>
   Future<void> _deleteFiles(List<YustImage> pictureFiles) async {
     for (final yustFile in pictureFiles) {
       await _fileHandler.deleteFile(yustFile);
+
+      if (mounted) {
+        setState(() {});
+      }
     }
     widget.onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
     if (mounted) {
@@ -872,17 +887,13 @@ class YustImagePickerState extends State<YustImagePicker>
 
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
-    for (final image in _selectedImages) {
-      await _fileHandler.deleteFile(image);
-      if (!image.cached && widget.onChanged != null) {
-        widget
-            .onChanged!(YustImage.fromYustFiles(_fileHandler.getOnlineFiles()));
-      }
-    }
+    await _deleteFiles(_selectedImages);
+
+    setState(() {
+      _selectedImages.clear();
+    });
 
     await EasyLoading.dismiss();
-
-    _selectedImages.clear();
 
     if (_fileHandler.getFiles().isEmpty) {
       setState(() {
