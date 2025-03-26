@@ -125,8 +125,7 @@ class YustImagePickerState extends State<YustImagePicker>
   late YustFileHandler _fileHandler;
   late bool _enabled;
   late int _currentImageNumber;
-  late bool _selecting;
-  late bool _allSelected;
+  bool _selecting = false;
   final List<YustImage> _selectedImages = [];
 
   @override
@@ -147,8 +146,6 @@ class YustImagePickerState extends State<YustImagePicker>
 
     _enabled = (widget.onChanged != null && !widget.readOnly);
     _currentImageNumber = widget.imageCount;
-    _selecting = false;
-    _allSelected = false;
 
     super.initState();
   }
@@ -163,6 +160,8 @@ class YustImagePickerState extends State<YustImagePicker>
       builder: (context, snapshot) => _buildImagePicker(context),
     );
   }
+
+  bool get _allSelected => _selectedImages.length >= _currentImageNumber;
 
   Widget _buildImagePicker(BuildContext context) {
     if (kIsWeb && widget.enableDropzone && _enabled) {
@@ -326,7 +325,6 @@ class YustImagePickerState extends State<YustImagePicker>
   Future<void> _toggleSelectAll() async {
     if (_allSelected) {
       setState(() {
-        _allSelected = false;
         _selectedImages.clear();
       });
 
@@ -352,7 +350,6 @@ class YustImagePickerState extends State<YustImagePicker>
 
     setState(() {
       _selectedImages.clear();
-      _allSelected = !_allSelected;
       _selectedImages.addAll(includeHiddenImages == true
           ? allImages
           : allImages.take(_currentImageNumber));
@@ -367,7 +364,6 @@ class YustImagePickerState extends State<YustImagePicker>
                 _selecting = !_selecting;
                 if (!_selecting) {
                   _selectedImages.clear();
-                  _allSelected = false;
                 }
               });
             }
@@ -891,7 +887,6 @@ class YustImagePickerState extends State<YustImagePicker>
     if (_fileHandler.getFiles().isEmpty) {
       setState(() {
         _selecting = false;
-        _allSelected = false;
       });
     }
   }

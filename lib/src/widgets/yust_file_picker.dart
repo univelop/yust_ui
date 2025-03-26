@@ -111,8 +111,7 @@ class YustFilePickerState extends State<YustFilePicker>
   late YustFileHandler _fileHandler;
   final Map<String?, bool> _processing = {};
   late bool _enabled;
-  late bool _selecting;
-  late bool _allSelected;
+  bool _selecting = false;
   final List<YustFile> _selectedFiles = [];
 
   @override
@@ -128,8 +127,6 @@ class YustFilePickerState extends State<YustFilePicker>
       },
     );
     _enabled = (widget.onChanged != null && !widget.readOnly);
-    _selecting = false;
-    _allSelected = false;
 
     super.initState();
   }
@@ -145,6 +142,9 @@ class YustFilePickerState extends State<YustFilePicker>
       },
     );
   }
+
+  bool get _allSelected =>
+      _selectedFiles.length == _fileHandler.getFiles().length;
 
   Widget _buildFilePicker(BuildContext context) {
     if (kIsWeb &&
@@ -243,8 +243,7 @@ class YustFilePickerState extends State<YustFilePicker>
       onPressed: _enabled
           ? () {
               setState(() {
-                _allSelected = !_allSelected;
-                if (!_allSelected) {
+                if (_allSelected) {
                   _selectedFiles.clear();
                 } else {
                   _selectedFiles.clear();
@@ -265,7 +264,6 @@ class YustFilePickerState extends State<YustFilePicker>
           _selecting = !_selecting;
           if (!_selecting) {
             _selectedFiles.clear();
-            _allSelected = false;
           }
         });
       },
@@ -449,7 +447,6 @@ class YustFilePickerState extends State<YustFilePicker>
     if (_fileHandler.getFiles().isEmpty) {
       setState(() {
         _selecting = false;
-        _allSelected = false;
       });
     }
   }
