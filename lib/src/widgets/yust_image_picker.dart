@@ -72,12 +72,12 @@ class YustImagePicker extends StatefulWidget {
 
   /// Whether to allow multiple files to be downloaded at once.
   ///
-  /// Defaults to false.
+  /// Defaults to `false`.
   final bool allowMultiSelectDownload;
 
   /// Whether to allow multiple files to be deleted at once.
   ///
-  /// Defaults to false.
+  /// Defaults to `false`.
   final bool allowMultiSelectDeletion;
 
   /// Callback for multi-select download.
