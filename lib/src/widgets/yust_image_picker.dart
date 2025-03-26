@@ -82,7 +82,7 @@ class YustImagePicker extends StatefulWidget {
 
   /// Callback for multi-select download.
   /// Called when the user selects multiple files and clicks the download button.
-  final Future<void> Function(List<YustImage>)? onMultiSelectDownload;
+  final void Function(List<YustImage>)? onMultiSelectDownload;
 
   const YustImagePicker({
     super.key,
@@ -300,7 +300,7 @@ class YustImagePickerState extends State<YustImagePicker>
       tooltip: LocaleKeys.download.tr(),
       onPressed:
           _selectedImages.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => unawaited(widget.onMultiSelectDownload!(_selectedImages))
+              ? () => widget.onMultiSelectDownload!(_selectedImages)
               : null,
     );
   }
