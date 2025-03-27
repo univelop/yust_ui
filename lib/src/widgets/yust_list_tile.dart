@@ -27,6 +27,7 @@ class YustListTile extends StatelessWidget {
   final bool divider;
   final bool skipFocus;
   final bool showHighlightFocus;
+  final bool responsiveSuffixChild;
 
   const YustListTile({
     super.key,
@@ -45,6 +46,7 @@ class YustListTile extends StatelessWidget {
     this.divider = true,
     this.skipFocus = false,
     this.showHighlightFocus = false,
+    this.responsiveSuffixChild = false,
   });
 
   @override
@@ -102,36 +104,69 @@ class YustListTile extends StatelessWidget {
       focusNodeDebugLabel: 'yust-list-tile-$label',
       shouldHighlightFocusedWidget: showHighlightFocus,
       onFocusAction: onTap,
-      builder: (focusContext) => ListTile(
-        title: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            if (prefixIcon != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 10.0, left: 3.0),
-                child: prefixIcon,
+      builder: (focusContext) => responsiveSuffixChild && suffixChild != null
+          ? _buildResponsiveListTile(text, suffixChild!, padding)
+          : ListTile(
+              title: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  if (prefixIcon != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10.0, left: 3.0),
+                      child: prefixIcon,
+                    ),
+                  Flexible(
+                    child: center
+                        ? Center(
+                            child: text,
+                          )
+                        : text,
+                  ),
+                ],
               ),
-            Flexible(
-              child: center
-                  ? Center(
-                      child: text,
-                    )
-                  : text,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (navigate)
+                    const Icon(
+                      Icons.navigate_next,
+                    ),
+                  if (suffixChild != null) suffixChild!,
+                ],
+              ),
+              onTap: onTap,
+              contentPadding: padding,
             ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (navigate)
-              const Icon(
-                Icons.navigate_next,
-              ),
-            if (suffixChild != null) suffixChild!,
-          ],
-        ),
-        onTap: onTap,
-        contentPadding: padding,
+    );
+  }
+
+  ListTile _buildResponsiveListTile(
+      Text text, Widget suffixChild, EdgeInsets padding) {
+    return ListTile(
+      contentPadding: padding,
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 600) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: text),
+                suffixChild,
+              ],
+            );
+          } else {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                text,
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: suffixChild,
+                ),
+              ],
+            );
+          }
+        },
       ),
     );
   }

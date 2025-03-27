@@ -165,7 +165,7 @@ class YustFilePickerState extends State<YustFilePicker>
             return (fileData.name.toString(), null, data);
           });
         },
-        labelOverflow: true,
+        responsiveSuffixChild: true,
       );
     } else {
       return YustListTile(
@@ -174,7 +174,7 @@ class YustFilePickerState extends State<YustFilePicker>
         prefixIcon: widget.prefixIcon,
         below: _buildFiles(context),
         divider: widget.divider,
-        labelOverflow: true,
+        responsiveSuffixChild: true,
       );
     }
   }
