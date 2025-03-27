@@ -178,6 +178,7 @@ class YustImagePickerState extends State<YustImagePicker>
             return (fileData.name.toString(), null, data);
           });
         },
+        labelOverflow: true,
       );
     } else {
       return YustListTile(
@@ -186,6 +187,7 @@ class YustImagePickerState extends State<YustImagePicker>
         prefixIcon: widget.prefixIcon,
         below: _buildImages(context),
         divider: widget.divider,
+        labelOverflow: true,
       );
     }
   }
