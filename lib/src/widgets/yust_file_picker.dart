@@ -113,9 +113,12 @@ class YustFilePickerState extends State<YustFilePicker>
   late bool _enabled;
   bool _selecting = false;
   final List<YustFile> _selectedFiles = [];
+  late Future<void> _updateFuture;
 
   @override
   void initState() {
+    super.initState();
+
     _fileHandler = YustUi.fileHandlerManager.createFileHandler(
       storageFolderPath: widget.storageFolderPath,
       linkedDocAttribute: widget.linkedDocAttribute,
@@ -128,7 +131,7 @@ class YustFilePickerState extends State<YustFilePicker>
     );
     _enabled = (widget.onChanged != null && !widget.readOnly);
 
-    super.initState();
+    _updateFuture = _fileHandler.updateFiles(widget.files);
   }
 
   @override
@@ -136,7 +139,7 @@ class YustFilePickerState extends State<YustFilePicker>
     super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     return FutureBuilder(
-      future: _fileHandler.updateFiles(widget.files),
+      future: _updateFuture,
       builder: (context, snapshot) {
         return _buildFilePicker(context);
       },

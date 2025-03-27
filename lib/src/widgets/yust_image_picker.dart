@@ -127,9 +127,12 @@ class YustImagePickerState extends State<YustImagePicker>
   late int _currentImageNumber;
   bool _selecting = false;
   final List<YustImage> _selectedImages = [];
+  late Future<void> _updateFuture;
 
   @override
   void initState() {
+    super.initState();
+
     _fileHandler = YustUi.fileHandlerManager.createFileHandler(
       storageFolderPath: widget.storageFolderPath,
       linkedDocAttribute: widget.linkedDocAttribute,
@@ -147,7 +150,7 @@ class YustImagePickerState extends State<YustImagePicker>
     _enabled = (widget.onChanged != null && !widget.readOnly);
     _currentImageNumber = widget.imageCount;
 
-    super.initState();
+    _updateFuture = _fileHandler.updateFiles(widget.images, loadFiles: true);
   }
 
   @override
@@ -156,7 +159,7 @@ class YustImagePickerState extends State<YustImagePicker>
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
     return FutureBuilder(
-      future: _fileHandler.updateFiles(widget.images, loadFiles: true),
+      future: _updateFuture,
       builder: (context, snapshot) => _buildImagePicker(context),
     );
   }
