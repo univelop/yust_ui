@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
 
+/// Button styles for [YustButtonTile].
+enum YustButtonStyle {
+  primary,
+  secondary,
+  link;
+
+  /// Returns the appropriate [YustButtonStyle] based on json value [value].
+  ///
+  /// Use [defaultStyle] to set a default value if the json value is not found.
+  static YustButtonStyle fromJson(String value,
+          {YustButtonStyle defaultStyle = YustButtonStyle.primary}) =>
+      YustButtonStyle.values
+          .firstWhere((e) => e.name == value, orElse: () => defaultStyle);
+
+  /// Returns the json value of this enum.
+  String toJson() => name;
+}
+
 class YustButtonTile extends StatelessWidget {
   final String? label;
   final Color? color;
@@ -8,13 +26,13 @@ class YustButtonTile extends StatelessWidget {
   final void Function()? onPressed;
   final Widget? above;
   final Widget? below;
-  final bool elevated;
   final bool divider;
   final bool slimDesign;
   final bool inProgress;
   final Widget? suffixChild;
   final String? tooltipMessage;
   final double? maxWidth;
+  final YustButtonStyle buttonStyle;
 
   const YustButtonTile({
     super.key,
@@ -26,12 +44,12 @@ class YustButtonTile extends StatelessWidget {
     this.suffixChild,
     this.above,
     this.below,
-    this.elevated = true,
     this.divider = true,
     this.slimDesign = false,
     this.inProgress = false,
     this.tooltipMessage,
     this.maxWidth = 400,
+    this.buttonStyle = YustButtonStyle.primary,
   });
 
   @override
@@ -81,31 +99,54 @@ class YustButtonTile extends StatelessWidget {
     );
   }
 
+  Widget _buildButtonWithoutTooltip() {
+    switch (buttonStyle) {
+      case YustButtonStyle.primary:
+        return ElevatedButton.icon(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: textColor,
+          ),
+          icon: icon ?? const SizedBox(),
+          label: Text(
+            label ?? '',
+            style: TextStyle(color: textColor),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      case YustButtonStyle.secondary:
+        return FilledButton.tonalIcon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: textColor,
+          ),
+          onPressed: onPressed,
+          icon: icon ?? const SizedBox(),
+          label: Text(
+            label ?? '',
+            style: TextStyle(color: textColor),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      default:
+        return TextButton.icon(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            foregroundColor: color,
+          ),
+          icon: icon ?? const SizedBox(),
+          label: Text(
+            label ?? '',
+            style: TextStyle(decorationColor: color),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+    }
+  }
+
   Widget _buildButton() {
-    var button = elevated
-        ? ElevatedButton.icon(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              foregroundColor: textColor,
-            ),
-            icon: icon ?? const SizedBox(),
-            label: Text(
-              label!,
-              overflow: TextOverflow.ellipsis,
-            ),
-          )
-        : TextButton.icon(
-            onPressed: onPressed,
-            style: TextButton.styleFrom(
-              foregroundColor: color,
-            ),
-            icon: icon ?? const SizedBox(),
-            label: Text(
-              label!,
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
+    final button = _buildButtonWithoutTooltip();
 
     if (tooltipMessage != null) {
       return Tooltip(

@@ -13,6 +13,12 @@ class YustCachedImage extends StatelessWidget {
   final BoxFit? fit;
   final double? width;
   final double? height;
+
+  /// Resize image in cache to 300x300
+  ///
+  /// This may destroy the aspect ratio of the image
+  final bool? resizeInCache;
+
   const YustCachedImage({
     super.key,
     required this.file,
@@ -20,6 +26,7 @@ class YustCachedImage extends StatelessWidget {
     this.height,
     this.width,
     this.placeholder,
+    this.resizeInCache,
   });
 
   @override
@@ -44,6 +51,39 @@ class YustCachedImage extends StatelessWidget {
         fit: fit,
       );
     } else if (file.url != null) {
+      if (kIsWeb) {
+        return Image.network(
+          file.url!,
+          width: width,
+          height: height,
+          fit: fit,
+          cacheHeight: resizeInCache == true ? 300 : null,
+          cacheWidth: resizeInCache == true ? 300 : null,
+          frameBuilder: (context, child, frame, sync) {
+            if (frame != null) return child;
+
+            return const Center(
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+
+            return const Center(
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
+        );
+      }
+
       preview = CachedNetworkImage(
         width: width,
         height: height,
