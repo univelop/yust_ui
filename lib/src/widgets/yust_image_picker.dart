@@ -461,6 +461,9 @@ class YustImagePickerState extends State<YustImagePicker>
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
+
+      /// We dont want to scale down static images, only large lists of big images
+      resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
     );
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
