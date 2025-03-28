@@ -1,3 +1,9 @@
+## 3.27.6 - 2024-03-28
+
+-   Editable Geolocation
+-   More styling for buttons
+-   Multiselection for File and Image Picker
+
 ## 3.27.5 - 2024-03-25
 
 -   Use image cache for YustCachedImage in Web for original quality
