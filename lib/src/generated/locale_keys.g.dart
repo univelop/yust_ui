@@ -982,6 +982,10 @@ abstract class LocaleKeys {
   static const differingFileName = 'differingFileName';
   static const digitalizationMadeEasy = 'digitalizationMadeEasy';
   static const dimensions = 'dimensions';
+  static const directionEastAbbreviation = 'directionEastAbbreviation';
+  static const directionNorthAbbreviation = 'directionNorthAbbreviation';
+  static const directionSouthAbbreviation = 'directionSouthAbbreviation';
+  static const directionWestAbbreviation = 'directionWestAbbreviation';
   static const directoryNotSet = 'directoryNotSet';
   static const disableDebugMode = 'disableDebugMode';
   static const disableNotifications = 'disableNotifications';
@@ -1879,6 +1883,9 @@ abstract class LocaleKeys {
   static const geoLocation = 'geoLocation';
   static const geoLocationBrickDescription = 'geoLocationBrickDescription';
   static const geoLocationValueImportError = 'geoLocationValueImportError';
+  static const geoLocationValueImportInvalidCoordinates =
+      'geoLocationValueImportInvalidCoordinates';
+  static const geoPositionEnteredManually = 'geoPositionEnteredManually';
   static const german = 'german';
   static const germany = 'germany';
   static const getAllDescription = 'getAllDescription';
@@ -2024,6 +2031,8 @@ abstract class LocaleKeys {
   static const interval = 'interval';
   static const intervalMustBePositive = 'intervalMustBePositive';
   static const invalidApiKeyFormat = 'invalidApiKeyFormat';
+  static const invalidCoordinates = 'invalidCoordinates';
+  static const invalidCoordinatesExplanation = 'invalidCoordinatesExplanation';
   static const invalidEmail = 'invalidEmail';
   static const invalidExpression = 'invalidExpression';
   static const invalidInstalledSolutionTip = 'invalidInstalledSolutionTip';
@@ -2226,6 +2235,7 @@ abstract class LocaleKeys {
   static const mandatoryFields = 'mandatoryFields';
   static const mandatoryFieldsExplanation = 'mandatoryFieldsExplanation';
   static const mandatoryIf = 'mandatoryIf';
+  static const manualInput = 'manualInput';
   static const markAllAsRead = 'markAllAsRead';
   static const markEmailsReadAfterRetrieval = 'markEmailsReadAfterRetrieval';
   static const markdownDocsTable = 'markdownDocsTable';
@@ -2259,6 +2269,7 @@ abstract class LocaleKeys {
   static const mine = 'mine';
   static const minimumLicense = 'minimumLicense';
   static const minusDescription = 'minusDescription';
+  static const minutes = 'minutes';
   static const minutesDescription = 'minutesDescription';
   static const missingBackgroundImage = 'missingBackgroundImage';
   static const missingChatGptKey = 'missingChatGptKey';
@@ -2963,6 +2974,7 @@ abstract class LocaleKeys {
   static const shortcutSearchDescription = 'shortcutSearchDescription';
   static const shortcuts = 'shortcuts';
   static const showActiveInvitationLinks = 'showActiveInvitationLinks';
+  static const showAddress = 'showAddress';
   static const showAdminMenu = 'showAdminMenu';
   static const showAllComments = 'showAllComments';
   static const showArrow = 'showArrow';

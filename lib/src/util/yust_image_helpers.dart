@@ -59,34 +59,6 @@ enum YustWatermarkPosition {
   String toJson() => name;
 }
 
-enum YustLocationAppearance {
-  decimalDegree(LocaleKeys.decimalDegreeWithAbbreviation, 'decimal_degree'),
-  degreeMinutesSeconds(
-      LocaleKeys.degreeMinuteSecondsWithAbbreviation, 'degree_minutes_seconds');
-
-  const YustLocationAppearance(this._localeKey, this._jsonKey);
-  final String _localeKey;
-  final String _jsonKey;
-
-  /// Returns the translated label of this option
-  String getLabel() => _localeKey.tr();
-
-  /// Returns the translated labels of all options
-  static List<String> get labels =>
-      YustLocationAppearance.values.map((r) => r.getLabel()).toList();
-
-  static List<String> jsonValues() =>
-      YustLocationAppearance.values.map((l) => l._jsonKey).toList();
-
-  static YustLocationAppearance fromJson(String value) =>
-      YustLocationAppearance.values.firstWhere(
-        (e) => e._jsonKey == value,
-        orElse: () => YustLocationAppearance.decimalDegree,
-      );
-
-  String toJson() => _jsonKey;
-}
-
 /// exifTagPrecision to encode exif information, e.g. latitude.
 /// This number is the denominator of the fraction => increasing the number
 /// increases the exifTagPrecision.
@@ -323,16 +295,20 @@ void _addWatermarks({
   }
 
   if (addGps && position != null) {
-    final yustLocationHelper = YustLocationHelper();
-
-    if (watermarkLocationAppearance ==
-        YustLocationAppearance.degreeMinutesSeconds) {
-      textBuffer.add(
-          '${yustLocationHelper.formatLatitudeToDMS(position.latitude, degreeSymbol: '*')} ${yustLocationHelper.formatLongitudeToDMS(position.longitude, degreeSymbol: '*')}');
-    } else {
-      textBuffer.add(
-          '${yustLocationHelper.formatDecimalCoordinate(position.latitude)} ${yustLocationHelper.formatDecimalCoordinate(position.longitude)}');
-    }
+    final yustGeoLocation = YustGeoLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      accuracy: position.accuracy,
+    );
+    final formattedText = yustGeoLocation.toReadableString(
+      appearance: watermarkLocationAppearance,
+      degreeSymbol: '*',
+      northAbbreviation: LocaleKeys.directionNorthAbbreviation.tr(),
+      eastAbbreviation: LocaleKeys.directionEastAbbreviation.tr(),
+      westAbbreviation: LocaleKeys.directionWestAbbreviation.tr(),
+      southAbbreviation: LocaleKeys.directionSouthAbbreviation.tr(),
+    );
+    if (formattedText != null) textBuffer.add(formattedText);
   }
 
   if (textBuffer.isEmpty) {

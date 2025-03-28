@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:keyboard_name/keyboard_name.dart';
@@ -55,6 +56,7 @@ class YustUiHelpers {
 
   /// Does this device use the Samsung keyboard?
   Future<bool> usesSamsungKeyboard() async =>
+      !kIsWeb &&
       Platform.isAndroid &&
       (await KeyboardName.getVendorName ?? '')
           .toLowerCase()
