@@ -198,6 +198,10 @@ abstract class LocaleKeys {
   static const alertConfirmChangeIntegrationType =
       'alertConfirmChangeIntegrationType';
   static const alertConfirmDeleteIntegration = 'alertConfirmDeleteIntegration';
+  static const alertConfirmDeleteSelectedFiles =
+      'alertConfirmDeleteSelectedFiles';
+  static const alertConfirmDeleteSelectedImages =
+      'alertConfirmDeleteSelectedImages';
   static const alertConfirmDeleteUserByEmail = 'alertConfirmDeleteUserByEmail';
   static const alertConfirmDeleteUserByPassword =
       'alertConfirmDeleteUserByPassword';
@@ -408,6 +412,7 @@ abstract class LocaleKeys {
   static const alreadyMember = 'alreadyMember';
   static const alreadyRegistered = 'alreadyRegistered';
   static const alreadyUsingApp = 'alreadyUsingApp';
+  static const alsoSelectHiddenImages = 'alsoSelectHiddenImages';
   static const amazonAws = 'amazonAws';
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
@@ -786,6 +791,7 @@ abstract class LocaleKeys {
   static const confirmStopSharing = 'confirmStopSharing';
   static const confirmUnlock = 'confirmUnlock';
   static const confirmationMessage = 'confirmationMessage';
+  static const confirmationNeeded = 'confirmationNeeded';
   static const confirmedPassword = 'confirmedPassword';
   static const connectBillingAccount = 'connectBillingAccount';
   static const connectBillingAccount2 = 'connectBillingAccount2';
@@ -945,6 +951,7 @@ abstract class LocaleKeys {
   static const deleteWorkspace = 'deleteWorkspace';
   static const deleted = 'deleted';
   static const deletedBrick = 'deletedBrick';
+  static const deletingFiles = 'deletingFiles';
   static const deletingRecords = 'deletingRecords';
   static const deletingWorkspace = 'deletingWorkspace';
   static const delimiter = 'delimiter';
@@ -998,6 +1005,7 @@ abstract class LocaleKeys {
   static const doubleQuote = 'doubleQuote';
   static const download = 'download';
   static const downloadScript = 'downloadScript';
+  static const downloadingFiles = 'downloadingFiles';
   static const downloadingTemplate = 'downloadingTemplate';
   static const draftMessage = 'draftMessage';
   static const draftTimeRemaining = 'draftTimeRemaining';
@@ -2509,6 +2517,7 @@ abstract class LocaleKeys {
   static const onlyChangeableByOwner = 'onlyChangeableByOwner';
   static const onlyShowOwnTeam = 'onlyShowOwnTeam';
   static const onlyUnread = 'onlyUnread';
+  static const onlyVisibleImages = 'onlyVisibleImages';
   static const oops = 'oops';
   static const open = 'open';
   static const openDocs = 'openDocs';
