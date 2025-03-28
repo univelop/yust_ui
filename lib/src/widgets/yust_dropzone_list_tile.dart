@@ -14,6 +14,7 @@ class YustDropzoneListTile extends StatefulWidget {
   final Function(DropzoneViewController, DropzoneFileInterface)? onDrop;
   final Function(DropzoneViewController, List<DropzoneFileInterface>?)?
       onDropMultiple;
+  final bool responsiveSuffixChild;
 
   const YustDropzoneListTile(
       {super.key,
@@ -23,7 +24,8 @@ class YustDropzoneListTile extends StatefulWidget {
       this.below,
       this.divider = true,
       this.onDrop,
-      this.onDropMultiple});
+      this.onDropMultiple,
+      this.responsiveSuffixChild = false});
 
   @override
   State<YustDropzoneListTile> createState() => _YustDropzoneListTileState();
@@ -41,11 +43,13 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
           child: _buildDropzoneArea(context),
         ),
         YustListTile(
-            label: widget.label,
-            suffixChild: _isDragging ? null : widget.suffixChild,
-            prefixIcon: widget.prefixIcon,
-            below: _buildDropzoneInterfaceAndFiles(),
-            divider: widget.divider),
+          label: widget.label,
+          suffixChild: _isDragging ? null : widget.suffixChild,
+          prefixIcon: widget.prefixIcon,
+          below: _buildDropzoneInterfaceAndFiles(),
+          divider: widget.divider,
+          responsiveSuffixChild: widget.responsiveSuffixChild,
+        ),
       ],
     );
   }
