@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.27.0
+    yust: ^3.27.4
     cached_network_image: ^3.3.1
     cloud_firestore: ^5.4.4
     collection: ^1.18.0
@@ -53,10 +53,10 @@ dependency_overrides:
     flutter_painter:
         git:
             url: https://github.com/Zazo032/flutter_painter.git
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: 5181-make-geo-location-editable
+    # yust:
+    #     git:
+    #         url: https://github.com/univelop/yust.git
+    #         ref: master
     keyboard_name:
         git:
             url: https://github.com/univelop/keyboard_name.git
