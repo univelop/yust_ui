@@ -1,3 +1,7 @@
+## 3.27.7 - 2024-03-31
+
+-   Improvements for AlertService
+
 ## 3.27.6 - 2024-03-28
 
 -   Editable Geolocation
