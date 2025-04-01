@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -116,6 +117,7 @@ class YustImagePicker extends StatefulWidget {
     this.allowMultiSelectDeletion = false,
     this.onMultiSelectDownload,
   }) : imageCount = imageCount ?? 15;
+
   @override
   YustImagePickerState createState() => YustImagePickerState();
 }
@@ -164,7 +166,9 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  bool get _allSelected => _selectedImages.length >= _currentImageNumber;
+  bool get _allSelected =>
+      _selectedImages.length >=
+      min(_currentImageNumber, _fileHandler.getFiles().length);
 
   Widget _buildImagePicker(BuildContext context) {
     if (kIsWeb && widget.enableDropzone && _enabled && !_selecting) {
@@ -302,10 +306,16 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed:
-          _selectedImages.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => widget.onMultiSelectDownload!(_selectedImages)
-              : null,
+      onPressed: _selectedImages.isNotEmpty &&
+              widget.onMultiSelectDownload != null
+          ? () {
+              widget
+                  .onMultiSelectDownload!(List<YustImage>.of(_selectedImages));
+              setState(() {
+                _selectedImages.clear();
+              });
+            }
+          : null,
     );
   }
 
@@ -322,7 +332,7 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildSelectAllButton() {
     return TextButton.icon(
-      onPressed: _enabled ? () => unawaited(_toggleSelectAll()) : null,
+      onPressed: () => unawaited(_toggleSelectAll()),
       icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
       label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
     );
@@ -364,14 +374,12 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildCancelSelectionButton() {
     return TextButton(
-      onPressed: _enabled
-          ? () {
-              setState(() {
-                _selecting = false;
-                _selectedImages.clear();
-              });
-            }
-          : null,
+      onPressed: () {
+        setState(() {
+          _selecting = false;
+          _selectedImages.clear();
+        });
+      },
       child: Text(LocaleKeys.cancel.tr()),
     );
   }
@@ -912,4 +920,14 @@ class YustImagePickerState extends State<YustImagePicker>
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void didUpdateWidget(covariant YustImagePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.images != widget.images) {
+      _updateFuture = _fileHandler.updateFiles(widget.images, loadFiles: true);
+      setState(() {});
+    }
+  }
 }

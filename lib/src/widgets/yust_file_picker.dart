@@ -208,10 +208,15 @@ class YustFilePickerState extends State<YustFilePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed:
-          _selectedFiles.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => widget.onMultiSelectDownload!(_selectedFiles)
-              : null,
+      onPressed: _selectedFiles.isNotEmpty &&
+              widget.onMultiSelectDownload != null
+          ? () {
+              widget.onMultiSelectDownload!(List<YustFile>.of(_selectedFiles));
+              setState(() {
+                _selectedFiles.clear();
+              });
+            }
+          : null,
     );
   }
 
@@ -770,4 +775,14 @@ class YustFilePickerState extends State<YustFilePicker>
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void didUpdateWidget(covariant YustFilePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.files != widget.files) {
+      _updateFuture = _fileHandler.updateFiles(widget.files);
+      setState(() {});
+    }
+  }
 }
