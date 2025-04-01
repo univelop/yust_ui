@@ -120,6 +120,9 @@ class _YustTextFieldState extends State<YustTextField>
       _initValue = textFieldText;
       widget.onEditingComplete!(textFieldValue);
       _valueDidChange = false;
+    } else if (widget.validator != null &&
+        widget.validator!(textFieldValue) != null) {
+      _controller.text = _initValue;
     }
   }
 
@@ -163,6 +166,9 @@ class _YustTextFieldState extends State<YustTextField>
         _initValue = textFieldText;
         widget.onEditingComplete!(textFieldValue);
         _valueDidChange = false;
+      } else if (widget.validator != null &&
+          widget.validator!(textFieldValue) != null) {
+        _controller.text = _initValue;
       }
     }
   }
