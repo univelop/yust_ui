@@ -217,9 +217,7 @@ class YustFilePickerState extends State<YustFilePicker>
               widget.onMultiSelectDownload != null
           ? () {
               widget.onMultiSelectDownload!(List<YustFile>.of(_selectedFiles));
-              setState(() {
-                _selectedFiles.clear();
-              });
+              _cancelSelection();
             }
           : null,
     );
@@ -289,14 +287,16 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildCancelSelectionButton() {
     return TextButton(
-      onPressed: () {
-        setState(() {
-          _selecting = false;
-          _selectedFiles.clear();
-        });
-      },
+      onPressed: _cancelSelection,
       child: Text(LocaleKeys.cancel.tr()),
     );
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      _selecting = false;
+      _selectedFiles.clear();
+    });
   }
 
   Widget _buildAddButton(BuildContext context) {
@@ -465,18 +465,9 @@ class YustFilePickerState extends State<YustFilePicker>
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
     await _deleteFiles(_selectedFiles);
-
-    setState(() {
-      _selectedFiles.clear();
-    });
+    _cancelSelection();
 
     await EasyLoading.dismiss();
-
-    if (_fileHandler.getFiles().isEmpty) {
-      setState(() {
-        _selecting = false;
-      });
-    }
   }
 
   Future<void> _reuploadFileForRename(

@@ -316,9 +316,7 @@ class YustImagePickerState extends State<YustImagePicker>
           ? () {
               widget
                   .onMultiSelectDownload!(List<YustImage>.of(_selectedImages));
-              setState(() {
-                _selectedImages.clear();
-              });
+              _cancelSelection();
             }
           : null,
     );
@@ -379,14 +377,16 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildCancelSelectionButton() {
     return TextButton(
-      onPressed: () {
-        setState(() {
-          _selecting = false;
-          _selectedImages.clear();
-        });
-      },
+      onPressed: _cancelSelection,
       child: Text(LocaleKeys.cancel.tr()),
     );
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      _selecting = false;
+      _selectedImages.clear();
+    });
   }
 
   Widget _buildStartSelectionButton() {
@@ -909,18 +909,9 @@ class YustImagePickerState extends State<YustImagePicker>
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
     await _deleteFiles(_selectedImages);
-
-    setState(() {
-      _selectedImages.clear();
-    });
+    _cancelSelection();
 
     await EasyLoading.dismiss();
-
-    if (_fileHandler.getFiles().isEmpty) {
-      setState(() {
-        _selecting = false;
-      });
-    }
   }
 
   @override
