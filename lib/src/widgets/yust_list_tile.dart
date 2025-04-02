@@ -27,7 +27,7 @@ class YustListTile extends StatelessWidget {
   final bool divider;
   final bool skipFocus;
   final bool showHighlightFocus;
-  final bool responsiveSuffixChild;
+  final bool wrapSuffixChild;
 
   const YustListTile({
     super.key,
@@ -46,7 +46,7 @@ class YustListTile extends StatelessWidget {
     this.divider = true,
     this.skipFocus = false,
     this.showHighlightFocus = false,
-    this.responsiveSuffixChild = false,
+    this.wrapSuffixChild = false,
   });
 
   @override
@@ -104,7 +104,7 @@ class YustListTile extends StatelessWidget {
       focusNodeDebugLabel: 'yust-list-tile-$label',
       shouldHighlightFocusedWidget: showHighlightFocus,
       onFocusAction: onTap,
-      builder: (focusContext) => responsiveSuffixChild && suffixChild != null
+      builder: (focusContext) => wrapSuffixChild && suffixChild != null
           ? _buildResponsiveListTile(text, suffixChild!, padding)
           : ListTile(
               title: Row(

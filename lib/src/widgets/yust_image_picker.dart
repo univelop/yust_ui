@@ -85,6 +85,10 @@ class YustImagePicker extends StatefulWidget {
   /// Called when the user selects multiple files and clicks the download button.
   final void Function(List<YustImage>)? onMultiSelectDownload;
 
+  /// Whether the action buttons and the [suffixIcon] should be wrapped
+  /// to a new line, if there is not enough space.
+  final bool wrapSuffixChild;
+
   const YustImagePicker({
     super.key,
     this.label,
@@ -116,6 +120,7 @@ class YustImagePicker extends StatefulWidget {
     this.allowMultiSelectDownload = false,
     this.allowMultiSelectDeletion = false,
     this.onMultiSelectDownload,
+    this.wrapSuffixChild = false,
   }) : imageCount = imageCount ?? 15;
 
   @override
@@ -185,7 +190,7 @@ class YustImagePickerState extends State<YustImagePicker>
             return (fileData.name.toString(), null, data);
           });
         },
-        responsiveSuffixChild: true,
+        wrapSuffixChild: widget.wrapSuffixChild,
       );
     } else {
       return YustListTile(
@@ -194,7 +199,7 @@ class YustImagePickerState extends State<YustImagePicker>
         prefixIcon: widget.prefixIcon,
         below: _buildImages(context),
         divider: widget.divider,
-        responsiveSuffixChild: true,
+        wrapSuffixChild: widget.wrapSuffixChild,
       );
     }
   }
