@@ -1,3 +1,8 @@
+## 3.27.5+1 - 2024-04-03
+
+-   Fix-Version for 3.27.5 -- See 3.27.8 for the regular release
+-   Fixes for YustFileHandler
+
 ## 3.27.5 - 2024-03-25
 
 -   Use image cache for YustCachedImage in Web for original quality
