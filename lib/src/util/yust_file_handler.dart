@@ -389,7 +389,7 @@ class YustFileHandler {
       firestoreData = fileData;
     }
     if (firestoreData is List) {
-      firestoreData.removeWhere((f) => f['name'] == fileData.name);
+      firestoreData.removeWhere((f) => f['name'] == fileData['name']);
       firestoreData.add(fileData);
     }
 
