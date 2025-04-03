@@ -372,46 +372,47 @@ class YustFileHandler {
   }
 
   Future<void> _updateDocAttribute(YustFile cachedFile) async {
-    var attribute = await _getDocAttribute(cachedFile);
+    var firestoreData = await _getDocAttribute(cachedFile);
 
-    var fileData = cachedFile.toJson();
-    fileData['createdAt'] =
-        _getCreatedAtOfExistingFile(cachedFile.name!, attribute);
+    var fileData = _tryGetExistingFileMap(cachedFile.name!, firestoreData);
 
-    if (attribute is Map) {
-      if (attribute['url'] == null) {
-        attribute = fileData;
-      } else {
-        // edge case: image picker changes from single- to multi-image view
-        attribute = [attribute];
-      }
+    // If the file does not exist, we can just use the new cachedFile
+    fileData ??= cachedFile.toJson();
+
+    // Update all attributes, that may have changed for an updated
+    fileData['name'] = cachedFile.name;
+    fileData['modifiedAt'] = cachedFile.modifiedAt;
+    fileData['url'] = cachedFile.url;
+    fileData['hash'] = cachedFile.hash;
+
+    if (firestoreData is Map) {
+      firestoreData = fileData;
     }
-    if (attribute is List) {
-      attribute.removeWhere((f) => f['name'] == cachedFile.name);
-      attribute.add(fileData);
+    if (firestoreData is List) {
+      firestoreData.removeWhere((f) => f['name'] == fileData.name);
+      firestoreData.add(fileData);
     }
 
-    attribute ??= [fileData];
+    firestoreData ??= [fileData];
 
     await FirebaseFirestore.instance
         .doc(cachedFile.linkedDocPath!)
-        .update({cachedFile.linkedDocAttribute!: attribute});
+        .update({cachedFile.linkedDocAttribute!: firestoreData});
   }
 
-  /// When updating the file, we dont want to overwrite the createdAt attribute
-  ///
-  /// Therefore this function can be used to load the existing createdAt value
-  String? _getCreatedAtOfExistingFile(
-      String fileName, dynamic yustFileOrYustFiles) {
+  /// Get the existing file map for the given name (if it exists).
+  /// If it doesn't exist, return null.
+  dynamic _tryGetExistingFileMap(String fileName, dynamic yustFileOrYustFiles) {
+    dynamic result;
     if (yustFileOrYustFiles is Map) {
-      return yustFileOrYustFiles['createdAt'];
+      result = yustFileOrYustFiles;
+    } else if (yustFileOrYustFiles is List) {
+      result =
+          yustFileOrYustFiles.firstWhereOrNull((f) => f['name'] == fileName);
     }
-
-    if (yustFileOrYustFiles is List) {
-      return yustFileOrYustFiles
-          .firstWhereOrNull((f) => f['name'] == fileName)?['createdAt'];
+    if (result is Map) {
+      return {...result};
     }
-
     return null;
   }
 
