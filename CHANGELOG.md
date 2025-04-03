@@ -1,3 +1,7 @@
+## 3.27.8 - 2024-04-03
+
+-   Fixes for YustFileHandler
+
 ## 3.27.7 - 2024-03-31
 
 -   Improvements for AlertService
