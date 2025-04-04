@@ -53,7 +53,7 @@ class YustNumberField extends StatelessWidget {
     this.hideKeyboardOnAutofocus = false,
     this.validator,
     this.divider = true,
-    this.contentPadding = const EdgeInsets.all(20.0),
+    this.contentPadding = const EdgeInsets.fromLTRB(16.0, 20.0, 20.0, 20.0),
     this.completeOnUnfocus = true,
     this.skipFocus = false,
   });
