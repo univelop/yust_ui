@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yust_ui/src/widgets/yust_left_right_wrap.dart';
 
 import '../yust_ui.dart';
 import 'yust_focusable_builder.dart';
@@ -27,7 +28,7 @@ class YustListTile extends StatelessWidget {
   final bool divider;
   final bool skipFocus;
   final bool showHighlightFocus;
-  final bool responsiveSuffixChild;
+  final bool wrapSuffixChild;
 
   const YustListTile({
     super.key,
@@ -46,7 +47,7 @@ class YustListTile extends StatelessWidget {
     this.divider = true,
     this.skipFocus = false,
     this.showHighlightFocus = false,
-    this.responsiveSuffixChild = false,
+    this.wrapSuffixChild = false,
   });
 
   @override
@@ -104,70 +105,84 @@ class YustListTile extends StatelessWidget {
       focusNodeDebugLabel: 'yust-list-tile-$label',
       shouldHighlightFocusedWidget: showHighlightFocus,
       onFocusAction: onTap,
-      builder: (focusContext) => responsiveSuffixChild && suffixChild != null
-          ? _buildResponsiveListTile(text, suffixChild!, padding)
-          : ListTile(
-              title: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  if (prefixIcon != null)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0, left: 3.0),
-                      child: prefixIcon,
-                    ),
-                  Flexible(
-                    child: center
-                        ? Center(
-                            child: text,
-                          )
-                        : text,
-                  ),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (navigate)
-                    const Icon(
-                      Icons.navigate_next,
-                    ),
-                  if (suffixChild != null) suffixChild!,
-                ],
-              ),
-              onTap: onTap,
-              contentPadding: padding,
-            ),
+      builder: (focusContext) => wrapSuffixChild && suffixChild != null
+          ? _buildWrapListTile(text, suffixChild!, padding)
+          : _buildNormalListTile(text, padding),
     );
   }
 
-  ListTile _buildResponsiveListTile(
-      Text text, Widget suffixChild, EdgeInsets padding) {
+  ListTile _buildNormalListTile(Text text, EdgeInsets padding) {
     return ListTile(
-      contentPadding: padding,
-      title: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth >= 600) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: text),
-                suffixChild,
-              ],
-            );
-          } else {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                text,
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: suffixChild,
-                ),
-              ],
-            );
-          }
-        },
+      title: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          if (prefixIcon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0, left: 3.0),
+              child: prefixIcon,
+            ),
+          Flexible(
+            child: center
+                ? Center(
+                    child: text,
+                  )
+                : text,
+          ),
+        ],
       ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (navigate)
+            const Icon(
+              Icons.navigate_next,
+            ),
+          if (suffixChild != null) suffixChild!,
+        ],
+      ),
+      onTap: onTap,
+      contentPadding: padding,
+    );
+  }
+
+  Widget _buildWrapListTile(Text text, Widget suffixChild, EdgeInsets padding) {
+    return ListTile(
+      title: YustLeftRightWrap(
+          left: _buildLeftContent(text),
+          right: _buildRightContent(suffixChild)),
+      contentPadding: padding,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLeftContent(Text text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (prefixIcon != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0, left: 3.0),
+            child: prefixIcon,
+          ),
+        Flexible(
+          child: center ? Center(child: text) : text,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRightContent(Widget suffixChild) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (navigate)
+          const Icon(
+            Icons.navigate_next,
+          ),
+        suffixChild,
+      ],
     );
   }
 }
