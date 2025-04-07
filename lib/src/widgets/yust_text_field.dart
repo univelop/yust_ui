@@ -88,7 +88,7 @@ class YustTextField extends StatefulWidget {
     this.smartQuotesType,
     this.keyboardType,
     this.textInputAction,
-    this.contentPadding = const EdgeInsets.all(20.0),
+    this.contentPadding = const EdgeInsets.fromLTRB(16.0, 20.0, 20.0, 20.0),
     this.shouldCompleteNotValidInput = false,
     this.completeOnUnfocus = true,
     this.autofillHints,
