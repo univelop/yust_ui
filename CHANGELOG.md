@@ -1,3 +1,7 @@
+## 3.27.9 - 2024-04-07
+
+-   Fixes for File & Image Pickers
+
 ## 3.27.8 - 2024-04-03
 
 -   Fixes for YustFileHandler
