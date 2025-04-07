@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -84,6 +85,10 @@ class YustImagePicker extends StatefulWidget {
   /// Called when the user selects multiple files and clicks the download button.
   final void Function(List<YustImage>)? onMultiSelectDownload;
 
+  /// Whether the action buttons and the [suffixIcon] should be wrapped
+  /// to a new line, if there is not enough space.
+  final bool wrapSuffixChild;
+
   const YustImagePicker({
     super.key,
     this.label,
@@ -115,7 +120,9 @@ class YustImagePicker extends StatefulWidget {
     this.allowMultiSelectDownload = false,
     this.allowMultiSelectDeletion = false,
     this.onMultiSelectDownload,
+    this.wrapSuffixChild = false,
   }) : imageCount = imageCount ?? 15;
+
   @override
   YustImagePickerState createState() => YustImagePickerState();
 }
@@ -164,7 +171,9 @@ class YustImagePickerState extends State<YustImagePicker>
     );
   }
 
-  bool get _allSelected => _selectedImages.length >= _currentImageNumber;
+  bool get _allSelected =>
+      _selectedImages.length >=
+      min(_currentImageNumber, _fileHandler.getFiles().length);
 
   Widget _buildImagePicker(BuildContext context) {
     if (kIsWeb && widget.enableDropzone && _enabled && !_selecting) {
@@ -181,7 +190,7 @@ class YustImagePickerState extends State<YustImagePicker>
             return (fileData.name.toString(), null, data);
           });
         },
-        responsiveSuffixChild: true,
+        wrapSuffixChild: widget.wrapSuffixChild,
       );
     } else {
       return YustListTile(
@@ -190,7 +199,7 @@ class YustImagePickerState extends State<YustImagePicker>
         prefixIcon: widget.prefixIcon,
         below: _buildImages(context),
         divider: widget.divider,
-        responsiveSuffixChild: true,
+        wrapSuffixChild: widget.wrapSuffixChild,
       );
     }
   }
@@ -302,10 +311,14 @@ class YustImagePickerState extends State<YustImagePicker>
       color: Theme.of(context).colorScheme.primary,
       icon: const Icon(Icons.download),
       tooltip: LocaleKeys.download.tr(),
-      onPressed:
-          _selectedImages.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () => widget.onMultiSelectDownload!(_selectedImages)
-              : null,
+      onPressed: _selectedImages.isNotEmpty &&
+              widget.onMultiSelectDownload != null
+          ? () {
+              widget
+                  .onMultiSelectDownload!(List<YustImage>.of(_selectedImages));
+              _cancelSelection();
+            }
+          : null,
     );
   }
 
@@ -322,7 +335,7 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildSelectAllButton() {
     return TextButton.icon(
-      onPressed: _enabled ? () => unawaited(_toggleSelectAll()) : null,
+      onPressed: () => unawaited(_toggleSelectAll()),
       icon: Icon(_allSelected ? Icons.cancel : Icons.check_circle_outline),
       label: Text(_allSelected ? LocaleKeys.none.tr() : LocaleKeys.all.tr()),
     );
@@ -364,16 +377,16 @@ class YustImagePickerState extends State<YustImagePicker>
 
   Widget _buildCancelSelectionButton() {
     return TextButton(
-      onPressed: _enabled
-          ? () {
-              setState(() {
-                _selecting = false;
-                _selectedImages.clear();
-              });
-            }
-          : null,
+      onPressed: _cancelSelection,
       child: Text(LocaleKeys.cancel.tr()),
     );
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      _selecting = false;
+      _selectedImages.clear();
+    });
   }
 
   Widget _buildStartSelectionButton() {
@@ -896,20 +909,21 @@ class YustImagePickerState extends State<YustImagePicker>
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
     await _deleteFiles(_selectedImages);
-
-    setState(() {
-      _selectedImages.clear();
-    });
+    _cancelSelection();
 
     await EasyLoading.dismiss();
-
-    if (_fileHandler.getFiles().isEmpty) {
-      setState(() {
-        _selecting = false;
-      });
-    }
   }
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void didUpdateWidget(covariant YustImagePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.images != widget.images) {
+      _updateFuture = _fileHandler.updateFiles(widget.images, loadFiles: true);
+      setState(() {});
+    }
+  }
 }
