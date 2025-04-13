@@ -245,13 +245,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
             backgroundColor: Colors.black,
             radius: 25,
             child: Builder(
-              builder: (BuildContext context) {
+              builder: (BuildContext buttonContext) {
                 return IconButton(
                   iconSize: 35,
                   color: Colors.white,
                   onPressed: () {
                     YustUi.fileHelpers.downloadAndLaunchFile(
-                        context: context, url: image.url!, name: image.name!);
+                        context: buttonContext,
+                        url: image.url!,
+                        name: image.name!);
                   },
                   icon: kIsWeb
                       ? const Icon(Icons.download)

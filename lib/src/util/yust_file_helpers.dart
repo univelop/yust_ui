@@ -56,14 +56,24 @@ class YustFileHelpers {
       }
       if (file != null) {
         final buttonLocation = box!.localToGlobal(Offset.zero) & box.size;
+        // Clamp buttonLocation to the screen size
+        final clampedButtonLocation = Rect.fromLTWH(
+          buttonLocation.left.clamp(0, size.width),
+          buttonLocation.top.clamp(0, size.height),
+          buttonLocation.width.clamp(0, size.width - buttonLocation.left),
+          buttonLocation.height.clamp(0, size.height - buttonLocation.top),
+        );
+
         // Alternatively create a Location in the center of the Screen
         // c-spell: disable-next-line
         final centerLocation = Rect.fromLTWH(0, 0, size.width, size.height / 2);
 
         // If we don't have a useful button location, use the center position
-        final sharePositionOrigin = buttonLocation.height >= size.height
-            ? centerLocation
-            : buttonLocation;
+        final sharePositionOrigin =
+            (clampedButtonLocation.bottom > size.height ||
+                    clampedButtonLocation.right > size.width)
+                ? centerLocation
+                : clampedButtonLocation;
         // ignore: todo
         // TODO: use shareXFiles
         // ignore: deprecated_member_use

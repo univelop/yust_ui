@@ -403,16 +403,19 @@ class YustFilePickerState extends State<YustFilePicker>
         ],
       );
 
-  Widget _buildDownloadButton(YustFile file) => IconButton(
-        icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
-        color: Theme.of(context).primaryColor,
-        onPressed: () async {
-          if (file.isValid()) {
-            await YustUi.fileHelpers.downloadAndLaunchFile(
-                context: context, url: file.url!, name: file.name!);
-          }
-        },
-      );
+  Widget _buildDownloadButton(YustFile file) =>
+      Builder(builder: (buttonContext) {
+        return IconButton(
+          icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
+          color: Theme.of(buttonContext).primaryColor,
+          onPressed: () async {
+            if (file.isValid()) {
+              await YustUi.fileHelpers.downloadAndLaunchFile(
+                  context: buttonContext, url: file.url!, name: file.name!);
+            }
+          },
+        );
+      });
 
   Widget _buildFileRenameButton(YustFile file) {
     if (!_enabled) {
