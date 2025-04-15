@@ -1,3 +1,7 @@
+## 3.27.10 - 2024-04-15
+
+-   Improve Sharing Dialog on iPads
+
 ## 3.27.9 - 2024-04-07
 
 -   Fixes for File & Image Pickers
