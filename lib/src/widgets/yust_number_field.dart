@@ -17,6 +17,7 @@ class YustNumberField extends StatelessWidget {
   final ChangeCallback? onEditingComplete;
   final TextEditingController? controller;
   final TapCallback? onTap;
+  final bool expands;
   final bool readOnly;
   final bool enabled;
   final YustInputStyle style;
@@ -25,6 +26,7 @@ class YustNumberField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final bool hideKeyboardOnAutofocus;
+  final bool slimDesign;
   final FormFieldValidator<num?>? validator;
   final bool divider;
   final TextStyle? valueStyle;
@@ -43,6 +45,7 @@ class YustNumberField extends StatelessWidget {
     this.onEditingComplete,
     this.controller,
     this.onTap,
+    this.expands = false,
     this.enabled = true,
     this.readOnly = false,
     this.style = YustInputStyle.normal,
@@ -51,6 +54,7 @@ class YustNumberField extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.hideKeyboardOnAutofocus = false,
+    this.slimDesign = false,
     this.validator,
     this.divider = true,
     this.contentPadding = const EdgeInsets.fromLTRB(16.0, 20.0, 20.0, 20.0),
@@ -101,6 +105,7 @@ class YustNumberField extends StatelessWidget {
             ],
             textInputAction: TextInputAction.next,
             onTap: onTap,
+            expands: expands,
             readOnly: readOnly,
             enabled: enabled,
             autovalidateMode:
@@ -108,6 +113,7 @@ class YustNumberField extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             hideKeyboardOnAutofocus: hideKeyboardOnAutofocus,
+            slimDesign: slimDesign,
             validator: validator == null
                 ? null
                 : (value) => validator!(valueToNum(value)),

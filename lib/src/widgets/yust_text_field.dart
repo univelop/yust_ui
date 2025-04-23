@@ -21,6 +21,7 @@ class YustTextField extends StatefulWidget {
   final DeleteCallback? onDelete;
   final int? maxLines;
   final int? minLines;
+  final bool expands;
   final bool autocorrect;
   final bool readOnly;
   final bool enabled;
@@ -69,6 +70,7 @@ class YustTextField extends StatefulWidget {
     this.maxLines,
     this.labelStyle,
     this.minLines,
+    this.expands = false,
     this.enabled = true,
     this.autocorrect = true,
     this.readOnly = false,
@@ -262,8 +264,13 @@ class _YustTextFieldState extends State<YustTextField>
         errorMaxLines: 5,
       ),
       style: widget.textStyle,
-      maxLines: widget.obscureText ? 1 : widget.maxLines,
-      minLines: widget.minLines,
+      maxLines: widget.expands
+          ? null
+          : widget.obscureText
+              ? 1
+              : widget.maxLines,
+      minLines: widget.expands ? null : widget.minLines,
+      expands: widget.expands,
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
