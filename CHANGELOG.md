@@ -1,3 +1,7 @@
+## 3.27.11 - 2024-04-28
+
+-   Add `expands` property to fields
+
 ## 3.27.10 - 2024-04-15
 
 -   Improve Sharing Dialog on iPads
