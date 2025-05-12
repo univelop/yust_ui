@@ -525,8 +525,8 @@ abstract class LocaleKeys {
   static const basicAuthDescription = 'basicAuthDescription';
   static const basicList = 'basicList';
   static const bcc = 'bcc';
-  static const bccEmail = 'bccEmail';
-  static const bccName = 'bccName';
+  static const bccEmails = 'bccEmails';
+  static const bccNames = 'bccNames';
   static const beganAt = 'beganAt';
   static const behavior = 'behavior';
   static const belongsToLinkedRecordLabel = 'belongsToLinkedRecordLabel';
@@ -607,8 +607,8 @@ abstract class LocaleKeys {
   static const career = 'career';
   static const cc = 'cc';
   static const ccBcc = 'ccBcc';
-  static const ccEmail = 'ccEmail';
-  static const ccName = 'ccName';
+  static const ccEmails = 'ccEmails';
+  static const ccNames = 'ccNames';
   static const ceilDescription = 'ceilDescription';
   static const cells = 'cells';
   static const change = 'change';
@@ -947,6 +947,7 @@ abstract class LocaleKeys {
   static const defaultNumberExplanation = 'defaultNumberExplanation';
   static const defaultOption = 'defaultOption';
   static const defaultOptionExplanation = 'defaultOptionExplanation';
+  static const defaultOptions = 'defaultOptions';
   static const defaultPath = 'defaultPath';
   static const defaultRole = 'defaultRole';
   static const defaultRoleForDomainExplanation =
@@ -1351,8 +1352,6 @@ abstract class LocaleKeys {
   static const exceptionInvalidCharacter = 'exceptionInvalidCharacter';
   static const exceptionInvalidCharacterWithoutCapitalLetters =
       'exceptionInvalidCharacterWithoutCapitalLetters';
-  static const exceptionInvalidColonsBccName = 'exceptionInvalidColonsBccName';
-  static const exceptionInvalidColonsCcName = 'exceptionInvalidColonsCcName';
   static const exceptionInvalidColonsRecipientName =
       'exceptionInvalidColonsRecipientName';
   static const exceptionInvalidColonsSenderName =
@@ -1420,6 +1419,8 @@ abstract class LocaleKeys {
       'exceptionMemberTileWithoutIdBrick';
   static const exceptionMemberTileWithoutStatusBrick =
       'exceptionMemberTileWithoutStatusBrick';
+  static const exceptionMismatchNamesAndEmails =
+      'exceptionMismatchNamesAndEmails';
   static const exceptionMissingAzureClientId = 'exceptionMissingAzureClientId';
   static const exceptionMissingAzureClientSecret =
       'exceptionMissingAzureClientSecret';
@@ -1471,6 +1472,7 @@ abstract class LocaleKeys {
   static const exceptionMultiRecordPickerBrickNotSupported =
       'exceptionMultiRecordPickerBrickNotSupported';
   static const exceptionNoActiveCellSelected = 'exceptionNoActiveCellSelected';
+  static const exceptionNoReceivers = 'exceptionNoReceivers';
   static const exceptionNoRecordPermission = 'exceptionNoRecordPermission';
   static const exceptionNoRecordSelected = 'exceptionNoRecordSelected';
   static const exceptionNoWorkflowLinked = 'exceptionNoWorkflowLinked';
@@ -2275,7 +2277,6 @@ abstract class LocaleKeys {
   static const management = 'management';
   static const mandatoryField = 'mandatoryField';
   static const mandatoryFields = 'mandatoryFields';
-  static const mandatoryFieldsExplanation = 'mandatoryFieldsExplanation';
   static const mandatoryIf = 'mandatoryIf';
   static const manualInput = 'manualInput';
   static const markAllAsRead = 'markAllAsRead';
@@ -2295,6 +2296,7 @@ abstract class LocaleKeys {
   static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
   static const maxNumberImages = 'maxNumberImages';
+  static const maxOptionAmountReached = 'maxOptionAmountReached';
   static const maximumPreviewExceeded = 'maximumPreviewExceeded';
   static const measureBrickDescription = 'measureBrickDescription';
   static const mediocreHappyUserPlaceholder = 'mediocreHappyUserPlaceholder';
@@ -2579,7 +2581,6 @@ abstract class LocaleKeys {
   static const openRecord = 'openRecord';
   static const openScanner = 'openScanner';
   static const openTodo = 'openTodo';
-  static const openWorkflow = 'openWorkflow';
   static const openWorkspace = 'openWorkspace';
   static const operators = 'operators';
   static const optionName = 'optionName';
@@ -2751,7 +2752,8 @@ abstract class LocaleKeys {
   static const recheckWorkspaceStatus = 'recheckWorkspaceStatus';
   static const recipient = 'recipient';
   static const recipientEmail = 'recipientEmail';
-  static const recipientName = 'recipientName';
+  static const recipientEmails = 'recipientEmails';
+  static const recipientNames = 'recipientNames';
   static const recommendedSolutions = 'recommendedSolutions';
   static const record = 'record';
   static const recordAlreadyExists = 'recordAlreadyExists';
@@ -2946,6 +2948,9 @@ abstract class LocaleKeys {
   static const seconds = 'seconds';
   static const section = 'section';
   static const sectionBrickDescription = 'sectionBrickDescription';
+  static const segments = 'segments';
+  static const segmentsBrickDescription = 'segmentsBrickDescription';
+  static const segmentsSetSettings = 'segmentsSetSettings';
   static const select = 'select';
   static const selectAll = 'selectAll';
   static const selectApiKey = 'selectApiKey';
@@ -3082,6 +3087,8 @@ abstract class LocaleKeys {
   static const showUnit = 'showUnit';
   static const showWeekday = 'showWeekday';
   static const showWorkWeek = 'showWorkWeek';
+  static const showWorkflowExecution = 'showWorkflowExecution';
+  static const showWorkflowExecutions = 'showWorkflowExecutions';
   static const showWorkflows = 'showWorkflows';
   static const sideColor = 'sideColor';
   static const signIn = 'signIn';
@@ -3217,6 +3224,14 @@ abstract class LocaleKeys {
   static const statusLabelCannotBeEmpty = 'statusLabelCannotBeEmpty';
   static const statusSettings = 'statusSettings';
   static const statusWithNumber = 'statusWithNumber';
+  static const stepCreditUsageFree = 'stepCreditUsageFree';
+  static const stepCreditUsageGetEmails = 'stepCreditUsageGetEmails';
+  static const stepCreditUsageIterateRecords = 'stepCreditUsageIterateRecords';
+  static const stepCreditUsageRunAction = 'stepCreditUsageRunAction';
+  static const stepCreditUsageSaveFile = 'stepCreditUsageSaveFile';
+  static const stepCreditUsageSendEmail = 'stepCreditUsageSendEmail';
+  static const stepCreditUsageSingle = 'stepCreditUsageSingle';
+  static const stepCreditUsageWebRequest = 'stepCreditUsageWebRequest';
   static const stepMessageIterate = 'stepMessageIterate';
   static const stepNotImplemented = 'stepNotImplemented';
   static const stopSharing = 'stopSharing';
