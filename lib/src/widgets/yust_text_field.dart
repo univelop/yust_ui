@@ -247,19 +247,16 @@ class _YustTextFieldState extends State<YustTextField>
   }
 
   Widget _buildTextField() {
-    final counterString = '(${_controller.text.length}/${widget.maxLength})';
-    final label = (widget.label != null && widget.label!.isNotEmpty)
-    ? (widget.maxLength == null
-        ? widget.label
-        : '${widget.label} $counterString')
-    : (widget.maxLength == null
-        ? null
-        : counterString);
+    final label = [
+  if (widget.label?.isNotEmpty ?? false) widget.label!,
+  if (widget.maxLength != null) '(${_controller.text.length}/${widget.maxLength})',
+].join(' ').trim();
+
         
     final textField = TextFormField(
       decoration: InputDecoration(
         counter: const SizedBox.shrink(),
-        labelText: label,
+        labelText: label.isNotEmpty ? label : null,
         labelStyle: widget.labelStyle ??
             (widget.readOnly
                 ? TextStyle(

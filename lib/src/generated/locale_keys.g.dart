@@ -956,7 +956,6 @@ abstract class LocaleKeys {
   static const defaultNumberExplanation = 'defaultNumberExplanation';
   static const defaultOption = 'defaultOption';
   static const defaultOptionExplanation = 'defaultOptionExplanation';
-  static const defaultOptions = 'defaultOptions';
   static const defaultPath = 'defaultPath';
   static const defaultRole = 'defaultRole';
   static const defaultRoleForDomainExplanation =
