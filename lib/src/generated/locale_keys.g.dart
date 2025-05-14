@@ -489,6 +489,9 @@ abstract class LocaleKeys {
   static const attachmentsBrick = 'attachmentsBrick';
   static const attention = 'attention';
   static const authViaMicrosoftGoogleOAuth = 'authViaMicrosoftGoogleOAuth';
+  static const authentication = 'authentication';
+  static const authenticationSendWebRequestDescription =
+      'authenticationSendWebRequestDescription';
   static const autoOpenCameraOnMobile = 'autoOpenCameraOnMobile';
   static const autodiscover = 'autodiscover';
   static const autodiscoverFailed = 'autodiscoverFailed';
@@ -727,6 +730,12 @@ abstract class LocaleKeys {
   static const checksPassedOldDateFilters = 'checksPassedOldDateFilters';
   static const checksPassedSecondaryKeyDuplicates =
       'checksPassedSecondaryKeyDuplicates';
+  static const checksPassedSolutionFolderHealthCheck =
+      'checksPassedSolutionFolderHealthCheck';
+  static const checksPassedSolutionSharedRecordSpecHealthCheck =
+      'checksPassedSolutionSharedRecordSpecHealthCheck';
+  static const checksPassedSolutionWorkflowHealthCheck =
+      'checksPassedSolutionWorkflowHealthCheck';
   static const checksPassedSyncSumTransfer = 'checksPassedSyncSumTransfer';
   static const checksPassedTransfer = 'checksPassedTransfer';
   static const checksPassedTransferDuplicates =
@@ -1408,6 +1417,10 @@ abstract class LocaleKeys {
       'exceptionLinkedRecordSpecNotFound';
   static const exceptionListNotFound = 'exceptionListNotFound';
   static const exceptionListTooLong = 'exceptionListTooLong';
+  static const exceptionMandatoryScopesMissingMessage =
+      'exceptionMandatoryScopesMissingMessage';
+  static const exceptionMandatoryScopesMissingTitle =
+      'exceptionMandatoryScopesMissingTitle';
   static const exceptionMaxSecondsBreached = 'exceptionMaxSecondsBreached';
   static const exceptionMemberRecordSpecNotFound =
       'exceptionMemberRecordSpecNotFound';
@@ -1471,6 +1484,8 @@ abstract class LocaleKeys {
   static const exceptionMissingWorkspaceId = 'exceptionMissingWorkspaceId';
   static const exceptionMultiRecordPickerBrickNotSupported =
       'exceptionMultiRecordPickerBrickNotSupported';
+  static const exceptionMustBeDelegatedIntegration =
+      'exceptionMustBeDelegatedIntegration';
   static const exceptionNoActiveCellSelected = 'exceptionNoActiveCellSelected';
   static const exceptionNoReceivers = 'exceptionNoReceivers';
   static const exceptionNoRecordPermission = 'exceptionNoRecordPermission';
@@ -1548,6 +1563,8 @@ abstract class LocaleKeys {
   static const exceptionWorkspaceNotLoaded = 'exceptionWorkspaceNotLoaded';
   static const exceptionWrongFileFormatCsv = 'exceptionWrongFileFormatCsv';
   static const exceptionWrongFileFormatXlsx = 'exceptionWrongFileFormatXlsx';
+  static const exceptionWrongPermissionsIntegration =
+      'exceptionWrongPermissionsIntegration';
   static const exhibition = 'exhibition';
   static const explainInvalidValueForBrick = 'explainInvalidValueForBrick';
   static const explainTypesOfTwoBricks = 'explainTypesOfTwoBricks';
@@ -1789,6 +1806,8 @@ abstract class LocaleKeys {
   static const flowButtonBrickDescription = 'flowButtonBrickDescription';
   static const flowButtonNotPossible = 'flowButtonNotPossible';
   static const flowDefaultEndMessage = 'flowDefaultEndMessage';
+  static const flowExceptionWrongIntegrationTypeForAuthentication =
+      'flowExceptionWrongIntegrationTypeForAuthentication';
   static const flowLogAbortedByUser = 'flowLogAbortedByUser';
   static const flowLogAddedUser = 'flowLogAddedUser';
   static const flowLogApprovedRequest = 'flowLogApprovedRequest';
@@ -2920,6 +2939,7 @@ abstract class LocaleKeys {
   static const scheduler = 'scheduler';
   static const schedulerBrickDescription = 'schedulerBrickDescription';
   static const schedulerSetSettings = 'schedulerSetSettings';
+  static const scopes = 'scopes';
   static const search = 'search';
   static const searchCols = 'searchCols';
   static const searchForBricks = 'searchForBricks';
@@ -3148,6 +3168,7 @@ abstract class LocaleKeys {
   static const solutionDescription = 'solutionDescription';
   static const solutionDescriptionTooLong = 'solutionDescriptionTooLong';
   static const solutionDownloads = 'solutionDownloads';
+  static const solutionFoundWorkspaceErrors = 'solutionFoundWorkspaceErrors';
   static const solutionGallery = 'solutionGallery';
   static const solutionIncludeDemoData = 'solutionIncludeDemoData';
   static const solutionIncludeEntireWorkspace =
@@ -3157,6 +3178,8 @@ abstract class LocaleKeys {
       'solutionIncludeWorkspaceSettings';
   static const solutionInstallError = 'solutionInstallError';
   static const solutionLockReason = 'solutionLockReason';
+  static const solutionMissingFolderHealthCheckMessage =
+      'solutionMissingFolderHealthCheckMessage';
   static const solutionName = 'solutionName';
   static const solutionNamePlaceholder = 'solutionNamePlaceholder';
   static const solutionNameTooLong = 'solutionNameTooLong';
@@ -3166,9 +3189,13 @@ abstract class LocaleKeys {
   static const solutionPublisher = 'solutionPublisher';
   static const solutionQuestions = 'solutionQuestions';
   static const solutionRequireTodoTile = 'solutionRequireTodoTile';
+  static const solutionSharedRecordSpecsWarning =
+      'solutionSharedRecordSpecsWarning';
   static const solutionStore = 'solutionStore';
   static const solutionStoreBeta = 'solutionStoreBeta';
   static const solutionTileExplanation = 'solutionTileExplanation';
+  static const solutionTimeTriggeredWorkflowsWarning =
+      'solutionTimeTriggeredWorkflowsWarning';
   static const solutionUpToDate = 'solutionUpToDate';
   static const solutionUpdate = 'solutionUpdate';
   static const solutionUpdateDisclaimer = 'solutionUpdateDisclaimer';
@@ -3177,6 +3204,7 @@ abstract class LocaleKeys {
   static const solutionUpdateFailed = 'solutionUpdateFailed';
   static const solutionUpload = 'solutionUpload';
   static const solutionVersion = 'solutionVersion';
+  static const solutionVersionCreationFailed = 'solutionVersionCreationFailed';
   static const solutionVersions = 'solutionVersions';
   static const solutionWorkspaceInstallationDisabled =
       'solutionWorkspaceInstallationDisabled';
@@ -3618,6 +3646,8 @@ abstract class LocaleKeys {
   static const waitingTime = 'waitingTime';
   static const wantToOpenLink = 'wantToOpenLink';
   static const warning = 'warning';
+  static const warningAuthenticationInClientWorkflows =
+      'warningAuthenticationInClientWorkflows';
   static const warningForUnmetCondition = 'warningForUnmetCondition';
   static const warnings = 'warnings';
   static const watermarkExplanation = 'watermarkExplanation';
