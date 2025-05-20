@@ -51,7 +51,7 @@ class YustButtonTile extends StatelessWidget {
       this.tooltipMessage,
       this.maxWidth = 400,
       this.buttonStyle = YustButtonStyle.primary,
-      this.allowDoubleClick = true});
+      this.allowDoubleClick = false,});
 
   @override
   Widget build(BuildContext context) {
