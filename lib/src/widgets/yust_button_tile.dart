@@ -138,7 +138,7 @@ class _StyledButtonTile extends StatefulWidget {
       required this.textColor,
       required this.icon,
       required this.label,
-      required this.allowDoubleClick});
+      required this.allowDoubleClick,});
 
   @override
   State<StatefulWidget> createState() => _StyledButtonTileState();
