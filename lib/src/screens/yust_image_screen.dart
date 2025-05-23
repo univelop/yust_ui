@@ -14,19 +14,22 @@ class YustImageScreen extends StatefulWidget {
   final List<YustImage> images;
 
   final int activeImageIndex;
-  final void Function(YustImage image, Uint8List newImage) onSave;
+  final void Function(YustImage image, Uint8List newImage)? onSave;
 
   /// Indicates whether drawing is allowed on the image.
   ///
   /// This feature is only available on mobile and desktop apps.
   final bool allowDrawing;
 
+  final bool allowShare;
+
   const YustImageScreen({
     super.key,
     required this.images,
-    required this.onSave,
+    this.onSave,
     this.activeImageIndex = 0,
     this.allowDrawing = false,
+    this.allowShare = true,
   });
 
   static void navigateToScreen({
@@ -34,7 +37,8 @@ class YustImageScreen extends StatefulWidget {
     required List<YustImage> images,
     int activeImageIndex = 0,
     bool allowDrawing = false,
-    required void Function(YustImage image, Uint8List newImage) onSave,
+    bool allowShare = true,
+    void Function(YustImage image, Uint8List newImage)? onSave,
   }) {
     unawaited(
       Navigator.of(context).push(MaterialPageRoute<void>(
@@ -43,6 +47,7 @@ class YustImageScreen extends StatefulWidget {
           onSave: onSave,
           activeImageIndex: activeImageIndex,
           allowDrawing: allowDrawing,
+          allowShare: allowShare,
         ),
       )),
     );
@@ -91,9 +96,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
-      if (!kIsWeb && widget.allowDrawing) _buildDrawButton(context, image),
+      if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
+        _buildDrawButton(context, image),
       if (kIsWeb) _buildCloseButton(context),
-      _buildShareButton(context, image),
+      if (widget.allowShare) _buildShareButton(context, image),
     ]);
   }
 
@@ -170,10 +176,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (!kIsWeb && widget.allowDrawing)
+        if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
           _buildDrawButton(context, widget.images[activeImageIndex]),
         if (kIsWeb) _buildCloseButton(context),
-        _buildShareButton(context, widget.images[activeImageIndex]),
+        if (widget.allowShare)
+          _buildShareButton(context, widget.images[activeImageIndex]),
       ],
     );
   }
@@ -202,7 +209,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                         image: _getImageOfUrl(image),
                         onSave: (imageBytes) async {
                           if (imageBytes != null) {
-                            widget.onSave(image, imageBytes);
+                            widget.onSave!(image, imageBytes);
                             setState(() {});
                           }
                         });
