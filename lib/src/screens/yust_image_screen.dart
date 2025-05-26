@@ -74,24 +74,6 @@ class _YustImageScreenState extends State<YustImageScreen> {
     super.initState();
   }
 
-  Widget _buildScalableImage(ImageProvider<Object> imageProvider) {
-    return Image(
-      image: imageProvider,
-      fit: BoxFit.scaleDown,
-      loadingBuilder: (BuildContext context, Widget child,
-          ImageChunkEvent? loadingProgress) {
-        if (loadingProgress == null) return child;
-        return const Center(
-          child: SizedBox(
-            width: 20.0,
-            height: 20.0,
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -248,6 +230,24 @@ class _YustImageScreenState extends State<YustImageScreen> {
           PhotoViewHeroAttributes(tag: widget.images[index].url ?? ''),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget _buildScalableImage(ImageProvider<Object> imageProvider) {
+    return Image(
+      image: imageProvider,
+      fit: BoxFit.scaleDown,
+      loadingBuilder: (BuildContext context, Widget child,
+          ImageChunkEvent? loadingProgress) {
+        if (loadingProgress == null) return child;
+        return const Center(
+          child: SizedBox(
+            width: 20.0,
+            height: 20.0,
+            child: CircularProgressIndicator(),
+          ),
+        );
       },
     );
   }
