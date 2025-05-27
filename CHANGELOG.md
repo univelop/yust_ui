@@ -1,3 +1,7 @@
+## 3.27.12 - 2025-05-28
+
+-   Option to disable sharing on image screen
+
 ## 3.27.11 - 2024-04-28
 
 -   Add `expands` property to fields
