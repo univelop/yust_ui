@@ -14,6 +14,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
   final bool showErrorScreen;
   final Widget? loadingIndicator;
   final int? limit;
+  final bool wantKeepAlive;
 
   /// There will never be a null for the list given.
   final Widget Function(List<T>, YustBuilderInsights, BuildContext) builder;
@@ -27,6 +28,7 @@ class YustDocsBuilder<T extends YustDoc> extends StatefulWidget {
     this.showErrorScreen = true,
     this.loadingIndicator,
     this.limit,
+    this.wantKeepAlive = true,
     required this.builder,
   });
 
@@ -96,5 +98,5 @@ class YustDocsBuilderState<T extends YustDoc> extends State<YustDocsBuilder<T>>
   }
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => widget.wantKeepAlive;
 }
