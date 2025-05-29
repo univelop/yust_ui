@@ -15,6 +15,7 @@ class YustSwitch extends StatelessWidget {
   final String switchRepresentation;
   final bool divider;
   final Widget? suffixIcon;
+  final bool unfocusOnChange;
 
   const YustSwitch({
     super.key,
@@ -28,6 +29,7 @@ class YustSwitch extends StatelessWidget {
     this.slimDesign = false,
     this.switchRepresentation = 'yesNo',
     this.divider = true,
+    this.unfocusOnChange = true,
   });
 
   @override
@@ -61,7 +63,7 @@ class YustSwitch extends StatelessWidget {
       onChanged: readOnly || onChanged == null
           ? null
           : (bool? value) {
-              YustUi.helpers.unfocusCurrent();
+              if (unfocusOnChange) YustUi.helpers.unfocusCurrent();
               onChanged!(value ?? false);
             },
     );
@@ -74,7 +76,7 @@ class YustSwitch extends StatelessWidget {
       onChanged: readOnly || onChanged == null
           ? null
           : (value) {
-              YustUi.helpers.unfocusCurrent();
+              if (unfocusOnChange) YustUi.helpers.unfocusCurrent();
               onChanged!(value);
             },
     );
