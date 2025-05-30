@@ -33,6 +33,7 @@ class YustNumberField extends StatelessWidget {
   final EdgeInsets contentPadding;
   final bool completeOnUnfocus;
   final bool skipFocus;
+  final String? forceErrorText;
 
   const YustNumberField({
     super.key,
@@ -60,6 +61,7 @@ class YustNumberField extends StatelessWidget {
     this.contentPadding = const EdgeInsets.fromLTRB(16.0, 20.0, 20.0, 20.0),
     this.completeOnUnfocus = true,
     this.skipFocus = false,
+    this.forceErrorText,
   });
 
   @override
@@ -120,6 +122,7 @@ class YustNumberField extends StatelessWidget {
             divider: divider,
             completeOnUnfocus: completeOnUnfocus,
             contentPadding: contentPadding,
+            forceErrorText: forceErrorText,
           ),
         );
       },
