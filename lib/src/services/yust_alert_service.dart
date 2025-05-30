@@ -213,19 +213,22 @@ class YustAlertService {
     required List<String> optionLabels,
     required List<String> optionValues,
     String? initialValue,
+    bool checkForEmptySelection = false,
   }) {
     return showClearablePickerDialog(title, action,
             optionLabels: optionLabels,
             optionValues: optionValues,
             subTitle: subTitle,
             canClear: false,
-            initialValue: initialValue)
-        .then((v) => v?.result);
+            initialValue: initialValue,
+            checkForEmptySelection: checkForEmptySelection,
+            ).then((v) => v?.result);
   }
 
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
+  
   Future<AlertResult?> showClearablePickerDialog(
     String title,
     String action, {
@@ -234,57 +237,74 @@ class YustAlertService {
     String? initialValue,
     String? subTitle = '',
     bool canClear = true,
+    bool checkForEmptySelection = false,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     var selected = initialValue;
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
     return showDialog<AlertResult>(
         context: context,
         builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(title),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: subTitle != null
-                            ? Text(subTitle)
-                            : const SizedBox.shrink()),
-                    SizedBox(
-                        height: 100,
-                        child: YustSelect(
-                          value: selected,
-                          optionLabels: optionLabels,
-                          optionValues: optionValues,
-                          onDelete: canClear
-                              ? () async {
-                                  setState(() => selected = null);
-                                }
-                              : null,
-                          onSelected: (value) =>
-                              {setState(() => selected = value)},
-                        )),
+          return Form(
+            key: formKey,
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: Text(title),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Align(
+                          alignment: Alignment.topLeft,
+                          child: subTitle != null
+                              ? Text(subTitle)
+                              : const SizedBox.shrink()),
+                      SizedBox(
+                          height: 100,
+                          child: YustSelect(
+                          
+                            value: selected,
+                            optionLabels: optionLabels,
+                            optionValues: optionValues,
+                            onDelete: canClear
+                                ? () async {
+                                    setState(() => selected = null);
+                                  }
+                                : null,
+                            onSelected: (value) =>
+                                {setState(() => selected = value)},
+                            validator: (value) => checkForEmptySelection && selected == null
+                                ? LocaleKeys.valueMustNotBeEmpty.tr()
+                                : null,
+                            autovalidateMode:  checkForEmptySelection ? AutovalidateMode.onUserInteraction:null,
+                          )
+                          ),
+                      
+                    ],
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text(LocaleKeys.cancel.tr()),
+                      onPressed: () {
+                        Navigator.of(context).pop(AlertResult(false, null));
+                      },
+                    ),
+                    TextButton(
+                      child: Text(action),
+                      onPressed: () {
+                        
+                        if (checkForEmptySelection && !(formKey.currentState?.validate() ?? true)) {
+                    return;
+                  }
+                        Navigator.of(context).pop(AlertResult(true, selected));
+                      },
+                    ),
                   ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text(LocaleKeys.cancel.tr()),
-                    onPressed: () {
-                      Navigator.of(context).pop(AlertResult(false, null));
-                    },
-                  ),
-                  TextButton(
-                    child: Text(action),
-                    onPressed: () {
-                      Navigator.of(context).pop(AlertResult(true, selected));
-                    },
-                  ),
-                ],
-              );
-            },
+                );
+              },
+            ),
           );
         });
   }
