@@ -1,3 +1,7 @@
+## 3.27.14 - 2025-06-02
+
+-   Add `forceErrorText` to YustTextField
+
 ## 3.27.13 - 2025-05-29
 
 -   Add `unfocusOnChange` to YustSwitch
