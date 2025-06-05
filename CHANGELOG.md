@@ -1,3 +1,7 @@
+## 3.27.15 - 2025-06-05
+
+-   Change `allowDoubleClick` default to `true`
+
 ## 3.27.14 - 2025-06-02
 
 -   Add `forceErrorText` to YustTextField
