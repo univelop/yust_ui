@@ -54,6 +54,9 @@ class YustTextField extends StatefulWidget {
   /// Thus reserving the current platforms default text editing shortcuts and blocking them from being overridden by custom [Shortcuts] Widgets
   final bool reserveDefaultTextEditingShortcuts;
 
+  /// When value is set, text field is in error state; and display this text
+  final String? forceErrorText;
+
   const YustTextField({
     super.key,
     this.label,
@@ -97,6 +100,7 @@ class YustTextField extends StatefulWidget {
     this.completeOnUnfocus = true,
     this.autofillHints,
     this.reserveDefaultTextEditingShortcuts = true,
+    this.forceErrorText
   });
 
   @override
@@ -316,6 +320,7 @@ class _YustTextFieldState extends State<YustTextField>
           : (value) => widget.validator!(value!.trim()),
       autofocus: widget.autofocus,
       autofillHints: widget.autofillHints,
+      forceErrorText: widget.forceErrorText,
     );
 
     if (widget.reserveDefaultTextEditingShortcuts) {

@@ -35,23 +35,24 @@ class YustButtonTile extends StatelessWidget {
   final YustButtonStyle buttonStyle;
   final bool allowDoubleClick;
 
-  const YustButtonTile(
-      {super.key,
-      this.label = '',
-      this.color,
-      this.textColor = Colors.white,
-      this.icon,
-      this.onPressed,
-      this.suffixChild,
-      this.above,
-      this.below,
-      this.divider = true,
-      this.slimDesign = false,
-      this.inProgress = false,
-      this.tooltipMessage,
-      this.maxWidth = 400,
-      this.buttonStyle = YustButtonStyle.primary,
-      this.allowDoubleClick = false,});
+  const YustButtonTile({
+    super.key,
+    this.label = '',
+    this.color,
+    this.textColor = Colors.white,
+    this.icon,
+    this.onPressed,
+    this.suffixChild,
+    this.above,
+    this.below,
+    this.divider = true,
+    this.slimDesign = false,
+    this.inProgress = false,
+    this.tooltipMessage,
+    this.maxWidth = 400,
+    this.buttonStyle = YustButtonStyle.primary,
+    this.allowDoubleClick = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -131,14 +132,15 @@ class _StyledButtonTile extends StatefulWidget {
   final YustButtonStyle buttonStyle;
   final bool allowDoubleClick;
 
-  const _StyledButtonTile(
-      {required this.buttonStyle,
-      required this.onPressed,
-      required this.color,
-      required this.textColor,
-      required this.icon,
-      required this.label,
-      required this.allowDoubleClick,});
+  const _StyledButtonTile({
+    required this.buttonStyle,
+    required this.onPressed,
+    required this.color,
+    required this.textColor,
+    required this.icon,
+    required this.label,
+    required this.allowDoubleClick,
+  });
 
   @override
   State<StatefulWidget> createState() => _StyledButtonTileState();
