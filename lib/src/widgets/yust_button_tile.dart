@@ -33,6 +33,7 @@ class YustButtonTile extends StatelessWidget {
   final String? tooltipMessage;
   final double? maxWidth;
   final YustButtonStyle buttonStyle;
+  final bool allowDoubleClick;
 
   const YustButtonTile({
     super.key,
@@ -50,6 +51,7 @@ class YustButtonTile extends StatelessWidget {
     this.tooltipMessage,
     this.maxWidth = 400,
     this.buttonStyle = YustButtonStyle.primary,
+    this.allowDoubleClick = true,
   });
 
   @override
@@ -99,54 +101,16 @@ class YustButtonTile extends StatelessWidget {
     );
   }
 
-  Widget _buildButtonWithoutTooltip() {
-    switch (buttonStyle) {
-      case YustButtonStyle.primary:
-        return ElevatedButton.icon(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: textColor,
-          ),
-          icon: icon ?? const SizedBox(),
-          label: Text(
-            label ?? '',
-            style: TextStyle(color: textColor),
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      case YustButtonStyle.secondary:
-        return FilledButton.tonalIcon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: textColor,
-          ),
-          onPressed: onPressed,
-          icon: icon ?? const SizedBox(),
-          label: Text(
-            label ?? '',
-            style: TextStyle(color: textColor),
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      default:
-        return TextButton.icon(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            foregroundColor: color,
-          ),
-          icon: icon ?? const SizedBox(),
-          label: Text(
-            label ?? '',
-            style: TextStyle(decorationColor: color),
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-    }
-  }
-
   Widget _buildButton() {
-    final button = _buildButtonWithoutTooltip();
+    final button = _StyledButtonTile(
+      buttonStyle: buttonStyle,
+      onPressed: onPressed,
+      color: color,
+      textColor: textColor,
+      icon: icon,
+      label: label,
+      allowDoubleClick: allowDoubleClick,
+    );
 
     if (tooltipMessage != null) {
       return Tooltip(
@@ -156,5 +120,110 @@ class YustButtonTile extends StatelessWidget {
     }
 
     return button;
+  }
+}
+
+class _StyledButtonTile extends StatefulWidget {
+  final String? label;
+  final Color? color;
+  final Color? textColor;
+  final Widget? icon;
+  final void Function()? onPressed;
+  final YustButtonStyle buttonStyle;
+  final bool allowDoubleClick;
+
+  const _StyledButtonTile({
+    required this.buttonStyle,
+    required this.onPressed,
+    required this.color,
+    required this.textColor,
+    required this.icon,
+    required this.label,
+    required this.allowDoubleClick,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _StyledButtonTileState();
+}
+
+class _StyledButtonTileState extends State<_StyledButtonTile> {
+  bool buttonPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildButtonWithoutTooltip();
+  }
+
+  Widget _buildButtonWithoutTooltip() {
+    switch (widget.buttonStyle) {
+      case YustButtonStyle.primary:
+        return ElevatedButton.icon(
+          onPressed: onPressed(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.color,
+            foregroundColor: widget.textColor,
+          ),
+          icon: widget.icon ?? const SizedBox(),
+          label: Text(
+            widget.label ?? '',
+            style: TextStyle(color: widget.textColor),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      case YustButtonStyle.secondary:
+        return FilledButton.tonalIcon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.color,
+            foregroundColor: widget.textColor,
+          ),
+          onPressed: onPressed(),
+          icon: widget.icon ?? const SizedBox(),
+          label: Text(
+            widget.label ?? '',
+            style: TextStyle(color: widget.textColor),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      default:
+        return TextButton.icon(
+          onPressed: onPressed(),
+          style: TextButton.styleFrom(
+            foregroundColor: widget.color,
+          ),
+          icon: widget.icon ?? const SizedBox(),
+          label: Text(
+            widget.label ?? '',
+            style: TextStyle(decorationColor: widget.color),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+    }
+  }
+
+  VoidCallback? onPressed() {
+    try {
+      if (!widget.allowDoubleClick && buttonPressed) {
+        return null;
+      }
+
+      if (widget.onPressed == null) {
+        return null;
+      }
+
+      return () {
+        doIfDoubleClickNotAllowed(() => buttonPressed = true);
+        widget.onPressed!();
+      };
+    } finally {
+      doIfDoubleClickNotAllowed(() => buttonPressed = false);
+    }
+  }
+
+  void doIfDoubleClickNotAllowed(Function() action) {
+    if (!widget.allowDoubleClick) {
+      setState(() {
+        action();
+      });
+    }
   }
 }

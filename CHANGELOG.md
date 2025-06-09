@@ -1,3 +1,20 @@
+## 3.27.15 - 2025-06-05
+
+-   Change `allowDoubleClick` default to `true`
+
+## 3.27.14 - 2025-06-02
+
+-   Add `forceErrorText` to YustTextField
+
+## 3.27.13 - 2025-05-29
+
+-   Add `unfocusOnChange` to YustSwitch
+-   Add `wantKeepAlive` to YustDocsBuilder
+
+## 3.27.12 - 2025-05-28
+
+-   Option to disable sharing on image screen
+
 ## 3.27.11 - 2024-04-28
 
 -   Add `expands` property to fields
