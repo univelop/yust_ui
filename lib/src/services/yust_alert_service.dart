@@ -46,9 +46,10 @@ class YustAlertService {
     );
   }
 
-  Future<void> showCustomAlert(
-      {required Widget Function(BuildContext) content,
-      bool dismissible = true}) async {
+  Future<void> showCustomAlert({
+    required Widget Function(BuildContext) content,
+    bool dismissible = true,
+  }) async {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
     return showDialog<void>(
@@ -132,17 +133,24 @@ class YustAlertService {
                         child: TextFormField(
                           controller: controller,
                           decoration: InputDecoration(
-                              hintText: placeholder, errorMaxLines: 5),
-                          autovalidateMode:
-                              validator == null ? null : validateMode,
+                            hintText: placeholder,
+                            errorMaxLines: 5,
+                          ),
+                          autovalidateMode: validator == null
+                              ? null
+                              : validateMode,
                           validator: validator == null
                               ? null
                               : (value) => validator(value),
                           autofocus: true,
                           obscureText: obscureText,
                           onFieldSubmitted: (value) {
-                            _submitTextFieldDialog(validator, context,
-                                controller, yustServiceValidationKey);
+                            _submitTextFieldDialog(
+                              validator,
+                              context,
+                              controller,
+                              yustServiceValidationKey,
+                            );
                           },
                         ),
                       ),
@@ -154,17 +162,9 @@ class YustAlertService {
                   if (warning != null)
                     Row(
                       children: [
-                        const Icon(
-                          size: 15,
-                          Icons.info,
-                        ),
+                        const Icon(size: 15, Icons.info),
                         const SizedBox(width: 5),
-                        Text(
-                          warning,
-                          style: const TextStyle(
-                            fontSize: 11,
-                          ),
-                        ),
+                        Text(warning, style: const TextStyle(fontSize: 11)),
                       ],
                     ),
                 ],
@@ -181,7 +181,11 @@ class YustAlertService {
                 child: Text(action),
                 onPressed: () {
                   _submitTextFieldDialog(
-                      validator, context, controller, yustServiceValidationKey);
+                    validator,
+                    context,
+                    controller,
+                    yustServiceValidationKey,
+                  );
                 },
               ),
             ],
@@ -192,10 +196,11 @@ class YustAlertService {
   }
 
   void _submitTextFieldDialog(
-      FormFieldValidator<String>? validator,
-      BuildContext context,
-      TextEditingController controller,
-      GlobalKey<FormState> yustServiceValidationKey) {
+    FormFieldValidator<String>? validator,
+    BuildContext context,
+    TextEditingController controller,
+    GlobalKey<FormState> yustServiceValidationKey,
+  ) {
     if (validator == null) {
       Navigator.of(context).pop(controller.text);
     } else if (yustServiceValidationKey.currentState!.validate()) {
@@ -215,20 +220,22 @@ class YustAlertService {
     String? initialValue,
     bool checkForEmptySelection = false,
   }) {
-    return showClearablePickerDialog(title, action,
-            optionLabels: optionLabels,
-            optionValues: optionValues,
-            subTitle: subTitle,
-            canClear: false,
-            initialValue: initialValue,
-            checkForEmptySelection: checkForEmptySelection,
-            ).then((v) => v?.result);
+    return showClearablePickerDialog(
+      title,
+      action,
+      optionLabels: optionLabels,
+      optionValues: optionValues,
+      subTitle: subTitle,
+      canClear: false,
+      initialValue: initialValue,
+      checkForEmptySelection: checkForEmptySelection,
+    ).then((v) => v?.result);
   }
 
   ///
   /// initialSelectedValue: Initial selected value
   /// canClear: Shows a button to empty the selected value
-  
+
   Future<AlertResult?> showClearablePickerDialog(
     String title,
     String action, {
@@ -245,68 +252,72 @@ class YustAlertService {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     return showDialog<AlertResult>(
-        context: context,
-        builder: (BuildContext context) {
-          return Form(
-            key: formKey,
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return AlertDialog(
-                  title: Text(title),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Align(
-                          alignment: Alignment.topLeft,
-                          child: subTitle != null
-                              ? Text(subTitle)
-                              : const SizedBox.shrink()),
-                      SizedBox(
-                          height: 100,
-                          child: YustSelect(
-                          
-                            value: selected,
-                            optionLabels: optionLabels,
-                            optionValues: optionValues,
-                            onDelete: canClear
-                                ? () async {
-                                    setState(() => selected = null);
-                                  }
-                                : null,
-                            onSelected: (value) =>
-                                {setState(() => selected = value)},
-                            validator: (value) => checkForEmptySelection && selected == null
-                                ? LocaleKeys.valueMustNotBeEmpty.tr()
-                                : null,
-                            autovalidateMode:  checkForEmptySelection ? AutovalidateMode.onUserInteraction:null,
-                          )
-                          ),
-                      
-                    ],
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      child: Text(LocaleKeys.cancel.tr()),
-                      onPressed: () {
-                        Navigator.of(context).pop(AlertResult(false, null));
-                      },
+      context: context,
+      builder: (BuildContext context) {
+        return Form(
+          key: formKey,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(title),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: subTitle != null
+                          ? Text(subTitle)
+                          : const SizedBox.shrink(),
                     ),
-                    TextButton(
-                      child: Text(action),
-                      onPressed: () {
-                        
-                        if (checkForEmptySelection && !(formKey.currentState?.validate() ?? true)) {
-                    return;
-                  }
-                        Navigator.of(context).pop(AlertResult(true, selected));
-                      },
+                    SizedBox(
+                      height: 100,
+                      child: YustSelect(
+                        value: selected,
+                        optionLabels: optionLabels,
+                        optionValues: optionValues,
+                        onDelete: canClear
+                            ? () async {
+                                setState(() => selected = null);
+                              }
+                            : null,
+                        onSelected: (value) => {
+                          setState(() => selected = value),
+                        },
+                        validator: (value) =>
+                            checkForEmptySelection && selected == null
+                            ? LocaleKeys.valueMustNotBeEmpty.tr()
+                            : null,
+                        autovalidateMode: checkForEmptySelection
+                            ? AutovalidateMode.onUserInteraction
+                            : null,
+                      ),
                     ),
                   ],
-                );
-              },
-            ),
-          );
-        });
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text(LocaleKeys.cancel.tr()),
+                    onPressed: () {
+                      Navigator.of(context).pop(AlertResult(false, null));
+                    },
+                  ),
+                  TextButton(
+                    child: Text(action),
+                    onPressed: () {
+                      if (checkForEmptySelection &&
+                          !(formKey.currentState?.validate() ?? true)) {
+                        return;
+                      }
+                      Navigator.of(context).pop(AlertResult(true, selected));
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   Future<T?> showCustomDialog<T>({
@@ -325,9 +336,7 @@ class YustAlertService {
           title: Text(title),
           content: StatefulBuilder(
             builder: (context, setState) {
-              return buildInner(
-                onChanged: (T? value) => returnValue = value,
-              );
+              return buildInner(onChanged: (T? value) => returnValue = value);
             },
           ),
           actions: <Widget>[
@@ -364,13 +373,14 @@ class YustAlertService {
     String? subTitle,
   }) async {
     final result = await showCancelableCheckListDialog(
-        context: context,
-        optionValues: optionValues,
-        priorOptionValues: priorOptionValues,
-        optionLabels: optionLabels,
-        returnPriorItems: returnPriorItems,
-        title: title,
-        subTitle: subTitle);
+      context: context,
+      optionValues: optionValues,
+      priorOptionValues: priorOptionValues,
+      optionLabels: optionLabels,
+      returnPriorItems: returnPriorItems,
+      title: title,
+      subTitle: subTitle,
+    );
 
     if (result.confirmed) {
       return result.result;
@@ -394,70 +404,72 @@ class YustAlertService {
     final newItemIds = List<String>.from(priorOptionValues);
     var isAborted = true;
     await showDialog<List<String>>(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-            builder: ((context, setState) {
-              var selectAll = newItemIds.length != optionValues.length;
-              return SimpleDialog(
-                title: Text(title ?? LocaleKeys.mandatoryFields.tr()),
-                children: [
-                  subTitle != null
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Text(subTitle))
-                      : const SizedBox.shrink(),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            newItemIds.clear();
-                            if (selectAll) {
-                              newItemIds.addAll(optionValues);
-                            }
-                          });
-                        },
-                        child: selectAll
-                            ? Text(LocaleKeys.selectAll.tr())
-                            : Text(LocaleKeys.deselectAll.tr()),
-                      ),
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: ((context, setState) {
+            var selectAll = newItemIds.length != optionValues.length;
+            return SimpleDialog(
+              title: Text(title ?? LocaleKeys.mandatoryFields.tr()),
+              children: [
+                subTitle != null
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Text(subTitle),
+                      )
+                    : const SizedBox.shrink(),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          newItemIds.clear();
+                          if (selectAll) {
+                            newItemIds.addAll(optionValues);
+                          }
+                        });
+                      },
+                      child: selectAll
+                          ? Text(LocaleKeys.selectAll.tr())
+                          : Text(LocaleKeys.deselectAll.tr()),
                     ),
                   ),
-                  YustSelectForm<String>(
-                    optionValues: optionValues,
-                    optionLabels: optionLabels,
-                    selectedValues: newItemIds,
-                    onChanged: () {
-                      setState(() {});
-                    },
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          isAborted = false;
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(LocaleKeys.ok.tr()),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          isAborted = true;
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(LocaleKeys.cancel.tr()),
-                      ),
-                    ],
-                  )
-                ],
-              );
-            }),
-          );
-        });
+                ),
+                YustSelectForm<String>(
+                  optionValues: optionValues,
+                  optionLabels: optionLabels,
+                  selectedValues: newItemIds,
+                  onChanged: () {
+                    setState(() {});
+                  },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        isAborted = false;
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(LocaleKeys.ok.tr()),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        isAborted = true;
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(LocaleKeys.cancel.tr()),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }),
+        );
+      },
+    );
 
     if (isAborted) {
       if (returnPriorItems) {
@@ -474,9 +486,9 @@ class YustAlertService {
     final context = navStateKey.currentContext;
     if (context == null) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-    ));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<T?> showSearchWithoutContext<T>(SearchDelegate<T> delegate) {
