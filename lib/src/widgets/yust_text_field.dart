@@ -98,7 +98,7 @@ class YustTextField extends StatefulWidget {
     this.completeOnUnfocus = true,
     this.autofillHints,
     this.reserveDefaultTextEditingShortcuts = true,
-    this.forceErrorText
+    this.forceErrorText,
   });
 
   @override
@@ -116,8 +116,9 @@ class _YustTextFieldState extends State<YustTextField>
     if (_valueDidChange == false) return;
     if (widget.onEditingComplete == null) return;
 
-    final textFieldText =
-        widget.notTrim ? _controller.value.text : _controller.value.text.trim();
+    final textFieldText = widget.notTrim
+        ? _controller.value.text
+        : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null ||
@@ -137,7 +138,8 @@ class _YustTextFieldState extends State<YustTextField>
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode = widget.focusNode ??
+    _focusNode =
+        widget.focusNode ??
         FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
@@ -214,28 +216,28 @@ class _YustTextFieldState extends State<YustTextField>
     if (textValue != _initValue &&
         textValue != _controller.text &&
         widget.onChanged == null) {
-      _controller.text = textValue;
-      _initValue = textValue;
-      _controller.selection = TextSelection.fromPosition(
-          TextPosition(offset: _controller.text.length));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.text = textValue;
+          _initValue = textValue;
+          _controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: _controller.text.length),
+          );
+        }
+      });
     }
-
     if (widget.slimDesign) return _buildTextField();
 
     return Column(
       children: [
         Row(
           children: [
-            Expanded(
-              child: _buildTextField(),
-            ),
+            Expanded(child: _buildTextField()),
             if (widget.onDelete != null && widget.value != '')
               IconButton(
-                  onPressed: widget.onDelete!,
-                  icon: Icon(
-                    Icons.delete,
-                    color: Theme.of(context).primaryColor,
-                  )),
+                onPressed: widget.onDelete!,
+                icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
+              ),
             widget.suffixIcon ?? const SizedBox(),
           ],
         ),
@@ -249,11 +251,14 @@ class _YustTextFieldState extends State<YustTextField>
     final textField = TextFormField(
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: widget.labelStyle ??
+        labelStyle:
+            widget.labelStyle ??
             (widget.readOnly
                 ? TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.black)
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.black,
+                  )
                 : null),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
@@ -271,21 +276,23 @@ class _YustTextFieldState extends State<YustTextField>
       maxLines: widget.expands
           ? null
           : widget.obscureText
-              ? 1
-              : widget.maxLines,
+          ? 1
+          : widget.maxLines,
       minLines: widget.expands ? null : widget.minLines,
       expands: widget.expands,
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
-      textInputAction: widget.textInputAction ??
+      textInputAction:
+          widget.textInputAction ??
           (widget.minLines != null
               ? TextInputAction.newline
               : TextInputAction.next),
       onChanged: widget.onChanged == null
           ? null
           : (value) => widget.onChanged!(
-              value == '' ? null : (widget.notTrim ? value : value.trim())),
+              value == '' ? null : (widget.notTrim ? value : value.trim()),
+            ),
       onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -296,7 +303,8 @@ class _YustTextFieldState extends State<YustTextField>
       textCapitalization: widget.textCapitalization,
       inputFormatters: widget.inputFormatters,
       smartQuotesType: widget.smartQuotesType,
-      autovalidateMode: widget.autovalidateMode ??
+      autovalidateMode:
+          widget.autovalidateMode ??
           (widget.validator != null
               ? AutovalidateMode.onUserInteraction
               : null),
@@ -309,9 +317,7 @@ class _YustTextFieldState extends State<YustTextField>
     );
 
     if (widget.reserveDefaultTextEditingShortcuts) {
-      return DefaultTextEditingShortcuts(
-        child: textField,
-      );
+      return DefaultTextEditingShortcuts(child: textField);
     }
 
     return textField;
