@@ -1,3 +1,7 @@
+## 3.27.16 - 2025-06-13
+
+-   Fix for YustFilePicker
+
 ## 3.27.15 - 2025-06-05
 
 -   Change `allowDoubleClick` default to `true`
