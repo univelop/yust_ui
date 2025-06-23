@@ -273,6 +273,7 @@ abstract class LocaleKeys {
   static const alertFileAlreadyExists = 'alertFileAlreadyExists';
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
   static const alertFileNotFound = 'alertFileNotFound';
+  static const alertFileRename = 'alertFileRename';
   static const alertFileTooBig = 'alertFileTooBig';
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowException = 'alertFlowException';
@@ -2141,6 +2142,7 @@ abstract class LocaleKeys {
   static const invalidCoordinatesExplanation = 'invalidCoordinatesExplanation';
   static const invalidEmail = 'invalidEmail';
   static const invalidExpression = 'invalidExpression';
+  static const invalidFileName = 'invalidFileName';
   static const invalidInstalledSolutionTip = 'invalidInstalledSolutionTip';
   static const invalidInvitationLinks = 'invalidInvitationLinks';
   static const invalidJson = 'invalidJson';
