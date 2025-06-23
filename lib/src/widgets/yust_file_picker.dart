@@ -427,18 +427,21 @@ class YustFilePickerState extends State<YustFilePicker>
     return IconButton(
       icon: const Icon(Icons.edit),
       color: Theme.of(context).colorScheme.primary,
-      onPressed: _enabled ? () => _renameFile(file) : null,
+      onPressed: _enabled && !file.cached ? () => _renameFile(file) : null,
     );
   }
 
   Future<void> _renameFile(YustFile yustFile) async {
     final newFileName = await YustUi.alertService.showTextFieldDialog(
-        'Wie soll die Datei heißen?', '', 'Speichern',
-        initialText: yustFile.getFileNameWithoutExtension(),
-        validator: (value) => (_isNewFileNameValid(value, yustFile) &&
-                !fileExists('$value.${yustFile.getFilenameExtension()}'))
-            ? null
-            : 'Der Dateiname ist nicht valide!');
+      LocaleKeys.alertFileRename.tr(),
+      '',
+      LocaleKeys.save.tr(),
+      initialText: yustFile.getFileNameWithoutExtension(),
+      validator: (value) => (_isNewFileNameValid(value, yustFile) &&
+              !fileExists('$value.${yustFile.getFilenameExtension()}'))
+          ? null
+          : LocaleKeys.invalidFileName.tr(),
+    );
 
     if (newFileName == null) {
       return;
