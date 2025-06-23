@@ -19,6 +19,7 @@ class YustTextField extends StatefulWidget {
   final TapCallback? onTap;
   final StringCallback? onFieldSubmitted;
   final DeleteCallback? onDelete;
+  final int? maxLength;
   final int? maxLines;
   final int? minLines;
   final bool expands;
@@ -70,6 +71,7 @@ class YustTextField extends StatefulWidget {
     this.validator,
     this.onTap,
     this.onDelete,
+    this.maxLength,
     this.maxLines,
     this.labelStyle,
     this.minLines,
@@ -156,6 +158,9 @@ class _YustTextFieldState extends State<YustTextField>
     }
     _controller.addListener(() {
       _valueDidChange = true;
+      if (widget.maxLength != null) {
+        setState(() {});
+      }
     });
   }
 
@@ -248,11 +253,17 @@ class _YustTextFieldState extends State<YustTextField>
   }
 
   Widget _buildTextField() {
+    final label = [
+  if (widget.label?.isNotEmpty ?? false) widget.label!,
+  if (widget.maxLength != null) '(${_controller.text.length}/${widget.maxLength})',
+].join(' ').trim();
+
+        
     final textField = TextFormField(
       decoration: InputDecoration(
-        labelText: widget.label,
-        labelStyle:
-            widget.labelStyle ??
+        counter: const SizedBox.shrink(),
+        labelText: label.isNotEmpty ? label : null,
+        labelStyle: widget.labelStyle ??
             (widget.readOnly
                 ? TextStyle(
                     color:
@@ -273,6 +284,9 @@ class _YustTextFieldState extends State<YustTextField>
         errorMaxLines: 5,
       ),
       style: widget.textStyle,
+      maxLength: widget.maxLength,
+      maxLengthEnforcement:
+          widget.maxLength != null ? MaxLengthEnforcement.enforced : null,
       maxLines: widget.expands
           ? null
           : widget.obscureText
