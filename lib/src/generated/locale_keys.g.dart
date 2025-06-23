@@ -2297,8 +2297,6 @@ abstract class LocaleKeys {
   static const listNameExampleProjectStatus = 'listNameExampleProjectStatus';
   static const listNameExampleTasks = 'listNameExampleTasks';
   static const listSharedByWorkspace = 'listSharedByWorkspace';
-  static const listSymmetricDifferenceDecription =
-      'listSymmetricDifferenceDecription';
   static const listSymmetricDifferenceDescription =
       'listSymmetricDifferenceDescription';
   static const listTitle = 'listTitle';
