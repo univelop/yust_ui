@@ -136,9 +136,8 @@ class YustAlertService {
                             hintText: placeholder,
                             errorMaxLines: 5,
                           ),
-                          autovalidateMode: validator == null
-                              ? null
-                              : validateMode,
+                          autovalidateMode:
+                              validator == null ? null : validateMode,
                           validator: validator == null
                               ? null
                               : (value) => validator(value),
@@ -285,8 +284,8 @@ class YustAlertService {
                         },
                         validator: (value) =>
                             checkForEmptySelection && selected == null
-                            ? LocaleKeys.valueMustNotBeEmpty.tr()
-                            : null,
+                                ? LocaleKeys.valueMustNotBeEmpty.tr()
+                                : null,
                         autovalidateMode: checkForEmptySelection
                             ? AutovalidateMode.onUserInteraction
                             : null,
@@ -323,7 +322,9 @@ class YustAlertService {
   Future<T?> showCustomDialog<T>({
     required String title,
     String? actionName,
-    required Widget Function({required void Function(T?) onChanged}) buildInner,
+    T? initialValue,
+    required Widget Function(void Function(T?) onChanged, T? currentValue)
+        buildInner,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
@@ -336,7 +337,9 @@ class YustAlertService {
           title: Text(title),
           content: StatefulBuilder(
             builder: (context, setState) {
-              return buildInner(onChanged: (T? value) => returnValue = value);
+              return buildInner(
+                  (T? value) => setState(() => returnValue = value),
+                  returnValue);
             },
           ),
           actions: <Widget>[
