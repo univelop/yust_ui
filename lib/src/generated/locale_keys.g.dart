@@ -97,9 +97,15 @@ abstract class LocaleKeys {
   static const advertisement = 'advertisement';
   static const afterNumberOfEvents = 'afterNumberOfEvents';
   static const aiAgentChatHint = 'aiAgentChatHint';
+  static const aiAgentMissingIntegration = 'aiAgentMissingIntegration';
+  static const aiAgentMissingIntegrationExplanation =
+      'aiAgentMissingIntegrationExplanation';
+  static const aiAgentRoleDescription = 'aiAgentRoleDescription';
+  static const aiAgentSetupError = 'aiAgentSetupError';
   static const aiAgentTitle = 'aiAgentTitle';
   static const aiAgentUndefinedMessage = 'aiAgentUndefinedMessage';
   static const aiDescription = 'aiDescription';
+  static const aiTileDescriptionExample = 'aiTileDescriptionExample';
   static const aiTileNameExample = 'aiTileNameExample';
   static const alertAbortImport = 'alertAbortImport';
   static const alertAddItems = 'alertAddItems';
@@ -450,7 +456,6 @@ abstract class LocaleKeys {
   static const apiKeyCreationHint = 'apiKeyCreationHint';
   static const apiKeyDeletionHint = 'apiKeyDeletionHint';
   static const apiKeyDiscardHint = 'apiKeyDiscardHint';
-  static const apiKeyExplanation = 'apiKeyExplanation';
   static const apiKeyMoved = 'apiKeyMoved';
   static const apiKeyPrefixExplanation = 'apiKeyPrefixExplanation';
   static const apiKeyPreview = 'apiKeyPreview';
@@ -1126,7 +1131,6 @@ abstract class LocaleKeys {
   static const emailDomainsAdd = 'emailDomainsAdd';
   static const emailDomainsExplanation = 'emailDomainsExplanation';
   static const emailOptional = 'emailOptional';
-  static const emailSettingsMoved = 'emailSettingsMoved';
   static const emailTemplate = 'emailTemplate';
   static const emailing = 'emailing';
   static const emailingExplanation = 'emailingExplanation';
@@ -1515,6 +1519,12 @@ abstract class LocaleKeys {
   static const exceptionNoRecordSelected = 'exceptionNoRecordSelected';
   static const exceptionNoWorkflowLinked = 'exceptionNoWorkflowLinked';
   static const exceptionNumberOfFilesReached = 'exceptionNumberOfFilesReached';
+  static const exceptionOpenAiIntegrationInvalidApiKey =
+      'exceptionOpenAiIntegrationInvalidApiKey';
+  static const exceptionOpenAiIntegrationNoApiKeyGiven =
+      'exceptionOpenAiIntegrationNoApiKeyGiven';
+  static const exceptionOpenAiIntegrationNoModelsFound =
+      'exceptionOpenAiIntegrationNoModelsFound';
   static const exceptionOptionListConstraints =
       'exceptionOptionListConstraints';
   static const exceptionOwnerAdminLicense = 'exceptionOwnerAdminLicense';
@@ -1589,6 +1599,8 @@ abstract class LocaleKeys {
   static const exceptionValueNotFound = 'exceptionValueNotFound';
   static const exceptionWebhookMethodNotSet = 'exceptionWebhookMethodNotSet';
   static const exceptionWebhookUrlNotSet = 'exceptionWebhookUrlNotSet';
+  static const exceptionWorkspaceMandatoryForSaveShareIntent =
+      'exceptionWorkspaceMandatoryForSaveShareIntent';
   static const exceptionWorkspaceMustHaveOwner =
       'exceptionWorkspaceMustHaveOwner';
   static const exceptionWorkspaceNotLoaded = 'exceptionWorkspaceNotLoaded';
@@ -2035,6 +2047,7 @@ abstract class LocaleKeys {
   static const houseNumber = 'houseNumber';
   static const hrManagement = 'hrManagement';
   static const html = 'html';
+  static const htmlEncodeDescription = 'htmlEncodeDescription';
   static const iOs = 'iOs';
   static const icon = 'icon';
   static const id = 'id';
@@ -2404,6 +2417,7 @@ abstract class LocaleKeys {
   static const missingReadPermission = 'missingReadPermission';
   static const missingResource = 'missingResource';
   static const missingRoleAiAgent = 'missingRoleAiAgent';
+  static const missingRoleAiAgentExplanation = 'missingRoleAiAgentExplanation';
   static const missingSignature = 'missingSignature';
   static const missingTechName = 'missingTechName';
   static const missingUserPicker = 'missingUserPicker';
@@ -2645,6 +2659,14 @@ abstract class LocaleKeys {
   static const onlyVisibleImages = 'onlyVisibleImages';
   static const oops = 'oops';
   static const open = 'open';
+  static const openAi = 'openAi';
+  static const openAiApiKey = 'openAiApiKey';
+  static const openAiConnection = 'openAiConnection';
+  static const openAiInvalidApiKey = 'openAiInvalidApiKey';
+  static const openAiInvalidIntegration = 'openAiInvalidIntegration';
+  static const openAiNoIntegrationFound = 'openAiNoIntegrationFound';
+  static const openAiNoIntegrationSelected = 'openAiNoIntegrationSelected';
+  static const openAiOrganizationId = 'openAiOrganizationId';
   static const openAsDialog = 'openAsDialog';
   static const openDocs = 'openDocs';
   static const openEditMode = 'openEditMode';
