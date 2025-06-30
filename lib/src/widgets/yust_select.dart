@@ -24,17 +24,17 @@ class YustSelect<T> extends StatelessWidget {
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
   final bool showHighlightFocus;
-  final bool Function(T)? isSelectable;
+  final bool Function(T) _isSelectable;
 
   static const maxVisibleOptions = 10;
 
-  const YustSelect({
+  YustSelect({
     super.key,
     this.label,
     required this.value,
     required this.optionValues,
     required this.optionLabels,
-    this.isSelectable,
+    bool Function(T)? isSelectable,
     this.onSelected,
     this.onDelete,
     this.style = YustInputStyle.normal,
@@ -49,7 +49,7 @@ class YustSelect<T> extends StatelessWidget {
     this.allowSearch = true,
     this.autovalidateMode,
     this.showHighlightFocus = false,
-  });
+  }) : _isSelectable = isSelectable ?? ((_) => true);
 
   @override
   Widget build(BuildContext context) {
@@ -97,11 +97,9 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   Widget _buildDialog(BuildContext context, List<T> selectedValues) {
-    final enabledOptionValues =
-        optionValues.where(isSelectable ?? (_) => true).toList();
+    final enabledOptionValues = optionValues.where(_isSelectable).toList();
     final enabledOptionLabels = optionLabels
-        .whereIndexed((index, value) =>
-            isSelectable == null ? true : isSelectable!(optionValues[index]))
+        .whereIndexed((index, value) => _isSelectable(optionValues[index]))
         .toList();
     return AlertDialog(
       contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
