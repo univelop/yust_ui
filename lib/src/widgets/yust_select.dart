@@ -97,8 +97,6 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   Widget _buildDialog(BuildContext context, List<T> selectedValues) {
-    final enabledSelectedValues =
-        selectedValues.where(isSelectable ?? (_) => true).toList();
     final enabledOptionValues =
         optionValues.where(isSelectable ?? (_) => true).toList();
     final enabledOptionLabels = optionLabels
@@ -113,7 +111,7 @@ class YustSelect<T> extends StatelessWidget {
       content: YustSelectForm(
         optionValues: enabledOptionValues,
         optionLabels: enabledOptionLabels,
-        selectedValues: enabledSelectedValues,
+        selectedValues: selectedValues,
         formType: YustSelectFormType.singleWithoutIndicator,
         onChanged: () {
           Navigator.pop(context);
