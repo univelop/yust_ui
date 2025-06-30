@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 import 'package:yust_ui/yust_ui.dart';
@@ -23,6 +24,7 @@ class YustSelect<T> extends StatelessWidget {
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
   final bool showHighlightFocus;
+  final bool Function(T)? isEnabled;
 
   static const maxVisibleOptions = 10;
 
@@ -32,6 +34,7 @@ class YustSelect<T> extends StatelessWidget {
     required this.value,
     required this.optionValues,
     required this.optionLabels,
+    this.isEnabled,
     this.onSelected,
     this.onDelete,
     this.style = YustInputStyle.normal,
@@ -94,15 +97,23 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   Widget _buildDialog(BuildContext context, List<T> selectedValues) {
+    final enabledSelectedValues =
+        selectedValues.where(isEnabled ?? (_) => true).toList();
+    final enabledOptionValues =
+        optionValues.where(isEnabled ?? (_) => true).toList();
+    final enabledOptionLabels = optionLabels
+        .whereIndexed((index, value) =>
+            isEnabled == null ? true : isEnabled!(optionValues[index]))
+        .toList();
     return AlertDialog(
       contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
       title: label == null
           ? null
           : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
       content: YustSelectForm(
-        optionValues: optionValues,
-        optionLabels: optionLabels,
-        selectedValues: selectedValues,
+        optionValues: enabledOptionValues,
+        optionLabels: enabledOptionLabels,
+        selectedValues: enabledSelectedValues,
         formType: YustSelectFormType.singleWithoutIndicator,
         onChanged: () {
           Navigator.pop(context);
