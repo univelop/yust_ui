@@ -97,9 +97,12 @@ abstract class LocaleKeys {
   static const advertisement = 'advertisement';
   static const afterNumberOfEvents = 'afterNumberOfEvents';
   static const aiAgentChatHint = 'aiAgentChatHint';
+  static const aiAgentRoleDescription = 'aiAgentRoleDescription';
+  static const aiAgentSetupError = 'aiAgentSetupError';
   static const aiAgentTitle = 'aiAgentTitle';
   static const aiAgentUndefinedMessage = 'aiAgentUndefinedMessage';
   static const aiDescription = 'aiDescription';
+  static const aiTileDescriptionExample = 'aiTileDescriptionExample';
   static const aiTileNameExample = 'aiTileNameExample';
   static const alertAbortImport = 'alertAbortImport';
   static const alertAddItems = 'alertAddItems';
@@ -450,7 +453,6 @@ abstract class LocaleKeys {
   static const apiKeyCreationHint = 'apiKeyCreationHint';
   static const apiKeyDeletionHint = 'apiKeyDeletionHint';
   static const apiKeyDiscardHint = 'apiKeyDiscardHint';
-  static const apiKeyExplanation = 'apiKeyExplanation';
   static const apiKeyMoved = 'apiKeyMoved';
   static const apiKeyPrefixExplanation = 'apiKeyPrefixExplanation';
   static const apiKeyPreview = 'apiKeyPreview';
@@ -1126,7 +1128,6 @@ abstract class LocaleKeys {
   static const emailDomainsAdd = 'emailDomainsAdd';
   static const emailDomainsExplanation = 'emailDomainsExplanation';
   static const emailOptional = 'emailOptional';
-  static const emailSettingsMoved = 'emailSettingsMoved';
   static const emailTemplate = 'emailTemplate';
   static const emailing = 'emailing';
   static const emailingExplanation = 'emailingExplanation';
@@ -1589,6 +1590,8 @@ abstract class LocaleKeys {
   static const exceptionValueNotFound = 'exceptionValueNotFound';
   static const exceptionWebhookMethodNotSet = 'exceptionWebhookMethodNotSet';
   static const exceptionWebhookUrlNotSet = 'exceptionWebhookUrlNotSet';
+  static const exceptionWorkspaceMandatoryForSaveShareIntent =
+      'exceptionWorkspaceMandatoryForSaveShareIntent';
   static const exceptionWorkspaceMustHaveOwner =
       'exceptionWorkspaceMustHaveOwner';
   static const exceptionWorkspaceNotLoaded = 'exceptionWorkspaceNotLoaded';
@@ -2035,6 +2038,7 @@ abstract class LocaleKeys {
   static const houseNumber = 'houseNumber';
   static const hrManagement = 'hrManagement';
   static const html = 'html';
+  static const htmlEncodeDescription = 'htmlEncodeDescription';
   static const iOs = 'iOs';
   static const icon = 'icon';
   static const id = 'id';
@@ -2293,8 +2297,6 @@ abstract class LocaleKeys {
   static const listNameExampleProjectStatus = 'listNameExampleProjectStatus';
   static const listNameExampleTasks = 'listNameExampleTasks';
   static const listSharedByWorkspace = 'listSharedByWorkspace';
-  static const listSymmetricDifferenceDecription =
-      'listSymmetricDifferenceDecription';
   static const listSymmetricDifferenceDescription =
       'listSymmetricDifferenceDescription';
   static const listTitle = 'listTitle';
@@ -2362,6 +2364,7 @@ abstract class LocaleKeys {
   static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
   static const maxNumberImages = 'maxNumberImages';
+  static const maxOptionAmountReached = 'maxOptionAmountReached';
   static const maximumPreviewExceeded = 'maximumPreviewExceeded';
   static const maximumTriggersOnRecordSpecReached =
       'maximumTriggersOnRecordSpecReached';
@@ -2404,6 +2407,7 @@ abstract class LocaleKeys {
   static const missingReadPermission = 'missingReadPermission';
   static const missingResource = 'missingResource';
   static const missingRoleAiAgent = 'missingRoleAiAgent';
+  static const missingRoleAiAgentExplanation = 'missingRoleAiAgentExplanation';
   static const missingSignature = 'missingSignature';
   static const missingTechName = 'missingTechName';
   static const missingUserPicker = 'missingUserPicker';
@@ -2434,6 +2438,7 @@ abstract class LocaleKeys {
   static const multiSelect = 'multiSelect';
   static const multiSelectColumns = 'multiSelectColumns';
   static const multiSelectFavorites = 'multiSelectFavorites';
+  static const multiSelectHyphen = 'multiSelectHyphen';
   static const multiSelectRows = 'multiSelectRows';
   static const multiSelectionBrickDescription =
       'multiSelectionBrickDescription';
@@ -3033,6 +3038,9 @@ abstract class LocaleKeys {
   static const seconds = 'seconds';
   static const section = 'section';
   static const sectionBrickDescription = 'sectionBrickDescription';
+  static const segmentsBrickDescription = 'segmentsBrickDescription';
+  static const segmentsSelection = 'segmentsSelection';
+  static const segmentsSetSettings = 'segmentsSetSettings';
   static const select = 'select';
   static const selectAll = 'selectAll';
   static const selectApiKey = 'selectApiKey';
