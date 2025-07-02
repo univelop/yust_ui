@@ -1,3 +1,8 @@
+## 3.27.18 - 2025-07-02
+
+-   Add maxLength to YustTextField
+-   Allow disabling of YustSelect Options
+
 ## 3.27.17 - 2025-06-13
 
 -   Fix for YustAlertService
