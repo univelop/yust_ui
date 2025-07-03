@@ -24,6 +24,10 @@ class YustSelect<T> extends StatelessWidget {
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
   final bool showHighlightFocus;
+  /// A function to compare two values of type [T].
+  /// It is used to find the index of the value in the optionValues list.
+  /// If null, the default equality check is used.
+  final bool Function(T a, T b)? optionEquals;
   final bool Function(T) _isSelectable;
 
   static const maxVisibleOptions = 10;
@@ -49,6 +53,7 @@ class YustSelect<T> extends StatelessWidget {
     this.allowSearch = true,
     this.autovalidateMode,
     this.showHighlightFocus = false,
+    this.optionEquals,
   }) : _isSelectable = isSelectable ?? ((_) => true);
 
   @override
@@ -72,7 +77,14 @@ class YustSelect<T> extends StatelessWidget {
   }
 
   String _valueCaption(T value) {
-    final index = optionValues.indexOf(value);
+    int index;
+    if(optionEquals != null){
+      index = optionValues.indexWhere((o) => optionEquals!(o,value));
+    } else{
+
+     index = optionValues.indexOf(value);
+    }
+
     if (index == -1) {
       return showUnknownValue ? value.toString() : '';
     }
