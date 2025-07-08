@@ -10,6 +10,8 @@ class YustSelect<T> extends StatelessWidget {
   final T value;
   final List<T> optionValues;
   final List<String> optionLabels;
+    /// Optional list of widgets to be displayed before the label.
+  final List<Widget>? prefixWidgets;
   final void Function(T)? onSelected;
   final DeleteCallback? onDelete;
   final YustInputStyle style;
@@ -38,6 +40,7 @@ class YustSelect<T> extends StatelessWidget {
     required this.value,
     required this.optionValues,
     required this.optionLabels,
+    this.prefixWidgets,
     bool Function(T)? isSelectable,
     this.onSelected,
     this.onDelete,
@@ -113,6 +116,9 @@ class YustSelect<T> extends StatelessWidget {
     final enabledOptionLabels = optionLabels
         .whereIndexed((index, value) => _isSelectable(optionValues[index]))
         .toList();
+    final enabledPrefixWidgets = prefixWidgets?.whereIndexed((index, value) => _isSelectable(optionValues[index]))
+        .toList();
+
     return AlertDialog(
       contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
       title: label == null
@@ -121,6 +127,7 @@ class YustSelect<T> extends StatelessWidget {
       content: YustSelectForm(
         optionValues: enabledOptionValues,
         optionLabels: enabledOptionLabels,
+        prefixWidgets: enabledPrefixWidgets,
         selectedValues: selectedValues,
         formType: YustSelectFormType.singleWithoutIndicator,
         onChanged: () {
@@ -135,4 +142,6 @@ class YustSelect<T> extends StatelessWidget {
       ),
     );
   }
+
+
 }
