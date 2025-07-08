@@ -46,7 +46,7 @@ dev_dependencies:
     flutter_lints: ^3.0.1
     test: ^1.24.9
     build_runner: ^2.4.7
-    json_serializable: ^6.5.4
+    json_serializable: 6.8.0
 
 dependency_overrides:
     # See https://github.com/omarhurani/flutter_painter/pull/59
