@@ -2306,8 +2306,6 @@ abstract class LocaleKeys {
   static const listNameExampleProjectStatus = 'listNameExampleProjectStatus';
   static const listNameExampleTasks = 'listNameExampleTasks';
   static const listSharedByWorkspace = 'listSharedByWorkspace';
-  static const listSymmetricDifferenceDecription =
-      'listSymmetricDifferenceDecription';
   static const listSymmetricDifferenceDescription =
       'listSymmetricDifferenceDescription';
   static const listTitle = 'listTitle';
@@ -2375,6 +2373,7 @@ abstract class LocaleKeys {
   static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
   static const maxNumberImages = 'maxNumberImages';
+  static const maxOptionAmountReached = 'maxOptionAmountReached';
   static const maximumPreviewExceeded = 'maximumPreviewExceeded';
   static const maximumTriggersOnRecordSpecReached =
       'maximumTriggersOnRecordSpecReached';
@@ -2448,6 +2447,7 @@ abstract class LocaleKeys {
   static const multiSelect = 'multiSelect';
   static const multiSelectColumns = 'multiSelectColumns';
   static const multiSelectFavorites = 'multiSelectFavorites';
+  static const multiSelectHyphen = 'multiSelectHyphen';
   static const multiSelectRows = 'multiSelectRows';
   static const multiSelectionBrickDescription =
       'multiSelectionBrickDescription';
@@ -3055,6 +3055,9 @@ abstract class LocaleKeys {
   static const seconds = 'seconds';
   static const section = 'section';
   static const sectionBrickDescription = 'sectionBrickDescription';
+  static const segmentsBrickDescription = 'segmentsBrickDescription';
+  static const segmentsSelection = 'segmentsSelection';
+  static const segmentsSetSettings = 'segmentsSetSettings';
   static const select = 'select';
   static const selectAll = 'selectAll';
   static const selectApiKey = 'selectApiKey';
