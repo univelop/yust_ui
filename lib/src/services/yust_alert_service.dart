@@ -368,6 +368,7 @@ class YustAlertService {
     required List<String> optionValues,
     required List<String> priorOptionValues,
     required List<String> optionLabels,
+      
     bool returnPriorItems = true,
     String? title,
     String? subTitle,
@@ -397,6 +398,7 @@ class YustAlertService {
     required List<String> optionValues,
     required List<String> priorOptionValues,
     required List<String> optionLabels,
+    List<Widget>? prefixWidgets,
     bool returnPriorItems = true,
     String? title,
     String? subTitle,
@@ -441,6 +443,7 @@ class YustAlertService {
                   optionValues: optionValues,
                   optionLabels: optionLabels,
                   selectedValues: newItemIds,
+                  prefixWidgets: prefixWidgets,
                   onChanged: () {
                     setState(() {});
                   },

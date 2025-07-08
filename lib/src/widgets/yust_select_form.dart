@@ -17,6 +17,8 @@ class YustSelectForm<T> extends StatefulWidget {
   final List<T> optionValues;
   final List<String> optionLabels;
   final List<T> selectedValues;
+  /// Optional list of widgets to be displayed before the label.
+  final List<Widget>? prefixWidgets;
   final bool disabled;
   final YustSelectFormType formType;
   final String noOptionsText;
@@ -32,6 +34,7 @@ class YustSelectForm<T> extends StatefulWidget {
     required this.optionValues,
     required this.optionLabels,
     List<T>? selectedValues,
+    this.prefixWidgets,
     String? noOptionsText,
     this.disabled = false,
     this.formType = YustSelectFormType.multiple,
@@ -179,6 +182,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
     return CheckboxListTile(
       enabled: !widget.disabled,
       title: Text(_getOptionLabel(foundValues[index])),
+      secondary: widget.prefixWidgets?.elementAtOrNull(index),
       value: widget.selectedValues.contains(foundValues[index]),
       controlAffinity: ListTileControlAffinity.platform,
       onChanged: (value) {
@@ -195,6 +199,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
   Widget _listItemSingle(List<T> foundValues, int index) {
     return RadioListTile(
       title: Text(_getOptionLabel(foundValues[index])),
+      secondary: widget.prefixWidgets?.elementAtOrNull(index),
       value: foundValues[index],
       groupValue: widget.selectedValues.firstOrNull,
       controlAffinity: ListTileControlAffinity.platform,
@@ -212,6 +217,7 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
   Widget _listItemSingleNoIndicator(List<T> foundValues, int index) {
     return ListTile(
       title: Text(_getOptionLabel(foundValues[index])),
+      leading: widget.prefixWidgets?.elementAtOrNull(index),
       onTap: () {
         setState(() {
           final value = foundValues[index];
