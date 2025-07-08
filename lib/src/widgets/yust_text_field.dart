@@ -57,6 +57,12 @@ class YustTextField extends StatefulWidget {
   /// When value is set, text field is in error state; and display this text
   final String? forceErrorText;
 
+  // The Icon to be displayed in front of the label 
+  final IconData? prefixLabelIcon;
+
+  /// The color of the prefix label icon
+  final Color? prefixLabelIconColor;
+
   const YustTextField({
     super.key,
     this.label,
@@ -101,6 +107,8 @@ class YustTextField extends StatefulWidget {
     this.autofillHints,
     this.reserveDefaultTextEditingShortcuts = true,
     this.forceErrorText,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
   });
 
   @override
@@ -261,6 +269,18 @@ class _YustTextFieldState extends State<YustTextField>
         
     final textField = TextFormField(
       decoration: InputDecoration(
+        prefix: widget.prefixLabelIcon != null
+            ? Padding(
+              padding: const EdgeInsets.only(right:4.0),
+              child: Icon(
+                  widget.prefixLabelIcon,
+                  color: widget.prefixLabelIconColor ??
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      Colors.black,
+                      size: 12.0,
+                ),
+            )
+            : null,
         counter: const SizedBox.shrink(),
         labelText: label.isNotEmpty ? label : null,
         labelStyle: widget.labelStyle ??

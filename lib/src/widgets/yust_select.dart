@@ -31,6 +31,11 @@ class YustSelect<T> extends StatelessWidget {
   /// If null, the default equality check is used.
   final bool Function(T a, T b)? optionEquals;
   final bool Function(T) _isSelectable;
+   // The Icon to be displayed in front of the selected value
+  final IconData? prefixValueIcon;
+
+  /// The color of the prefix value icon
+  final Color? prefixValueIconColor;
 
   static const maxVisibleOptions = 10;
 
@@ -57,6 +62,8 @@ class YustSelect<T> extends StatelessWidget {
     this.autovalidateMode,
     this.showHighlightFocus = false,
     this.optionEquals,
+    this.prefixValueIcon,
+    this.prefixValueIconColor,
   }) : _isSelectable = isSelectable ?? ((_) => true);
 
   @override
@@ -73,6 +80,8 @@ class YustSelect<T> extends StatelessWidget {
       divider: divider,
       maxLines: maxLines,
       minLines: minLines,
+      prefixLabelIcon: prefixValueIcon,
+      prefixLabelIconColor: prefixValueIconColor,
       onTap:
           (onSelected == null || readOnly) ? null : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
