@@ -321,7 +321,7 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildFiles(BuildContext context) {
     var files = _fileHandler.getFiles();
-    files.sort((a, b) => (a.name!).compareTo(b.name!));
+    files.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     return Column(
       children: files.map((file) => _buildFile(context, file)).toList(),
     );
