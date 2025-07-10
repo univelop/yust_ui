@@ -321,7 +321,7 @@ class YustFilePickerState extends State<YustFilePicker>
 
   Widget _buildFiles(BuildContext context) {
     var files = _fileHandler.getFiles();
-    files.sort((a, b) => (a.name!).compareTo(b.name!));
+    files.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     return Column(
       children: files.map((file) => _buildFile(context, file)).toList(),
     );
@@ -352,7 +352,7 @@ class YustFilePickerState extends State<YustFilePicker>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                         // file.name is not null because shouldShowDate == true
-                        Text(file.name!, overflow: TextOverflow.ellipsis),
+                        Text(file.name ?? '', overflow: TextOverflow.ellipsis),
                         Text(
                           YustHelpers().formatDate(file.modifiedAt,
                               format: 'dd.MM.yyyy HH:mm'),
@@ -360,7 +360,7 @@ class YustFilePickerState extends State<YustFilePicker>
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ])
-                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name!,
+                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name ?? '',
                     overflow: TextOverflow.ellipsis),
           ),
           _buildCachedIndicator(file),
