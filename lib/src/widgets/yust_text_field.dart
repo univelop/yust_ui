@@ -117,6 +117,7 @@ class _YustTextFieldState extends State<YustTextField>
   void onUnfocus() {
     if (_valueDidChange == false) return;
     if (widget.onEditingComplete == null) return;
+    if (widget.readOnly) return;
 
     final textFieldText =
         widget.notTrim ? _controller.value.text : _controller.value.text.trim();
@@ -163,6 +164,7 @@ class _YustTextFieldState extends State<YustTextField>
   }
 
   void onComplete() {
+    if (widget.readOnly) return;
     if (widget.onEditingComplete != null) {
       final textFieldText = widget.notTrim
           ? _controller.value.text
@@ -257,75 +259,72 @@ class _YustTextFieldState extends State<YustTextField>
         '(${_controller.text.length}/${widget.maxLength})',
     ].join(' ').trim();
 
-    final textField = ExcludeFocus(
-      excluding: widget.readOnly,
-      child: TextFormField(
-        decoration: InputDecoration(
-          counter: const SizedBox.shrink(),
-          labelText: label.isNotEmpty ? label : null,
-          labelStyle: widget.labelStyle ??
-              (widget.readOnly
-                  ? TextStyle(
-                      color: Theme.of(context).textTheme.bodySmall?.color ??
-                          Colors.black,
-                    )
-                  : null),
-          contentPadding: widget.contentPadding,
-          border: widget.style == YustInputStyle.outlineBorder
-              ? const OutlineInputBorder()
-              : InputBorder.none,
-          prefixIcon: widget.prefixIcon,
-          prefixIconColor: widget.readOnly
-              ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
-              : null,
-          hintText: widget.placeholder,
-          hintStyle: widget.placeholderTextStyle,
-          errorMaxLines: 5,
-        ),
-        style: widget.textStyle,
-        maxLength: widget.maxLength,
-        maxLengthEnforcement:
-            widget.maxLength != null ? MaxLengthEnforcement.enforced : null,
-        maxLines: widget.expands
-            ? null
-            : widget.obscureText
-                ? 1
-                : widget.maxLines,
-        minLines: widget.expands ? null : widget.minLines,
-        expands: widget.expands,
-        controller: _controller,
-        focusNode: _focusNode,
-        keyboardType: widget.keyboardType,
-        textInputAction: widget.textInputAction ??
-            (widget.minLines != null
-                ? TextInputAction.newline
-                : TextInputAction.next),
-        onChanged: widget.onChanged == null
-            ? null
-            : (value) => widget.onChanged!(
-                  value == '' ? null : (widget.notTrim ? value : value.trim()),
-                ),
-        onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
-        onTap: widget.onTap,
-        onFieldSubmitted: widget.onFieldSubmitted,
-        autocorrect: widget.autocorrect,
-        readOnly: widget.readOnly,
-        enabled: widget.enabled,
-        obscureText: widget.obscureText,
-        textCapitalization: widget.textCapitalization,
-        inputFormatters: widget.inputFormatters,
-        smartQuotesType: widget.smartQuotesType,
-        autovalidateMode: widget.autovalidateMode ??
-            (widget.validator != null
-                ? AutovalidateMode.onUserInteraction
+    final textField = TextFormField(
+      decoration: InputDecoration(
+        counter: const SizedBox.shrink(),
+        labelText: label.isNotEmpty ? label : null,
+        labelStyle: widget.labelStyle ??
+            (widget.readOnly
+                ? TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color ??
+                        Colors.black,
+                  )
                 : null),
-        validator: widget.validator == null
-            ? null
-            : (value) => widget.validator!(value!.trim()),
-        autofocus: widget.autofocus,
-        autofillHints: widget.autofillHints,
-        forceErrorText: widget.forceErrorText,
+        contentPadding: widget.contentPadding,
+        border: widget.style == YustInputStyle.outlineBorder
+            ? const OutlineInputBorder()
+            : InputBorder.none,
+        prefixIcon: widget.prefixIcon,
+        prefixIconColor: widget.readOnly
+            ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
+            : null,
+        hintText: widget.placeholder,
+        hintStyle: widget.placeholderTextStyle,
+        errorMaxLines: 5,
       ),
+      style: widget.textStyle,
+      maxLength: widget.maxLength,
+      maxLengthEnforcement:
+          widget.maxLength != null ? MaxLengthEnforcement.enforced : null,
+      maxLines: widget.expands
+          ? null
+          : widget.obscureText
+              ? 1
+              : widget.maxLines,
+      minLines: widget.expands ? null : widget.minLines,
+      expands: widget.expands,
+      controller: _controller,
+      focusNode: _focusNode,
+      keyboardType: widget.keyboardType,
+      textInputAction: widget.textInputAction ??
+          (widget.minLines != null
+              ? TextInputAction.newline
+              : TextInputAction.next),
+      onChanged: widget.onChanged == null
+          ? null
+          : (value) => widget.onChanged!(
+                value == '' ? null : (widget.notTrim ? value : value.trim()),
+              ),
+      onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
+      onTap: widget.onTap,
+      onFieldSubmitted: widget.onFieldSubmitted,
+      autocorrect: widget.autocorrect,
+      readOnly: widget.readOnly,
+      enabled: widget.enabled,
+      obscureText: widget.obscureText,
+      textCapitalization: widget.textCapitalization,
+      inputFormatters: widget.inputFormatters,
+      smartQuotesType: widget.smartQuotesType,
+      autovalidateMode: widget.autovalidateMode ??
+          (widget.validator != null
+              ? AutovalidateMode.onUserInteraction
+              : null),
+      validator: widget.validator == null
+          ? null
+          : (value) => widget.validator!(value!.trim()),
+      autofocus: widget.autofocus,
+      autofillHints: widget.autofillHints,
+      forceErrorText: widget.forceErrorText,
     );
 
     if (widget.reserveDefaultTextEditingShortcuts) {
