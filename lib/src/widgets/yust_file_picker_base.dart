@@ -15,6 +15,8 @@ import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
 import 'yust_file_picker.dart';
 import 'yust_image_picker.dart';
+import 'yust_file_list_view.dart';
+import 'yust_file_grid_view.dart';
 
 // ignore: depend_on_referenced_packages
 import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
@@ -24,26 +26,66 @@ import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_in
 /// Used by the [YustFilePicker] and [YustImagePicker] widgets
 /// to outsource common functionality.
 abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
+  /// Label for the file picker.
   final String? label;
+
+  /// Files to display.
   final List<T> files;
+
+  /// Storage folder path.
   final String storageFolderPath;
+
+  /// Linked document path. e.g. '/records/record-123'
   final String? linkedDocPath;
+
+  /// Linked document attribute. e.g. 'images'
   final String? linkedDocAttribute;
+
+  /// Callback when files change.
   final void Function(List<T> files)? onChanged;
+
+  /// Prefix icon.
   final Widget? prefixIcon;
+
+  /// Suffix icon.
   final Widget? suffixIcon;
+
+  /// Whether to enable the dropzone.
   final bool enableDropzone;
+
+  /// Whether the file picker is read only.
   final bool readOnly;
+
+  /// Whether to show a divider between the label and the file picker.
   final bool divider;
+
+  /// Whether to allow multi-select download.
   final bool allowMultiSelectDownload;
+
+  /// Whether to allow multi-select deletion.
   final bool allowMultiSelectDeletion;
+
+  /// Callback when multi-select download is triggered.
+  ///
+  /// The real download functionality has to be implemented
+  /// by the parent widget/application.
   final void Function(List<T>)? onMultiSelectDownload;
+
+  /// Whether to wrap the suffix child.
   final bool wrapSuffixChild;
+
+  /// Whether to show the newest files first.
   final bool newestFirst;
+
+  /// Number of files to pick.
   final num? numberOfFiles;
+
+  /// Whether a single file can be overwritten.
   final bool overwriteSingleFile;
 
-  /// Number of items to show initially and load more on demand. Default is 15.
+  /// Number of items to show initially and load more on demand.
+  ///
+  /// Default is [defaultPreviewCount].
   final int previewCount;
 
   const YustFilePickerBase({
@@ -96,15 +138,16 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         if (mounted) {
           setState(() {});
         }
-        _increaseDisplayCountIfNeeded();
+        if (currentDisplayCount < _fileHandler.getFiles().length) {
+          currentDisplayCount += widget.previewCount;
+        }
         widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
       },
     );
 
     _enabled = (widget.onChanged != null && !widget.readOnly);
     currentDisplayCount = widget.previewCount;
-    _updateFuture =
-        _fileHandler.updateFiles(widget.files, loadFiles: shouldLoadFiles);
+    _updateFuture = _fileHandler.updateFiles(widget.files, loadFiles: true);
   }
 
   @override
@@ -112,23 +155,125 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
     _fileHandler.newestFirst = widget.newestFirst;
+
     return FutureBuilder(
       future: _updateFuture,
       builder: (context, snapshot) => _buildFilePicker(context),
     );
   }
 
-  // Abstract methods to be implemented by subclasses
+  /// Get the file handler.
+  YustFileHandler get fileHandler => _fileHandler;
+
+  /// Whether the file picker is enabled.
+  bool get enabled => _enabled;
+
+  /// Whether the file picker is selecting.
+  bool get selecting => _selecting;
+
+  /// Get the selected files.
+  List<T> get selectedFiles => _selectedFiles;
+
+  /// Convert files to the type of the file picker.
+  ///
+  /// This is used to convert the files to the type of the file picker.
+  /// e.g. [YustImage] for [YustImagePicker] and [YustFile] for [YustFilePicker].
   List<T> convertFiles(List<YustFile> files);
-  bool get shouldLoadFiles;
+
+  /// Build the file display.
+  ///
+  /// This is used to build the file display.
+  /// e.g. [YustFileListView] for [YustFilePicker] and [YustFileGridView] for [YustImagePicker].
   Widget buildFileDisplay(BuildContext context);
+
+  /// Build the specific action buttons.
   List<Widget> buildSpecificActionButtons(BuildContext context);
+
+  /// Open the file picker.
   Future<void> pickFiles();
 
-  // Shared multi-select functionality
+  /// Whether all files are selected.
   bool get _allSelected {
     final totalFiles = _fileHandler.getFiles().length;
     return _selectedFiles.length == totalFiles;
+  }
+
+  // Abstract method for file processing - to be implemented by subclasses
+  Future<void> processFile(String name, File? file, Uint8List? bytes);
+
+  /// Create a database entry for the files.
+  Future<void> createDatabaseEntry() async {
+    try {
+      if (widget.linkedDocPath != null &&
+          !_fileHandler.existsDocData(
+              await _fileHandler.getFirebaseDoc(widget.linkedDocPath!))) {
+        widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
+      }
+      // ignore: empty_catches
+    } catch (e) {}
+  }
+
+  /// Check the connectivity.
+  Future<bool> checkConnectivity() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none &&
+        (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
+      await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
+          LocaleKeys.alertMissingConnectionAddImages.tr());
+      return false;
+    }
+    return true;
+  }
+
+  /// Build the cached indicator.
+  Widget buildCachedIndicator(T file) {
+    if (!file.cached || !_enabled) {
+      return const SizedBox.shrink();
+    }
+    if (file.processing == true) {
+      return const CircularProgressIndicator();
+    }
+    return IconButton(
+      icon: const Icon(Icons.cloud_upload_outlined),
+      color: Colors.white,
+      onPressed: () async {
+        await YustUi.alertService.showAlert(
+            LocaleKeys.localFile.tr(), LocaleKeys.alertLocalFile.tr());
+      },
+    );
+  }
+
+  Widget buildLoadMoreButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.surface,
+        ),
+        onPressed: () {
+          setState(() {
+            currentDisplayCount += widget.previewCount;
+          });
+        },
+        icon: const Icon(Icons.refresh),
+        label: Text(LocaleKeys.loadMore.tr()),
+      ),
+    );
+  }
+
+  Future<void> deleteFiles(List<T> files) async {
+    for (final yustFile in files) {
+      await fileHandler.deleteFile(yustFile);
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+    widget.onChanged!(convertFiles(fileHandler.getOnlineFiles()));
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildFilePicker(BuildContext context) {
@@ -140,7 +285,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         below: buildFileDisplay(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await handleDroppedFiles<DropzoneFileInterface>(ev ?? [],
+          await _handleDroppedFiles<DropzoneFileInterface>(ev ?? [],
               (fileData) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
@@ -160,6 +305,9 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     }
   }
 
+  /// Build the suffix child of the YustListTile.
+  ///
+  /// Contains the control buttons etc
   Widget _buildSuffixChild(BuildContext context) => Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: _selecting
@@ -181,6 +329,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
               ],
       );
 
+  /// Build the select all button.
   Widget _buildSelectAllButton() {
     return TextButton.icon(
       onPressed: () => unawaited(_toggleSelectAll()),
@@ -189,6 +338,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  /// Toggle selection of all files.
   Future<void> _toggleSelectAll() async {
     if (_allSelected) {
       setState(() {
@@ -220,6 +370,20 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     });
   }
 
+  /// Toggle the selection of a file.
+  void toggleFileSelection(T? file) {
+    if (file == null) return;
+
+    setState(() {
+      if (selectedFiles.contains(file)) {
+        selectedFiles.remove(file);
+      } else {
+        _selectedFiles.add(file);
+      }
+    });
+  }
+
+  /// Build the cancel selection button.
   Widget _buildCancelSelectionButton() {
     return TextButton(
       onPressed: _cancelSelection,
@@ -227,6 +391,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  /// Cancel the selection.
   void _cancelSelection() {
     setState(() {
       _selecting = false;
@@ -234,6 +399,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     });
   }
 
+  /// Build the start selection button.
   Widget _buildStartSelectionButton() {
     return TextButton(
       onPressed: () {
@@ -245,6 +411,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  /// Build the download selected button.
   Widget _buildDownloadSelectedButton(BuildContext context) {
     return IconButton(
       color: Theme.of(context).colorScheme.primary,
@@ -260,6 +427,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  /// Build the delete selected button.
   Widget _buildDeleteSelectedButton(BuildContext context) {
     return IconButton(
       color: Theme.of(context).colorScheme.primary,
@@ -271,6 +439,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  /// Delete the selected files.
   Future<void> _deleteSelectedFiles() async {
     final confirmed = await YustUi.alertService.showConfirmation(
       LocaleKeys.confirmationNeeded.tr(),
@@ -282,27 +451,12 @@ abstract class YustFilePickerBaseState<T extends YustFile,
 
     await EasyLoading.show(status: LocaleKeys.deletingFiles.tr());
 
-    await _deleteFiles(_selectedFiles);
+    await deleteFiles(_selectedFiles);
     _cancelSelection();
 
     await EasyLoading.dismiss();
   }
 
-  Future<void> _deleteFiles(List<T> files) async {
-    for (final yustFile in files) {
-      await _fileHandler.deleteFile(yustFile);
-
-      if (mounted) {
-        setState(() {});
-      }
-    }
-    widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  // Shared validation methods
   Future<bool> checkFileAmount(List<dynamic> fileElements) async {
     final numberOfFiles = widget.numberOfFiles;
     // No restriction on file count
@@ -341,7 +495,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     return true;
   }
 
-  Future<void> handleDroppedFiles<U>(
+  Future<void> _handleDroppedFiles<U>(
     List<U> fileData,
     Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
   ) async {
@@ -349,7 +503,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     if (!filesValid) return;
 
     if (widget.overwriteSingleFile) {
-      await _deleteFiles(widget.files);
+      await deleteFiles(widget.files);
     }
 
     for (final fileData in fileData) {
@@ -357,116 +511,6 @@ abstract class YustFilePickerBaseState<T extends YustFile,
       await processFile(name, file, bytes);
     }
   }
-
-  // Abstract method for file processing - to be implemented by subclasses
-  Future<void> processFile(String name, File? file, Uint8List? bytes);
-
-  Future<void> createDatabaseEntry() async {
-    try {
-      if (widget.linkedDocPath != null &&
-          !_fileHandler.existsDocData(
-              await _fileHandler.getFirebaseDoc(widget.linkedDocPath!))) {
-        widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
-      }
-      // ignore: empty_catches
-    } catch (e) {}
-  }
-
-  // Shared connectivity check
-  Future<bool> checkConnectivity() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none &&
-        (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
-      await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
-          LocaleKeys.alertMissingConnectionAddImages.tr());
-      return false;
-    }
-    return true;
-  }
-
-  // Shared indicator widgets
-  Widget buildCachedIndicator(T file) {
-    if (!file.cached || !_enabled) {
-      return const SizedBox.shrink();
-    }
-    if (file.processing == true) {
-      return const CircularProgressIndicator();
-    }
-    return IconButton(
-      icon: const Icon(Icons.cloud_upload_outlined),
-      color: Colors.white,
-      onPressed: () async {
-        await YustUi.alertService.showAlert(
-            LocaleKeys.localFile.tr(), LocaleKeys.alertLocalFile.tr());
-      },
-    );
-  }
-
-  Widget buildSelectionCheckbox(T? file) {
-    if (!_selecting || file == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned(
-      top: 10,
-      left: 10,
-      child: Checkbox(
-        value: _selectedFiles.contains(file),
-        shape: const CircleBorder(),
-        onChanged: (value) => _toggleSelectionForFile(file),
-        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-          if (states.contains(WidgetState.selected)) {
-            return Theme.of(context).primaryColor;
-          }
-          return Colors.grey.shade300;
-        }),
-      ),
-    );
-  }
-
-  void _toggleSelectionForFile(T file) {
-    setState(() {
-      if (_selectedFiles.contains(file)) {
-        _selectedFiles.remove(file);
-      } else {
-        _selectedFiles.add(file);
-      }
-    });
-  }
-
-  void loadMoreItems() {
-    setState(() {
-      currentDisplayCount += widget.previewCount;
-    });
-  }
-
-  void _increaseDisplayCountIfNeeded() {
-    if (currentDisplayCount < _fileHandler.getFiles().length) {
-      currentDisplayCount += widget.previewCount;
-    }
-  }
-
-  // Shared UI components
-  Widget buildLoadMoreButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Theme.of(context).colorScheme.surface,
-        ),
-        onPressed: loadMoreItems,
-        icon: const Icon(Icons.refresh),
-        label: Text(LocaleKeys.loadMore.tr()),
-      ),
-    );
-  }
-
-  // Getters for access to shared state
-  YustFileHandler get fileHandler => _fileHandler;
-  bool get enabled => _enabled;
-  bool get selecting => _selecting;
-  List<T> get selectedFiles => _selectedFiles;
 
   @override
   bool get wantKeepAlive => true;
@@ -476,8 +520,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.files != widget.files) {
-      _updateFuture =
-          _fileHandler.updateFiles(widget.files, loadFiles: shouldLoadFiles);
+      _updateFuture = _fileHandler.updateFiles(widget.files, loadFiles: true);
       setState(() {});
     }
   }
