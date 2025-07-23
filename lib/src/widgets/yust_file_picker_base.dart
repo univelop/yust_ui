@@ -198,6 +198,12 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   /// This is used to create the appropriate file type for each picker.
   Future<T> createFileObject(String name, File? file, Uint8List? bytes);
 
+  /// Get the currently visible files based on how they are displayed.
+  ///
+  /// This allows each implementation to define which files are actually visible
+  /// based on their specific display logic (sorting, filtering, etc.).
+  List<T> getVisibleFiles(List<T> allFiles);
+
   /// Whether all files are selected.
   bool get _allSelected {
     final totalFiles = _fileHandler.getFiles().length;
@@ -404,9 +410,12 @@ abstract class YustFilePickerBaseState<T extends YustFile,
 
     setState(() {
       _selectedFiles.clear();
-      _selectedFiles.addAll(includeHiddenItems == true
-          ? allFiles
-          : allFiles.take(currentDisplayCount));
+      if (includeHiddenItems == true) {
+        _selectedFiles.addAll(allFiles);
+      } else {
+        // Select only the currently visible files
+        _selectedFiles.addAll(getVisibleFiles(allFiles));
+      }
     });
   }
 

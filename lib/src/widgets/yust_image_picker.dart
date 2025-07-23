@@ -123,6 +123,10 @@ class YustImagePickerState
           String name, File? file, Uint8List? bytes) =>
       _createImageObject(name, file, bytes);
 
+  @override
+  List<YustImage> getVisibleFiles(List<YustImage> allFiles) =>
+      allFiles.take(currentDisplayCount).toList();
+
   Future<YustImage> _createImageObject(
           String name, File? file, Uint8List? bytes,
           {bool setGPSToLocation = false,
@@ -421,27 +425,32 @@ class YustImagePickerState
 
     final pictureFiles = List<YustImage>.from(fileHandler.getFiles());
 
-    // Single Image with Override
-    if (widget.numberOfFiles == 1 &&
+    final willOverwrite = widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
-        pictureFiles.isNotEmpty) {
+        pictureFiles.isNotEmpty;
+
+    if (widget.numberOfFiles != null) {
+      final effectiveCurrentFileCount = willOverwrite ? 0 : pictureFiles.length;
+
+      if (effectiveCurrentFileCount + images.length > widget.numberOfFiles!) {
+        await EasyLoading.dismiss();
+        await YustUi.alertService.showAlert(
+            LocaleKeys.fileUpload.tr(),
+            widget.numberOfFiles == 1
+                ? LocaleKeys.alertMaxOneFile.tr()
+                : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
+                    'numberFiles': widget.numberOfFiles.toString()
+                  }));
+        return;
+      }
+    }
+
+    // Single Image with Override
+    if (willOverwrite) {
       await EasyLoading.dismiss();
       final confirmed = await YustUi.alertService.showConfirmation(
           LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
       if (confirmed == false) return;
-    }
-
-    // Image Limit overstepped
-    if (widget.numberOfFiles != null &&
-        pictureFiles.length + images.length > widget.numberOfFiles!) {
-      await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          widget.numberOfFiles == 1
-              ? LocaleKeys.alertMaxOneFile.tr()
-              : LocaleKeys.alertMaxNumberFiles.tr(
-                  namedArgs: {'numberFiles': widget.numberOfFiles.toString()}));
-      return;
     }
 
     for (final image in images) {

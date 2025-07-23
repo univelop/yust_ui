@@ -23,20 +23,16 @@ class YustFileListView<T extends YustFile> extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Sort files by name
-    final sortedFiles = List<T>.from(files);
-    sortedFiles.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
-
     final displayFiles =
-        currentItemCount != null && sortedFiles.length > currentItemCount!
-            ? sortedFiles.sublist(0, currentItemCount!)
-            : sortedFiles;
+        currentItemCount != null && files.length > currentItemCount!
+            ? files.sublist(0, currentItemCount!)
+            : files;
 
     return Column(
       children: [
         ...displayFiles.map((file) => itemBuilder(context, file)),
         if (currentItemCount != null &&
-            sortedFiles.length > currentItemCount! &&
+            files.length > currentItemCount! &&
             loadMoreButton != null)
           loadMoreButton!,
       ],
