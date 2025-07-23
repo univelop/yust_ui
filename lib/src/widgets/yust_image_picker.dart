@@ -199,7 +199,7 @@ class YustImagePickerState
       currentItemCount: currentDisplayCount,
       itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildSingleImage(context, file),
-      onLoadMore: loadMoreItems,
+      loadMoreButton: buildLoadMoreButton(context),
     );
   }
 

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
-import '../extensions/string_translate_extension.dart';
-import '../generated/locale_keys.g.dart';
-
 class YustFileListView<T extends YustFile> extends StatelessWidget {
   final List<T> files;
   final int? currentItemCount;
   final int? itemsPerPage;
   final Widget Function(BuildContext, T) itemBuilder;
-  final VoidCallback? onLoadMore;
+  final Widget? loadMoreButton;
 
   const YustFileListView({
     super.key,
@@ -17,7 +14,7 @@ class YustFileListView<T extends YustFile> extends StatelessWidget {
     required this.itemBuilder,
     this.currentItemCount,
     this.itemsPerPage,
-    this.onLoadMore,
+    this.loadMoreButton,
   });
 
   @override
@@ -40,19 +37,8 @@ class YustFileListView<T extends YustFile> extends StatelessWidget {
         ...displayFiles.map((file) => itemBuilder(context, file)),
         if (currentItemCount != null &&
             sortedFiles.length > currentItemCount! &&
-            onLoadMore != null)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.surface,
-              ),
-              onPressed: onLoadMore,
-              icon: const Icon(Icons.refresh),
-              label: Text(LocaleKeys.loadMore.tr()),
-            ),
-          ),
+            loadMoreButton != null)
+          loadMoreButton!,
       ],
     );
   }

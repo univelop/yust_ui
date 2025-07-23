@@ -439,6 +439,22 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     }
   }
 
+  // Shared UI components
+  Widget buildLoadMoreButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.surface,
+        ),
+        onPressed: loadMoreItems,
+        icon: const Icon(Icons.refresh),
+        label: Text(LocaleKeys.loadMore.tr()),
+      ),
+    );
+  }
+
   // Getters for access to shared state
   YustFileHandler get fileHandler => _fileHandler;
   bool get enabled => _enabled;

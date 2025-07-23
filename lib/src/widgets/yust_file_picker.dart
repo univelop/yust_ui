@@ -66,7 +66,7 @@ class YustFilePickerState
       currentItemCount: currentDisplayCount,
       itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildFile(context, file),
-      onLoadMore: loadMoreItems,
+      loadMoreButton: buildLoadMoreButton(context),
     );
   }
 
