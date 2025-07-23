@@ -18,9 +18,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   final bool allowOnlyImages;
   final num? maximumFileSizeInKiB;
 
-  /// default is 15
-  final int previewCount;
-
   const YustFilePicker({
     super.key,
     super.label,
@@ -34,7 +31,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.prefixIcon,
     super.enableDropzone = false,
     super.readOnly = false,
-    super.allowMultiple = true,
+    super.multiple = true,
     super.numberOfFiles,
     this.allowedExtensions,
     super.divider = true,
@@ -45,8 +42,8 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-    int? previewCount,
-  }) : previewCount = previewCount ?? 15;
+    super.previewCount = 15,
+  });
 
   @override
   YustFilePickerState createState() => YustFilePickerState();

@@ -35,16 +35,13 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   /// Locale in which the timestamp watermark should be formatted
   final Locale locale;
 
-  /// default is 15
-  final int previewCount;
-
   const YustImagePicker({
     super.key,
     super.label,
     required super.storageFolderPath,
     super.linkedDocPath,
     super.linkedDocAttribute,
-    super.allowMultiple = false,
+    super.multiple = false,
     super.numberOfFiles,
     super.suffixIcon,
     this.convertToJPEG = true,
@@ -65,13 +62,12 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-    int? previewCount,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-  })  : previewCount = previewCount ?? 15,
-        super(files: images);
+    super.previewCount = 15,
+  }) : super(files: images);
 
   // Compatibility getter for existing API
   List<YustImage> get images => files;
@@ -101,8 +97,7 @@ class YustImagePickerState
   @override
   Widget buildFileDisplay(BuildContext context) {
     if (widget.showPreview) {
-      // ignore: deprecated_member_use_from_same_package
-      return widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1
+      return widget.multiple || (widget.numberOfFiles ?? 2) > 1
           ? _buildGallery(context)
           : Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
@@ -164,8 +159,7 @@ class YustImagePickerState
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
-                // ignore: deprecated_member_use_from_same_package
-                widget.allowMultiple
+                widget.multiple
                     ? LocaleKeys.alertDeleteAllImages.tr()
                     : LocaleKeys.confirmDelete.tr(),
                 LocaleKeys.delete.tr());
@@ -248,8 +242,7 @@ class YustImagePickerState
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
-    // ignore: deprecated_member_use_from_same_package
-    if (widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) {
+    if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -483,7 +476,7 @@ class YustImagePickerState
       await Permission.locationWhenInUse.request();
 
       final picker = ImagePicker();
-      if ((widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) &&
+      if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
           imageSource == ImageSource.gallery) {
         final images = await picker.pickMultiImage();
 
@@ -509,8 +502,7 @@ class YustImagePickerState
     }
     // Else, we are on Web
     else {
-      // ignore: deprecated_member_use_from_same_package
-      if (widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) {
+      if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
         final result = await FilePicker.platform
             .pickFiles(type: FileType.image, allowMultiple: true);
         if (result == null) return;

@@ -34,9 +34,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final void Function(List<T>)? onMultiSelectDownload;
   final bool wrapSuffixChild;
   final bool newestFirst;
-  final bool allowMultiple;
+  final bool multiple;
   final num? numberOfFiles;
   final bool overwriteSingleFile;
+
+  /// Number of items to show initially and load more on demand. Default is 15.
+  final int previewCount;
 
   const YustFilePickerBase({
     super.key,
@@ -56,9 +59,10 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.onMultiSelectDownload,
     this.wrapSuffixChild = false,
     this.newestFirst = false,
-    this.allowMultiple = true,
+    this.multiple = true,
     this.numberOfFiles,
     this.overwriteSingleFile = false,
+    this.previewCount = 15,
   });
 }
 
