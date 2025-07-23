@@ -34,9 +34,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final void Function(List<T>)? onMultiSelectDownload;
   final bool wrapSuffixChild;
   final bool newestFirst;
-
-  @Deprecated('Use [numberOfFiles] instead')
-  final bool multiple;
+  final bool allowMultiple;
   final num? numberOfFiles;
   final bool overwriteSingleFile;
 
@@ -58,7 +56,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.onMultiSelectDownload,
     this.wrapSuffixChild = false,
     this.newestFirst = false,
-    this.multiple = false,
+    this.allowMultiple = true,
     this.numberOfFiles,
     this.overwriteSingleFile = false,
   });

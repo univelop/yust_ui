@@ -36,7 +36,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   final Locale locale;
 
   /// default is 15
-  final int imageCount;
+  final int previewCount;
 
   const YustImagePicker({
     super.key,
@@ -44,7 +44,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     required super.storageFolderPath,
     super.linkedDocPath,
     super.linkedDocAttribute,
-    super.multiple = false,
+    super.allowMultiple = false,
     super.numberOfFiles,
     super.suffixIcon,
     this.convertToJPEG = true,
@@ -65,12 +65,12 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-    int? imageCount,
+    int? previewCount,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-  })  : imageCount = imageCount ?? 15,
+  })  : previewCount = previewCount ?? 15,
         super(files: images);
 
   // Compatibility getter for existing API
@@ -87,7 +87,7 @@ class YustImagePickerState
   @override
   void initState() {
     super.initState();
-    _currentImageNumber = widget.imageCount;
+    _currentImageNumber = widget.previewCount;
   }
 
   // Abstract method implementations
@@ -102,7 +102,7 @@ class YustImagePickerState
   Widget buildFileDisplay(BuildContext context) {
     if (widget.showPreview) {
       // ignore: deprecated_member_use_from_same_package
-      return widget.multiple || (widget.numberOfFiles ?? 2) > 1
+      return widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1
           ? _buildGallery(context)
           : Padding(
               padding: const EdgeInsets.only(bottom: 2.0),
@@ -165,7 +165,7 @@ class YustImagePickerState
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
                 // ignore: deprecated_member_use_from_same_package
-                widget.multiple
+                widget.allowMultiple
                     ? LocaleKeys.alertDeleteAllImages.tr()
                     : LocaleKeys.confirmDelete.tr(),
                 LocaleKeys.delete.tr());
@@ -211,11 +211,11 @@ class YustImagePickerState
     return YustFileGridView<YustImage>(
       files: YustImage.fromYustFiles(fileHandler.getFiles()),
       currentItemCount: _currentImageNumber,
-      itemsPerPage: widget.imageCount,
+      itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildSingleImage(context, file),
       onLoadMore: () {
         setState(() {
-          _currentImageNumber += widget.imageCount;
+          _currentImageNumber += widget.previewCount;
         });
       },
     );
@@ -249,7 +249,7 @@ class YustImagePickerState
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
     // ignore: deprecated_member_use_from_same_package
-    if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
+    if (widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -483,8 +483,7 @@ class YustImagePickerState
       await Permission.locationWhenInUse.request();
 
       final picker = ImagePicker();
-      // ignore: deprecated_member_use_from_same_package
-      if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
+      if ((widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) &&
           imageSource == ImageSource.gallery) {
         final images = await picker.pickMultiImage();
 
@@ -511,7 +510,7 @@ class YustImagePickerState
     // Else, we are on Web
     else {
       // ignore: deprecated_member_use_from_same_package
-      if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
+      if (widget.allowMultiple || (widget.numberOfFiles ?? 2) > 1) {
         final result = await FilePicker.platform
             .pickFiles(type: FileType.image, allowMultiple: true);
         if (result == null) return;
@@ -576,7 +575,7 @@ class YustImagePickerState
     await fileHandler.addFile(newYustFile);
 
     if (_currentImageNumber < fileHandler.getFiles().length) {
-      _currentImageNumber += widget.imageCount;
+      _currentImageNumber += widget.previewCount;
     }
     widget.onChanged!(YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
     if (mounted) {

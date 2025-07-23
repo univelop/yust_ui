@@ -19,7 +19,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   final num? maximumFileSizeInKiB;
 
   /// default is 15
-  final int fileCount;
+  final int previewCount;
 
   const YustFilePicker({
     super.key,
@@ -34,7 +34,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.prefixIcon,
     super.enableDropzone = false,
     super.readOnly = false,
-    super.multiple = true,
+    super.allowMultiple = true,
     super.numberOfFiles,
     this.allowedExtensions,
     super.divider = true,
@@ -45,8 +45,8 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-    int? fileCount,
-  }) : fileCount = fileCount ?? 15;
+    int? previewCount,
+  }) : previewCount = previewCount ?? 15;
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -60,7 +60,7 @@ class YustFilePickerState
   @override
   void initState() {
     super.initState();
-    _currentFileNumber = widget.fileCount;
+    _currentFileNumber = widget.previewCount;
   }
 
   @override
@@ -74,11 +74,11 @@ class YustFilePickerState
     return YustFileListView<YustFile>(
       files: fileHandler.getFiles(),
       currentItemCount: _currentFileNumber,
-      itemsPerPage: widget.fileCount,
+      itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildFile(context, file),
       onLoadMore: () {
         setState(() {
-          _currentFileNumber += widget.fileCount;
+          _currentFileNumber += widget.previewCount;
         });
       },
     );
@@ -426,7 +426,7 @@ class YustFilePickerState
     await fileHandler.addFile(newYustFile);
 
     if (_currentFileNumber < fileHandler.getFiles().length) {
-      _currentFileNumber += widget.fileCount;
+      _currentFileNumber += widget.previewCount;
     }
     _processing[newYustFile.name] = false;
     widget.onChanged!(fileHandler.getOnlineFiles());
