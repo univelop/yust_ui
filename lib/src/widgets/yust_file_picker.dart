@@ -60,9 +60,6 @@ class YustFilePickerState
   List<YustFile> convertFiles(List<YustFile> files) => files;
 
   @override
-  bool get shouldLoadFiles => false;
-
-  @override
   Widget buildFileDisplay(BuildContext context) {
     return YustFileListView<YustFile>(
       files: fileHandler.getFiles(),
@@ -74,7 +71,23 @@ class YustFilePickerState
   }
 
   @override
-  Future<void> pickFiles() => _pickFiles();
+  Future<void> pickFiles() async {
+    YustUi.helpers.unfocusCurrent();
+    final type =
+        (widget.allowedExtensions != null) ? FileType.custom : FileType.any;
+    final result = await FilePicker.platform.pickFiles(
+      type: type,
+      allowedExtensions: widget.allowedExtensions,
+      allowMultiple: (widget.numberOfFiles ?? 2) > 1,
+    );
+    if (result == null) return;
+
+    await _checkAndUploadFiles(
+      result.files,
+      (file) async =>
+          (_getFileName(file), _platformFileToFile(file), file.bytes),
+    );
+  }
 
   @override
   Future<void> processFile(String name, File? file, Uint8List? bytes) async {
@@ -102,7 +115,7 @@ class YustFilePickerState
         color: Theme.of(context).colorScheme.primary,
         icon: const Icon(Icons.add_circle),
         onPressed: enabled && (widget.allowedExtensions?.isNotEmpty ?? true)
-            ? _pickFiles
+            ? pickFiles
             : null,
       );
     }
@@ -150,7 +163,7 @@ class YustFilePickerState
           if (selecting)
             Checkbox(
                 value: selectedFiles.contains(file),
-                onChanged: (_) => _toggleFileSelection(file)),
+                onChanged: (_) => toggleFileSelection(file)),
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
           const SizedBox(width: 8),
           Expanded(
@@ -169,7 +182,7 @@ class YustFilePickerState
                 : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name!,
                     overflow: TextOverflow.ellipsis),
           ),
-          _buildCachedIndicator(file),
+          buildCachedIndicator(file),
         ],
       ),
       trailing: selecting ? null : _buildTrailing(file),
@@ -177,7 +190,7 @@ class YustFilePickerState
         YustUi.helpers.unfocusCurrent();
 
         if (selecting) {
-          _toggleFileSelection(file);
+          toggleFileSelection(file);
           return;
         }
 
@@ -188,16 +201,6 @@ class YustFilePickerState
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
-  }
-
-  void _toggleFileSelection(YustFile file) {
-    setState(() {
-      if (selectedFiles.contains(file)) {
-        selectedFiles.remove(file);
-      } else {
-        selectedFiles.add(file);
-      }
-    });
   }
 
   Widget _buildTrailing(YustFile file) => Row(
@@ -251,41 +254,6 @@ class YustFilePickerState
     );
   }
 
-  Widget _buildCachedIndicator(YustFile file) {
-    if (!file.cached || !enabled) {
-      return const SizedBox.shrink();
-    }
-    if (file.processing == true) {
-      return const CircularProgressIndicator();
-    }
-    return IconButton(
-      icon: const Icon(Icons.cloud_upload_outlined),
-      color: Colors.black,
-      onPressed: () async {
-        await YustUi.alertService.showAlert(
-            LocaleKeys.localFile.tr(), LocaleKeys.alertLocalFile.tr());
-      },
-    );
-  }
-
-  Future<void> _pickFiles() async {
-    YustUi.helpers.unfocusCurrent();
-    final type =
-        (widget.allowedExtensions != null) ? FileType.custom : FileType.any;
-    final result = await FilePicker.platform.pickFiles(
-      type: type,
-      allowedExtensions: widget.allowedExtensions,
-      allowMultiple: (widget.numberOfFiles ?? 2) > 1,
-    );
-    if (result == null) return;
-
-    await _checkAndUploadFiles(
-      result.files,
-      (file) async =>
-          (_getFileName(file), _platformFileToFile(file), file.bytes),
-    );
-  }
-
   Future<void> _checkAndUploadFiles<T>(List<T> fileData,
       Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor) async {
     final filesValid = await checkFileAmount(fileData);
@@ -298,7 +266,7 @@ class YustFilePickerState
           widget.files.length <= 1,
           'overwriteSingleFile is only supported when there is at most '
           'one file present.');
-      await _deleteFiles(widget.files);
+      await deleteFiles(widget.files);
     }
 
     for (final fileData in fileData) {
@@ -376,25 +344,11 @@ class YustFilePickerState
     return true;
   }
 
-  Future<void> _deleteFiles(List<YustFile> files) async {
-    for (final yustFile in files) {
-      await fileHandler.deleteFile(yustFile);
-
-      if (mounted) {
-        setState(() {});
-      }
-    }
-    widget.onChanged!(fileHandler.getOnlineFiles());
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   Future<void> uploadFile({
     required String name,
     File? file,
     Uint8List? bytes,
-    callSetState = true,
+    bool callSetState = true,
   }) async {
     final newYustFile = YustFile(
       name: name,

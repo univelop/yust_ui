@@ -93,9 +93,6 @@ class YustImagePickerState
       YustImage.fromYustFiles(files);
 
   @override
-  bool get shouldLoadFiles => true;
-
-  @override
   Widget buildFileDisplay(BuildContext context) {
     if (!widget.showPreview) {
       return const SizedBox.shrink();
@@ -219,10 +216,32 @@ class YustImagePickerState
         _buildImagePreview(context, file),
         _buildProgressIndicator(context, file),
         selecting
-            ? buildSelectionCheckbox(file)
+            ? _buildSelectionCheckbox(file)
             : _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
       ],
+    );
+  }
+
+  Widget _buildSelectionCheckbox(YustImage? image) {
+    if (!selecting || image == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      top: 10,
+      left: 10,
+      child: Checkbox(
+        value: selectedFiles.contains(image),
+        shape: const CircleBorder(),
+        onChanged: (value) => toggleFileSelection(image),
+        fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Theme.of(context).primaryColor;
+          }
+          return Colors.grey.shade300;
+        }),
+      ),
     );
   }
 
@@ -245,7 +264,7 @@ class YustImagePickerState
         child: GestureDetector(
           onTap: () {
             if (selecting) {
-              _toggleSelectionForImage(file);
+              toggleFileSelection(file);
               return;
             }
 
@@ -285,7 +304,7 @@ class YustImagePickerState
               child: GestureDetector(
                 onTap: () {
                   if (selecting) {
-                    _toggleSelectionForImage(file);
+                    toggleFileSelection(file);
                     return;
                   }
 
@@ -331,18 +350,6 @@ class YustImagePickerState
         ],
       ),
     );
-  }
-
-  void _toggleSelectionForImage(YustImage? yustFile) {
-    if (yustFile == null) return;
-
-    setState(() {
-      if (selectedFiles.contains(yustFile)) {
-        selectedFiles.remove(yustFile);
-      } else {
-        selectedFiles.add(yustFile);
-      }
-    });
   }
 
   Widget _buildRemoveButton(BuildContext context, YustImage? yustFile) {
@@ -460,7 +467,7 @@ class YustImagePickerState
       );
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
-      await _deleteFiles(pictureFiles);
+      await deleteFiles(pictureFiles);
     }
 
     await EasyLoading.dismiss();
@@ -515,20 +522,6 @@ class YustImagePickerState
           return (file.name, null, file.bytes);
         });
       }
-    }
-  }
-
-  Future<void> _deleteFiles(List<YustImage> pictureFiles) async {
-    for (final yustFile in pictureFiles) {
-      await fileHandler.deleteFile(yustFile);
-
-      if (mounted) {
-        setState(() {});
-      }
-    }
-    widget.onChanged!(YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
-    if (mounted) {
-      setState(() {});
     }
   }
 
