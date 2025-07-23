@@ -78,14 +78,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
 
 class YustImagePickerState
     extends YustFilePickerBaseState<YustImage, YustImagePicker> {
-  late int _currentImageNumber;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentImageNumber = widget.previewCount;
-  }
-
   // Abstract method implementations
   @override
   List<YustImage> convertFiles(List<YustFile> files) =>
@@ -204,14 +196,10 @@ class YustImagePickerState
 
     return YustFileGridView<YustImage>(
       files: YustImage.fromYustFiles(fileHandler.getFiles()),
-      currentItemCount: _currentImageNumber,
+      currentItemCount: currentDisplayCount,
       itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildSingleImage(context, file),
-      onLoadMore: () {
-        setState(() {
-          _currentImageNumber += widget.previewCount;
-        });
-      },
+      onLoadMore: loadMoreItems,
     );
   }
 
@@ -566,9 +554,6 @@ class YustImagePickerState
     await createDatabaseEntry();
     await fileHandler.addFile(newYustFile);
 
-    if (_currentImageNumber < fileHandler.getFiles().length) {
-      _currentImageNumber += widget.previewCount;
-    }
     widget.onChanged!(YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
     if (mounted) {
       setState(() {});

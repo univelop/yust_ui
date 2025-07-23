@@ -52,13 +52,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
 class YustFilePickerState
     extends YustFilePickerBaseState<YustFile, YustFilePicker> {
   final Map<String?, bool> _processing = {};
-  late int _currentFileNumber;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentFileNumber = widget.previewCount;
-  }
 
   @override
   List<YustFile> convertFiles(List<YustFile> files) => files;
@@ -70,14 +63,10 @@ class YustFilePickerState
   Widget buildFileDisplay(BuildContext context) {
     return YustFileListView<YustFile>(
       files: fileHandler.getFiles(),
-      currentItemCount: _currentFileNumber,
+      currentItemCount: currentDisplayCount,
       itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildFile(context, file),
-      onLoadMore: () {
-        setState(() {
-          _currentFileNumber += widget.previewCount;
-        });
-      },
+      onLoadMore: loadMoreItems,
     );
   }
 
@@ -422,9 +411,6 @@ class YustFilePickerState
     await createDatabaseEntry();
     await fileHandler.addFile(newYustFile);
 
-    if (_currentFileNumber < fileHandler.getFiles().length) {
-      _currentFileNumber += widget.previewCount;
-    }
     _processing[newYustFile.name] = false;
     widget.onChanged!(fileHandler.getOnlineFiles());
     if (mounted && callSetState) {

@@ -97,9 +97,6 @@ abstract class LocaleKeys {
   static const advertisement = 'advertisement';
   static const afterNumberOfEvents = 'afterNumberOfEvents';
   static const aiAgentChatHint = 'aiAgentChatHint';
-  static const aiAgentMissingIntegration = 'aiAgentMissingIntegration';
-  static const aiAgentMissingIntegrationExplanation =
-      'aiAgentMissingIntegrationExplanation';
   static const aiAgentRoleDescription = 'aiAgentRoleDescription';
   static const aiAgentSetupError = 'aiAgentSetupError';
   static const aiAgentTitle = 'aiAgentTitle';
@@ -436,7 +433,7 @@ abstract class LocaleKeys {
   static const alreadyMember = 'alreadyMember';
   static const alreadyRegistered = 'alreadyRegistered';
   static const alreadyUsingApp = 'alreadyUsingApp';
-  static const alsoSelectHiddenImages = 'alsoSelectHiddenImages';
+  static const alsoSelectHiddenFiles = 'alsoSelectHiddenFiles';
   static const amazonAws = 'amazonAws';
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
@@ -451,7 +448,6 @@ abstract class LocaleKeys {
   static const anyCity = 'anyCity';
   static const anyStreet = 'anyStreet';
   static const anyValue = 'anyValue';
-  static const apiConnection = 'apiConnection';
   static const apiKey = 'apiKey';
   static const apiKeyAlreadySet = 'apiKeyAlreadySet';
   static const apiKeyCreationHint = 'apiKeyCreationHint';
@@ -583,7 +579,6 @@ abstract class LocaleKeys {
   static const bottomLeft = 'bottomLeft';
   static const bottomRight = 'bottomRight';
   static const brick = 'brick';
-  static const brickCanOnlyBeUsedOnce = 'brickCanOnlyBeUsedOnce';
   static const brickEmpty = 'brickEmpty';
   static const brickId = 'brickId';
   static const brickNotImplemented = 'brickNotImplemented';
@@ -618,11 +613,6 @@ abstract class LocaleKeys {
   static const cannotEditRecords = 'cannotEditRecords';
   static const cannotSearch = 'cannotSearch';
   static const cannotSetMandatoryFields = 'cannotSetMandatoryFields';
-  static const cannotSetSupportedLanguages = 'cannotSetSupportedLanguages';
-  static const cannotSetSupportedLanguagesExplanationAtLeastDefault =
-      'cannotSetSupportedLanguagesExplanationAtLeastDefault';
-  static const cannotSetSupportedLanguagesExplanationNotEmpty =
-      'cannotSetSupportedLanguagesExplanationNotEmpty';
   static const cannotStartSharing = 'cannotStartSharing';
   static const cannotStopSharing = 'cannotStopSharing';
   static const canvasSize = 'canvasSize';
@@ -717,12 +707,6 @@ abstract class LocaleKeys {
       'checkFailedOldDateFiltersTileFilter';
   static const checkFailedOldDateFiltersTileSettings =
       'checkFailedOldDateFiltersTileSettings';
-  static const checkFailedSolutionBrickTechNameSuffix =
-      'checkFailedSolutionBrickTechNameSuffix';
-  static const checkFailedSolutionEnglishTechNameDefaultName =
-      'checkFailedSolutionEnglishTechNameDefaultName';
-  static const checkFailedSolutionEnglishTechNameGermanDerived =
-      'checkFailedSolutionEnglishTechNameGermanDerived';
   static const checkFailedSyncSumTransfer = 'checkFailedSyncSumTransfer';
   static const checkFailedTransfer = 'checkFailedTransfer';
   static const checkMandatoryFields = 'checkMandatoryFields';
@@ -756,10 +740,6 @@ abstract class LocaleKeys {
   static const checksPassedOldDateFilters = 'checksPassedOldDateFilters';
   static const checksPassedSecondaryKeyDuplicates =
       'checksPassedSecondaryKeyDuplicates';
-  static const checksPassedSolutionBrickTechNameSuffixCheck =
-      'checksPassedSolutionBrickTechNameSuffixCheck';
-  static const checksPassedSolutionEnglishTechNames =
-      'checksPassedSolutionEnglishTechNames';
   static const checksPassedSolutionFolderHealthCheck =
       'checksPassedSolutionFolderHealthCheck';
   static const checksPassedSolutionRecordLimitHealthCheck =
@@ -895,7 +875,6 @@ abstract class LocaleKeys {
   static const createForUser = 'createForUser';
   static const createIfNotFound = 'createIfNotFound';
   static const createIfNotFoundExplanation = 'createIfNotFoundExplanation';
-  static const createIntegrationsExplanation = 'createIntegrationsExplanation';
   static const createInvitationLink = 'createInvitationLink';
   static const createMemberTile = 'createMemberTile';
   static const createNewApiKey = 'createNewApiKey';
@@ -977,12 +956,10 @@ abstract class LocaleKeys {
       'dateExpressionBrickDescription';
   static const dateLimitsExplanation = 'dateLimitsExplanation';
   static const datePickerBrickDescription = 'datePickerBrickDescription';
-  static const dateRange = 'dateRange';
-  static const dateRangeBrickDescription = 'dateRangeBrickDescription';
   static const dateToMonthDescription = 'dateToMonthDescription';
   static const dateToWeekDescription = 'dateToWeekDescription';
   static const datesBetweenDescription = 'datesBetweenDescription';
-  static const day = 'day';
+  static const days = 'days';
   static const daysBetweenDescription = 'daysBetweenDescription';
   static const deactivateStatus = 'deactivateStatus';
   static const decimalDegreeWithAbbreviation = 'decimalDegreeWithAbbreviation';
@@ -1132,7 +1109,6 @@ abstract class LocaleKeys {
   static const editRecordsAsForm = 'editRecordsAsForm';
   static const editRecordsAsFormExplanation = 'editRecordsAsFormExplanation';
   static const editRole = 'editRole';
-  static const editScopes = 'editScopes';
   static const editSubscriptionFailed = 'editSubscriptionFailed';
   static const editUnderConditions = 'editUnderConditions';
   static const editValue = 'editValue';
@@ -1145,6 +1121,7 @@ abstract class LocaleKeys {
   static const elements = 'elements';
   static const email = 'email';
   static const emailAccount = 'emailAccount';
+  static const emailAccountExplanation = 'emailAccountExplanation';
   static const emailAddressesSeparated = 'emailAddressesSeparated';
   static const emailBrickDescription = 'emailBrickDescription';
   static const emailCannotBeChanged = 'emailCannotBeChanged';
@@ -1175,7 +1152,6 @@ abstract class LocaleKeys {
   static const enableTimeTravel = 'enableTimeTravel';
   static const enabledRoles = 'enabledRoles';
   static const enabledTeams = 'enabledTeams';
-  static const endDate = 'endDate';
   static const endMessage = 'endMessage';
   static const endOfMonthDescription = 'endOfMonthDescription';
   static const endOfQuarterDescription = 'endOfQuarterDescription';
@@ -1322,8 +1298,6 @@ abstract class LocaleKeys {
   static const exceptionCorruptFile = 'exceptionCorruptFile';
   static const exceptionCorruptedTemplateFile =
       'exceptionCorruptedTemplateFile';
-  static const exceptionDateRangeCannotBeLongerThanMaxDays =
-      'exceptionDateRangeCannotBeLongerThanMaxDays';
   static const exceptionDivisionByZero = 'exceptionDivisionByZero';
   static const exceptionEmailCouldNotBeSent = 'exceptionEmailCouldNotBeSent';
   static const exceptionEmailNotValid = 'exceptionEmailNotValid';
@@ -1401,7 +1375,6 @@ abstract class LocaleKeys {
   static const exceptionIndexOutOfRange = 'exceptionIndexOutOfRange';
   static const exceptionInsufficientLicense = 'exceptionInsufficientLicense';
   static const exceptionIntegrationNotFound = 'exceptionIntegrationNotFound';
-  static const exceptionInvalidApiKey = 'exceptionInvalidApiKey';
   static const exceptionInvalidArgumentPower = 'exceptionInvalidArgumentPower';
   static const exceptionInvalidBricks = 'exceptionInvalidBricks';
   static const exceptionInvalidChar = 'exceptionInvalidChar';
@@ -1542,14 +1515,11 @@ abstract class LocaleKeys {
   static const exceptionMustBeDelegatedIntegration =
       'exceptionMustBeDelegatedIntegration';
   static const exceptionNoActiveCellSelected = 'exceptionNoActiveCellSelected';
-  static const exceptionNoApiKeyGiven = 'exceptionNoApiKeyGiven';
   static const exceptionNoReceivers = 'exceptionNoReceivers';
   static const exceptionNoRecordPermission = 'exceptionNoRecordPermission';
   static const exceptionNoRecordSelected = 'exceptionNoRecordSelected';
   static const exceptionNoWorkflowLinked = 'exceptionNoWorkflowLinked';
   static const exceptionNumberOfFilesReached = 'exceptionNumberOfFilesReached';
-  static const exceptionOpenAiIntegrationNoModelsFound =
-      'exceptionOpenAiIntegrationNoModelsFound';
   static const exceptionOptionListConstraints =
       'exceptionOptionListConstraints';
   static const exceptionOwnerAdminLicense = 'exceptionOwnerAdminLicense';
@@ -1584,9 +1554,6 @@ abstract class LocaleKeys {
       'exceptionSslAndStartTlsCannotBeUsedTogether';
   static const exceptionSslOrStartTlsMustBeSelected =
       'exceptionSslOrStartTlsMustBeSelected';
-  static const exceptionStartDateCannotBeAfterEndDate =
-      'exceptionStartDateCannotBeAfterEndDate';
-  static const exceptionStatusDeactivated = 'exceptionStatusDeactivated';
   static const exceptionStatusNotFound = 'exceptionStatusNotFound';
   static const exceptionStatusNotFoundByNameOrId =
       'exceptionStatusNotFoundByNameOrId';
@@ -2119,9 +2086,6 @@ abstract class LocaleKeys {
   static const importingDocument = 'importingDocument';
   static const inProgress = 'inProgress';
   static const inactive = 'inactive';
-  static const includeEmbeddedImages = 'includeEmbeddedImages';
-  static const includeEmbeddedImagesDescription =
-      'includeEmbeddedImagesDescription';
   static const includingAttachments = 'includingAttachments';
   static const includingCountry = 'includingCountry';
   static const includingTime = 'includingTime';
@@ -2186,7 +2150,6 @@ abstract class LocaleKeys {
   static const invalidExpression = 'invalidExpression';
   static const invalidFileName = 'invalidFileName';
   static const invalidInstalledSolutionTip = 'invalidInstalledSolutionTip';
-  static const invalidIntegration = 'invalidIntegration';
   static const invalidInvitationLinks = 'invalidInvitationLinks';
   static const invalidJson = 'invalidJson';
   static const invalidLink = 'invalidLink';
@@ -2406,7 +2369,6 @@ abstract class LocaleKeys {
   static const matrixHideTotalOnSmallScreens = 'matrixHideTotalOnSmallScreens';
   static const matrixSetSettings = 'matrixSetSettings';
   static const max30Chars = 'max30Chars';
-  static const maxDateRangeDays = 'maxDateRangeDays';
   static const maxDescription = 'maxDescription';
   static const maxFileSizeInKiB = 'maxFileSizeInKiB';
   static const maxNumberFiles = 'maxNumberFiles';
@@ -2582,8 +2544,6 @@ abstract class LocaleKeys {
   static const noFiltering = 'noFiltering';
   static const noFilters = 'noFilters';
   static const noFinishedJobs = 'noFinishedJobs';
-  static const noIntegrationFound = 'noIntegrationFound';
-  static const noIntegrationSelected = 'noIntegrationSelected';
   static const noInvoice = 'noInvoice';
   static const noInvoices = 'noInvoices';
   static const noJobsFound = 'noJobsFound';
@@ -2701,10 +2661,9 @@ abstract class LocaleKeys {
   static const onlyChangeableByOwner = 'onlyChangeableByOwner';
   static const onlyShowOwnTeam = 'onlyShowOwnTeam';
   static const onlyUnread = 'onlyUnread';
-  static const onlyVisibleImages = 'onlyVisibleImages';
+  static const onlyVisibleFiles = 'onlyVisibleFiles';
   static const oops = 'oops';
   static const open = 'open';
-  static const openAi = 'openAi';
   static const openAsDialog = 'openAsDialog';
   static const openDocs = 'openDocs';
   static const openEditMode = 'openEditMode';
@@ -2726,7 +2685,7 @@ abstract class LocaleKeys {
   static const orderAtCharge = 'orderAtCharge';
   static const orderBricksExplanation = 'orderBricksExplanation';
   static const organizationData = 'organizationData';
-  static const organizationId = 'organizationId';
+  static const organizationID = 'organizationID';
   static const origin = 'origin';
   static const original = 'original';
   static const others = 'others';
@@ -2832,7 +2791,6 @@ abstract class LocaleKeys {
   static const privateList = 'privateList';
   static const proUser = 'proUser';
   static const proceed = 'proceed';
-  static const proceedWithoutAdjustment = 'proceedWithoutAdjustment';
   static const process = 'process';
   static const processImages = 'processImages';
   static const processItem = 'processItem';
@@ -3352,7 +3310,6 @@ abstract class LocaleKeys {
   static const ssl = 'ssl';
   static const stageBackgroundSemanticLabel = 'stageBackgroundSemanticLabel';
   static const standard = 'standard';
-  static const startDate = 'startDate';
   static const startFlowByTime = 'startFlowByTime';
   static const startHere = 'startHere';
   static const startMessage = 'startMessage';
@@ -3534,8 +3491,7 @@ abstract class LocaleKeys {
   static const tileInfo = 'tileInfo';
   static const tileNotFoundById = 'tileNotFoundById';
   static const tilePreview = 'tilePreview';
-  static const tileReferenceInFilter = 'tileReferenceInFilter';
-  static const tileReferenceInVisibility = 'tileReferenceInVisibility';
+  static const tileReference = 'tileReference';
   static const tileSectionHeading = 'tileSectionHeading';
   static const tileSettings = 'tileSettings';
   static const tileSpecId = 'tileSpecId';
@@ -3691,7 +3647,6 @@ abstract class LocaleKeys {
   static const urlExample = 'urlExample';
   static const urlForButton = 'urlForButton';
   static const useFilters = 'useFilters';
-  static const useSharedMailbox = 'useSharedMailbox';
   static const useTemplate = 'useTemplate';
   static const used = 'used';
   static const usefulInformation = 'usefulInformation';

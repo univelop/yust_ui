@@ -74,6 +74,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   bool _selecting = false;
   final List<T> _selectedFiles = [];
   late Future<void> _updateFuture;
+  int currentDisplayCount = 15;
 
   @override
   void initState() {
@@ -88,11 +89,13 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         if (mounted) {
           setState(() {});
         }
+        _increaseDisplayCountIfNeeded();
         widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
       },
     );
 
     _enabled = (widget.onChanged != null && !widget.readOnly);
+    currentDisplayCount = widget.previewCount;
     _updateFuture =
         _fileHandler.updateFiles(widget.files, loadFiles: shouldLoadFiles);
   }
@@ -188,9 +191,25 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     }
 
     final allFiles = convertFiles(_fileHandler.getFiles());
+    final hasHiddenItems = allFiles.length > currentDisplayCount;
+    bool? includeHiddenItems = false;
+
+    if (hasHiddenItems) {
+      includeHiddenItems = await YustUi.alertService.showConfirmation(
+        LocaleKeys.selectAll.tr(),
+        LocaleKeys.all.tr(),
+        description: LocaleKeys.alsoSelectHiddenFiles.tr(),
+        cancelText: LocaleKeys.onlyVisibleFiles.tr(),
+      );
+    }
+
+    if (includeHiddenItems == null) return;
+
     setState(() {
       _selectedFiles.clear();
-      _selectedFiles.addAll(allFiles);
+      _selectedFiles.addAll(includeHiddenItems == true
+          ? allFiles
+          : allFiles.take(currentDisplayCount));
     });
   }
 
@@ -406,6 +425,18 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         _selectedFiles.add(file);
       }
     });
+  }
+
+  void loadMoreItems() {
+    setState(() {
+      currentDisplayCount += widget.previewCount;
+    });
+  }
+
+  void _increaseDisplayCountIfNeeded() {
+    if (currentDisplayCount < _fileHandler.getFiles().length) {
+      currentDisplayCount += widget.previewCount;
+    }
   }
 
   // Getters for access to shared state
