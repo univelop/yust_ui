@@ -38,6 +38,8 @@ export 'src/widgets/yust_paginated_list_view.dart';
 export 'src/widgets/yust_progress_button.dart';
 export 'src/widgets/yust_select_multiple.dart';
 export 'src/widgets/yust_select.dart';
+export 'src/widgets/yust_single_file_picker.dart';
+export 'src/widgets/yust_single_image_picker.dart';
 export 'src/widgets/yust_stream_builder.dart';
 export 'src/widgets/yust_switch.dart';
 export 'src/widgets/yust_text_field.dart';

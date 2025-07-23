@@ -56,7 +56,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     required List<YustImage> images,
     super.linkedDocPath,
     super.linkedDocAttribute,
-    super.multiple = false,
     super.numberOfFiles,
     super.suffixIcon,
     super.onChanged,
@@ -102,7 +101,7 @@ class YustImagePickerState
       return const SizedBox.shrink();
     }
 
-    return widget.multiple || (widget.numberOfFiles ?? 2) > 1
+    return (widget.numberOfFiles ?? 2) > 1
         ? _buildGallery(context)
         : Padding(
             padding: const EdgeInsets.only(bottom: 2.0),
@@ -161,7 +160,7 @@ class YustImagePickerState
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
-                widget.multiple
+                (widget.numberOfFiles ?? 2) > 1
                     ? LocaleKeys.alertDeleteAllImages.tr()
                     : LocaleKeys.confirmDelete.tr(),
                 LocaleKeys.delete.tr());
@@ -240,7 +239,7 @@ class YustImagePickerState
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
-    if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
+    if ((widget.numberOfFiles ?? 2) > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -474,7 +473,7 @@ class YustImagePickerState
       await Permission.locationWhenInUse.request();
 
       final picker = ImagePicker();
-      if ((widget.multiple || (widget.numberOfFiles ?? 2) > 1) &&
+      if ((widget.numberOfFiles ?? 2) > 1 &&
           imageSource == ImageSource.gallery) {
         final images = await picker.pickMultiImage();
 
@@ -500,7 +499,7 @@ class YustImagePickerState
     }
     // Else, we are on Web
     else {
-      if (widget.multiple || (widget.numberOfFiles ?? 2) > 1) {
+      if ((widget.numberOfFiles ?? 2) > 1) {
         final result = await FilePicker.platform
             .pickFiles(type: FileType.image, allowMultiple: true);
         if (result == null) return;

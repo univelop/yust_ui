@@ -12,10 +12,15 @@ import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
 
+/// A widget that allows the user to pick files from their device.
 class YustFilePicker extends YustFilePickerBase<YustFile> {
+  /// Whether to show the modified date of the file.
   final bool showModifiedAt;
+
+  /// Allowed file extensions.
   final List<String>? allowedExtensions;
-  final bool allowOnlyImages;
+
+  /// Maximum file size in KiB.
   final num? maximumFileSizeInKiB;
 
   const YustFilePicker({
@@ -30,7 +35,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.prefixIcon,
     super.enableDropzone = false,
     super.readOnly = false,
-    super.multiple = true,
     super.numberOfFiles,
     super.divider = true,
     super.overwriteSingleFile = false,
@@ -41,7 +45,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     this.showModifiedAt = false,
     this.allowedExtensions,
-    this.allowOnlyImages = false,
     this.maximumFileSizeInKiB,
   });
 
@@ -267,9 +270,8 @@ class YustFilePickerState
 
   Future<void> _pickFiles() async {
     YustUi.helpers.unfocusCurrent();
-    final type = (widget.allowedExtensions != null)
-        ? FileType.custom
-        : (widget.allowOnlyImages ? FileType.image : FileType.any);
+    final type =
+        (widget.allowedExtensions != null) ? FileType.custom : FileType.any;
     final result = await FilePicker.platform.pickFiles(
       type: type,
       allowedExtensions: widget.allowedExtensions,
