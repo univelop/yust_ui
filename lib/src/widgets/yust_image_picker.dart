@@ -114,25 +114,38 @@ class YustImagePickerState
   Future<void> pickFiles() => _pickImages(ImageSource.gallery);
 
   @override
-  Future<void> processFile(String name, File? file, Uint8List? bytes) async {
-    await uploadFile(
-      path: name,
-      file: file,
-      bytes: bytes,
-      resize: true,
-      convertToJPEG: widget.convertToJPEG,
-      setGPSToLocation: false,
-      addGpsWatermark: widget.addGpsWatermark,
-      addTimestampWatermark: widget.addTimestampWatermark,
-    );
-  }
-
-  @override
   List<Widget> buildSpecificActionButtons(BuildContext context) {
     return _buildPickButtons(context);
   }
 
-  // Image-specific methods
+  @override
+  Future<YustImage> createFileObject(
+          String name, File? file, Uint8List? bytes) =>
+      _createImageObject(name, file, bytes);
+
+  Future<YustImage> _createImageObject(
+          String name, File? file, Uint8List? bytes,
+          {bool setGPSToLocation = false,
+          bool addGpsWatermark = false,
+          bool addTimestampWatermark = false}) =>
+      YustImageHelpers().processImage(
+        file: file,
+        bytes: bytes,
+        path: name,
+        resize: true,
+        convertToJPEG: widget.convertToJPEG,
+        yustQuality: widget.yustQuality,
+        setGPSToLocation: setGPSToLocation,
+        storageFolderPath: widget.storageFolderPath,
+        linkedDocPath: widget.linkedDocPath,
+        linkedDocAttribute: widget.linkedDocAttribute,
+        addGpsWatermark: addGpsWatermark,
+        addTimestampWatermark: addTimestampWatermark,
+        watermarkPosition: widget.watermarkPosition,
+        locale: widget.locale,
+        watermarkLocationAppearance: widget.watermarkLocationAppearance,
+      );
+
   List<Widget> _buildPickButtons(BuildContext context) {
     if (!enabled ||
         (widget.showPreview &&
@@ -392,7 +405,7 @@ class YustImagePickerState
     );
   }
 
-  Future<void> checkAndUploadImages<T>(
+  Future<void> _checkAndUploadImages<T>(
     List<T> images,
     Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor, {
     bool setGPSToLocation = false,
@@ -417,8 +430,9 @@ class YustImagePickerState
           LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
       if (confirmed == false) return;
     }
+
     // Image Limit overstepped
-    else if (widget.numberOfFiles != null &&
+    if (widget.numberOfFiles != null &&
         pictureFiles.length + images.length > widget.numberOfFiles!) {
       await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
@@ -455,16 +469,12 @@ class YustImagePickerState
         continue;
       }
 
-      await uploadFile(
-        path: path,
-        file: file,
-        bytes: bytes,
-        resize: true,
-        convertToJPEG: widget.convertToJPEG,
-        setGPSToLocation: setGPSToLocation,
-        addGpsWatermark: addGpsWatermark,
-        addTimestampWatermark: addTimestampWatermark,
-      );
+      final newImage = await _createImageObject(path, file, bytes,
+          setGPSToLocation: setGPSToLocation,
+          addGpsWatermark: addGpsWatermark,
+          addTimestampWatermark: addTimestampWatermark);
+
+      await uploadFile(file: newImage);
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await deleteFiles(pictureFiles);
@@ -484,14 +494,14 @@ class YustImagePickerState
           imageSource == ImageSource.gallery) {
         final images = await picker.pickMultiImage();
 
-        await checkAndUploadImages(images, (image) async {
+        await _checkAndUploadImages(images, (image) async {
           final file = File(image.path);
           return (image.path, file, null);
         });
       } else {
         final image = await picker.pickImage(source: imageSource);
         if (image != null) {
-          await checkAndUploadImages(
+          await _checkAndUploadImages(
             [image],
             (image) async {
               final file = File(image.path);
@@ -503,63 +513,18 @@ class YustImagePickerState
           );
         }
       }
+      return;
     }
-    // Else, we are on Web
-    else {
-      if ((widget.numberOfFiles ?? 2) > 1) {
-        final result = await FilePicker.platform
-            .pickFiles(type: FileType.image, allowMultiple: true);
-        if (result == null) return;
 
-        await checkAndUploadImages(result.files, (file) async {
-          return (file.name, null, file.bytes);
-        });
-      } else {
-        final result =
-            await FilePicker.platform.pickFiles(type: FileType.image);
-        if (result == null) return;
-        await checkAndUploadImages(result.files, (file) async {
-          return (file.name, null, file.bytes);
-        });
-      }
-    }
-  }
+    // We are on Web
+    final multipleFiles = (widget.numberOfFiles ?? 2) > 1;
+    final result = await FilePicker.platform
+        .pickFiles(type: FileType.image, allowMultiple: multipleFiles);
+    if (result == null) return;
 
-  Future<void> uploadFile({
-    required String path,
-    File? file,
-    Uint8List? bytes,
-    bool resize = false,
-    bool convertToJPEG = true,
-    bool setGPSToLocation = false,
-    bool addGpsWatermark = false,
-    bool addTimestampWatermark = false,
-  }) async {
-    final YustImage newYustFile = await YustImageHelpers().processImage(
-      file: file,
-      bytes: bytes,
-      path: path,
-      resize: resize,
-      convertToJPEG: convertToJPEG,
-      yustQuality: widget.yustQuality,
-      setGPSToLocation: setGPSToLocation,
-      storageFolderPath: widget.storageFolderPath,
-      linkedDocPath: widget.linkedDocPath,
-      linkedDocAttribute: widget.linkedDocAttribute,
-      addGpsWatermark: addGpsWatermark,
-      addTimestampWatermark: addTimestampWatermark,
-      watermarkPosition: widget.watermarkPosition,
-      locale: widget.locale,
-      watermarkLocationAppearance: widget.watermarkLocationAppearance,
-    );
-
-    await createDatabaseEntry();
-    await fileHandler.addFile(newYustFile);
-
-    widget.onChanged!(YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
-    if (mounted) {
-      setState(() {});
-    }
+    await _checkAndUploadImages(result.files, (file) async {
+      return (file.name, null, file.bytes);
+    });
   }
 
   void _showImages(YustImage activeFile) {

@@ -124,6 +124,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   final List<T> _selectedFiles = [];
   late Future<void> _updateFuture;
   int currentDisplayCount = YustFilePickerBase.defaultPreviewCount;
+  final Map<String?, bool> _processing = {};
 
   @override
   void initState() {
@@ -192,14 +193,16 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   /// Open the file picker.
   Future<void> pickFiles();
 
+  /// Create a file object from the given parameters.
+  ///
+  /// This is used to create the appropriate file type for each picker.
+  Future<T> createFileObject(String name, File? file, Uint8List? bytes);
+
   /// Whether all files are selected.
   bool get _allSelected {
     final totalFiles = _fileHandler.getFiles().length;
     return _selectedFiles.length == totalFiles;
   }
-
-  // Abstract method for file processing - to be implemented by subclasses
-  Future<void> processFile(String name, File? file, Uint8List? bytes);
 
   /// Create a database entry for the files.
   Future<void> createDatabaseEntry() async {
@@ -260,6 +263,43 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         label: Text(LocaleKeys.loadMore.tr()),
       ),
     );
+  }
+
+  // Set a file as processing
+  void setFileProcessing(T? file) => _processing[file?.name] = true;
+
+  // Check if a file is processing
+  bool isFileProcessing(T? file) => _processing[file?.name] ?? false;
+
+  // Clear a file from processing
+  void clearFileProcessing(T? file) => _processing.remove(file?.name);
+
+  // Upload a file
+  Future<void> uploadFile({
+    required T file,
+    bool callSetState = true,
+  }) async {
+    setFileProcessing(file);
+    if (mounted && callSetState) {
+      setState(() {});
+    }
+
+    try {
+      await createDatabaseEntry();
+      await fileHandler.addFile(file);
+
+      clearFileProcessing(file);
+      widget.onChanged!(convertFiles(fileHandler.getOnlineFiles()));
+      if (mounted && callSetState) {
+        setState(() {});
+      }
+    } catch (e) {
+      clearFileProcessing(file);
+      if (mounted && callSetState) {
+        setState(() {});
+      }
+      rethrow;
+    }
   }
 
   Future<void> deleteFiles(List<T> files) async {
@@ -507,8 +547,15 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     }
 
     for (final fileData in fileData) {
-      final (name, file, bytes) = await fileDataExtractor(fileData);
-      await processFile(name, file, bytes);
+      try {
+        final (name, file, bytes) = await fileDataExtractor(fileData);
+        final newFile = await createFileObject(name, file, bytes);
+
+        await uploadFile(file: newFile);
+      } catch (e) {
+        await YustUi.alertService
+            .showAlert(LocaleKeys.error.tr(), e.toString());
+      }
     }
   }
 

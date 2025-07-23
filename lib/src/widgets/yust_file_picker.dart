@@ -54,8 +54,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
 
 class YustFilePickerState
     extends YustFilePickerBaseState<YustFile, YustFilePicker> {
-  final Map<String?, bool> _processing = {};
-
   @override
   List<YustFile> convertFiles(List<YustFile> files) => files;
 
@@ -90,17 +88,22 @@ class YustFilePickerState
   }
 
   @override
-  Future<void> processFile(String name, File? file, Uint8List? bytes) async {
-    await uploadFile(
-      name: name,
-      file: file,
-      bytes: bytes,
-    );
+  List<Widget> buildSpecificActionButtons(BuildContext context) {
+    return [_buildAddButton(context)];
   }
 
   @override
-  List<Widget> buildSpecificActionButtons(BuildContext context) {
-    return [_buildAddButton(context)];
+  Future<YustFile> createFileObject(
+      String name, File? file, Uint8List? bytes) async {
+    return YustFile(
+      name: name,
+      modifiedAt: Yust.helpers.utcNow(),
+      file: file,
+      bytes: bytes,
+      storageFolderPath: widget.storageFolderPath,
+      linkedDocPath: widget.linkedDocPath,
+      linkedDocAttribute: widget.linkedDocAttribute,
+    );
   }
 
   Widget _buildAddButton(BuildContext context) {
@@ -230,7 +233,7 @@ class YustFilePickerState
     if (!enabled) {
       return const SizedBox.shrink();
     }
-    if (_processing[file.name] == true) {
+    if (isFileProcessing(file)) {
       return const SizedBox.shrink();
     }
     return IconButton(
@@ -244,7 +247,7 @@ class YustFilePickerState
     if (!enabled) {
       return const SizedBox.shrink();
     }
-    if (_processing[file.name] == true) {
+    if (isFileProcessing(file)) {
       return const CircularProgressIndicator();
     }
     return IconButton(
@@ -281,11 +284,8 @@ class YustFilePickerState
       final fileSizeValid = await _checkFileSize(name, file, bytes);
       if (!fileSizeValid) return;
 
-      await uploadFile(
-        name: name,
-        file: file,
-        bytes: bytes,
-      );
+      final newFile = await createFileObject(name, file, bytes);
+      await uploadFile(file: newFile);
     }
   }
 
@@ -344,36 +344,6 @@ class YustFilePickerState
     return true;
   }
 
-  Future<void> uploadFile({
-    required String name,
-    File? file,
-    Uint8List? bytes,
-    bool callSetState = true,
-  }) async {
-    final newYustFile = YustFile(
-      name: name,
-      modifiedAt: Yust.helpers.utcNow(),
-      file: file,
-      bytes: bytes,
-      storageFolderPath: widget.storageFolderPath,
-      linkedDocPath: widget.linkedDocPath,
-      linkedDocAttribute: widget.linkedDocAttribute,
-    );
-    _processing[newYustFile.name] = true;
-    if (mounted && callSetState) {
-      setState(() {});
-    }
-
-    await createDatabaseEntry();
-    await fileHandler.addFile(newYustFile);
-
-    _processing[newYustFile.name] = false;
-    widget.onChanged!(fileHandler.getOnlineFiles());
-    if (mounted && callSetState) {
-      setState(() {});
-    }
-  }
-
   bool fileExists(String? fileName) =>
       fileHandler.getFiles().any((file) => file.name == fileName);
 
@@ -418,7 +388,7 @@ class YustFilePickerState
     if (newFileName == null) {
       return;
     }
-    _processing[yustFile.name] = true;
+    setFileProcessing(yustFile);
     setState(() {});
 
     final newFileNameWithExtension =
@@ -427,7 +397,7 @@ class YustFilePickerState
     await _reuploadFileForRename(yustFile, newFileNameWithExtension);
     await _deleteFileAndCallOnChanged(yustFile);
 
-    _processing[yustFile.name] = false;
+    clearFileProcessing(yustFile);
     setState(() {});
   }
 
@@ -435,12 +405,9 @@ class YustFilePickerState
       YustFile yustFile, String newFileName) async {
     final bytes = await Yust.fileService.downloadFile(
         path: yustFile.storageFolderPath ?? '', name: yustFile.name ?? '');
-    await uploadFile(
-      name: newFileName,
-      file: yustFile.file,
-      bytes: bytes,
-      callSetState: false,
-    );
+
+    final newFile = await createFileObject(newFileName, yustFile.file, bytes);
+    await uploadFile(file: newFile);
   }
 
   bool _isNewFileNameValid(String? filename, YustFile oldFile) {
