@@ -18,6 +18,9 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   final bool allowOnlyImages;
   final num? maximumFileSizeInKiB;
 
+  /// default is 15
+  final int fileCount;
+
   const YustFilePicker({
     super.key,
     super.label,
@@ -42,7 +45,8 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-  });
+    int? fileCount,
+  }) : fileCount = fileCount ?? 15;
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -51,6 +55,13 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
 class YustFilePickerState
     extends YustFilePickerBaseState<YustFile, YustFilePicker> {
   final Map<String?, bool> _processing = {};
+  late int _currentFileNumber;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentFileNumber = widget.fileCount;
+  }
 
   @override
   List<YustFile> convertFiles(List<YustFile> files) => files;
@@ -62,7 +73,14 @@ class YustFilePickerState
   Widget buildFileDisplay(BuildContext context) {
     return YustFileListView<YustFile>(
       files: fileHandler.getFiles(),
+      currentItemCount: _currentFileNumber,
+      itemsPerPage: widget.fileCount,
       itemBuilder: (context, file) => _buildFile(context, file),
+      onLoadMore: () {
+        setState(() {
+          _currentFileNumber += widget.fileCount;
+        });
+      },
     );
   }
 
@@ -407,6 +425,9 @@ class YustFilePickerState
     await createDatabaseEntry();
     await fileHandler.addFile(newYustFile);
 
+    if (_currentFileNumber < fileHandler.getFiles().length) {
+      _currentFileNumber += widget.fileCount;
+    }
     _processing[newYustFile.name] = false;
     widget.onChanged!(fileHandler.getOnlineFiles());
     if (mounted && callSetState) {
