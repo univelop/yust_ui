@@ -13,11 +13,25 @@ import 'package:yust_ui/yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
+/// A widget that allows the user to pick images from the gallery or camera.
 class YustImagePicker extends YustFilePickerBase<YustImage> {
+  /// Whether the image can be zoomed e.g. clicked to show the image in a full screen view.
   final bool zoomable;
+
+  /// Quality of the image
   final String yustQuality;
+
+  /// Whether to show the image centered in the widget
+  ///
+  /// Only takes affect if just one image is shown.
   final bool showCentered;
+
+  /// Whether to show the preview of the image
+  ///
+  /// If false, this widget acts as a picker only.
   final bool showPreview;
+
+  /// Whether all uploaded images should be converted to JPEG
   final bool convertToJPEG;
 
   /// Whether the current location should be watermarked on the image or not
@@ -39,38 +53,35 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.key,
     super.label,
     required super.storageFolderPath,
+    required List<YustImage> images,
     super.linkedDocPath,
     super.linkedDocAttribute,
     super.multiple = false,
     super.numberOfFiles,
     super.suffixIcon,
-    this.convertToJPEG = true,
-    required List<YustImage> images,
-    this.zoomable = false,
     super.onChanged,
     super.prefixIcon,
     super.readOnly = false,
     super.newestFirst = false,
-    this.yustQuality = 'medium',
     super.divider = true,
-    this.showCentered = false,
-    this.showPreview = true,
     super.overwriteSingleFile = false,
     super.enableDropzone = false,
+    super.allowMultiSelectDownload = false,
+    super.allowMultiSelectDeletion = false,
+    super.onMultiSelectDownload,
+    super.wrapSuffixChild = false,
+    super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    this.convertToJPEG = true,
+    this.zoomable = false,
+    this.yustQuality = 'medium',
+    this.showCentered = false,
+    this.showPreview = true,
     this.addGpsWatermark = false,
     this.addTimestampWatermark = false,
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-    super.allowMultiSelectDownload = false,
-    super.allowMultiSelectDeletion = false,
-    super.onMultiSelectDownload,
-    super.wrapSuffixChild = false,
-    super.previewCount = 15,
   }) : super(files: images);
-
-  // Compatibility getter for existing API
-  List<YustImage> get images => files;
 
   @override
   YustImagePickerState createState() => YustImagePickerState();
@@ -78,7 +89,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
 
 class YustImagePickerState
     extends YustFilePickerBaseState<YustImage, YustImagePicker> {
-  // Abstract method implementations
   @override
   List<YustImage> convertFiles(List<YustFile> files) =>
       YustImage.fromYustFiles(files);
@@ -88,20 +98,20 @@ class YustImagePickerState
 
   @override
   Widget buildFileDisplay(BuildContext context) {
-    if (widget.showPreview) {
-      return widget.multiple || (widget.numberOfFiles ?? 2) > 1
-          ? _buildGallery(context)
-          : Padding(
-              padding: const EdgeInsets.only(bottom: 2.0),
-              child: _buildSingleImage(
-                  context,
-                  fileHandler.getFiles().firstOrNull != null
-                      ? YustImage.fromYustFile(fileHandler.getFiles().first)
-                      : null),
-            );
-    } else {
+    if (!widget.showPreview) {
       return const SizedBox.shrink();
     }
+
+    return widget.multiple || (widget.numberOfFiles ?? 2) > 1
+        ? _buildGallery(context)
+        : Padding(
+            padding: const EdgeInsets.only(bottom: 2.0),
+            child: _buildSingleImage(
+                context,
+                fileHandler.getFiles().firstOrNull != null
+                    ? YustImage.fromYustFile(fileHandler.getFiles().first)
+                    : null),
+          );
   }
 
   @override

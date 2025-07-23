@@ -21,7 +21,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   const YustFilePicker({
     super.key,
     super.label,
-    this.showModifiedAt = false,
     required super.files,
     required super.storageFolderPath,
     super.linkedDocPath,
@@ -33,16 +32,17 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.readOnly = false,
     super.multiple = true,
     super.numberOfFiles,
-    this.allowedExtensions,
     super.divider = true,
-    this.allowOnlyImages = false,
     super.overwriteSingleFile = false,
-    this.maximumFileSizeInKiB,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-    super.previewCount = 15,
+    super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    this.showModifiedAt = false,
+    this.allowedExtensions,
+    this.allowOnlyImages = false,
+    this.maximumFileSizeInKiB,
   });
 
   @override

@@ -13,10 +13,16 @@ import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
+import 'yust_file_picker.dart';
+import 'yust_image_picker.dart';
 
 // ignore: depend_on_referenced_packages
 import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 
+/// Base class for file pickers.
+///
+/// Used by the [YustFilePicker] and [YustImagePicker] widgets
+/// to outsource common functionality.
 abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final String? label;
   final List<T> files;
@@ -62,8 +68,11 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.multiple = true,
     this.numberOfFiles,
     this.overwriteSingleFile = false,
-    this.previewCount = 15,
+    this.previewCount = defaultPreviewCount,
   });
+
+  /// Default number of items to show initially and load more on demand.
+  static const defaultPreviewCount = 15;
 }
 
 abstract class YustFilePickerBaseState<T extends YustFile,
@@ -74,7 +83,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   bool _selecting = false;
   final List<T> _selectedFiles = [];
   late Future<void> _updateFuture;
-  int currentDisplayCount = 15;
+  int currentDisplayCount = YustFilePickerBase.defaultPreviewCount;
 
   @override
   void initState() {
