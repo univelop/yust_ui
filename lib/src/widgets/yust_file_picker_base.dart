@@ -211,6 +211,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   }
 
   /// Create a database entry for the files.
+  @nonVirtual
   Future<void> createDatabaseEntry() async {
     try {
       if (widget.linkedDocPath != null &&
@@ -223,6 +224,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   }
 
   /// Check the connectivity.
+  @nonVirtual
   Future<bool> checkConnectivity() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none &&
@@ -235,6 +237,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   }
 
   /// Build the cached indicator.
+  @nonVirtual
   Widget buildCachedIndicator(T file) {
     if (!file.cached || !_enabled) {
       return const SizedBox.shrink();
@@ -252,6 +255,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     );
   }
 
+  @nonVirtual
   Widget buildLoadMoreButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -272,15 +276,19 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   }
 
   // Set a file as processing
+  @nonVirtual
   void setFileProcessing(T? file) => _processing[file?.name] = true;
 
   // Check if a file is processing
+  @nonVirtual
   bool isFileProcessing(T? file) => _processing[file?.name] ?? false;
 
   // Clear a file from processing
+  @nonVirtual
   void clearFileProcessing(T? file) => _processing.remove(file?.name);
 
   // Upload a file
+  @nonVirtual
   Future<void> uploadFile({
     required T file,
     bool callSetState = true,
@@ -308,6 +316,8 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     }
   }
 
+  /// Deletes all files
+  @nonVirtual
   Future<void> deleteFiles(List<T> files) async {
     for (final yustFile in files) {
       await fileHandler.deleteFile(yustFile);
