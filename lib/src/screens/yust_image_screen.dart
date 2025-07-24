@@ -125,7 +125,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
             ),
           ),
         ),
-        if (kIsWeb)
+        if (kIsWeb && activeImageIndex > 0)
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerLeft,
@@ -147,7 +147,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (kIsWeb)
+        if (kIsWeb && activeImageIndex < widget.images.length - 1)
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerRight,
