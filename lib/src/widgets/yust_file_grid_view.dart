@@ -26,7 +26,7 @@ class YustFileGridView<T extends YustFile> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         _buildGridView(context),
-        if (files.length > totalFileCount) loadMoreButton,
+        if (totalFileCount > files.length) loadMoreButton,
         const SizedBox(height: 2)
       ],
     );
