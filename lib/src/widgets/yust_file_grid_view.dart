@@ -4,7 +4,6 @@ import 'package:yust/yust.dart';
 class YustFileGridView<T extends YustFile> extends StatelessWidget {
   final List<T> files;
   final int currentItemCount;
-  final int itemsPerPage;
   final Widget Function(BuildContext, T?) itemBuilder;
   final Widget? loadMoreButton;
 
@@ -12,7 +11,6 @@ class YustFileGridView<T extends YustFile> extends StatelessWidget {
     super.key,
     required this.files,
     required this.currentItemCount,
-    required this.itemsPerPage,
     required this.itemBuilder,
     this.loadMoreButton,
   });
@@ -35,20 +33,14 @@ class YustFileGridView<T extends YustFile> extends StatelessWidget {
     );
   }
 
-  GridView _buildGridView(BuildContext context) {
-    final displayFiles = files.length > currentItemCount
-        ? files.sublist(0, currentItemCount)
-        : files;
-
-    return GridView.extent(
-      shrinkWrap: true,
-      maxCrossAxisExtent: 180,
-      primary: false,
-      mainAxisSpacing: 2,
-      crossAxisSpacing: 2,
-      children: displayFiles.map((file) {
-        return itemBuilder(context, file);
-      }).toList(),
-    );
-  }
+  GridView _buildGridView(BuildContext context) => GridView.extent(
+        shrinkWrap: true,
+        maxCrossAxisExtent: 180,
+        primary: false,
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+        children: files.map((file) {
+          return itemBuilder(context, file);
+        }).toList(),
+      );
 }

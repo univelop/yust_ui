@@ -4,7 +4,6 @@ import 'package:yust/yust.dart';
 class YustFileListView<T extends YustFile> extends StatelessWidget {
   final List<T> files;
   final int? currentItemCount;
-  final int? itemsPerPage;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget? loadMoreButton;
 
@@ -13,7 +12,6 @@ class YustFileListView<T extends YustFile> extends StatelessWidget {
     required this.files,
     required this.itemBuilder,
     this.currentItemCount,
-    this.itemsPerPage,
     this.loadMoreButton,
   });
 
@@ -23,14 +21,9 @@ class YustFileListView<T extends YustFile> extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final displayFiles =
-        currentItemCount != null && files.length > currentItemCount!
-            ? files.sublist(0, currentItemCount!)
-            : files;
-
     return Column(
       children: [
-        ...displayFiles.map((file) => itemBuilder(context, file)),
+        ...files.map((file) => itemBuilder(context, file)),
         if (currentItemCount != null &&
             files.length > currentItemCount! &&
             loadMoreButton != null)

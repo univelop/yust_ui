@@ -1,6 +1,3 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
 library yust_ui;
 
 export 'src/screens/yust_account_edit_screen.dart';

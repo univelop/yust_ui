@@ -157,10 +157,6 @@ class YustImagePickerState
   Future<YustImage> processFile(String name, File? file, Uint8List? bytes) =>
       _createImageObject(name, file, bytes);
 
-  @override
-  List<YustImage> getVisibleFiles(List<YustImage> allFiles) =>
-      allFiles.take(currentDisplayCount).toList();
-
   Future<YustImage> _createImageObject(
           String name, File? file, Uint8List? bytes,
           {bool setGPSToLocation = false,
@@ -250,9 +246,8 @@ class YustImagePickerState
     }
 
     return YustFileGridView<YustImage>(
-      files: YustImage.fromYustFiles(fileHandler.getFiles()),
+      files: getVisibleFiles(),
       currentItemCount: currentDisplayCount,
-      itemsPerPage: widget.previewCount,
       itemBuilder: (context, file) => _buildSingleImage(context, file),
       loadMoreButton: buildLoadMoreButton(context),
     );

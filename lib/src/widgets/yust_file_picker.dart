@@ -87,11 +87,10 @@ class YustFilePickerState
   @override
   Widget buildFileDisplay(BuildContext context) {
     return YustFileListView<YustFile>(
-      files: _sortFiles(fileHandler.getFiles()),
-      currentItemCount: currentDisplayCount,
-      itemsPerPage: widget.previewCount,
+      files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildFile(context, file),
       loadMoreButton: buildLoadMoreButton(context),
+      currentItemCount: currentDisplayCount,
     );
   }
 
@@ -134,10 +133,7 @@ class YustFilePickerState
   }
 
   @override
-  List<YustFile> getVisibleFiles(List<YustFile> allFiles) =>
-      _sortFiles(allFiles).take(currentDisplayCount).toList();
-
-  List<YustFile> _sortFiles(List<YustFile> files) {
+  List<YustFile> sortFiles(List<YustFile> files) {
     final sortedFiles = List<YustFile>.from(files);
     sortedFiles.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
     return sortedFiles;
