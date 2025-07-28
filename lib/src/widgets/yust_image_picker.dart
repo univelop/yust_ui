@@ -82,6 +82,35 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
   }) : super(files: images);
 
+  /// A convenience constructor for a single image picker.
+  const YustImagePicker.single({
+    super.key,
+    super.label,
+    required super.storageFolderPath,
+    required List<YustImage> images,
+    super.linkedDocPath,
+    super.linkedDocAttribute,
+    super.suffixIcon,
+    super.onChanged,
+    super.prefixIcon,
+    super.readOnly = false,
+    super.newestFirst = false,
+    super.divider = true,
+    super.enableDropzone = false,
+    super.wrapSuffixChild = false,
+    super.overwriteSingleFile = false,
+    this.convertToJPEG = true,
+    this.zoomable = false,
+    this.yustQuality = 'medium',
+    this.showCentered = false,
+    this.showPreview = true,
+    this.addGpsWatermark = false,
+    this.addTimestampWatermark = false,
+    this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
+    this.locale = const Locale('de'),
+    this.watermarkPosition = YustWatermarkPosition.bottomLeft,
+  }) : super(files: images, numberOfFiles: 1);
+
   @override
   YustImagePickerState createState() => YustImagePickerState();
 }
@@ -166,10 +195,8 @@ class YustImagePickerState
     }
 
     final pictureFiles = [...fileHandler.getFiles()];
-    final canAddMore = widget.numberOfFiles != null
-        ? pictureFiles.length < widget.numberOfFiles! ||
-            (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
-        : true;
+    final canAddMore = pictureFiles.length < widget.numberOfFiles ||
+        (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
 
     return [
       if (!widget.showPreview && pictureFiles.isNotEmpty)
@@ -434,20 +461,17 @@ class YustImagePickerState
         widget.overwriteSingleFile &&
         pictureFiles.isNotEmpty;
 
-    if (widget.numberOfFiles != null) {
-      final effectiveCurrentFileCount = willOverwrite ? 0 : pictureFiles.length;
+    final effectiveCurrentFileCount = willOverwrite ? 0 : pictureFiles.length;
 
-      if (effectiveCurrentFileCount + images.length > widget.numberOfFiles!) {
-        await EasyLoading.dismiss();
-        await YustUi.alertService.showAlert(
-            LocaleKeys.fileUpload.tr(),
-            widget.numberOfFiles == 1
-                ? LocaleKeys.alertMaxOneFile.tr()
-                : LocaleKeys.alertMaxNumberFiles.tr(namedArgs: {
-                    'numberFiles': widget.numberOfFiles.toString()
-                  }));
-        return;
-      }
+    if (effectiveCurrentFileCount + images.length > widget.numberOfFiles) {
+      await EasyLoading.dismiss();
+      await YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          widget.numberOfFiles == 1
+              ? LocaleKeys.alertMaxOneFile.tr()
+              : LocaleKeys.alertMaxNumberFiles.tr(
+                  namedArgs: {'numberFiles': widget.numberOfFiles.toString()}));
+      return;
     }
 
     // Single Image with Override

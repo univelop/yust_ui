@@ -521,8 +521,6 @@ abstract class YustFilePickerBaseState<T extends YustFile,
 
   Future<bool> checkFileCount(List<dynamic> fileElements) async {
     final numberOfFiles = widget.numberOfFiles;
-    // No restriction on file count
-    if (numberOfFiles == null) return true;
 
     // Tried to upload so many files that the overall limit will be exceeded
     if (!widget.overwriteSingleFile &&

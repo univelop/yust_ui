@@ -48,6 +48,27 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     this.maximumFileSizeInKiB,
   });
 
+  /// A convenience constructor for a single file picker.
+  const YustFilePicker.single({
+    super.key,
+    super.label,
+    required super.files,
+    required super.storageFolderPath,
+    super.linkedDocPath,
+    super.linkedDocAttribute,
+    super.onChanged,
+    super.suffixIcon,
+    super.prefixIcon,
+    super.enableDropzone = false,
+    super.readOnly = false,
+    super.divider = true,
+    super.wrapSuffixChild = false,
+    this.showModifiedAt = false,
+    this.allowedExtensions,
+    this.maximumFileSizeInKiB,
+    super.overwriteSingleFile = false,
+  }) : super(numberOfFiles: 1);
+
   @override
   YustFilePickerState createState() => YustFilePickerState();
 }
@@ -123,10 +144,8 @@ class YustFilePickerState
   }
 
   Widget _buildAddButton(BuildContext context) {
-    final canAddMore = widget.numberOfFiles != null
-        ? widget.files.length < widget.numberOfFiles! ||
-            (widget.numberOfFiles == 1 && widget.overwriteSingleFile)
-        : true;
+    final canAddMore = widget.files.length < widget.numberOfFiles ||
+        (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
 
     if (enabled && canAddMore) {
       return IconButton(
