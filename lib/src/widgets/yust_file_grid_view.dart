@@ -3,16 +3,16 @@ import 'package:yust/yust.dart';
 
 class YustFileGridView<T extends YustFile> extends StatelessWidget {
   final List<T> files;
-  final int currentItemCount;
+  final int totalFileCount;
   final Widget Function(BuildContext, T?) itemBuilder;
-  final Widget? loadMoreButton;
+  final Widget loadMoreButton;
 
   const YustFileGridView({
     super.key,
     required this.files,
-    required this.currentItemCount,
+    required this.totalFileCount,
     required this.itemBuilder,
-    this.loadMoreButton,
+    required this.loadMoreButton,
   });
 
   @override
@@ -26,8 +26,7 @@ class YustFileGridView<T extends YustFile> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         _buildGridView(context),
-        if (files.length > currentItemCount && loadMoreButton != null)
-          loadMoreButton!,
+        if (files.length > totalFileCount) loadMoreButton,
         const SizedBox(height: 2)
       ],
     );

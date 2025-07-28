@@ -247,9 +247,9 @@ class YustImagePickerState
 
     return YustFileGridView<YustImage>(
       files: getVisibleFiles(),
-      currentItemCount: currentDisplayCount,
       itemBuilder: (context, file) => _buildSingleImage(context, file),
       loadMoreButton: buildLoadMoreButton(context),
+      totalFileCount: widget.files.length,
     );
   }
 

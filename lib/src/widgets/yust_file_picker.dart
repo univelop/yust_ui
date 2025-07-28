@@ -90,7 +90,7 @@ class YustFilePickerState
       files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildFile(context, file),
       loadMoreButton: buildLoadMoreButton(context),
-      currentItemCount: currentDisplayCount,
+      totalFileCount: widget.files.length,
     );
   }
 
