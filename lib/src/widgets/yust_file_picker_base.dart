@@ -78,7 +78,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final bool newestFirst;
 
   /// Number of files to pick.
-  final num? numberOfFiles;
+  final num numberOfFiles;
 
   /// Whether a single file can be overwritten.
   final bool overwriteSingleFile;
@@ -106,13 +106,16 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.onMultiSelectDownload,
     this.wrapSuffixChild = false,
     this.newestFirst = false,
-    this.numberOfFiles,
+    this.numberOfFiles = defaultNumberOfFiles,
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
   });
 
   /// Default number of items to show initially and load more on demand.
   static const defaultPreviewCount = 15;
+
+  /// Default number of files to pick.
+  static const defaultNumberOfFiles = 2;
 }
 
 abstract class YustFilePickerBaseState<T extends YustFile,
@@ -188,7 +191,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   Widget buildFileDisplay(BuildContext context);
 
   /// Build the specific action buttons.
-  List<Widget> buildSpecificActionButtons(BuildContext context);
+  List<Widget> buildActionButtons(BuildContext context);
 
   /// Open the file picker.
   Future<void> pickFiles();
@@ -196,7 +199,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   /// Create a file object from the given parameters.
   ///
   /// This is used to create the appropriate file type for each picker.
-  Future<T> createFileObject(String name, File? file, Uint8List? bytes);
+  Future<T> processFile(String name, File? file, Uint8List? bytes);
 
   /// Get the currently visible files based on how they are displayed.
   ///
@@ -269,7 +272,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
             currentDisplayCount += widget.previewCount;
           });
         },
-        icon: const Icon(Icons.refresh),
+        icon: const Icon(Icons.expand_more),
         label: Text(LocaleKeys.loadMore.tr()),
       ),
     );
@@ -380,7 +383,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
                         widget.allowMultiSelectDeletion) &&
                     _fileHandler.getFiles().length > 1)
                   _buildStartSelectionButton(),
-                ...buildSpecificActionButtons(context),
+                ...buildActionButtons(context),
                 if (widget.suffixIcon != null) widget.suffixIcon!,
               ],
       );
@@ -516,7 +519,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     await EasyLoading.dismiss();
   }
 
-  Future<bool> checkFileAmount(List<dynamic> fileElements) async {
+  Future<bool> checkFileCount(List<dynamic> fileElements) async {
     final numberOfFiles = widget.numberOfFiles;
     // No restriction on file count
     if (numberOfFiles == null) return true;
@@ -558,7 +561,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     List<U> fileData,
     Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
   ) async {
-    final filesValid = await checkFileAmount(fileData);
+    final filesValid = await checkFileCount(fileData);
     if (!filesValid) return;
 
     if (widget.overwriteSingleFile) {
@@ -568,7 +571,7 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     for (final fileData in fileData) {
       try {
         final (name, file, bytes) = await fileDataExtractor(fileData);
-        final newFile = await createFileObject(name, file, bytes);
+        final newFile = await processFile(name, file, bytes);
 
         await uploadFile(file: newFile);
       } catch (e) {

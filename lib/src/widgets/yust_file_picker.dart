@@ -35,7 +35,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.prefixIcon,
     super.enableDropzone = false,
     super.readOnly = false,
-    super.numberOfFiles,
+    super.numberOfFiles = YustFilePickerBase.defaultNumberOfFiles,
     super.divider = true,
     super.overwriteSingleFile = false,
     super.allowMultiSelectDownload = false,
@@ -58,6 +58,12 @@ class YustFilePickerState
   List<YustFile> convertFiles(List<YustFile> files) => files;
 
   @override
+  Widget build(BuildContext context) {
+    // Use build function from parent class so that shared logic can be reused.
+    return super.build(context);
+  }
+
+  @override
   Widget buildFileDisplay(BuildContext context) {
     return YustFileListView<YustFile>(
       files: _sortFiles(fileHandler.getFiles()),
@@ -76,7 +82,7 @@ class YustFilePickerState
     final result = await FilePicker.platform.pickFiles(
       type: type,
       allowedExtensions: widget.allowedExtensions,
-      allowMultiple: (widget.numberOfFiles ?? 2) > 1,
+      allowMultiple: widget.numberOfFiles > 1,
     );
     if (result == null) return;
 
@@ -88,12 +94,12 @@ class YustFilePickerState
   }
 
   @override
-  List<Widget> buildSpecificActionButtons(BuildContext context) {
+  List<Widget> buildActionButtons(BuildContext context) {
     return [_buildAddButton(context)];
   }
 
   @override
-  Future<YustFile> createFileObject(
+  Future<YustFile> processFile(
       String name, File? file, Uint8List? bytes) async {
     return YustFile(
       name: name,
@@ -269,7 +275,7 @@ class YustFilePickerState
 
   Future<void> _checkAndUploadFiles<T>(List<T> fileData,
       Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor) async {
-    final filesValid = await checkFileAmount(fileData);
+    final filesValid = await checkFileCount(fileData);
     if (!filesValid) return;
 
     if (widget.overwriteSingleFile) {
@@ -294,7 +300,7 @@ class YustFilePickerState
       final fileSizeValid = await _checkFileSize(name, file, bytes);
       if (!fileSizeValid) return;
 
-      final newFile = await createFileObject(name, file, bytes);
+      final newFile = await processFile(name, file, bytes);
       await uploadFile(file: newFile);
     }
   }
@@ -416,7 +422,7 @@ class YustFilePickerState
     final bytes = await Yust.fileService.downloadFile(
         path: yustFile.storageFolderPath ?? '', name: yustFile.name ?? '');
 
-    final newFile = await createFileObject(newFileName, yustFile.file, bytes);
+    final newFile = await processFile(newFileName, yustFile.file, bytes);
     await uploadFile(file: newFile);
   }
 

@@ -56,7 +56,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     required List<YustImage> images,
     super.linkedDocPath,
     super.linkedDocAttribute,
-    super.numberOfFiles,
+    super.numberOfFiles = YustFilePickerBase.defaultNumberOfFiles,
     super.suffixIcon,
     super.onChanged,
     super.prefixIcon,
@@ -93,12 +93,18 @@ class YustImagePickerState
       YustImage.fromYustFiles(files);
 
   @override
+  Widget build(BuildContext context) {
+    // Use build function from parent class so that shared logic can be reused.
+    return super.build(context);
+  }
+
+  @override
   Widget buildFileDisplay(BuildContext context) {
     if (!widget.showPreview) {
       return const SizedBox.shrink();
     }
 
-    return (widget.numberOfFiles ?? 2) > 1
+    return widget.numberOfFiles > 1
         ? _buildGallery(context)
         : Padding(
             padding: const EdgeInsets.only(bottom: 2.0),
@@ -114,13 +120,12 @@ class YustImagePickerState
   Future<void> pickFiles() => _pickImages(ImageSource.gallery);
 
   @override
-  List<Widget> buildSpecificActionButtons(BuildContext context) {
+  List<Widget> buildActionButtons(BuildContext context) {
     return _buildPickButtons(context);
   }
 
   @override
-  Future<YustImage> createFileObject(
-          String name, File? file, Uint8List? bytes) =>
+  Future<YustImage> processFile(String name, File? file, Uint8List? bytes) =>
       _createImageObject(name, file, bytes);
 
   @override
@@ -174,7 +179,7 @@ class YustImagePickerState
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
-                (widget.numberOfFiles ?? 2) > 1
+                widget.numberOfFiles > 1
                     ? LocaleKeys.alertDeleteAllImages.tr()
                     : LocaleKeys.confirmDelete.tr(),
                 LocaleKeys.delete.tr());
@@ -275,7 +280,7 @@ class YustImagePickerState
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
             widget.zoomable);
-    if ((widget.numberOfFiles ?? 2) > 1) {
+    if (widget.numberOfFiles > 1) {
       return AspectRatio(
         aspectRatio: 1,
         child: GestureDetector(
@@ -499,8 +504,7 @@ class YustImagePickerState
       await Permission.locationWhenInUse.request();
 
       final picker = ImagePicker();
-      if ((widget.numberOfFiles ?? 2) > 1 &&
-          imageSource == ImageSource.gallery) {
+      if (widget.numberOfFiles > 1 && imageSource == ImageSource.gallery) {
         final images = await picker.pickMultiImage();
 
         await _checkAndUploadImages(images, (image) async {
@@ -526,7 +530,7 @@ class YustImagePickerState
     }
 
     // We are on Web
-    final multipleFiles = (widget.numberOfFiles ?? 2) > 1;
+    final multipleFiles = widget.numberOfFiles > 1;
     final result = await FilePicker.platform
         .pickFiles(type: FileType.image, allowMultiple: multipleFiles);
     if (result == null) return;
