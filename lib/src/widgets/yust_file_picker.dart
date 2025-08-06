@@ -205,7 +205,8 @@ class YustFilePickerState
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                        Text(file.name!, overflow: TextOverflow.ellipsis),
+                        // file.name is not null because shouldShowDate == true
+                        Text(file.name ?? '', overflow: TextOverflow.ellipsis),
                         Text(
                           YustHelpers().formatDate(file.modifiedAt,
                               format: 'dd.MM.yyyy HH:mm'),
@@ -213,7 +214,7 @@ class YustFilePickerState
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ])
-                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name!,
+                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name ?? '',
                     overflow: TextOverflow.ellipsis),
           ),
           buildCachedIndicator(file),
