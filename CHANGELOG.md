@@ -1,3 +1,9 @@
+## 3.28.2 - 2025-08-06
+
+-   Improve Number Handling
+-   Add preview limit to YustFilePicker
+-   Fix error in YustFileHandler
+
 ## 3.28.1 - 2025-07-22
 
 -   Improve YustTextField
