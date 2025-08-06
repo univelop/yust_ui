@@ -1,3 +1,7 @@
+## 3.28.3 - 2025-08-06
+
+-   Add `unfocusCurrentAndWait` helper
+
 ## 3.28.2 - 2025-08-06
 
 -   Improve Number Handling
