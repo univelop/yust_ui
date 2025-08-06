@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:yust/yust.dart';
 
 import '../yust_ui.dart';
 import 'yust_focusable_builder.dart';
@@ -83,18 +83,27 @@ class YustNumberField extends StatelessWidget {
             label: label,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
-            value: numToString(value,
-                decimalCount: decimalCount,
-                thousandsSeparator: thousandsSeparator),
+            value: value == null
+                ? null
+                : Yust.helpers.numToString(
+                    value!,
+                    decimalDigitCount: decimalCount ?? 5,
+                    padDecimalDigits: decimalCount != null,
+                    thousandsSeparator: thousandsSeparator,
+                  ),
             controller: controller,
             onChanged: onChanged == null
                 ? null
-                : (value) => onChanged!(valueToNum(value?.trim() ?? '',
-                    decimalCount: decimalCount)),
+                : (value) => onChanged!(
+                      Yust.helpers.stringToNumber(value?.trim() ?? '',
+                          precision: decimalCount),
+                    ),
             onEditingComplete: onEditingComplete == null
                 ? null
-                : (value) => onEditingComplete!(valueToNum(value?.trim() ?? '',
-                    decimalCount: decimalCount)),
+                : (value) => onEditingComplete!(
+                      Yust.helpers.stringToNumber(value?.trim() ?? '',
+                          precision: decimalCount),
+                    ),
             keyboardType: !allowDecimalInput
                 ? TextInputType.number
                 : usesSamsungKeyboard
@@ -118,7 +127,10 @@ class YustNumberField extends StatelessWidget {
             slimDesign: slimDesign,
             validator: validator == null
                 ? null
-                : (value) => validator!(valueToNum(value)),
+                : (value) => validator!(
+                      Yust.helpers.stringToNumber(value?.trim() ?? '',
+                          precision: decimalCount),
+                    ),
             divider: divider,
             completeOnUnfocus: completeOnUnfocus,
             contentPadding: contentPadding,
@@ -127,35 +139,5 @@ class YustNumberField extends StatelessWidget {
         );
       },
     );
-  }
-
-  static String? numToString(num? value,
-      {int? decimalCount, bool thousandsSeparator = false}) {
-    if (value?.floorToDouble() == value) {
-      value = value?.toInt();
-    }
-    var pattern = thousandsSeparator ? '#,##0' : '0';
-    pattern += decimalCount == 0 ? '' : '.';
-    pattern += decimalCount != null ? '0' * decimalCount : '#####';
-    final format = NumberFormat(pattern, 'de-DE');
-    return value != null ? format.format(value) : null;
-  }
-
-  static num? valueToNum(String? value, {int? decimalCount}) {
-    if (value == '' || value == null) {
-      return null;
-    } else {
-      final format = NumberFormat.decimalPattern('de-DE');
-      num? numValue;
-      try {
-        numValue = format.parse(value);
-      } catch (e) {
-        return null;
-      }
-      if (numValue % 1 == 0 || decimalCount == 0) {
-        numValue = numValue.toInt();
-      }
-      return numValue;
-    }
   }
 }
