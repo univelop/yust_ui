@@ -28,6 +28,17 @@ class YustUiHelpers {
     currentFocus.unfocus();
   }
 
+  /// Does unfocus the current focus node but awaits until all microtasks are complete
+  Future<void> unfocusCurrentAndWait() async {
+    unfocusCurrent();
+
+    // The `Future.delayed(Duration.zero)` ensures
+    // that the focus change is registered in the next event loop iteration, allowing all
+    // microtasks to complete. This is particularly important for widgets like `YustTextField`,
+    // which rely on focus events to trigger validation or state updates.
+    await Future.delayed(Duration.zero);
+  }
+
   /// Does not return null.
   @Deprecated('Use YustHelper.formatDate instead')
   String formatDate(DateTime? dateTime, {String? format}) {
@@ -58,7 +69,7 @@ class YustUiHelpers {
   Future<bool> usesSamsungKeyboard() async =>
       !kIsWeb &&
       Platform.isAndroid &&
-      (await KeyboardName.getVendorName ?? '')
-          .toLowerCase()
-          .contains('samsung');
+      (await KeyboardName.getVendorName ?? '').toLowerCase().contains(
+        'samsung',
+      );
 }
