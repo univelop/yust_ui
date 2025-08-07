@@ -1,6 +1,3 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
 library yust_ui;
 
 export 'src/screens/yust_account_edit_screen.dart';
@@ -23,6 +20,9 @@ export 'src/widgets/yust_date_picker.dart';
 export 'src/widgets/yust_doc_builder.dart';
 export 'src/widgets/yust_docs_builder.dart';
 export 'src/widgets/yust_file_picker.dart';
+export 'src/widgets/yust_file_picker_base.dart';
+export 'src/widgets/yust_file_grid_view.dart';
+export 'src/widgets/yust_file_list_view.dart';
 export 'src/widgets/yust_focus_handler.dart';
 export 'src/widgets/yust_focusable_builder.dart';
 export 'src/widgets/yust_focused_highlight_wrapper.dart';

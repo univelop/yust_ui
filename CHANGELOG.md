@@ -1,3 +1,23 @@
+## 3.28.3 - 2025-08-06
+
+-   Add `unfocusCurrentAndWait` helper
+
+## 3.28.2 - 2025-08-06
+
+-   Improve Number Handling
+-   Add preview limit to YustFilePicker
+-   Fix error in YustFileHandler
+
+## 3.28.1 - 2025-07-22
+
+-   Improve YustTextField
+
+## 3.28.0 - 2025-07-08
+
+-   Update dependencies
+-   Add style for YustProgressButton
+-   Improve YustAlertService
+
 ## 3.27.18 - 2025-07-02
 
 -   Add maxLength to YustTextField

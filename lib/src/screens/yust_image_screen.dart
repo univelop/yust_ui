@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
@@ -67,22 +68,54 @@ class YustImageScreen extends StatefulWidget {
 class _YustImageScreenState extends State<YustImageScreen> {
   late int activeImageIndex;
   late PageController _pageController;
+  late FocusNode _focusNode;
+
   @override
   void initState() {
     activeImageIndex = widget.activeImageIndex;
     _pageController = PageController(initialPage: activeImageIndex);
+    _focusNode = FocusNode();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black,
-      child: SafeArea(
-          child: widget.images.length == 1
-              ? _buildSingle(context)
-              : _buildMultiple(context)),
+      child: KeyboardListener(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: SafeArea(
+            child: widget.images.length == 1
+                ? _buildSingle(context)
+                : _buildMultiple(context)),
+      ),
     );
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent && widget.images.length > 1) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
+          activeImageIndex > 0) {
+        _pageController.previousPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+          activeImageIndex < widget.images.length - 1) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   Widget _buildSingle(BuildContext context) {
@@ -125,7 +158,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
             ),
           ),
         ),
-        if (kIsWeb)
+        if (kIsWeb && activeImageIndex > 0)
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerLeft,
@@ -147,7 +180,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (kIsWeb)
+        if (kIsWeb && activeImageIndex < widget.images.length - 1)
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerRight,

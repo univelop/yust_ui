@@ -125,10 +125,10 @@ class _YustTextFieldState extends State<YustTextField>
   void onUnfocus() {
     if (_valueDidChange == false) return;
     if (widget.onEditingComplete == null) return;
+    if (widget.readOnly) return;
 
-    final textFieldText = widget.notTrim
-        ? _controller.value.text
-        : _controller.value.text.trim();
+    final textFieldText =
+        widget.notTrim ? _controller.value.text : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null ||
@@ -148,8 +148,7 @@ class _YustTextFieldState extends State<YustTextField>
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode =
-        widget.focusNode ??
+    _focusNode = widget.focusNode ??
         FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
@@ -173,6 +172,7 @@ class _YustTextFieldState extends State<YustTextField>
   }
 
   void onComplete() {
+    if (widget.readOnly) return;
     if (widget.onEditingComplete != null) {
       final textFieldText = widget.notTrim
           ? _controller.value.text
@@ -262,11 +262,11 @@ class _YustTextFieldState extends State<YustTextField>
 
   Widget _buildTextField() {
     final label = [
-  if (widget.label?.isNotEmpty ?? false) widget.label!,
-  if (widget.maxLength != null) '(${_controller.text.length}/${widget.maxLength})',
-].join(' ').trim();
+      if (widget.label?.isNotEmpty ?? false) widget.label!,
+      if (widget.maxLength != null)
+        '(${_controller.text.length}/${widget.maxLength})',
+    ].join(' ').trim();
 
-        
     final textField = TextFormField(
       decoration: InputDecoration(
         prefix: widget.prefixLabelIcon != null
@@ -286,8 +286,7 @@ class _YustTextFieldState extends State<YustTextField>
         labelStyle: widget.labelStyle ??
             (widget.readOnly
                 ? TextStyle(
-                    color:
-                        Theme.of(context).textTheme.bodySmall?.color ??
+                    color: Theme.of(context).textTheme.bodySmall?.color ??
                         Colors.black,
                   )
                 : null),
@@ -310,23 +309,22 @@ class _YustTextFieldState extends State<YustTextField>
       maxLines: widget.expands
           ? null
           : widget.obscureText
-          ? 1
-          : widget.maxLines,
+              ? 1
+              : widget.maxLines,
       minLines: widget.expands ? null : widget.minLines,
       expands: widget.expands,
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
-      textInputAction:
-          widget.textInputAction ??
+      textInputAction: widget.textInputAction ??
           (widget.minLines != null
               ? TextInputAction.newline
               : TextInputAction.next),
       onChanged: widget.onChanged == null
           ? null
           : (value) => widget.onChanged!(
-              value == '' ? null : (widget.notTrim ? value : value.trim()),
-            ),
+                value == '' ? null : (widget.notTrim ? value : value.trim()),
+              ),
       onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -337,8 +335,7 @@ class _YustTextFieldState extends State<YustTextField>
       textCapitalization: widget.textCapitalization,
       inputFormatters: widget.inputFormatters,
       smartQuotesType: widget.smartQuotesType,
-      autovalidateMode:
-          widget.autovalidateMode ??
+      autovalidateMode: widget.autovalidateMode ??
           (widget.validator != null
               ? AutovalidateMode.onUserInteraction
               : null),
