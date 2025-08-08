@@ -1,3 +1,7 @@
+## 3.28.4 - 2025-08-08
+
+-   Update Yust dependency
+
 ## 3.28.3 - 2025-08-06
 
 -   Add `unfocusCurrentAndWait` helper
