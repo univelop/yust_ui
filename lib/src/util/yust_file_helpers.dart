@@ -12,8 +12,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:universal_html/html.dart' as html;
-// ignore: implementation_imports
 
 import '../../yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
@@ -39,14 +37,7 @@ class YustFileHelpers {
     Uint8List? data,
   }) async {
     if (kIsWeb) {
-      if (data != null) {
-        final base64data = base64Encode(data);
-        final a = html.AnchorElement(
-            href: 'data:application/octet-stream;base64,$base64data');
-        a.download = name;
-        a.click();
-        a.remove();
-      }
+      YustUi.webHelpers.downloadData(name, data);
     } else {
       if (file == null && data != null) {
         final tempDir = await getTemporaryDirectory();
@@ -77,10 +68,12 @@ class YustFileHelpers {
         // ignore: todo
         // TODO: use shareXFiles
         // ignore: deprecated_member_use
-        await Share.shareFiles(
-          [file.path],
-          subject: name,
-          sharePositionOrigin: sharePositionOrigin,
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            subject: name,
+            sharePositionOrigin: sharePositionOrigin,
+          ),
         );
       }
     }

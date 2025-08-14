@@ -103,13 +103,14 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
         child: DottedBorder(
-          borderType: BorderType.RRect,
-          radius: const Radius.circular(12),
-          padding: const EdgeInsets.all(6),
-          dashPattern: const [6, 5],
-          strokeWidth: 3,
-          strokeCap: StrokeCap.round,
-          color: dropZoneColor,
+          options: RoundedRectDottedBorderOptions(
+            color: dropZoneColor,
+            strokeWidth: 3,
+            dashPattern: const [6, 5],
+            radius: const Radius.circular(12),
+            padding: const EdgeInsets.all(6),
+            strokeCap: StrokeCap.round,
+          ),
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: SizedBox(

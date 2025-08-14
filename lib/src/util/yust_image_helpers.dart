@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -8,7 +7,6 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart';
-import 'package:universal_html/html.dart' as html;
 import 'package:yust/yust.dart';
 // ignore: implementation_imports
 import 'package:image/src/util/rational.dart';
@@ -218,7 +216,7 @@ Future<Uint8List> _transformImage({
       return bytes!;
     }
 
-    final resized = await _resizeWeb(
+    final resized = await YustUi.webHelpers.resizeImage(
         name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
 
     return resized;
@@ -576,46 +574,6 @@ String _formatExifDateTime(DateTime dt) =>
     '${dt.hour.toString().padLeft(2, '0')}:'
     '${dt.minute.toString().padLeft(2, '0')}:'
     '${dt.second.toString().padLeft(2, '0')}';
-
-Future<Uint8List> _resizeWeb(
-    {required String name,
-    required Uint8List bytes,
-    required int maxWidth,
-    required int quality}) async {
-  var base64 = base64Encode(bytes);
-  var newImg = html.ImageElement();
-  var mimeType =
-      'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
-  newImg.src = 'data:$mimeType;base64,$base64';
-
-  await newImg.onLoad.first;
-
-  int width = newImg.width!;
-  int height = newImg.height!;
-
-  if (newImg.width! >= newImg.height! && newImg.width! >= maxWidth) {
-    width = maxWidth;
-    height = (width * newImg.height! / newImg.width!).round();
-  } else if (newImg.height! > newImg.width! && newImg.height! > maxWidth) {
-    height = maxWidth;
-    width = (height * newImg.width! / newImg.height!).round();
-  }
-
-  var canvas = html.CanvasElement(width: width, height: height);
-  var ctx = canvas.context2D;
-
-  ctx.drawImageScaled(newImg, 0, 0, width, height);
-
-  return await _getBlobData(await canvas.toBlob('image/jpeg', quality / 100));
-}
-
-Future<Uint8List> _getBlobData(html.Blob blob) {
-  final completer = Completer<Uint8List>();
-  final reader = html.FileReader();
-  reader.readAsArrayBuffer(blob);
-  reader.onLoad.listen((_) => completer.complete(reader.result as Uint8List));
-  return completer.future;
-}
 
 /// Converts a double (Decimal Degree Format) to a [IfdValueRational]
 /// in DMS (Degree Minute Second) Format.
