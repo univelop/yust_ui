@@ -21,6 +21,11 @@ class YustInputTile extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final bool skipFocus;
   final bool showHighlightFocus;
+   // The Icon to be displayed in front of the label 
+  final IconData? prefixLabelIcon;
+
+  /// The color of the prefix label icon
+  final Color? prefixLabelIconColor;
 
   const YustInputTile({
     super.key,
@@ -40,6 +45,8 @@ class YustInputTile extends StatelessWidget {
     this.autovalidateMode,
     this.skipFocus = false,
     this.showHighlightFocus = false,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
   });
 
   @override
@@ -69,6 +76,8 @@ class YustInputTile extends StatelessWidget {
               },
         validator: validator,
         autovalidateMode: autovalidateMode,
+        prefixLabelIcon: prefixLabelIcon,
+        prefixLabelIconColor: prefixLabelIconColor,
       ),
     );
   }
