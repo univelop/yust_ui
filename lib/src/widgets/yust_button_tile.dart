@@ -9,10 +9,13 @@ enum YustButtonStyle {
   /// Returns the appropriate [YustButtonStyle] based on json value [value].
   ///
   /// Use [defaultStyle] to set a default value if the json value is not found.
-  static YustButtonStyle fromJson(String value,
-          {YustButtonStyle defaultStyle = YustButtonStyle.primary}) =>
-      YustButtonStyle.values
-          .firstWhere((e) => e.name == value, orElse: () => defaultStyle);
+  static YustButtonStyle fromJson(
+    String value, {
+    YustButtonStyle defaultStyle = YustButtonStyle.primary,
+  }) => YustButtonStyle.values.firstWhere(
+    (e) => e.name == value,
+    orElse: () => defaultStyle,
+  );
 
   /// Returns the json value of this enum.
   String toJson() => name;
@@ -73,12 +76,13 @@ class YustButtonTile extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                            constraints: maxWidth == null
-                                ? null
-                                : BoxConstraints(
-                                    maxWidth: maxWidth!,
-                                  ),
-                            child: _buildButton()),
+                          constraints: maxWidth == null
+                              ? null
+                              : BoxConstraints(
+                                  maxWidth: maxWidth!,
+                                ),
+                          child: _buildButton(),
+                        ),
                         if (inProgress)
                           const Padding(
                             padding: EdgeInsets.only(left: 12.0),
@@ -87,7 +91,7 @@ class YustButtonTile extends StatelessWidget {
                       ],
                     ),
                     if (suffixChild != null)
-                      Positioned(right: 0, child: suffixChild!)
+                      Positioned(right: 0, child: suffixChild!),
                   ],
                 ),
               ),

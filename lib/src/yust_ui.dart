@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:yust_ui/src/services/yust_location_service.dart';
 import 'package:yust_ui/src/util/yust_image_helpers.dart';
 import 'package:yust_ui/src/util/yust_ui_helpers.dart';
+import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers.dart';
 
 import 'services/yust_alert_service.dart';
 import 'util/yust_file_helpers.dart';
@@ -24,6 +25,7 @@ class YustUi {
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
   static late YustUiHelpers helpers;
   static YustFileHelpers fileHelpers = YustFileHelpers();
+  static YustWebHelpers webHelpers = YustWebHelpers();
   static YustImageHelpers imageHelpers = YustImageHelpers();
   static String? storageUrl;
   static String? imagePlaceholderPath;
@@ -33,7 +35,8 @@ class YustUi {
     List<String>? args,
     Map<String, String>? namedArgs,
     String? gender,
-  }) trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
+  })
+  trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
   static String? appRootFocusKey;
 
   static void initialize({
@@ -45,7 +48,8 @@ class YustUi {
       List<String>? args,
       Map<String, String>? namedArgs,
       String? gender,
-    })? trCallback,
+    })?
+    trCallback,
     String? appRootFocusKey,
   }) {
     YustUi.storageUrl = storageUrl;

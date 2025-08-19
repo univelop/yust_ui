@@ -83,7 +83,11 @@ class YustListTile extends StatelessWidget {
     if (style == YustInputStyle.normal) {
       if (label != null && prefixIcon != null) {
         padding = const EdgeInsets.only(
-            left: 8.0, top: 8.0, right: 16.0, bottom: 8.0);
+          left: 8.0,
+          top: 8.0,
+          right: 16.0,
+          bottom: 8.0,
+        );
       } else {
         padding = const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
       }
@@ -92,11 +96,13 @@ class YustListTile extends StatelessWidget {
     }
     final text = Text(
       label ?? '',
-      style: labelStyle ??
+      style:
+          labelStyle ??
           ((heading || largeHeading)
               ? TextStyle(
                   fontSize: largeHeading ? 24 : 20,
-                  color: Theme.of(context).primaryColor)
+                  color: Theme.of(context).primaryColor,
+                )
               : null),
       overflow: labelOverflow ? TextOverflow.ellipsis : null,
     );
@@ -148,8 +154,9 @@ class YustListTile extends StatelessWidget {
   Widget _buildWrapListTile(Text text, Widget suffixChild, EdgeInsets padding) {
     return ListTile(
       title: YustLeftRightWrap(
-          left: _buildLeftContent(text),
-          right: _buildRightContent(suffixChild)),
+        left: _buildLeftContent(text),
+        right: _buildRightContent(suffixChild),
+      ),
       contentPadding: padding,
       onTap: onTap,
     );

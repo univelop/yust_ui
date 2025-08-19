@@ -4,11 +4,7 @@ import 'package:yust/yust.dart';
 
 import 'yust_stream_builder.dart';
 
-enum YustBuilderStatus {
-  waiting,
-  done,
-  error;
-}
+enum YustBuilderStatus { waiting, done, error }
 
 class YustBuilderInsights {
   final YustBuilderStatus status;
@@ -24,8 +20,8 @@ class YustBuilderInsights {
       snapshot.hasError
           ? YustBuilderStatus.error
           : snapshot.connectionState == ConnectionState.waiting
-              ? YustBuilderStatus.waiting
-              : YustBuilderStatus.done,
+          ? YustBuilderStatus.waiting
+          : YustBuilderStatus.done,
       snapshot.error,
     );
   }
@@ -82,10 +78,14 @@ class YustDocBuilderState<T extends YustDoc> extends State<YustDocBuilder<T>>
 
     if (widget.modelSetup != oldWidget.modelSetup ||
         widget.id != oldWidget.id ||
-        !const ListEquality<dynamic>()
-            .equals(widget.filters, oldWidget.filters) ||
-        !const ListEquality<dynamic>()
-            .equals(widget.orderBy, oldWidget.orderBy)) {
+        !const ListEquality<dynamic>().equals(
+          widget.filters,
+          oldWidget.filters,
+        ) ||
+        !const ListEquality<dynamic>().equals(
+          widget.orderBy,
+          oldWidget.orderBy,
+        )) {
       updated = true;
       initStream();
     }

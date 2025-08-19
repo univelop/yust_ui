@@ -90,7 +90,12 @@ class YustDatePicker extends StatelessWidget {
       return value!;
     } else {
       final today = Yust.helpers.utcNow(
-          hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
+        hour: 0,
+        minute: 0,
+        second: 0,
+        microsecond: 0,
+        millisecond: 0,
+      );
       if (firstDate != null && firstDate!.isAfter(today)) {
         return firstDate!;
       }

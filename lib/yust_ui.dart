@@ -1,5 +1,3 @@
-library yust_ui;
-
 export 'src/screens/yust_account_edit_screen.dart';
 export 'src/screens/yust_account_screen.dart';
 export 'src/screens/yust_image_screen.dart';

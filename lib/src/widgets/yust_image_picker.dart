@@ -138,10 +138,11 @@ class YustImagePickerState
         : Padding(
             padding: const EdgeInsets.only(bottom: 2.0),
             child: _buildSingleImage(
-                context,
-                fileHandler.getFiles().firstOrNull != null
-                    ? YustImage.fromYustFile(fileHandler.getFiles().first)
-                    : null),
+              context,
+              fileHandler.getFiles().firstOrNull != null
+                  ? YustImage.fromYustFile(fileHandler.getFiles().first)
+                  : null,
+            ),
           );
   }
 
@@ -158,27 +159,29 @@ class YustImagePickerState
       _createImageObject(name, file, bytes);
 
   Future<YustImage> _createImageObject(
-          String name, File? file, Uint8List? bytes,
-          {bool setGPSToLocation = false,
-          bool addGpsWatermark = false,
-          bool addTimestampWatermark = false}) =>
-      YustImageHelpers().processImage(
-        file: file,
-        bytes: bytes,
-        path: name,
-        resize: true,
-        convertToJPEG: widget.convertToJPEG,
-        yustQuality: widget.yustQuality,
-        setGPSToLocation: setGPSToLocation,
-        storageFolderPath: widget.storageFolderPath,
-        linkedDocPath: widget.linkedDocPath,
-        linkedDocAttribute: widget.linkedDocAttribute,
-        addGpsWatermark: addGpsWatermark,
-        addTimestampWatermark: addTimestampWatermark,
-        watermarkPosition: widget.watermarkPosition,
-        locale: widget.locale,
-        watermarkLocationAppearance: widget.watermarkLocationAppearance,
-      );
+    String name,
+    File? file,
+    Uint8List? bytes, {
+    bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+  }) => YustImageHelpers().processImage(
+    file: file,
+    bytes: bytes,
+    path: name,
+    resize: true,
+    convertToJPEG: widget.convertToJPEG,
+    yustQuality: widget.yustQuality,
+    setGPSToLocation: setGPSToLocation,
+    storageFolderPath: widget.storageFolderPath,
+    linkedDocPath: widget.linkedDocPath,
+    linkedDocAttribute: widget.linkedDocAttribute,
+    addGpsWatermark: addGpsWatermark,
+    addTimestampWatermark: addTimestampWatermark,
+    watermarkPosition: widget.watermarkPosition,
+    locale: widget.locale,
+    watermarkLocationAppearance: widget.watermarkLocationAppearance,
+  );
 
   List<Widget> _buildPickButtons(BuildContext context) {
     if (!enabled ||
@@ -191,7 +194,8 @@ class YustImagePickerState
     }
 
     final pictureFiles = [...fileHandler.getFiles()];
-    final canAddMore = pictureFiles.length < widget.numberOfFiles ||
+    final canAddMore =
+        pictureFiles.length < widget.numberOfFiles ||
         (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
 
     return [
@@ -202,25 +206,29 @@ class YustImagePickerState
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
-                widget.numberOfFiles > 1
-                    ? LocaleKeys.alertDeleteAllImages.tr()
-                    : LocaleKeys.confirmDelete.tr(),
-                LocaleKeys.delete.tr());
+              widget.numberOfFiles > 1
+                  ? LocaleKeys.alertDeleteAllImages.tr()
+                  : LocaleKeys.confirmDelete.tr(),
+              LocaleKeys.delete.tr(),
+            );
             if (confirmed == true) {
               try {
                 for (final yustFile in pictureFiles) {
                   await fileHandler.deleteFile(yustFile);
                 }
                 widget.onChanged!(
-                    YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
+                  YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
+                );
                 if (mounted) {
                   setState(() {});
                 }
               } catch (e) {
                 await YustUi.alertService.showAlert(
-                    LocaleKeys.oops.tr(),
-                    LocaleKeys.alertCannotDeleteImage
-                        .tr(namedArgs: {'error': e.toString()}));
+                  LocaleKeys.oops.tr(),
+                  LocaleKeys.alertCannotDeleteImage.tr(
+                    namedArgs: {'error': e.toString()},
+                  ),
+                );
               }
             }
           },
@@ -301,7 +309,7 @@ class YustImagePickerState
     );
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
-            widget.zoomable);
+        widget.zoomable);
     if (widget.numberOfFiles > 1) {
       return AspectRatio(
         aspectRatio: 1,
@@ -337,33 +345,34 @@ class YustImagePickerState
         );
       } else {
         return Container(
+          constraints: const BoxConstraints(
+            minHeight: 100,
+          ),
+          child: ConstrainedBox(
             constraints: const BoxConstraints(
-              minHeight: 100,
+              maxHeight: 300,
+              maxWidth: 400,
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 300,
-                maxWidth: 400,
-              ),
-              child: GestureDetector(
-                onTap: () {
-                  if (selecting) {
-                    toggleFileSelection(file);
-                    return;
-                  }
+            child: GestureDetector(
+              onTap: () {
+                if (selecting) {
+                  toggleFileSelection(file);
+                  return;
+                }
 
-                  if (zoomEnabled) {
-                    _showImages(file);
-                  }
-                },
-                child: file.url != null
-                    ? Hero(
-                        tag: file.url!,
-                        child: preview,
-                      )
-                    : preview,
-              ),
-            ));
+                if (zoomEnabled) {
+                  _showImages(file);
+                }
+              },
+              child: file.url != null
+                  ? Hero(
+                      tag: file.url!,
+                      child: preview,
+                    )
+                  : preview,
+            ),
+          ),
+        );
       }
     }
   }
@@ -388,7 +397,9 @@ class YustImagePickerState
               LocaleKeys.uploadImage.tr(),
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary, fontSize: 16),
+                color: Theme.of(context).colorScheme.secondary,
+                fontSize: 16,
+              ),
             ),
           ),
         ],
@@ -412,22 +423,27 @@ class YustImagePickerState
           onPressed: () async {
             YustUi.helpers.unfocusCurrent();
             final confirmed = await YustUi.alertService.showConfirmation(
-                LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
+              LocaleKeys.confirmDelete.tr(),
+              LocaleKeys.delete.tr(),
+            );
             if (confirmed == true) {
               try {
                 await fileHandler.deleteFile(yustFile);
                 if (!yustFile.cached) {
                   widget.onChanged!(
-                      YustImage.fromYustFiles(fileHandler.getOnlineFiles()));
+                    YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
+                  );
                 }
                 if (mounted) {
                   setState(() {});
                 }
               } catch (e) {
                 await YustUi.alertService.showAlert(
-                    LocaleKeys.oops.tr(),
-                    LocaleKeys.alertCannotDeleteImage
-                        .tr(namedArgs: {'error': e.toString()}));
+                  LocaleKeys.oops.tr(),
+                  LocaleKeys.alertCannotDeleteImage.tr(
+                    namedArgs: {'error': e.toString()},
+                  ),
+                );
               }
             }
           },
@@ -452,7 +468,8 @@ class YustImagePickerState
 
     final pictureFiles = List<YustImage>.from(fileHandler.getFiles());
 
-    final willOverwrite = widget.numberOfFiles == 1 &&
+    final willOverwrite =
+        widget.numberOfFiles == 1 &&
         widget.overwriteSingleFile &&
         pictureFiles.isNotEmpty;
 
@@ -461,11 +478,13 @@ class YustImagePickerState
     if (effectiveCurrentFileCount + images.length > widget.numberOfFiles) {
       await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          widget.numberOfFiles == 1
-              ? LocaleKeys.alertMaxOneFile.tr()
-              : LocaleKeys.alertMaxNumberFiles.tr(
-                  namedArgs: {'numberFiles': widget.numberOfFiles.toString()}));
+        LocaleKeys.fileUpload.tr(),
+        widget.numberOfFiles == 1
+            ? LocaleKeys.alertMaxOneFile.tr()
+            : LocaleKeys.alertMaxNumberFiles.tr(
+                namedArgs: {'numberFiles': widget.numberOfFiles.toString()},
+              ),
+      );
       return;
     }
 
@@ -473,7 +492,9 @@ class YustImagePickerState
     if (willOverwrite) {
       await EasyLoading.dismiss();
       final confirmed = await YustUi.alertService.showConfirmation(
-          LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
+        LocaleKeys.alertConfirmOverwriteFile.tr(),
+        LocaleKeys.continue_.tr(),
+      );
       if (confirmed == false) return;
     }
 
@@ -485,27 +506,37 @@ class YustImagePickerState
       if (kIsWeb && fileExtension == 'heic') {
         await EasyLoading.dismiss();
         await YustUi.alertService.showAlert(
-            LocaleKeys.fileUpload.tr(),
-            LocaleKeys.alertInvalidFileType.tr(namedArgs: {
-              'supportedTypes': yustAllowedImageExtensions.join(', ')
-            }));
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.alertInvalidFileType.tr(
+            namedArgs: {
+              'supportedTypes': yustAllowedImageExtensions.join(', '),
+            },
+          ),
+        );
         continue;
       }
 
       if (!yustAllowedImageExtensions.contains(fileExtension)) {
         await EasyLoading.dismiss();
         await YustUi.alertService.showAlert(
-            LocaleKeys.fileUpload.tr(),
-            LocaleKeys.alertInvalidFileType.tr(namedArgs: {
-              'supportedTypes': yustAllowedImageExtensions.join(', ')
-            }));
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.alertInvalidFileType.tr(
+            namedArgs: {
+              'supportedTypes': yustAllowedImageExtensions.join(', '),
+            },
+          ),
+        );
         continue;
       }
 
-      final newImage = await _createImageObject(path, file, bytes,
-          setGPSToLocation: setGPSToLocation,
-          addGpsWatermark: addGpsWatermark,
-          addTimestampWatermark: addTimestampWatermark);
+      final newImage = await _createImageObject(
+        path,
+        file,
+        bytes,
+        setGPSToLocation: setGPSToLocation,
+        addGpsWatermark: addGpsWatermark,
+        addTimestampWatermark: addTimestampWatermark,
+      );
 
       await uploadFile(file: newImage);
     }
@@ -550,8 +581,10 @@ class YustImagePickerState
 
     // We are on Web
     final multipleFiles = widget.numberOfFiles > 1;
-    final result = await FilePicker.platform
-        .pickFiles(type: FileType.image, allowMultiple: multipleFiles);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: multipleFiles,
+    );
     if (result == null) return;
 
     await _checkAndUploadImages(result.files, (file) async {
@@ -564,8 +597,9 @@ class YustImagePickerState
     YustImageScreen.navigateToScreen(
       context: context,
       images: YustImage.fromYustFiles(fileHandler.getFiles()),
-      activeImageIndex: fileHandler.getFiles().indexWhere((file) =>
-          file.hash == activeFile.hash && file.name == activeFile.name),
+      activeImageIndex: fileHandler.getFiles().indexWhere(
+        (file) => file.hash == activeFile.hash && file.name == activeFile.name,
+      ),
       allowDrawing: !widget.readOnly,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;

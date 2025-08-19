@@ -95,32 +95,37 @@ class YustNumberField extends StatelessWidget {
             onChanged: onChanged == null
                 ? null
                 : (value) => onChanged!(
-                      Yust.helpers.stringToNumber(value?.trim() ?? '',
-                          precision: decimalCount),
+                    Yust.helpers.stringToNumber(
+                      value?.trim() ?? '',
+                      precision: decimalCount,
                     ),
+                  ),
             onEditingComplete: onEditingComplete == null
                 ? null
                 : (value) => onEditingComplete!(
-                      Yust.helpers.stringToNumber(value?.trim() ?? '',
-                          precision: decimalCount),
+                    Yust.helpers.stringToNumber(
+                      value?.trim() ?? '',
+                      precision: decimalCount,
                     ),
+                  ),
             keyboardType: !allowDecimalInput
                 ? TextInputType.number
                 : usesSamsungKeyboard
-                    ? null
-                    : const TextInputType.numberWithOptions(decimal: true),
+                ? null
+                : const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               allowDecimalInput
                   ? FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))
-                  : FilteringTextInputFormatter.allow(RegExp('[0-9-]'))
+                  : FilteringTextInputFormatter.allow(RegExp('[0-9-]')),
             ],
             textInputAction: TextInputAction.next,
             onTap: onTap,
             expands: expands,
             readOnly: readOnly,
             enabled: enabled,
-            autovalidateMode:
-                validator != null ? AutovalidateMode.onUserInteraction : null,
+            autovalidateMode: validator != null
+                ? AutovalidateMode.onUserInteraction
+                : null,
             focusNode: focusNode,
             autofocus: autofocus,
             hideKeyboardOnAutofocus: hideKeyboardOnAutofocus,
@@ -128,9 +133,11 @@ class YustNumberField extends StatelessWidget {
             validator: validator == null
                 ? null
                 : (value) => validator!(
-                      Yust.helpers.stringToNumber(value?.trim() ?? '',
-                          precision: decimalCount),
+                    Yust.helpers.stringToNumber(
+                      value?.trim() ?? '',
+                      precision: decimalCount,
                     ),
+                  ),
             divider: divider,
             completeOnUnfocus: completeOnUnfocus,
             contentPadding: contentPadding,

@@ -37,7 +37,9 @@ class YustFileHandlerManager {
   }
 
   YustFileHandler? getFileHandler(
-      String? linkedDocAttribute, String? linkedDocPath) {
+    String? linkedDocAttribute,
+    String? linkedDocPath,
+  ) {
     var newFileHandler = fileHandlers.firstWhereOrNull(
       (fileHandler) =>
           fileHandler.linkedDocAttribute == linkedDocAttribute &&
@@ -49,8 +51,7 @@ class YustFileHandlerManager {
   /// Uploads all cached files. Should be started after device restart
   /// creates for each unique linkedDocPath + linkedDocAttribute address a fileHandler
   Future<void> uploadCachedFiles() async {
-    var cachedFiles =
-        await YustFileHandler.loadCachedFiles();
+    var cachedFiles = await YustFileHandler.loadCachedFiles();
     while (cachedFiles.isNotEmpty) {
       var file = cachedFiles.first;
       var fileHandler = createFileHandler(
@@ -59,9 +60,11 @@ class YustFileHandlerManager {
         linkedDocPath: file.linkedDocPath,
       );
 
-      cachedFiles.removeWhere((YustFile f) =>
-          f.linkedDocAttribute == file.linkedDocAttribute &&
-          f.linkedDocPath == file.linkedDocPath);
+      cachedFiles.removeWhere(
+        (YustFile f) =>
+            f.linkedDocAttribute == file.linkedDocAttribute &&
+            f.linkedDocPath == file.linkedDocPath,
+      );
       await fileHandler.updateFiles([]);
       fileHandler.startUploadingCachedFiles();
     }

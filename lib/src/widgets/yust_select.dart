@@ -10,7 +10,8 @@ class YustSelect<T> extends StatelessWidget {
   final T value;
   final List<T> optionValues;
   final List<String> optionLabels;
-    /// Optional list of widgets to be displayed before the label.
+
+  /// Optional list of widgets to be displayed before the label.
   final List<Widget>? prefixWidgets;
   final void Function(T)? onSelected;
   final DeleteCallback? onDelete;
@@ -26,12 +27,13 @@ class YustSelect<T> extends StatelessWidget {
   final bool allowSearch;
   final AutovalidateMode? autovalidateMode;
   final bool showHighlightFocus;
+
   /// A function to compare two values of type [T].
   /// It is used to find the index of the value in the optionValues list.
   /// If null, the default equality check is used.
   final bool Function(T a, T b)? optionEquals;
   final bool Function(T) _isSelectable;
-   // The Icon to be displayed in front of the selected value
+  // The Icon to be displayed in front of the selected value
   final IconData? prefixValueIcon;
 
   /// The color of the prefix value icon
@@ -82,19 +84,19 @@ class YustSelect<T> extends StatelessWidget {
       minLines: minLines,
       prefixLabelIcon: prefixValueIcon,
       prefixLabelIconColor: prefixValueIconColor,
-      onTap:
-          (onSelected == null || readOnly) ? null : () => _selectValue(context),
+      onTap: (onSelected == null || readOnly)
+          ? null
+          : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
     );
   }
 
   String _valueCaption(T value) {
     int index;
-    if(optionEquals != null){
-      index = optionValues.indexWhere((o) => optionEquals!(o,value));
-    } else{
-
-     index = optionValues.indexOf(value);
+    if (optionEquals != null) {
+      index = optionValues.indexWhere((o) => optionEquals!(o, value));
+    } else {
+      index = optionValues.indexOf(value);
     }
 
     if (index == -1) {
@@ -125,7 +127,8 @@ class YustSelect<T> extends StatelessWidget {
     final enabledOptionLabels = optionLabels
         .whereIndexed((index, value) => _isSelectable(optionValues[index]))
         .toList();
-    final enabledPrefixWidgets = prefixWidgets?.whereIndexed((index, value) => _isSelectable(optionValues[index]))
+    final enabledPrefixWidgets = prefixWidgets
+        ?.whereIndexed((index, value) => _isSelectable(optionValues[index]))
         .toList();
 
     return AlertDialog(
@@ -151,6 +154,4 @@ class YustSelect<T> extends StatelessWidget {
       ),
     );
   }
-
-
 }

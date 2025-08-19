@@ -1,3 +1,8 @@
+## 3.29.0 - 2025-08-20
+
+-   Upgrade to newest flutter version
+-   Update dependencies
+
 ## 3.28.5 - 2025-08-20
 
 -   Add custom comparable option support to YustSelect with `optionEquals` parameter

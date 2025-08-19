@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 
@@ -17,9 +18,6 @@ import 'yust_file_picker.dart';
 import 'yust_image_picker.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_grid_view.dart';
-
-// ignore: depend_on_referenced_packages
-import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 
 /// Base class for file pickers.
 ///
@@ -118,8 +116,11 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   static const defaultNumberOfFiles = 2;
 }
 
-abstract class YustFilePickerBaseState<T extends YustFile,
-        W extends YustFilePickerBase<T>> extends State<W>
+abstract class YustFilePickerBaseState<
+  T extends YustFile,
+  W extends YustFilePickerBase<T>
+>
+    extends State<W>
     with AutomaticKeepAliveClientMixin {
   late YustFileHandler _fileHandler;
   late bool _enabled;
@@ -212,10 +213,9 @@ abstract class YustFilePickerBaseState<T extends YustFile,
 
   /// Get the currently visible files based on how they are displayed.
   @nonVirtual
-  List<T> getVisibleFiles({List<T>? files}) =>
-      sortFiles(convertFiles(files ?? _fileHandler.getFiles()))
-          .take(currentDisplayCount)
-          .toList();
+  List<T> getVisibleFiles({List<T>? files}) => sortFiles(
+    convertFiles(files ?? _fileHandler.getFiles()),
+  ).take(currentDisplayCount).toList();
 
   /// Create a database entry for the files.
   @nonVirtual
@@ -223,7 +223,8 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     try {
       if (widget.linkedDocPath != null &&
           !_fileHandler.existsDocData(
-              await _fileHandler.getFirebaseDoc(widget.linkedDocPath!))) {
+            await _fileHandler.getFirebaseDoc(widget.linkedDocPath!),
+          )) {
         widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
       }
       // ignore: empty_catches
@@ -234,10 +235,12 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   @nonVirtual
   Future<bool> checkConnectivity() async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none &&
+    if (connectivityResult.every((e) => e == ConnectivityResult.none) &&
         (widget.linkedDocPath == null || widget.linkedDocAttribute == null)) {
-      await YustUi.alertService.showAlert(LocaleKeys.missingConnection.tr(),
-          LocaleKeys.alertMissingConnectionAddImages.tr());
+      await YustUi.alertService.showAlert(
+        LocaleKeys.missingConnection.tr(),
+        LocaleKeys.alertMissingConnectionAddImages.tr(),
+      );
       return false;
     }
     return true;
@@ -257,7 +260,9 @@ abstract class YustFilePickerBaseState<T extends YustFile,
       color: Colors.white,
       onPressed: () async {
         await YustUi.alertService.showAlert(
-            LocaleKeys.localFile.tr(), LocaleKeys.alertLocalFile.tr());
+          LocaleKeys.localFile.tr(),
+          LocaleKeys.alertLocalFile.tr(),
+        );
       },
     );
   }
@@ -348,8 +353,9 @@ abstract class YustFilePickerBaseState<T extends YustFile,
         below: buildFileDisplay(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await _handleDroppedFiles<DropzoneFileInterface>(ev ?? [],
-              (fileData) async {
+          await _handleDroppedFiles<DropzoneFileInterface>(ev ?? [], (
+            fileData,
+          ) async {
             final data = await controller.getFileData(fileData);
             return (fileData.name.toString(), null, data);
           });
@@ -372,25 +378,25 @@ abstract class YustFilePickerBaseState<T extends YustFile,
   ///
   /// Contains the control buttons etc
   Widget _buildSuffixChild(BuildContext context) => Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: _selecting
-            ? [
-                _buildSelectAllButton(),
-                _buildCancelSelectionButton(),
-                if (widget.allowMultiSelectDownload)
-                  _buildDownloadSelectedButton(context),
-                if (widget.allowMultiSelectDeletion)
-                  _buildDeleteSelectedButton(context),
-              ]
-            : [
-                if ((widget.allowMultiSelectDownload ||
-                        widget.allowMultiSelectDeletion) &&
-                    _fileHandler.getFiles().length > 1)
-                  _buildStartSelectionButton(),
-                ...buildActionButtons(context),
-                if (widget.suffixIcon != null) widget.suffixIcon!,
-              ],
-      );
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: _selecting
+        ? [
+            _buildSelectAllButton(),
+            _buildCancelSelectionButton(),
+            if (widget.allowMultiSelectDownload)
+              _buildDownloadSelectedButton(context),
+            if (widget.allowMultiSelectDeletion)
+              _buildDeleteSelectedButton(context),
+          ]
+        : [
+            if ((widget.allowMultiSelectDownload ||
+                    widget.allowMultiSelectDeletion) &&
+                _fileHandler.getFiles().length > 1)
+              _buildStartSelectionButton(),
+            ...buildActionButtons(context),
+            if (widget.suffixIcon != null) widget.suffixIcon!,
+          ],
+  );
 
   /// Build the select all button.
   Widget _buildSelectAllButton() {
@@ -485,11 +491,11 @@ abstract class YustFilePickerBaseState<T extends YustFile,
       tooltip: LocaleKeys.download.tr(),
       onPressed:
           _selectedFiles.isNotEmpty && widget.onMultiSelectDownload != null
-              ? () {
-                  widget.onMultiSelectDownload!(List<T>.of(_selectedFiles));
-                  _cancelSelection();
-                }
-              : null,
+          ? () {
+              widget.onMultiSelectDownload!(List<T>.of(_selectedFiles));
+              _cancelSelection();
+            }
+          : null,
     );
   }
 
@@ -510,8 +516,9 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     final confirmed = await YustUi.alertService.showConfirmation(
       LocaleKeys.confirmationNeeded.tr(),
       LocaleKeys.delete.tr(),
-      description: LocaleKeys.alertConfirmDeleteSelectedFiles
-          .tr(namedArgs: {'count': _selectedFiles.length.toString()}),
+      description: LocaleKeys.alertConfirmDeleteSelectedFiles.tr(
+        namedArgs: {'count': _selectedFiles.length.toString()},
+      ),
     );
     if (confirmed != true) return;
 
@@ -529,11 +536,14 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     // Tried to upload so many files that the overall limit will be exceeded
     if (!widget.overwriteSingleFile &&
         widget.files.length + fileElements.length > numberOfFiles) {
-      unawaited(YustUi.alertService.showAlert(
-        LocaleKeys.fileUpload.tr(),
-        LocaleKeys.fileLimitWillExceed
-            .tr(namedArgs: {'limit': widget.numberOfFiles.toString()}),
-      ));
+      unawaited(
+        YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.fileLimitWillExceed.tr(
+            namedArgs: {'limit': widget.numberOfFiles.toString()},
+          ),
+        ),
+      );
       return false;
     }
 
@@ -541,18 +551,23 @@ abstract class YustFilePickerBaseState<T extends YustFile,
     // more than one file is already uploaded
     if (widget.overwriteSingleFile &&
         (fileElements.length > 1 || widget.files.length > 1)) {
-      unawaited(YustUi.alertService.showAlert(
-        LocaleKeys.fileUpload.tr(),
-        LocaleKeys.fileLimitWillExceed
-            .tr(namedArgs: {'limit': widget.numberOfFiles.toString()}),
-      ));
+      unawaited(
+        YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.fileLimitWillExceed.tr(
+            namedArgs: {'limit': widget.numberOfFiles.toString()},
+          ),
+        ),
+      );
       return false;
     }
 
     // Upload one file when overwriting is enabled
     if (widget.overwriteSingleFile && widget.files.isNotEmpty) {
       final confirmed = await YustUi.alertService.showConfirmation(
-          LocaleKeys.alertConfirmOverwriteFile.tr(), LocaleKeys.continue_.tr());
+        LocaleKeys.alertConfirmOverwriteFile.tr(),
+        LocaleKeys.continue_.tr(),
+      );
       return confirmed ?? false;
     }
 
@@ -577,8 +592,10 @@ abstract class YustFilePickerBaseState<T extends YustFile,
 
         await uploadFile(file: newFile);
       } catch (e) {
-        await YustUi.alertService
-            .showAlert(LocaleKeys.error.tr(), e.toString());
+        await YustUi.alertService.showAlert(
+          LocaleKeys.error.tr(),
+          e.toString(),
+        );
       }
     }
   }

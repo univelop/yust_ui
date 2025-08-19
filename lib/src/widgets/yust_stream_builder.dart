@@ -35,8 +35,11 @@ class YustStreamBuilder<T extends YustDoc> extends StatelessWidget {
         }
         if (insights.status == YustBuilderStatus.error && showLoadingSpinner) {
           return Center(
-              child: Text(LocaleKeys.errorDuringLoading.tr(),
-                  style: const TextStyle(color: Colors.red)));
+            child: Text(
+              LocaleKeys.errorDuringLoading.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
         var doc = snapshot.data;
         if (doc == null && createIfNull) {

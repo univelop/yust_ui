@@ -39,10 +39,13 @@ class YustAccountScreen extends StatelessWidget {
                       color: Theme.of(context).colorScheme.secondary,
                       size: 100.0,
                     ),
-                    Text('${user.firstName} ${user.lastName}',
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
-                            fontSize: 20.0)),
+                    Text(
+                      '${user.firstName} ${user.lastName}',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 20.0,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -55,8 +58,9 @@ class YustAccountScreen extends StatelessWidget {
                 ),
                 title: Text(
                   LocaleKeys.personalData.tr(),
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.secondary),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
                 onTap: () {
                   Navigator.pushNamed(context, YustAccountEditScreen.routeName);
@@ -71,8 +75,9 @@ class YustAccountScreen extends StatelessWidget {
                 ),
                 title: Text(
                   LocaleKeys.signOut.tr(),
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.secondary),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
                 onTap: () {
                   Yust.authService.signOut();

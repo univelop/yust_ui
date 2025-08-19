@@ -27,7 +27,7 @@ class YustFocusableBuilder extends StatefulWidget {
     this.skipFocus = false,
     String? focusNodeDebugLabel,
   }) : focusNodeDebugLabel =
-            focusNodeDebugLabel ?? 'yust-focusable-builder-$key';
+           focusNodeDebugLabel ?? 'yust-focusable-builder-$key';
 
   ///  A callback function that is triggered when the widget has its focus and the action intent is triggered. But it is only triggered when no other action is defined.
   final Function()? onFocusAction;
@@ -84,14 +84,18 @@ class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
   Widget build(BuildContext context) {
     return FocusableActionDetector(
       focusNode: _focusNode,
-      actions: widget.actions ??
+      actions:
+          widget.actions ??
           {
-            ActivateIntent: CallbackAction<Intent>(onInvoke: (_) {
-              if (widget.shouldHighlightFocusedWidget) _focusNode.unfocus();
-              return widget.onFocusAction?.call();
-            }),
+            ActivateIntent: CallbackAction<Intent>(
+              onInvoke: (_) {
+                if (widget.shouldHighlightFocusedWidget) _focusNode.unfocus();
+                return widget.onFocusAction?.call();
+              },
+            ),
           },
-      shortcuts: widget.shortcuts ??
+      shortcuts:
+          widget.shortcuts ??
           <LogicalKeySet, Intent>{
             LogicalKeySet(LogicalKeyboardKey.enter): const ActivateIntent(),
           },
@@ -99,9 +103,10 @@ class _YustFocusableBuilderState extends State<YustFocusableBuilder> {
         children: [
           if (widget.shouldHighlightFocusedWidget && _focusNode.hasFocus)
             Positioned.fill(
-                child: ColoredBox(
-              color: Colors.black.withValues(alpha: .1),
-            )),
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: .1),
+              ),
+            ),
           Builder(
             builder: widget.builder,
           ),

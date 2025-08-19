@@ -5,3 +5,7 @@ linter:
         # Always await, intentionally not await
         unawaited_futures: true
         prefer_single_quotes: true
+
+# Disable the new dart 3.8 formatter auto-inserting trailing commas
+formatter:
+    trailing_commas: preserve

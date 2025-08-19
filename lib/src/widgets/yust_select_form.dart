@@ -17,6 +17,7 @@ class YustSelectForm<T> extends StatefulWidget {
   final List<T> optionValues;
   final List<String> optionLabels;
   final List<T> selectedValues;
+
   /// Optional list of widgets to be displayed before the label.
   final List<Widget>? prefixWidgets;
   final bool disabled;
@@ -43,8 +44,8 @@ class YustSelectForm<T> extends StatefulWidget {
     this.allowSearch = true,
     this.optionListConstraints = const BoxConstraints(maxHeight: 300.0),
     this.autofocus = false,
-  })  : noOptionsText = noOptionsText ?? LocaleKeys.noOptions.tr(),
-        selectedValues = selectedValues ?? [];
+  }) : noOptionsText = noOptionsText ?? LocaleKeys.noOptions.tr(),
+       selectedValues = selectedValues ?? [];
 
   @override
   State<YustSelectForm<T>> createState() => _YustSelectFormState<T>();
@@ -101,8 +102,9 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
                 iconColor: Colors.grey,
                 hintText: widget.label == null
                     ? LocaleKeys.searching.tr()
-                    : LocaleKeys.searchingWithLabel
-                        .tr(namedArgs: {'label': widget.label ?? ''}),
+                    : LocaleKeys.searchingWithLabel.tr(
+                        namedArgs: {'label': widget.label ?? ''},
+                      ),
                 border: InputBorder.none,
               ),
               onChanged: (value) {
@@ -145,7 +147,8 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
                       if (widget.allowSearch && foundValues.isEmpty)
                         ListTile(
                           title: Center(
-                              child: Text(LocaleKeys.noOptionsFound.tr())),
+                            child: Text(LocaleKeys.noOptionsFound.tr()),
+                          ),
                           titleAlignment: ListTileTitleAlignment.center,
                         ),
                       ...foundValues.asMap().entries.map((entry) {
@@ -157,7 +160,9 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
                             return _listItemMultiple(foundValues, index);
                           case YustSelectFormType.singleWithoutIndicator:
                             return _listItemSingleNoIndicator(
-                                foundValues, index);
+                              foundValues,
+                              index,
+                            );
                         }
                       }),
                     ],
@@ -243,8 +248,9 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
       optionIndices[widget.optionValues[i]] = i;
     }
     widget.selectedValues.add(option);
-    widget.selectedValues
-        .sort((a, b) => optionIndices[a]!.compareTo(optionIndices[b]!));
+    widget.selectedValues.sort(
+      (a, b) => optionIndices[a]!.compareTo(optionIndices[b]!),
+    );
   }
 
   @override

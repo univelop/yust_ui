@@ -1,63 +1,62 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.28.5
+version: 3.29.0
 homepage: https://github.com/univelop/yust_ui
 
 environment:
-    sdk: '>=3.2.0 <4.0.0'
+    sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.28.5
-    cached_network_image: ^3.3.1
-    cloud_firestore: ^5.4.4
-    collection: ^1.18.0
-    connectivity_plus: ^5.0.2
-    crypto: ^3.0.1
-    dio: ^5.4.0
-    dotted_border: ^2.1.0
+    yust: ^3.29.0
+    cached_network_image: ^3.4.1
+    cloud_firestore: ^6.0.0
+    collection: ^1.19.1
+    connectivity_plus: ^6.1.5
+    crypto: ^3.0.6
+    dio: ^5.9.0
+    dotted_border: ^3.1.0
     file_picker: ^8.1.7
-    flutter_dropzone: ^4.2.0
-    flutter_dropzone_platform_interface: ^2.2.0
+    flutter_dropzone: ^4.2.1
     flutter_easyloading: ^3.0.5
     flutter_painter: ^1.0.1
-    http: ^1.1.2
+    http: ^1.5.0
     image_picker: ^1.1.2
     image: ^4.5.2
-    intl: ^0.19.0
-    mask_text_input_formatter: ^2.7.0
-    open_filex: ^4.3.4
-    path_provider: ^2.0.1
+    intl: ^0.20.2
+    mask_text_input_formatter: ^2.9.0
+    open_filex: ^4.7.0
+    path_provider: ^2.1.5
     photo_view: ^0.15.0
-    share_plus: ^7.2.1
-    shared_preferences: ^2.2.2
-    universal_html: ^2.0.8
-    url_launcher: ^6.2.2
-    firebase_ui_firestore: ^1.6.3
+    share_plus: ^11.1.0
+    shared_preferences: ^2.5.3
+    url_launcher: ^6.0.2
+    firebase_ui_firestore: ^2.0.0
     # Remove this, when the Samsung Keyboard Bug
     # (github.com/flutter/flutter/issues/61175) is resolved
     keyboard_name: ^0.0.1
-    permission_handler: ^11.3.1
-    geolocator: ^12.0.0
-    geocoding: ^3.0.0
+    permission_handler: ^12.0.1
+    geolocator: ^14.0.2
+    geocoding: ^4.0.0
+    web: ^1.1.1
 
 dev_dependencies:
-    flutter_lints: ^3.0.1
-    test: ^1.24.9
+    flutter_lints: ^6.0.0
+    test: ^1.25.15
     build_runner: ^2.4.7
-    json_serializable: 6.8.0
 
 dependency_overrides:
     # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
             url: https://github.com/Zazo032/flutter_painter.git
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust.git
-    #         ref: master
+    # Remove this, when new version is released
     keyboard_name:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
+    # yust:
+    #     git:
+    #         url: https://github.com/univelop/yust.git
+    #         ref: master

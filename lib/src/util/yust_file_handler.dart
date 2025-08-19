@@ -73,8 +73,10 @@ class YustFileHandler {
     return newestFirst ? list.reversed.toList() : list;
   }
 
-  Future<void> updateFiles(List<YustFile> onlineFiles,
-      {bool loadFiles = false}) async {
+  Future<void> updateFiles(
+    List<YustFile> onlineFiles, {
+    bool loadFiles = false,
+  }) async {
     final copyOnlineFiles = List<YustFile>.from(onlineFiles);
     _removeLocalDeletedFiles(copyOnlineFiles);
     _removeOnlineDeletedFiles(copyOnlineFiles);
@@ -110,8 +112,9 @@ class YustFileHandler {
       }
       return false;
     });
-    _recentlyDeletedFileUrls
-        .removeWhere((f) => !copyRecentlyDeletedFiles.contains(f));
+    _recentlyDeletedFileUrls.removeWhere(
+      (f) => !copyRecentlyDeletedFiles.contains(f),
+    );
   }
 
   void _loadFiles() {
@@ -122,8 +125,11 @@ class YustFileHandler {
     }
   }
 
-  void _mergeOnlineFiles(List<YustFile> yustFiles, List<YustFile> onlineFiles,
-      String storageFolderPath) async {
+  void _mergeOnlineFiles(
+    List<YustFile> yustFiles,
+    List<YustFile> onlineFiles,
+    String storageFolderPath,
+  ) async {
     for (var f in onlineFiles) {
       f.storageFolderPath = storageFolderPath;
     }
@@ -132,24 +138,32 @@ class YustFileHandler {
   }
 
   void _updateCachedFiles(
-      List<YustFile> yustFiles, List<YustFile> newYustFiles) {
+    List<YustFile> yustFiles,
+    List<YustFile> newYustFiles,
+  ) {
     for (var newYustFile in newYustFiles) {
-      var matchingFile = yustFiles
-          .firstWhereOrNull((yustFile) => _equalFiles(yustFile, newYustFile));
+      var matchingFile = yustFiles.firstWhereOrNull(
+        (yustFile) => _equalFiles(yustFile, newYustFile),
+      );
       if (matchingFile != null) {
         matchingFile.update(newYustFile);
       }
     }
   }
 
-  Future<void> _mergeCachedFiles(List<YustFile> yustFiles,
-      String? linkedDocPath, String? linkedDocAttribute) async {
+  Future<void> _mergeCachedFiles(
+    List<YustFile> yustFiles,
+    String? linkedDocPath,
+    String? linkedDocAttribute,
+  ) async {
     if (linkedDocPath != null && linkedDocAttribute != null) {
       var cachedFiles = await loadCachedFiles();
       cachedFiles = cachedFiles
-          .where((yustFile) =>
-              yustFile.linkedDocPath == linkedDocPath &&
-              yustFile.linkedDocAttribute == linkedDocAttribute)
+          .where(
+            (yustFile) =>
+                yustFile.linkedDocPath == linkedDocPath &&
+                yustFile.linkedDocAttribute == linkedDocAttribute,
+          )
           .toList();
 
       _mergeIntoYustFiles(yustFiles, cachedFiles);
@@ -164,8 +178,11 @@ class YustFileHandler {
     await _uploadFile(yustFile);
   }
 
-  Future<void> updateFile(YustFile yustFile,
-      {Uint8List? bytes, File? file}) async {
+  Future<void> updateFile(
+    YustFile yustFile, {
+    Uint8List? bytes,
+    File? file,
+  }) async {
     yustFile.bytes = bytes;
     yustFile.file = file;
     await _uploadFile(yustFile);
@@ -186,7 +203,7 @@ class YustFileHandler {
       await _deleteCachedInformations(yustFile);
     } else {
       final connectivityResult = await Connectivity().checkConnectivity();
-      if (connectivityResult == ConnectivityResult.none) {
+      if (connectivityResult.every((e) => e == ConnectivityResult.none)) {
         throw (LocaleKeys.missingConnection.tr());
       }
       try {
@@ -272,14 +289,18 @@ class YustFileHandler {
     } catch (e) {
       await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
-          LocaleKeys.oops.tr(),
-          LocaleKeys.alertCannotOpenFileWithError
-              .tr(namedArgs: {'error': e.toString()}));
+        LocaleKeys.oops.tr(),
+        LocaleKeys.alertCannotOpenFileWithError.tr(
+          namedArgs: {'error': e.toString()},
+        ),
+      );
     }
   }
 
   List<YustFile> yustFilesFromJson(
-      List<Map<String, String?>> jsonFiles, String storageFolderPath) {
+    List<Map<String, String?>> jsonFiles,
+    String storageFolderPath,
+  ) {
     return jsonFiles
         .map((f) => YustFile.fromJson(f)..storageFolderPath = storageFolderPath)
         .toList();
@@ -310,8 +331,9 @@ class YustFileHandler {
     yustFile.devicePath = '$devicePath${yustFile.name}';
 
     if (yustFile.bytes != null) {
-      yustFile.file =
-          await File(yustFile.devicePath!).writeAsBytes(yustFile.bytes!);
+      yustFile.file = await File(
+        yustFile.devicePath!,
+      ).writeAsBytes(yustFile.bytes!);
     } else if (yustFile.file != null) {
       await yustFile.file!.copy(yustFile.devicePath!);
     }
@@ -336,7 +358,7 @@ class YustFileHandler {
       throw (YustException(LocaleKeys.exceptionMissingStorageFolderPath.tr()));
     }
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.every((e) => e == ConnectivityResult.none)) {
       throw (LocaleKeys.missingConnection.tr());
     }
 
@@ -364,8 +386,8 @@ class YustFileHandler {
 
   Future<void> _addFileHash(YustFile yustFile) async {
     if (yustFile.file != null) {
-      yustFile.hash =
-          (await yustFile.file?.openRead().transform(md5).first).toString();
+      yustFile.hash = (await yustFile.file?.openRead().transform(md5).first)
+          .toString();
     } else {
       yustFile.hash = md5.convert(yustFile.bytes!.toList()).toString();
     }
@@ -395,9 +417,9 @@ class YustFileHandler {
 
     firestoreData ??= [fileData];
 
-    await FirebaseFirestore.instance
-        .doc(cachedFile.linkedDocPath!)
-        .update({cachedFile.linkedDocAttribute!: firestoreData});
+    await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
+      cachedFile.linkedDocAttribute!: firestoreData,
+    });
   }
 
   /// Get the existing file map for the given name (if it exists).
@@ -407,8 +429,9 @@ class YustFileHandler {
     if (yustFileOrYustFiles is Map) {
       result = yustFileOrYustFiles;
     } else if (yustFileOrYustFiles is List) {
-      result =
-          yustFileOrYustFiles.firstWhereOrNull((f) => f['name'] == fileName);
+      result = yustFileOrYustFiles.firstWhereOrNull(
+        (f) => f['name'] == fileName,
+      );
     }
     if (result is Map) {
       return {...result};
@@ -433,7 +456,8 @@ class YustFileHandler {
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getFirebaseDoc(
-      String linkedDocPath) async {
+    String linkedDocPath,
+  ) async {
     return await FirebaseFirestore.instance
         .doc(linkedDocPath)
         .get(const GetOptions(source: Source.server));
@@ -445,8 +469,10 @@ class YustFileHandler {
 
   Future<void> _deleteFileFromStorage(YustFile yustFile) async {
     if (yustFile.storageFolderPath != null) {
-      await Yust.fileService
-          .deleteFile(path: yustFile.storageFolderPath!, name: yustFile.name!);
+      await Yust.fileService.deleteFile(
+        path: yustFile.storageFolderPath!,
+        name: yustFile.name!,
+      );
     }
   }
 
@@ -469,11 +495,13 @@ class YustFileHandler {
     var temporaryJsonFiles = preferences.getString('YustCachedFiles') ?? '[]';
 
     var cachedFiles = <YustFile>[];
-    jsonDecode(temporaryJsonFiles).forEach((dynamic fileJson) =>
-        cachedFiles.add((fileJson is Map<String, dynamic> &&
-                fileJson['type'] == YustImage.type)
+    jsonDecode(temporaryJsonFiles).forEach(
+      (dynamic fileJson) => cachedFiles.add(
+        (fileJson is Map<String, dynamic> && fileJson['type'] == YustImage.type)
             ? YustImage.fromLocalJson(fileJson)
-            : YustFile.fromLocalJson(fileJson)));
+            : YustFile.fromLocalJson(fileJson),
+      ),
+    );
 
     return cachedFiles;
   }
@@ -484,9 +512,11 @@ class YustFileHandler {
     var cachedFiles = await loadCachedFiles();
 
     // only change the files from THIS file handler (identity: linkedDocPath and -Attribute)
-    cachedFiles.removeWhere(((yustFile) =>
-        yustFile.linkedDocPath == linkedDocPath &&
-        yustFile.linkedDocAttribute == linkedDocAttribute));
+    cachedFiles.removeWhere(
+      ((yustFile) =>
+          yustFile.linkedDocPath == linkedDocPath &&
+          yustFile.linkedDocAttribute == linkedDocAttribute),
+    );
     cachedFiles.addAll(yustFiles);
 
     var jsonFiles = cachedFiles.map((file) => file.toLocalJson()).toList();
@@ -509,8 +539,9 @@ class YustFileHandler {
     var cachedFiles = getCachedFiles();
     // Checks if all required database addresses are initialized.
     for (var cachedFile in cachedFiles) {
-      final doc =
-          await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).get();
+      final doc = await FirebaseFirestore.instance
+          .doc(cachedFile.linkedDocPath!)
+          .get();
       if (!doc.exists || doc.data() == null) {
         await deleteFile(cachedFile);
       }

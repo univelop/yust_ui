@@ -27,56 +27,61 @@ class YustAccountEditScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(title: Text(LocaleKeys.personalData.tr())),
         body: YustDocBuilder<YustUser>(
-            modelSetup: Yust.userSetup,
-            id: Yust.authService.getCurrentUserId(),
-            builder: (user, insights, context) {
-              if (user == null) {
-                return Center(
-                  child: Text(LocaleKeys.inProgress.tr()),
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.only(top: 20.0),
-                children: <Widget>[
-                  _buildGender(context, user),
-                  YustTextField(
-                    label: LocaleKeys.firstName.tr(),
-                    value: user.firstName,
-                    validator: (value) {
-                      if (value == null || value == '') {
-                        return LocaleKeys.validationFirstName.tr();
-                      } else {
-                        return null;
-                      }
-                    },
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    onEditingComplete: (value) async {
-                      user.firstName = value!; // value was checked by validator
-                      await Yust.databaseService
-                          .saveDoc<YustUser>(Yust.userSetup, user);
-                    },
-                  ),
-                  YustTextField(
-                    label: LocaleKeys.lastName.tr(),
-                    value: user.lastName,
-                    validator: (value) {
-                      if (value == null || value == '') {
-                        return LocaleKeys.validationLastName.tr();
-                      } else {
-                        return null;
-                      }
-                    },
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    onEditingComplete: (value) async {
-                      user.lastName = value!; // value was checked by validator
-                      await Yust.databaseService
-                          .saveDoc<YustUser>(Yust.userSetup, user);
-                    },
-                  ),
-                  ..._buildAuthenticationMethod(user, context),
-                ],
+          modelSetup: Yust.userSetup,
+          id: Yust.authService.getCurrentUserId(),
+          builder: (user, insights, context) {
+            if (user == null) {
+              return Center(
+                child: Text(LocaleKeys.inProgress.tr()),
               );
-            }),
+            }
+            return ListView(
+              padding: const EdgeInsets.only(top: 20.0),
+              children: <Widget>[
+                _buildGender(context, user),
+                YustTextField(
+                  label: LocaleKeys.firstName.tr(),
+                  value: user.firstName,
+                  validator: (value) {
+                    if (value == null || value == '') {
+                      return LocaleKeys.validationFirstName.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onEditingComplete: (value) async {
+                    user.firstName = value!; // value was checked by validator
+                    await Yust.databaseService.saveDoc<YustUser>(
+                      Yust.userSetup,
+                      user,
+                    );
+                  },
+                ),
+                YustTextField(
+                  label: LocaleKeys.lastName.tr(),
+                  value: user.lastName,
+                  validator: (value) {
+                    if (value == null || value == '') {
+                      return LocaleKeys.validationLastName.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onEditingComplete: (value) async {
+                    user.lastName = value!; // value was checked by validator
+                    await Yust.databaseService.saveDoc<YustUser>(
+                      Yust.userSetup,
+                      user,
+                    );
+                  },
+                ),
+                ..._buildAuthenticationMethod(user, context),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -91,7 +96,7 @@ class YustAccountEditScreen extends StatelessWidget {
       optionValues: const [YustGender.male, YustGender.female],
       optionLabels: [
         LocaleKeys.salutationMale.tr(),
-        LocaleKeys.salutationFemale.tr()
+        LocaleKeys.salutationFemale.tr(),
       ],
       onSelected: (dynamic value) {
         user.gender = value;
@@ -134,39 +139,47 @@ class YustAccountEditScreen extends StatelessWidget {
                   child: Text(
                     LocaleKeys.save.tr(),
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary),
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                   onPressed: () async {
                     final navigator = Navigator.of(context);
                     try {
                       if (email == null || password == null) {
                         throw Exception(
-                            LocaleKeys.exceptionMissingEmailOrPassword.tr());
+                          LocaleKeys.exceptionMissingEmailOrPassword.tr(),
+                        );
                       }
                       await EasyLoading.show(
-                          status: LocaleKeys.changingEmail.tr());
+                        status: LocaleKeys.changingEmail.tr(),
+                      );
                       await Yust.authService.changeEmail(email!, password!);
                       unawaited(EasyLoading.dismiss());
 
                       navigator.pop();
                       await YustUi.alertService.showAlert(
-                          LocaleKeys.changedEmail.tr(),
-                          LocaleKeys.alertChangedEmail.tr());
+                        LocaleKeys.changedEmail.tr(),
+                        LocaleKeys.alertChangedEmail.tr(),
+                      );
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
-                      await YustUi.alertService
-                          .showAlert(LocaleKeys.error.tr(), err.message!);
+                      await YustUi.alertService.showAlert(
+                        LocaleKeys.error.tr(),
+                        err.message!,
+                      );
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
-                      await YustUi.alertService
-                          .showAlert(LocaleKeys.error.tr(), err.toString());
+                      await YustUi.alertService.showAlert(
+                        LocaleKeys.error.tr(),
+                        err.toString(),
+                      );
                     }
                   },
                 ),
               ],
-            )
+            ),
           ],
         );
       },
@@ -189,7 +202,7 @@ class YustAccountEditScreen extends StatelessWidget {
           obscureText: true,
           readOnly: true,
           onTap: () => _changePassword(context),
-        )
+        ),
       ];
     }
     return [
@@ -197,7 +210,7 @@ class YustAccountEditScreen extends StatelessWidget {
         label: LocaleKeys.signInVia.tr(),
         value: authMethod.label,
         readOnly: true,
-      )
+      ),
     ];
   }
 
@@ -236,39 +249,49 @@ class YustAccountEditScreen extends StatelessWidget {
                   child: Text(
                     LocaleKeys.save.tr(),
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary),
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                   onPressed: () async {
                     final navigator = Navigator.of(context);
                     try {
                       if (newPassword == null || oldPassword == null) {
                         throw Exception(
-                            LocaleKeys.exceptionMissingNewOrOldPassword.tr());
+                          LocaleKeys.exceptionMissingNewOrOldPassword.tr(),
+                        );
                       }
                       await EasyLoading.show(
-                          status: LocaleKeys.changingPassword.tr());
-                      await Yust.authService
-                          .changePassword(newPassword!, oldPassword!);
+                        status: LocaleKeys.changingPassword.tr(),
+                      );
+                      await Yust.authService.changePassword(
+                        newPassword!,
+                        oldPassword!,
+                      );
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
                       await YustUi.alertService.showAlert(
-                          LocaleKeys.changedPassword.tr(),
-                          LocaleKeys.alertChangedPassword.tr());
+                        LocaleKeys.changedPassword.tr(),
+                        LocaleKeys.alertChangedPassword.tr(),
+                      );
                     } on PlatformException catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
-                      await YustUi.alertService
-                          .showAlert(LocaleKeys.error.tr(), err.message!);
+                      await YustUi.alertService.showAlert(
+                        LocaleKeys.error.tr(),
+                        err.message!,
+                      );
                     } catch (err) {
                       unawaited(EasyLoading.dismiss());
                       navigator.pop();
-                      await YustUi.alertService
-                          .showAlert(LocaleKeys.error.tr(), err.toString());
+                      await YustUi.alertService.showAlert(
+                        LocaleKeys.error.tr(),
+                        err.toString(),
+                      );
                     }
                   },
                 ),
               ],
-            )
+            ),
           ],
         );
       },

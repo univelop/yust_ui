@@ -57,7 +57,7 @@ class YustTextField extends StatefulWidget {
   /// When value is set, text field is in error state; and display this text
   final String? forceErrorText;
 
-  // The Icon to be displayed in front of the label 
+  // The Icon to be displayed in front of the label
   final IconData? prefixLabelIcon;
 
   /// The color of the prefix label icon
@@ -127,8 +127,9 @@ class _YustTextFieldState extends State<YustTextField>
     if (widget.onEditingComplete == null) return;
     if (widget.readOnly) return;
 
-    final textFieldText =
-        widget.notTrim ? _controller.value.text : _controller.value.text.trim();
+    final textFieldText = widget.notTrim
+        ? _controller.value.text
+        : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null ||
@@ -148,7 +149,8 @@ class _YustTextFieldState extends State<YustTextField>
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode = widget.focusNode ??
+    _focusNode =
+        widget.focusNode ??
         FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
@@ -271,22 +273,25 @@ class _YustTextFieldState extends State<YustTextField>
       decoration: InputDecoration(
         prefix: widget.prefixLabelIcon != null
             ? Padding(
-              padding: const EdgeInsets.only(right:4.0),
-              child: Icon(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: Icon(
                   widget.prefixLabelIcon,
-                  color: widget.prefixLabelIconColor ??
+                  color:
+                      widget.prefixLabelIconColor ??
                       Theme.of(context).textTheme.bodySmall?.color ??
                       Colors.black,
-                      size: 12.0,
+                  size: 12.0,
                 ),
-            )
+              )
             : null,
         counter: const SizedBox.shrink(),
         labelText: label.isNotEmpty ? label : null,
-        labelStyle: widget.labelStyle ??
+        labelStyle:
+            widget.labelStyle ??
             (widget.readOnly
                 ? TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color ??
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
                         Colors.black,
                   )
                 : null),
@@ -304,27 +309,29 @@ class _YustTextFieldState extends State<YustTextField>
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,
-      maxLengthEnforcement:
-          widget.maxLength != null ? MaxLengthEnforcement.enforced : null,
+      maxLengthEnforcement: widget.maxLength != null
+          ? MaxLengthEnforcement.enforced
+          : null,
       maxLines: widget.expands
           ? null
           : widget.obscureText
-              ? 1
-              : widget.maxLines,
+          ? 1
+          : widget.maxLines,
       minLines: widget.expands ? null : widget.minLines,
       expands: widget.expands,
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
-      textInputAction: widget.textInputAction ??
+      textInputAction:
+          widget.textInputAction ??
           (widget.minLines != null
               ? TextInputAction.newline
               : TextInputAction.next),
       onChanged: widget.onChanged == null
           ? null
           : (value) => widget.onChanged!(
-                value == '' ? null : (widget.notTrim ? value : value.trim()),
-              ),
+              value == '' ? null : (widget.notTrim ? value : value.trim()),
+            ),
       onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -335,7 +342,8 @@ class _YustTextFieldState extends State<YustTextField>
       textCapitalization: widget.textCapitalization,
       inputFormatters: widget.inputFormatters,
       smartQuotesType: widget.smartQuotesType,
-      autovalidateMode: widget.autovalidateMode ??
+      autovalidateMode:
+          widget.autovalidateMode ??
           (widget.validator != null
               ? AutovalidateMode.onUserInteraction
               : null),
