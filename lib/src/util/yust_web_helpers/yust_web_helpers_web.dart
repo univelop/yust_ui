@@ -6,7 +6,7 @@ import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers_interface.dar
 import 'package:web/web.dart' as web;
 import 'dart:js_interop' as js;
 
-class YustWebHelpersWeb implements YustWebHelpersInterface {
+class YustWebHelpers implements YustWebHelpersInterface {
   @override
   void replaceUrl(String path) {
     web.window.history.replaceState(null, '', path);
@@ -23,15 +23,18 @@ class YustWebHelpersWeb implements YustWebHelpersInterface {
   }
 
   @override
-  Future<Uint8List> resizeImage(
-      {required String name,
-      required Uint8List bytes,
-      required int maxWidth,
-      required int quality}) async {
+  Future<Uint8List> resizeImage({
+    required String name,
+    required Uint8List bytes,
+    required int maxWidth,
+    required int quality,
+  }) async {
     var base64 = base64Encode(bytes);
     var newImg = web.HTMLImageElement();
-    var mimeType =
-        'image/${name.split('.').last.toLowerCase()}'.replaceAll('jpg', 'jpeg');
+    var mimeType = 'image/${name.split('.').last.toLowerCase()}'.replaceAll(
+      'jpg',
+      'jpeg',
+    );
     newImg.src = 'data:$mimeType;base64,$base64';
 
     await newImg.onLoad.first;
@@ -55,7 +58,10 @@ class YustWebHelpersWeb implements YustWebHelpersInterface {
     ctx.drawImage(newImg, 0, 0, width, height);
     final blobCompleter = Completer<web.Blob>();
     canvas.toBlob(
-        blobCompleter.complete.toJS, 'image/jpeg', (quality / 100).toJS);
+      blobCompleter.complete.toJS,
+      'image/jpeg',
+      (quality / 100).toJS,
+    );
     final blob = await blobCompleter.future;
 
     return await _getBlobData(blob);

@@ -24,14 +24,16 @@ class YustImageDrawingScreen extends StatefulWidget {
     required ImageProvider image,
     required void Function(Uint8List? image) onSave,
   }) {
-    unawaited(Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => YustImageDrawingScreen(
-          image: image,
-          onSave: onSave,
+    unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => YustImageDrawingScreen(
+            image: image,
+            onSave: onSave,
+          ),
         ),
       ),
-    ));
+    );
   }
 
   @override
@@ -105,66 +107,68 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size(double.infinity, kToolbarHeight),
-          // Listen to the controller and update the UI when it updates.
-          child: ValueListenableBuilder<PainterControllerValue>(
-              valueListenable: controller,
-              builder: (context, _, child) {
-                return AppBar(
-                  automaticallyImplyLeading: false,
-                  title: Row(
-                    children: [
-                      _buildUndo(),
-                      _buildRedo(),
-                    ],
-                  ),
-                  actions: [
-                    _buildSaveButton(context),
-                    _buildDiscardButton(context),
-                  ],
-                );
-              }),
-        ),
-        body: Stack(
-          children: [
-            _buildImage(),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              left: 0,
-              child: ValueListenableBuilder(
-                valueListenable: controller,
-                builder: (context, _, __) => Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: _buildSettings(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: ValueListenableBuilder(
+      appBar: PreferredSize(
+        preferredSize: const Size(double.infinity, kToolbarHeight),
+        // Listen to the controller and update the UI when it updates.
+        child: ValueListenableBuilder<PainterControllerValue>(
           valueListenable: controller,
-          builder: (context, _, __) => Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: SafeArea(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+          builder: (context, _, child) {
+            return AppBar(
+              automaticallyImplyLeading: false,
+              title: Row(
                 children: [
-                  _buildFreeStyleDrawing(context),
-                  _buildAddText(context),
-                  _buildAddShapes(context),
-                  _buildFreeStyleEraser(context),
-                  _buildOpenSettings(context),
+                  _buildUndo(),
+                  _buildRedo(),
+                ],
+              ),
+              actions: [
+                _buildSaveButton(context),
+                _buildDiscardButton(context),
+              ],
+            );
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          _buildImage(),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            left: 0,
+            child: ValueListenableBuilder(
+              valueListenable: controller,
+              builder: (context, _, _) => Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: _buildSettings(),
+                  ),
                 ],
               ),
             ),
           ),
-        ));
+        ],
+      ),
+      bottomNavigationBar: ValueListenableBuilder(
+        valueListenable: controller,
+        builder: (context, _, _) => Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildFreeStyleDrawing(context),
+                _buildAddText(context),
+                _buildAddShapes(context),
+                _buildFreeStyleEraser(context),
+                _buildOpenSettings(context),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildUndo() {
@@ -244,15 +248,17 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
             Row(
               children: [
                 Expanded(flex: 2, child: Text(LocaleKeys.strokeWidth.tr())),
-                ...StrokeWidth.values
-                    .map((value) => _buildStrokeWidthSetting(value)),
+                ...StrokeWidth.values.map(
+                  (value) => _buildStrokeWidthSetting(value),
+                ),
               ],
             ),
             Row(
               children: [
                 Expanded(flex: 2, child: Text(LocaleKeys.color.tr())),
-                ...StrokeColor.values
-                    .map((value) => _buildStrokeColorSetting(value)),
+                ...StrokeColor.values.map(
+                  (value) => _buildStrokeColorSetting(value),
+                ),
               ],
             ),
           ],
@@ -288,7 +294,8 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   Widget _buildAddShapes(BuildContext context) {
     return PopupMenuButton<Shapes>(
       itemBuilder: (context) => Shapes.values
-          .map((e) => PopupMenuItem(
+          .map(
+            (e) => PopupMenuItem(
               value: e,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -299,7 +306,9 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
                   ),
                   Text(' ${e.getLabel()}'),
                 ],
-              )))
+              ),
+            ),
+          )
           .toList(),
       onSelected: _selectShape,
       child: Padding(
@@ -414,12 +423,16 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     });
 
     controller.freeStyleStrokeWidth = value.width;
-    _setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
-      strokeWidth: value.width,
-    ));
+    _setShapeFactoryPaint(
+      (controller.shapePaint ?? shapePaint).copyWith(
+        strokeWidth: value.width,
+      ),
+    );
     controller.textSettings = controller.textSettings.copyWith(
-        textStyle: controller.textSettings.textStyle
-            .copyWith(fontSize: value.textWidth));
+      textStyle: controller.textSettings.textStyle.copyWith(
+        fontSize: value.textWidth,
+      ),
+    );
   }
 
   void _setColor(StrokeColor strokeColorValue) {
@@ -428,11 +441,14 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
     });
 
     controller.freeStyleColor = strokeColor.color;
-    _setShapeFactoryPaint((controller.shapePaint ?? shapePaint).copyWith(
+    _setShapeFactoryPaint(
+      (controller.shapePaint ?? shapePaint).copyWith(
+        color: strokeColor.color,
+      ),
+    );
+    controller.textStyle = controller.textStyle.copyWith(
       color: strokeColor.color,
-    ));
-    controller.textStyle =
-        controller.textStyle.copyWith(color: strokeColor.color);
+    );
   }
 
   void _setShapeFactoryPaint(Paint paint) {
@@ -445,8 +461,9 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   void _selectShape(Shapes? selectedShape) {
     shape = selectedShape;
     if (shape != null) {
-      styleMode =
-          styleMode == StyleMode.shape ? StyleMode.none : StyleMode.shape;
+      styleMode = styleMode == StyleMode.shape
+          ? StyleMode.none
+          : StyleMode.shape;
       controller.freeStyleMode = _styleModeToFreeStyleMode(styleMode);
     }
     controller.shapeFactory = _getFactory(selectedShape);
@@ -483,7 +500,9 @@ class YustImageDrawingScreenState extends State<YustImageDrawingScreen> {
   Future<void> _renderAndDisplayImage() async {
     if (backgroundImage == null) return;
     final backgroundImageSize = Size(
-        backgroundImage!.width.toDouble(), backgroundImage!.height.toDouble());
+      backgroundImage!.width.toDouble(),
+      backgroundImage!.height.toDouble(),
+    );
 
     final image = await controller
         .renderImage(backgroundImageSize)

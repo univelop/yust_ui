@@ -88,19 +88,22 @@ class YustCachedImage extends StatelessWidget {
         width: width,
         height: height,
         imageUrl: file.url!,
-        maxWidthDiskCache:
-            !kIsWeb && (Platform.isAndroid || Platform.isIOS) ? 300 : null,
-        maxHeightDiskCache:
-            !kIsWeb && (Platform.isAndroid || Platform.isIOS) ? 300 : null,
+        maxWidthDiskCache: !kIsWeb && (Platform.isAndroid || Platform.isIOS)
+            ? 300
+            : null,
+        maxHeightDiskCache: !kIsWeb && (Platform.isAndroid || Platform.isIOS)
+            ? 300
+            : null,
         imageBuilder: (context, image) {
           return Image(
             image: image,
             fit: fit,
           );
         },
-        errorWidget: (context, _, __) => Image.asset(
-            placeholder ?? YustUi.imagePlaceholderPath!,
-            fit: BoxFit.cover),
+        errorWidget: (context, _, _) => Image.asset(
+          placeholder ?? YustUi.imagePlaceholderPath!,
+          fit: BoxFit.cover,
+        ),
         progressIndicatorBuilder: (context, url, downloadProgress) => Container(
           margin: const EdgeInsets.all(50),
           child: Center(
