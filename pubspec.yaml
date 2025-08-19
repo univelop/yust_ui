@@ -4,7 +4,7 @@ version: 3.28.4
 homepage: https://github.com/univelop/yust_ui
 
 environment:
-    sdk: '>=3.2.0 <4.0.0'
+    sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
     flutter:
