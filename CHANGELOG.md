@@ -1,3 +1,8 @@
+## 3.28.5 - 2025-08-20
+
+-   Add custom comparable option support to YustSelect with `optionEquals` parameter
+-   Add prefix label icon and widget support to input components
+
 ## 3.28.4 - 2025-08-08
 
 -   Update Yust dependency
