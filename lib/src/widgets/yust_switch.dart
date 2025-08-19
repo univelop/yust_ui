@@ -34,15 +34,16 @@ class YustSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final checkboxOrSwitchBuilder =
-        switchRepresentation == 'checkbox' ? _buildCheckbox : _buildSwitch;
+    final checkboxOrSwitchBuilder = switchRepresentation == 'checkbox'
+        ? _buildCheckbox
+        : _buildSwitch;
     if (slimDesign) return checkboxOrSwitchBuilder(context);
     return YustListTile(
       label: label,
       suffixChild: Row(
         children: [
           checkboxOrSwitchBuilder(context),
-          if (suffixIcon != null) suffixIcon!
+          if (suffixIcon != null) suffixIcon!,
         ],
       ),
       onTap: readOnly || onChanged == null

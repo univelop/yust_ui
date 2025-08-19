@@ -9,10 +9,10 @@ class YustWebHelpers implements YustWebHelpersInterface {
   void downloadData(String name, Uint8List? data) => throw UnimplementedError();
 
   @override
-  Future<Uint8List> resizeImage(
-          {required String name,
-          required Uint8List bytes,
-          required int maxWidth,
-          required int quality}) =>
-      throw UnimplementedError();
+  Future<Uint8List> resizeImage({
+    required String name,
+    required Uint8List bytes,
+    required int maxWidth,
+    required int quality,
+  }) => throw UnimplementedError();
 }

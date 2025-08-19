@@ -217,14 +217,20 @@ Future<Uint8List> _transformImage({
     }
 
     final resized = await YustUi.webHelpers.resizeImage(
-        name: name, bytes: bytes!, maxWidth: maxWidth, quality: quality);
+      name: name,
+      bytes: bytes!,
+      maxWidth: maxWidth,
+      quality: quality,
+    );
 
     return resized;
   }
 
   // On mobile, either file or bytes must be provided.
-  assert((file != null || bytes != null),
-      'file or bytes must not be null on mobile');
+  assert(
+    (file != null || bytes != null),
+    'file or bytes must not be null on mobile',
+  );
   Image? newImage;
 
   // Decode the image
@@ -344,8 +350,11 @@ void _drawTextOnImage({
   final font = arial48;
 
   // Calculate text sizes
-  final (width: unscaledWidth, height: unscaledHeight) =
-      _measureMultiline(font, text, lineSpacing);
+  final (width: unscaledWidth, height: unscaledHeight) = _measureMultiline(
+    font,
+    text,
+    lineSpacing,
+  );
   if (unscaledWidth == 0 || unscaledHeight == 0) return;
 
   final textCanvas = Image(width: unscaledWidth, height: unscaledHeight);
@@ -434,7 +443,10 @@ void _drawTextOnImage({
 
 /// Measures multi-line [text] separated by \n or \r, returns (width, height)
 ({int width, int height}) _measureMultiline(
-    BitmapFont font, String text, int lineSpacing) {
+  BitmapFont font,
+  String text,
+  int lineSpacing,
+) {
   var maxWidth = 0;
   var totalHeight = 0;
 
@@ -519,46 +531,54 @@ Future<void> _setImageExifData({
   if (setGPSToLocation && position != null) {
     // Check if GPS tags are set by the camera
     if (exif.gpsIfd['GPSLatitude'] == null) {
-      exif.gpsIfd['GPSLatitudeRef'] =
-          IfdValueAscii(position.latitude > 0 ? 'N' : 'S');
+      exif.gpsIfd['GPSLatitudeRef'] = IfdValueAscii(
+        position.latitude > 0 ? 'N' : 'S',
+      );
       exif.gpsIfd['GPSLatitude'] = _dDtoDMS(position.latitude);
-      exif.gpsIfd['GPSLongitudeRef'] =
-          IfdValueAscii(position.longitude > 0 ? 'E' : 'W');
+      exif.gpsIfd['GPSLongitudeRef'] = IfdValueAscii(
+        position.longitude > 0 ? 'E' : 'W',
+      );
       exif.gpsIfd['GPSLongitude'] = _dDtoDMS(position.longitude);
-      exif.gpsIfd['GPSAltitudeRef'] =
-          IfdByteValue(position.altitude > 0 ? 0 : 1);
+      exif.gpsIfd['GPSAltitudeRef'] = IfdByteValue(
+        position.altitude > 0 ? 0 : 1,
+      );
       exif.gpsIfd['GPSAltitude'] = IfdValueRational(
-          (position.altitude * exifTagPrecision).toInt().abs(),
-          exifTagPrecision);
+        (position.altitude * exifTagPrecision).toInt().abs(),
+        exifTagPrecision,
+      );
       final date = DateTime.now().toUtc();
       exif.gpsIfd['GPSTimeStamp'] = IfdValueRational.list([
         Rational(date.hour, 1),
         Rational(date.minute, 1),
-        Rational(date.second, 1)
+        Rational(date.second, 1),
       ]);
       if (position.speed != 0) {
         exif.gpsIfd['GPSSpeedRef'] = IfdValueAscii('K');
         exif.gpsIfd['GPSSpeed'] = IfdValueRational(
-            // Conversion m/s to km/h
-            (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
-                .toInt()
-                .abs(),
-            exifTagPrecision);
+          // Conversion m/s to km/h
+          (((position.speed * 60 * 60) / 1000) * exifTagPrecision)
+              .toInt()
+              .abs(),
+          exifTagPrecision,
+        );
       }
       if (position.heading != 0 && position.heading != -1) {
         exif.gpsIfd['GPSImgDirectionRef'] = IfdValueAscii('T');
         exif.gpsIfd['GPSImgDirection'] = IfdValueRational(
-            (position.heading * exifTagPrecision).toInt().abs(),
-            exifTagPrecision);
+          (position.heading * exifTagPrecision).toInt().abs(),
+          exifTagPrecision,
+        );
         exif.gpsIfd['GPSDestBearingRef'] = exif.gpsIfd['GPSImgDirectionRef'];
         exif.gpsIfd['GPSDestBearing'] = exif.gpsIfd['GPSImgDirection'];
       }
       exif.gpsIfd['GPSDate'] = IfdValueAscii(
-          '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}');
+        '${date.year}:${date.month.toString().padLeft(2, '0')}:${date.day.toString().padLeft(2, '0')}',
+      );
       if (position.accuracy != 0) {
         exif.gpsIfd[0x001f] = IfdValueRational(
-            (position.accuracy * exifTagPrecision).toInt().abs(),
-            exifTagPrecision);
+          (position.accuracy * exifTagPrecision).toInt().abs(),
+          exifTagPrecision,
+        );
       }
     }
   }
@@ -587,7 +607,7 @@ IfdValueRational _dDtoDMS(double dd) {
   return IfdValueRational.list([
     Rational(degreesInt, 1),
     Rational(minutesInt, 1),
-    Rational(secondsInt, exifTagPrecision)
+    Rational(secondsInt, exifTagPrecision),
   ]);
 }
 

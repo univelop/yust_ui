@@ -46,8 +46,9 @@ class YustSelectMultiple<T> extends StatelessWidget {
       prefixIcon: prefixIcon,
       suffixChild: suffixChild,
       style: style,
-      onTap:
-          (onSelected == null || readOnly) ? null : () => _selectValue(context),
+      onTap: (onSelected == null || readOnly)
+          ? null
+          : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
       autovalidateMode: autovalidateMode,
       validator: validator == null ? null : (_) => validator!(values),

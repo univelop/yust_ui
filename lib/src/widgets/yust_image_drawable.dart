@@ -21,11 +21,14 @@ class YustImageDrawable extends BackgroundDrawable {
 
     canvas.clipRect(Rect.fromPoints(offset, Offset(width, height) + offset));
     canvas.drawImageRect(
-        image,
-        Rect.fromPoints(Offset.zero,
-            Offset(image.width.toDouble(), image.height.toDouble())),
-        Rect.fromPoints(offset, Offset(width, height) + offset),
-        Paint());
+      image,
+      Rect.fromPoints(
+        Offset.zero,
+        Offset(image.width.toDouble(), image.height.toDouble()),
+      ),
+      Rect.fromPoints(offset, Offset(width, height) + offset),
+      Paint(),
+    );
   }
 
   Offset _calcOffset(Size size, double width, double height) {

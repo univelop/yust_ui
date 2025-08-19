@@ -24,15 +24,16 @@ class YustLocationDialogState extends State<YustLocationDialog> {
   @override
   void initState() {
     super.initState();
-    _positionStreamSubscription =
-        Geolocator.getPositionStream().handleError((error) {
-      _positionStreamSubscription?.cancel();
-      _positionStreamSubscription = null;
-    }).listen((position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    });
+    _positionStreamSubscription = Geolocator.getPositionStream()
+        .handleError((error) {
+          _positionStreamSubscription?.cancel();
+          _positionStreamSubscription = null;
+        })
+        .listen((position) {
+          setState(() {
+            _currentPosition = position;
+          });
+        });
   }
 
   @override
@@ -56,8 +57,10 @@ class YustLocationDialogState extends State<YustLocationDialog> {
                     ? LocaleKeys.loadingLocation.tr()
                     : LocaleKeys.locationFound.tr(),
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
             ),
           ),
@@ -74,7 +77,8 @@ class YustLocationDialogState extends State<YustLocationDialog> {
                   children: [
                     Text(LocaleKeys.accuracy.tr()),
                     Text(
-                        '${NumberFormat('0.##', widget.locale).format(_currentPosition?.accuracy)} ${LocaleKeys.meters.tr()}')
+                      '${NumberFormat('0.##', widget.locale).format(_currentPosition?.accuracy)} ${LocaleKeys.meters.tr()}',
+                    ),
                   ],
                 ),
         ],

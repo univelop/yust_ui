@@ -34,8 +34,10 @@ class YustLocationService {
       // Test if location services are enabled.
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        await alertService.showAlert(LocaleKeys.locationServicesDisabled.tr(),
-            LocaleKeys.pleaseEnableLocationServices.tr());
+        await alertService.showAlert(
+          LocaleKeys.locationServicesDisabled.tr(),
+          LocaleKeys.pleaseEnableLocationServices.tr(),
+        );
 
         return false;
       }
@@ -45,16 +47,20 @@ class YustLocationService {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          await alertService.showAlert(LocaleKeys.locationServicesDisabled.tr(),
-              LocaleKeys.pleaseEnableLocationAccessForApp.tr());
+          await alertService.showAlert(
+            LocaleKeys.locationServicesDisabled.tr(),
+            LocaleKeys.pleaseEnableLocationAccessForApp.tr(),
+          );
 
           return false;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        await alertService.showAlert(LocaleKeys.locationServicesDisabled.tr(),
-            LocaleKeys.pleaseEnableLocationAccessForApp.tr());
+        await alertService.showAlert(
+          LocaleKeys.locationServicesDisabled.tr(),
+          LocaleKeys.pleaseEnableLocationAccessForApp.tr(),
+        );
 
         return false;
       }
@@ -147,8 +153,10 @@ class YustLocationService {
     double longitude,
   ) async {
     try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(latitude, longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
 
       return placemarks.map((placemark) {
         return YustAddress(
@@ -190,8 +198,10 @@ class YustLocationService {
   /// Returns the location the user accepted or null if the user canceled the dialog or no position was found
   ///
   /// Before calling this function, make sure to call [checkPermissions] to ensure that the location services are enabled and the app has the necessary permissions.
-  Future<YustGeoLocation?> showLocationDialog(
-      {String? locale, bool loadAddress = true}) async {
+  Future<YustGeoLocation?> showLocationDialog({
+    String? locale,
+    bool loadAddress = true,
+  }) async {
     try {
       final context = navStateKey.currentContext;
       if (context == null) {

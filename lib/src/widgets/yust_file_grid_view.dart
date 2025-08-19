@@ -27,19 +27,19 @@ class YustFileGridView<T extends YustFile> extends StatelessWidget {
       children: [
         _buildGridView(context),
         if (totalFileCount > files.length) loadMoreButton,
-        const SizedBox(height: 2)
+        const SizedBox(height: 2),
       ],
     );
   }
 
   GridView _buildGridView(BuildContext context) => GridView.extent(
-        shrinkWrap: true,
-        maxCrossAxisExtent: 180,
-        primary: false,
-        mainAxisSpacing: 2,
-        crossAxisSpacing: 2,
-        children: files.map((file) {
-          return itemBuilder(context, file);
-        }).toList(),
-      );
+    shrinkWrap: true,
+    maxCrossAxisExtent: 180,
+    primary: false,
+    mainAxisSpacing: 2,
+    crossAxisSpacing: 2,
+    children: files.map((file) {
+      return itemBuilder(context, file);
+    }).toList(),
+  );
 }

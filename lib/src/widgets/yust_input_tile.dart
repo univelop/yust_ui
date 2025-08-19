@@ -21,7 +21,7 @@ class YustInputTile extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final bool skipFocus;
   final bool showHighlightFocus;
-   // The Icon to be displayed in front of the label 
+  // The Icon to be displayed in front of the label
   final IconData? prefixLabelIcon;
 
   /// The color of the prefix label icon

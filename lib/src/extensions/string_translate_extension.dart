@@ -6,10 +6,11 @@ extension StringTranslateExtension on String {
     List<String>? args,
     Map<String, String>? namedArgs,
     String? gender,
-  }) =>
-      YustUi.trCallback(this,
-          localeOverride: localeOverride,
-          args: args,
-          namedArgs: namedArgs,
-          gender: gender);
+  }) => YustUi.trCallback(
+    this,
+    localeOverride: localeOverride,
+    args: args,
+    namedArgs: namedArgs,
+    gender: gender,
+  );
 }

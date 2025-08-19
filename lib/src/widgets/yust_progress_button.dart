@@ -36,7 +36,8 @@ class _YustProgressButtonState extends State<YustProgressButton> {
       _inProgressLocal = null;
     }
     return ElevatedButton(
-      style: widget.style ??
+      style:
+          widget.style ??
           ElevatedButton.styleFrom(
             backgroundColor: widget.color,
             shape: const RoundedRectangleBorder(

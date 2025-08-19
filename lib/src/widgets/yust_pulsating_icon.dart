@@ -35,8 +35,11 @@ class YustPulsatingIconState extends State<YustPulsatingIcon>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _animation,
-      child: Icon(widget.iconData,
-          size: 50.0, color: Theme.of(context).primaryColor),
+      child: Icon(
+        widget.iconData,
+        size: 50.0,
+        color: Theme.of(context).primaryColor,
+      ),
     );
   }
 }

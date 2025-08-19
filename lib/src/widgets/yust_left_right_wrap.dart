@@ -25,8 +25,10 @@ class YustLeftRightWrapParentData extends ContainerBoxParentData<RenderBox> {}
 class RenderYustLeftRightWrap extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, YustLeftRightWrapParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox,
-            YustLeftRightWrapParentData> {
+        RenderBoxContainerDefaultsMixin<
+          RenderBox,
+          YustLeftRightWrapParentData
+        > {
   RenderYustLeftRightWrap({
     required List<RenderBox> children,
   }) {
@@ -61,10 +63,14 @@ class RenderYustLeftRightWrap extends RenderBox
         leftChild.size.width + rightChild.size.width > constraints.maxWidth;
 
     // We want to vertically center the children in the available space.
-    final double heightDifferenceLeft =
-        max(rightChild.size.height - leftChild.size.height, 0);
-    final double heightDifferenceRight =
-        max(leftChild.size.height - rightChild.size.height, 0);
+    final double heightDifferenceLeft = max(
+      rightChild.size.height - leftChild.size.height,
+      0,
+    );
+    final double heightDifferenceRight = max(
+      leftChild.size.height - rightChild.size.height,
+      0,
+    );
 
     // If wrapping, calculate the Y offset to position the right child beneath the left.
     final double wrappedHeightRight =
@@ -79,17 +85,20 @@ class RenderYustLeftRightWrap extends RenderBox
     // Position the right child:
     // - If wrapped, it will be placed below the left child.
     // - If not wrapped, it will be right-aligned.
-    rightParentData.offset = Offset(widthOffsetRight,
-        wrapped ? wrappedHeightRight : heightDifferenceRight / 2);
+    rightParentData.offset = Offset(
+      widthOffsetRight,
+      wrapped ? wrappedHeightRight : heightDifferenceRight / 2,
+    );
 
     // Set the final size of this render box:
     // - If wrapped, both children will be stacked vertically.
     // - If not, the tallest child will be used for the height.
     size = Size(
-        constraints.maxWidth,
-        wrapped
-            ? leftChild.size.height + rightChild.size.height
-            : max(leftChild.size.height, rightChild.size.height));
+      constraints.maxWidth,
+      wrapped
+          ? leftChild.size.height + rightChild.size.height
+          : max(leftChild.size.height, rightChild.size.height),
+    );
   }
 
   @override

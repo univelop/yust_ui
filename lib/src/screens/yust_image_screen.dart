@@ -48,16 +48,18 @@ class YustImageScreen extends StatefulWidget {
     void Function(YustImage image, Uint8List newImage)? onSave,
   }) {
     unawaited(
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => YustImageScreen(
-          images: images,
-          onSave: onSave,
-          activeImageIndex: activeImageIndex,
-          keepNativeResolution: keepNativeResolution,
-          allowDrawing: allowDrawing,
-          allowShare: allowShare,
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => YustImageScreen(
+            images: images,
+            onSave: onSave,
+            activeImageIndex: activeImageIndex,
+            keepNativeResolution: keepNativeResolution,
+            allowDrawing: allowDrawing,
+            allowShare: allowShare,
+          ),
         ),
-      )),
+      ),
     );
   }
 
@@ -93,9 +95,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
         autofocus: true,
         onKeyEvent: _handleKeyEvent,
         child: SafeArea(
-            child: widget.images.length == 1
-                ? _buildSingle(context)
-                : _buildMultiple(context)),
+          child: widget.images.length == 1
+              ? _buildSingle(context)
+              : _buildMultiple(context),
+        ),
       ),
     );
   }
@@ -120,15 +123,17 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   Widget _buildSingle(BuildContext context) {
     final image = widget.images.first;
-    return Stack(children: [
-      widget.keepNativeResolution
-          ? _getNativeResolutionPhotoView(image)
-          : _getScaledUpPhotoView(image),
-      if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
-        _buildDrawButton(context, image),
-      if (kIsWeb) _buildCloseButton(context),
-      if (widget.allowShare) _buildShareButton(context, image),
-    ]);
+    return Stack(
+      children: [
+        widget.keepNativeResolution
+            ? _getNativeResolutionPhotoView(image)
+            : _getScaledUpPhotoView(image),
+        if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
+          _buildDrawButton(context, image),
+        if (kIsWeb) _buildCloseButton(context),
+        if (widget.allowShare) _buildShareButton(context, image),
+      ],
+    );
   }
 
   Widget _buildMultiple(BuildContext context) {
@@ -228,7 +233,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   PhotoViewGalleryPageOptions _getScaledUpPhotoViewOptions(
-      YustImage currentImage) {
+    YustImage currentImage,
+  ) {
     return PhotoViewGalleryPageOptions(
       imageProvider: _getImageOfUrl(currentImage),
       minScale: PhotoViewComputedScale.contained,
@@ -253,14 +259,17 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   PhotoViewGalleryPageOptions _getNativeResolutionPhotoViewOptions(
-      YustImage currentImage, int index) {
+    YustImage currentImage,
+    int index,
+  ) {
     return PhotoViewGalleryPageOptions.customChild(
       child: _buildScalableImage(_getImageOfUrl(currentImage)),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
-      heroAttributes:
-          PhotoViewHeroAttributes(tag: widget.images[index].url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: widget.images[index].url ?? '',
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -271,17 +280,21 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return Image(
       image: imageProvider,
       fit: BoxFit.scaleDown,
-      loadingBuilder: (BuildContext context, Widget child,
-          ImageChunkEvent? loadingProgress) {
-        if (loadingProgress == null) return child;
-        return const Center(
-          child: SizedBox(
-            width: 20.0,
-            height: 20.0,
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+      loadingBuilder:
+          (
+            BuildContext context,
+            Widget child,
+            ImageChunkEvent? loadingProgress,
+          ) {
+            if (loadingProgress == null) return child;
+            return const Center(
+              child: SizedBox(
+                width: 20.0,
+                height: 20.0,
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
     );
   }
 
@@ -305,14 +318,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   color: Colors.white,
                   onPressed: () {
                     YustImageDrawingScreen.navigateToScreen(
-                        context: context,
-                        image: _getImageOfUrl(image),
-                        onSave: (imageBytes) async {
-                          if (imageBytes != null) {
-                            widget.onSave!(image, imageBytes);
-                            setState(() {});
-                          }
-                        });
+                      context: context,
+                      image: _getImageOfUrl(image),
+                      onSave: (imageBytes) async {
+                        if (imageBytes != null) {
+                          widget.onSave!(image, imageBytes);
+                          setState(() {});
+                        }
+                      },
+                    );
                   },
                   icon: const Icon(Icons.draw_outlined),
                 );
@@ -332,12 +346,13 @@ class _YustImageScreenState extends State<YustImageScreen> {
         backgroundColor: Colors.black,
         radius: 25,
         child: IconButton(
-            iconSize: 35,
-            color: Colors.white,
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Navigator.pop(context);
-            }),
+          iconSize: 35,
+          color: Colors.white,
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
     );
   }
@@ -358,9 +373,10 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   color: Colors.white,
                   onPressed: () {
                     YustUi.fileHelpers.downloadAndLaunchFile(
-                        context: buttonContext,
-                        url: image.url!,
-                        name: image.name!);
+                      context: buttonContext,
+                      url: image.url!,
+                      name: image.name!,
+                    );
                   },
                   icon: kIsWeb
                       ? const Icon(Icons.download)

@@ -52,10 +52,12 @@ class _YustTimePickerState extends State<YustTimePicker>
   @override
   void initState() {
     super.initState();
-    _controller =
-        TextEditingController(text: Yust.helpers.formatTime(widget.value));
-    _maskFormatter =
-        TimeInputFormatter(initialText: Yust.helpers.formatTime(widget.value));
+    _controller = TextEditingController(
+      text: Yust.helpers.formatTime(widget.value),
+    );
+    _maskFormatter = TimeInputFormatter(
+      initialText: Yust.helpers.formatTime(widget.value),
+    );
   }
 
   @override
@@ -93,8 +95,8 @@ class _YustTimePickerState extends State<YustTimePicker>
             readOnly: widget.readOnly,
             validator: (value) =>
                 (value ?? '').isEmpty || _maskFormatter.isFill()
-                    ? null
-                    : LocaleKeys.validationTimePicker.tr(),
+                ? null
+                : LocaleKeys.validationTimePicker.tr(),
             keyboardType: kIsWeb
                 ? null
                 : const TextInputType.numberWithOptions(
@@ -107,11 +109,12 @@ class _YustTimePickerState extends State<YustTimePicker>
             !widget.hideClearButton &&
             !widget.readOnly)
           IconButton(
-              onPressed: widget.onChanged == null ? null : () => _setTime(null),
-              icon: Icon(
-                Icons.delete,
-                color: Theme.of(context).primaryColor,
-              )),
+            onPressed: widget.onChanged == null ? null : () => _setTime(null),
+            icon: Icon(
+              Icons.delete,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
       ],
     );
   }
@@ -134,12 +137,13 @@ class _YustTimePickerState extends State<YustTimePicker>
 
     final localValue = Yust.helpers.utcToLocal(value);
     final dateTimeUtc = Yust.helpers.localNow(
-        year: localValue.year,
-        month: localValue.month,
-        day: localValue.day,
-        second: 0,
-        microsecond: 0,
-        millisecond: 0);
+      year: localValue.year,
+      month: localValue.month,
+      day: localValue.day,
+      second: 0,
+      microsecond: 0,
+      millisecond: 0,
+    );
     final dateTime = Yust.helpers.utcToLocal(dateTimeUtc);
     final initialTime = TimeOfDay.fromDateTime(dateTime);
     final selectedTime = await showTimePicker(
@@ -150,8 +154,16 @@ class _YustTimePickerState extends State<YustTimePicker>
       helpText: title,
     );
     if (selectedTime != null) {
-      final changeDateTime = DateTime(dateTime.year, dateTime.month,
-          dateTime.day, selectedTime.hour, selectedTime.minute, 0, 0, 0);
+      final changeDateTime = DateTime(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        selectedTime.hour,
+        selectedTime.minute,
+        0,
+        0,
+        0,
+      );
       _setTime(Yust.helpers.tryLocalToUtc(changeDateTime));
     }
   }
@@ -166,8 +178,16 @@ class _YustTimePickerState extends State<YustTimePicker>
       var hour = time ~/ 100 >= 24 ? 0 : time ~/ 100;
       var minute = time % 100 >= 60 ? 0 : time % 100;
       final value = widget.value ?? DateTime(1970);
-      var dateTime =
-          DateTime(value.year, value.month, value.day, hour, minute, 0, 0, 0);
+      var dateTime = DateTime(
+        value.year,
+        value.month,
+        value.day,
+        hour,
+        minute,
+        0,
+        0,
+        0,
+      );
       widget.onChanged!(Yust.helpers.localToUtc(dateTime));
     }
   }
@@ -177,8 +197,10 @@ class _YustTimePickerState extends State<YustTimePicker>
     setState(() {
       final oldValue = _controller.text;
       _controller.text = Yust.helpers.formatTime(dateTime);
-      _maskFormatter.formatEditUpdate(TextEditingValue(text: oldValue),
-          TextEditingValue(text: _controller.text));
+      _maskFormatter.formatEditUpdate(
+        TextEditingValue(text: oldValue),
+        TextEditingValue(text: _controller.text),
+      );
     });
     widget.onChanged!(dateTime);
   }
@@ -191,20 +213,22 @@ class TimeInputFormatter extends TextInputFormatter {
   final MaskTextInputFormatter maskedInputFormatter;
 
   TimeInputFormatter({String? initialText})
-      : maskedInputFormatter = MaskTextInputFormatter(
-          mask: 'H#:M#',
-          filter: {
-            'H': RegExp(r'[0-2]'),
-            '#': RegExp(r'[0-9]'),
-            'M': RegExp(r'[0-5]')
-          },
-          initialText: initialText,
-        ),
-        super();
+    : maskedInputFormatter = MaskTextInputFormatter(
+        mask: 'H#:M#',
+        filter: {
+          'H': RegExp(r'[0-2]'),
+          '#': RegExp(r'[0-9]'),
+          'M': RegExp(r'[0-5]'),
+        },
+        initialText: initialText,
+      ),
+      super();
 
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     String text = newValue.text;
 
     final hours = int.tryParse(text.substring(0, min(2, text.length))) ?? 0;

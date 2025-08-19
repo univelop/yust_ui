@@ -97,8 +97,9 @@ class YustFilePickerState
   @override
   Future<void> pickFiles() async {
     YustUi.helpers.unfocusCurrent();
-    final type =
-        (widget.allowedExtensions != null) ? FileType.custom : FileType.any;
+    final type = (widget.allowedExtensions != null)
+        ? FileType.custom
+        : FileType.any;
     final result = await FilePicker.platform.pickFiles(
       type: type,
       allowedExtensions: widget.allowedExtensions,
@@ -120,7 +121,10 @@ class YustFilePickerState
 
   @override
   Future<YustFile> processFile(
-      String name, File? file, Uint8List? bytes) async {
+    String name,
+    File? file,
+    Uint8List? bytes,
+  ) async {
     return YustFile(
       name: name,
       modifiedAt: Yust.helpers.utcNow(),
@@ -140,7 +144,8 @@ class YustFilePickerState
   }
 
   Widget _buildAddButton(BuildContext context) {
-    final canAddMore = widget.files.length < widget.numberOfFiles ||
+    final canAddMore =
+        widget.files.length < widget.numberOfFiles ||
         (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
 
     if (enabled && canAddMore) {
@@ -164,24 +169,34 @@ class YustFilePickerState
       if (widget.allowedExtensions!.isEmpty) {
         messages.add(LocaleKeys.tooltipNoAllowedExtensions.tr());
       } else {
-        messages.add(LocaleKeys.tooltipAllowedExtensions.tr(namedArgs: {
-          'allowedExtensions': widget.allowedExtensions!.join(', ')
-        }));
+        messages.add(
+          LocaleKeys.tooltipAllowedExtensions.tr(
+            namedArgs: {
+              'allowedExtensions': widget.allowedExtensions!.join(', '),
+            },
+          ),
+        );
       }
     }
 
     if (widget.maximumFileSizeInKiB != null) {
-      messages.add(LocaleKeys.tooltipMaxFileSize.tr(namedArgs: {
-        'maxFileSize':
-            YustUi.fileHelpers.formatFileSize(widget.maximumFileSizeInKiB ?? 0)
-      }));
+      messages.add(
+        LocaleKeys.tooltipMaxFileSize.tr(
+          namedArgs: {
+            'maxFileSize': YustUi.fileHelpers.formatFileSize(
+              widget.maximumFileSizeInKiB ?? 0,
+            ),
+          },
+        ),
+      );
     }
 
     return messages.isEmpty ? null : messages.join('\n');
   }
 
   Widget _buildFile(BuildContext context, YustFile file) {
-    final isBroken = file.name == null ||
+    final isBroken =
+        file.name == null ||
         (file.cached &&
             file.bytes == null &&
             file.file == null &&
@@ -196,8 +211,9 @@ class YustFilePickerState
         children: [
           if (selecting)
             Checkbox(
-                value: selectedFiles.contains(file),
-                onChanged: (_) => toggleFileSelection(file)),
+              value: selectedFiles.contains(file),
+              onChanged: (_) => toggleFileSelection(file),
+            ),
           Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
           const SizedBox(width: 8),
           Expanded(
@@ -205,17 +221,22 @@ class YustFilePickerState
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                        // file.name is not null because shouldShowDate == true
-                        Text(file.name ?? '', overflow: TextOverflow.ellipsis),
-                        Text(
-                          YustHelpers().formatDate(file.modifiedAt,
-                              format: 'dd.MM.yyyy HH:mm'),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.grey),
+                      // file.name is not null because shouldShowDate == true
+                      Text(file.name ?? '', overflow: TextOverflow.ellipsis),
+                      Text(
+                        YustHelpers().formatDate(
+                          file.modifiedAt,
+                          format: 'dd.MM.yyyy HH:mm',
                         ),
-                      ])
-                : Text(isBroken ? LocaleKeys.brokenFile.tr() : file.name ?? '',
-                    overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  )
+                : Text(
+                    isBroken ? LocaleKeys.brokenFile.tr() : file.name ?? '',
+                    overflow: TextOverflow.ellipsis,
+                  ),
           ),
           buildCachedIndicator(file),
         ],
@@ -233,33 +254,39 @@ class YustFilePickerState
           fileHandler.showFile(context, file);
         }
       },
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 8.0,
+      ),
     );
   }
 
   Widget _buildTrailing(YustFile file) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDownloadButton(file),
-          _buildFileRenameButton(file),
-          _buildDeleteButton(file),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _buildDownloadButton(file),
+      _buildFileRenameButton(file),
+      _buildDeleteButton(file),
+    ],
+  );
 
-  Widget _buildDownloadButton(YustFile file) =>
-      Builder(builder: (buttonContext) {
-        return IconButton(
-          icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
-          color: Theme.of(buttonContext).primaryColor,
-          onPressed: () async {
-            if (file.isValid()) {
-              await YustUi.fileHelpers.downloadAndLaunchFile(
-                  context: buttonContext, url: file.url!, name: file.name!);
-            }
-          },
-        );
-      });
+  Widget _buildDownloadButton(YustFile file) => Builder(
+    builder: (buttonContext) {
+      return IconButton(
+        icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
+        color: Theme.of(buttonContext).primaryColor,
+        onPressed: () async {
+          if (file.isValid()) {
+            await YustUi.fileHelpers.downloadAndLaunchFile(
+              context: buttonContext,
+              url: file.url!,
+              name: file.name!,
+            );
+          }
+        },
+      );
+    },
+  );
 
   Widget _buildFileRenameButton(YustFile file) {
     if (!enabled) {
@@ -289,18 +316,23 @@ class YustFilePickerState
     );
   }
 
-  Future<void> _checkAndUploadFiles<T>(List<T> fileData,
-      Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor) async {
+  Future<void> _checkAndUploadFiles<T>(
+    List<T> fileData,
+    Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor,
+  ) async {
     final filesValid = await checkFileCount(fileData);
     if (!filesValid) return;
 
     if (widget.overwriteSingleFile) {
-      assert(widget.numberOfFiles == 1,
-          'overwriteSingleFile is only supported when numberOfFiles is 1.');
       assert(
-          widget.files.length <= 1,
-          'overwriteSingleFile is only supported when there is at most '
-          'one file present.');
+        widget.numberOfFiles == 1,
+        'overwriteSingleFile is only supported when numberOfFiles is 1.',
+      );
+      assert(
+        widget.files.length <= 1,
+        'overwriteSingleFile is only supported when there is at most '
+        'one file present.',
+      );
       await deleteFiles(widget.files);
     }
 
@@ -328,17 +360,21 @@ class YustFilePickerState
     final int fileSizeInKiB = file != null
         ? await file.length() ~/ 1024
         : bytes != null
-            ? bytes.length ~/ 1024
-            : 0;
+        ? bytes.length ~/ 1024
+        : 0;
 
     if (fileSizeInKiB > maxSizeKiB) {
-      unawaited(YustUi.alertService.showAlert(
-        LocaleKeys.fileUpload.tr(),
-        LocaleKeys.alertFileTooBig.tr(namedArgs: {
-          'fileName': name,
-          'maxFileSize': YustUi.fileHelpers.formatFileSize(maxSizeKiB)
-        }),
-      ));
+      unawaited(
+        YustUi.alertService.showAlert(
+          LocaleKeys.fileUpload.tr(),
+          LocaleKeys.alertFileTooBig.tr(
+            namedArgs: {
+              'fileName': name,
+              'maxFileSize': YustUi.fileHelpers.formatFileSize(maxSizeKiB),
+            },
+          ),
+        ),
+      );
       return false;
     }
     return true;
@@ -348,13 +384,18 @@ class YustFilePickerState
     final extension = fileName.split('.').last;
     if (widget.allowedExtensions != null &&
         !widget.allowedExtensions!.contains(extension)) {
-      unawaited(YustUi.alertService.showAlert(
+      unawaited(
+        YustUi.alertService.showAlert(
           LocaleKeys.fileUpload.tr(),
           widget.allowedExtensions!.isEmpty
               ? LocaleKeys.alertNoAllowedExtensions.tr()
-              : LocaleKeys.alertAllowedExtensions.tr(namedArgs: {
-                  'allowedExtensions': widget.allowedExtensions!.join(', ')
-                })));
+              : LocaleKeys.alertAllowedExtensions.tr(
+                  namedArgs: {
+                    'allowedExtensions': widget.allowedExtensions!.join(', '),
+                  },
+                ),
+        ),
+      );
       return false;
     }
     return true;
@@ -363,14 +404,15 @@ class YustFilePickerState
   Future<bool> _checkExistingFileNames(String fileName) async {
     if (fileHandler.getFiles().any((file) => file.name == fileName)) {
       final confirmed = await YustUi.alertService.showConfirmation(
-          LocaleKeys.alertFileAlreadyExists
-              .tr(namedArgs: {'fileName': fileName}),
-          LocaleKeys.continue_.tr());
+        LocaleKeys.alertFileAlreadyExists.tr(namedArgs: {'fileName': fileName}),
+        LocaleKeys.continue_.tr(),
+      );
       if (confirmed == false) return false;
 
       final fileToDelete = fileHandler.getFiles().firstWhere(
-          (file) => file.name == fileName,
-          orElse: () => YustFile());
+        (file) => file.name == fileName,
+        orElse: () => YustFile(),
+      );
       await fileHandler.deleteFile(fileToDelete);
     }
     return true;
@@ -382,7 +424,9 @@ class YustFilePickerState
   Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService.showConfirmation(
-        LocaleKeys.confirmDelete.tr(), LocaleKeys.delete.tr());
+      LocaleKeys.confirmDelete.tr(),
+      LocaleKeys.delete.tr(),
+    );
     if (confirmed == true) {
       try {
         await _deleteFileAndCallOnChanged(yustFile);
@@ -391,9 +435,11 @@ class YustFilePickerState
         }
       } catch (e) {
         await YustUi.alertService.showAlert(
-            LocaleKeys.oops.tr(),
-            LocaleKeys.alertCannotDeleteFile
-                .tr(namedArgs: {'error': e.toString()}));
+          LocaleKeys.oops.tr(),
+          LocaleKeys.alertCannotDeleteFile.tr(
+            namedArgs: {'error': e.toString()},
+          ),
+        );
       }
     }
   }
@@ -411,7 +457,8 @@ class YustFilePickerState
       '',
       LocaleKeys.save.tr(),
       initialText: yustFile.getFileNameWithoutExtension(),
-      validator: (value) => (_isNewFileNameValid(value, yustFile) &&
+      validator: (value) =>
+          (_isNewFileNameValid(value, yustFile) &&
               !fileExists('$value.${yustFile.getFilenameExtension()}'))
           ? null
           : LocaleKeys.invalidFileName.tr(),
@@ -434,9 +481,13 @@ class YustFilePickerState
   }
 
   Future<void> _reuploadFileForRename(
-      YustFile yustFile, String newFileName) async {
+    YustFile yustFile,
+    String newFileName,
+  ) async {
     final bytes = await Yust.fileService.downloadFile(
-        path: yustFile.storageFolderPath ?? '', name: yustFile.name ?? '');
+      path: yustFile.storageFolderPath ?? '',
+      name: yustFile.name ?? '',
+    );
 
     final newFile = await processFile(newFileName, yustFile.file, bytes);
     await uploadFile(file: newFile);

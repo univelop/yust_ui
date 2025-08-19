@@ -16,9 +16,10 @@ abstract class YustWebHelpersInterface {
   /// [bytes] is the bytes of the image.
   /// [maxWidth] is the maximum width of the image.
   /// [quality] is the quality of the image.
-  Future<Uint8List> resizeImage(
-      {required String name,
-      required Uint8List bytes,
-      required int maxWidth,
-      required int quality});
+  Future<Uint8List> resizeImage({
+    required String name,
+    required Uint8List bytes,
+    required int maxWidth,
+    required int quality,
+  });
 }

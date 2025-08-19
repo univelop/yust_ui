@@ -75,7 +75,9 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                     _buildLogo(context),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         key: const Key('email'),
                         controller: _emailController,
@@ -102,7 +104,9 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         key: const Key('password'),
                         decoration: InputDecoration(
@@ -133,50 +137,76 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: YustProgressButton(
                         key: const Key('signInButton'),
                         color: Theme.of(context).colorScheme.secondary,
                         inProgress: _waitingForSignIn,
                         onPressed: () => _signIn(context),
-                        child: Text(LocaleKeys.signIn.tr(),
-                            style: const TextStyle(
-                                fontSize: 20.0, color: Colors.white)),
+                        child: Text(
+                          LocaleKeys.signIn.tr(),
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                          left: 20.0, top: 40.0, right: 20.0, bottom: 10.0),
-                      child: Text(LocaleKeys.noAccount.tr(),
-                          style: const TextStyle(fontSize: 16.0)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                              context, YustSignUpScreen.routeName,
-                              arguments: arguments);
-                        },
-                        child: Text(LocaleKeys.registerNow.tr(),
-                            style: TextStyle(
-                                fontSize: 20.0,
-                                color: Theme.of(context).primaryColor)),
+                        left: 20.0,
+                        top: 40.0,
+                        right: 20.0,
+                        bottom: 10.0,
+                      ),
+                      child: Text(
+                        LocaleKeys.noAccount.tr(),
+                        style: const TextStyle(fontSize: 16.0),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextButton(
                         onPressed: () {
                           Navigator.pushNamed(
-                              context, YustResetPasswordScreen.routeName);
+                            context,
+                            YustSignUpScreen.routeName,
+                            arguments: arguments,
+                          );
                         },
-                        child: Text(LocaleKeys.forgotPassword.tr(),
-                            style: TextStyle(
-                                fontSize: 20.0,
-                                color: Theme.of(context).primaryColor)),
+                        child: Text(
+                          LocaleKeys.registerNow.tr(),
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            YustResetPasswordScreen.routeName,
+                          );
+                        },
+                        child: Text(
+                          LocaleKeys.forgotPassword.tr(),
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -213,16 +243,20 @@ class _YustSignInScreenState extends State<YustSignInScreen> {
       } on YustException catch (err) {
         await YustUi.alertService.showAlert(LocaleKeys.error.tr(), err.message);
       } on PlatformException catch (err) {
-        await YustUi.alertService
-            .showAlert(LocaleKeys.error.tr(), err.message!);
+        await YustUi.alertService.showAlert(
+          LocaleKeys.error.tr(),
+          err.message!,
+        );
       } on TimeoutException catch (_) {
         await YustUi.alertService.showAlert(
           LocaleKeys.error.tr(),
           LocaleKeys.timeout.tr(),
         );
       } catch (err) {
-        await YustUi.alertService
-            .showAlert(LocaleKeys.error.tr(), err.toString());
+        await YustUi.alertService.showAlert(
+          LocaleKeys.error.tr(),
+          err.toString(),
+        );
       }
     }
   }

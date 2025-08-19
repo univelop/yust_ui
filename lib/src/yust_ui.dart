@@ -35,7 +35,8 @@ class YustUi {
     List<String>? args,
     Map<String, String>? namedArgs,
     String? gender,
-  }) trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
+  })
+  trCallback = (key, {localeOverride, args, namedArgs, gender}) => key;
   static String? appRootFocusKey;
 
   static void initialize({
@@ -47,7 +48,8 @@ class YustUi {
       List<String>? args,
       Map<String, String>? namedArgs,
       String? gender,
-    })? trCallback,
+    })?
+    trCallback,
     String? appRootFocusKey,
   }) {
     YustUi.storageUrl = storageUrl;

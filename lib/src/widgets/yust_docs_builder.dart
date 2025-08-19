@@ -51,10 +51,14 @@ class YustDocsBuilderState<T extends YustDoc> extends State<YustDocsBuilder<T>>
 
   void updateStreamConditionally(YustDocsBuilder oldWidget) {
     if (widget.modelSetup != oldWidget.modelSetup ||
-        !const ListEquality<YustFilter>()
-            .equals(widget.filters, oldWidget.filters) ||
-        !const ListEquality<dynamic>()
-            .equals(widget.orderBy, oldWidget.orderBy)) {
+        !const ListEquality<YustFilter>().equals(
+          widget.filters,
+          oldWidget.filters,
+        ) ||
+        !const ListEquality<dynamic>().equals(
+          widget.orderBy,
+          oldWidget.orderBy,
+        )) {
       initStream();
     }
   }
@@ -89,8 +93,11 @@ class YustDocsBuilderState<T extends YustDoc> extends State<YustDocsBuilder<T>>
         if (insights.status == YustBuilderStatus.error &&
             widget.showLoadingSpinner) {
           return Center(
-              child: Text(LocaleKeys.errorDuringLoading.tr(),
-                  style: const TextStyle(color: Colors.red)));
+            child: Text(
+              LocaleKeys.errorDuringLoading.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
         return widget.builder(snapshot.data ?? [], insights, context);
       },

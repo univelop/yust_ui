@@ -136,8 +136,9 @@ class YustAlertService {
                             hintText: placeholder,
                             errorMaxLines: 5,
                           ),
-                          autovalidateMode:
-                              validator == null ? null : validateMode,
+                          autovalidateMode: validator == null
+                              ? null
+                              : validateMode,
                           validator: validator == null
                               ? null
                               : (value) => validator(value),
@@ -284,8 +285,8 @@ class YustAlertService {
                         },
                         validator: (value) =>
                             checkForEmptySelection && selected == null
-                                ? LocaleKeys.valueMustNotBeEmpty.tr()
-                                : null,
+                            ? LocaleKeys.valueMustNotBeEmpty.tr()
+                            : null,
                         autovalidateMode: checkForEmptySelection
                             ? AutovalidateMode.onUserInteraction
                             : null,
@@ -324,7 +325,7 @@ class YustAlertService {
     String? actionName,
     T? initialValue,
     required Widget Function(void Function(T?) onChanged, T? currentValue)
-        buildInner,
+    buildInner,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
@@ -338,8 +339,9 @@ class YustAlertService {
           content: StatefulBuilder(
             builder: (context, setState) {
               return buildInner(
-                  (T? value) => setState(() => returnValue = value),
-                  returnValue);
+                (T? value) => setState(() => returnValue = value),
+                returnValue,
+              );
             },
           ),
           actions: <Widget>[
@@ -371,7 +373,7 @@ class YustAlertService {
     required List<String> optionValues,
     required List<String> priorOptionValues,
     required List<String> optionLabels,
-      
+
     bool returnPriorItems = true,
     String? title,
     String? subTitle,

@@ -13,7 +13,7 @@ class YustDropzoneListTile extends StatefulWidget {
   final bool divider;
   final Function(DropzoneViewController, DropzoneFileInterface)? onDrop;
   final Function(DropzoneViewController, List<DropzoneFileInterface>?)?
-      onDropMultiple;
+  onDropMultiple;
   final bool wrapSuffixChild;
 
   const YustDropzoneListTile({
@@ -57,48 +57,49 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
 
   /// This widget will accept files from a drag and drop interaction
   Widget _buildDropzoneArea(BuildContext context) => Builder(
-        builder: (context) => DropzoneView(
-          operation: DragOperation.copy,
-          cursor: _isDragging ? CursorType.grab : CursorType.Default,
-          onCreated: (ctrl) => _controller = ctrl,
-          onLoaded: () {},
-          onError: (ev) {},
-          onHover: () {
-            setState(() {
-              _isDragging = true;
-            });
-          },
-          onLeave: () {
-            setState(() {
-              _isDragging = false;
-            });
-          },
-          onDropFile: (ev) {
-            setState(() {
-              _isDragging = false;
-            });
-            widget.onDrop?.call(_controller, ev);
-          },
-          onDropFiles: (ev) {
-            setState(() {
-              _isDragging = false;
-            });
-            widget.onDropMultiple?.call(_controller, ev);
-          },
-        ),
-      );
+    builder: (context) => DropzoneView(
+      operation: DragOperation.copy,
+      cursor: _isDragging ? CursorType.grab : CursorType.Default,
+      onCreated: (ctrl) => _controller = ctrl,
+      onLoaded: () {},
+      onError: (ev) {},
+      onHover: () {
+        setState(() {
+          _isDragging = true;
+        });
+      },
+      onLeave: () {
+        setState(() {
+          _isDragging = false;
+        });
+      },
+      onDropFile: (ev) {
+        setState(() {
+          _isDragging = false;
+        });
+        widget.onDrop?.call(_controller, ev);
+      },
+      onDropFiles: (ev) {
+        setState(() {
+          _isDragging = false;
+        });
+        widget.onDropMultiple?.call(_controller, ev);
+      },
+    ),
+  );
 
   Widget _buildDropzoneInterfaceAndFiles() => Column(
-        children: [
-          if (_isDragging) _buildDropzoneInterface(),
-          widget.below ?? const SizedBox(),
-        ],
-      );
+    children: [
+      if (_isDragging) _buildDropzoneInterface(),
+      widget.below ?? const SizedBox(),
+    ],
+  );
 
   /// This Widget is a visual drag and drop indicator. It shows a dotted box, an icon as well as a button to manually upload files
   Widget _buildDropzoneInterface() {
-    final dropZoneColor =
-        _isDragging ? Colors.blue : const Color.fromARGB(255, 116, 116, 116);
+    final dropZoneColor = _isDragging
+        ? Colors.blue
+        : const Color.fromARGB(255, 116, 116, 116);
     return Center(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(100, 2, 2, 2),
@@ -119,8 +120,11 @@ class _YustDropzoneListTileState extends State<YustDropzoneListTile> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(Icons.cloud_upload_outlined,
-                      size: 35, color: dropZoneColor),
+                  Icon(
+                    Icons.cloud_upload_outlined,
+                    size: 35,
+                    color: dropZoneColor,
+                  ),
                   Text(
                     LocaleKeys.dragFilesHere.tr(),
                     style: TextStyle(fontSize: 20, color: dropZoneColor),

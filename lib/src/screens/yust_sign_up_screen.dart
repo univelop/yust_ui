@@ -75,7 +75,9 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                     _buildGender(context),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: LocaleKeys.firstName.tr(),
@@ -95,15 +97,18 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           _firstNameFocus.unfocus();
                           FocusScope.of(context).requestFocus(_lastNameFocus);
                           _scrollController.animateTo(
-                              _scrollController.offset + 80,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.ease);
+                            _scrollController.offset + 80,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.ease,
+                          );
                         },
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: LocaleKeys.lastName.tr(),
@@ -123,15 +128,18 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           _firstNameFocus.unfocus();
                           FocusScope.of(context).requestFocus(_emailFocus);
                           _scrollController.animateTo(
-                              _scrollController.offset + 80,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.ease);
+                            _scrollController.offset + 80,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.ease,
+                          );
                         },
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: LocaleKeys.email.tr(),
@@ -152,15 +160,18 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                           _emailFocus.unfocus();
                           FocusScope.of(context).requestFocus(_passwordFocus);
                           _scrollController.animateTo(
-                              _scrollController.offset + 80,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.ease);
+                            _scrollController.offset + 80,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.ease,
+                          );
                         },
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: LocaleKeys.password.tr(),
@@ -178,18 +189,22 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                         },
                         onFieldSubmitted: (value) async {
                           _passwordFocus.unfocus();
-                          FocusScope.of(context)
-                              .requestFocus(_passwordConfirmationFocus);
+                          FocusScope.of(
+                            context,
+                          ).requestFocus(_passwordConfirmationFocus);
                           await _scrollController.animateTo(
-                              _scrollController.offset + 80,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.ease);
+                            _scrollController.offset + 80,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.ease,
+                          );
                         },
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: LocaleKeys.confirmPassword.tr(),
@@ -224,35 +239,54 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: YustProgressButton(
                         color: Theme.of(context).colorScheme.secondary,
                         inProgress: _waitingForSignUp,
                         onPressed: () => _signUp(context),
-                        child: Text(LocaleKeys.register.tr(),
-                            style: const TextStyle(
-                                fontSize: 20.0, color: Colors.white)),
+                        child: Text(
+                          LocaleKeys.register.tr(),
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                          left: 20.0, top: 40.0, right: 20.0, bottom: 10.0),
-                      child: Text(LocaleKeys.alreadyRegistered.tr(),
-                          style: const TextStyle(fontSize: 16.0)),
+                        left: 20.0,
+                        top: 40.0,
+                        right: 20.0,
+                        bottom: 10.0,
+                      ),
+                      child: Text(
+                        LocaleKeys.alreadyRegistered.tr(),
+                        style: const TextStyle(fontSize: 16.0),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                        horizontal: 20.0,
+                        vertical: 10.0,
+                      ),
                       child: TextButton(
                         onPressed: () {
                           Navigator.pushNamed(
-                              context, YustSignInScreen.routeName,
-                              arguments: arguments);
+                            context,
+                            YustSignInScreen.routeName,
+                            arguments: arguments,
+                          );
                         },
-                        child: Text(LocaleKeys.signIn.tr(),
-                            style: TextStyle(
-                                fontSize: 20.0,
-                                color: Theme.of(context).primaryColor)),
+                        child: Text(
+                          LocaleKeys.signIn.tr(),
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -289,7 +323,7 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
         optionValues: const [YustGender.male, YustGender.female],
         optionLabels: [
           LocaleKeys.salutationMale.tr(),
-          LocaleKeys.salutationFemale.tr()
+          LocaleKeys.salutationFemale.tr(),
         ],
         onSelected: (dynamic value) {
           setState(() {
@@ -317,16 +351,20 @@ class _YustSignUpScreenState extends State<YustSignUpScreen> {
       } on YustException catch (err) {
         await YustUi.alertService.showAlert(LocaleKeys.error.tr(), err.message);
       } on PlatformException catch (err) {
-        await YustUi.alertService
-            .showAlert(LocaleKeys.error.tr(), err.message!);
+        await YustUi.alertService.showAlert(
+          LocaleKeys.error.tr(),
+          err.message!,
+        );
       } on TimeoutException catch (_) {
         await YustUi.alertService.showAlert(
           LocaleKeys.error.tr(),
           LocaleKeys.timeout.tr(),
         );
       } catch (err) {
-        await YustUi.alertService
-            .showAlert(LocaleKeys.error.tr(), err.toString());
+        await YustUi.alertService.showAlert(
+          LocaleKeys.error.tr(),
+          err.toString(),
+        );
       }
     }
   }
