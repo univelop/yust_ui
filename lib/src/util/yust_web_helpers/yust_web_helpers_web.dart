@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers_interface.dart';
 import 'package:web/web.dart' as web;
 import 'dart:js_interop' as js;
+
+import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers_interface.dart';
 
 class YustWebHelpers implements YustWebHelpersInterface {
   @override
@@ -58,7 +59,7 @@ class YustWebHelpers implements YustWebHelpersInterface {
     ctx.drawImage(newImg, 0, 0, width, height);
     final blobCompleter = Completer<web.Blob>();
     canvas.toBlob(
-      blobCompleter.complete.toJS,
+      ((web.Blob blob) => blobCompleter.complete(blob)).toJS,
       'image/jpeg',
       (quality / 100).toJS,
     );
@@ -71,7 +72,7 @@ class YustWebHelpers implements YustWebHelpersInterface {
     final completer = Completer<Uint8List>();
     final reader = web.FileReader();
     reader.readAsArrayBuffer(blob);
-    reader.onload = ((_) {
+    reader.onload = (() {
       if (reader.result.isA<js.JSArrayBuffer>()) {
         final buffer = (reader.result as js.JSArrayBuffer).toDart;
         completer.complete(buffer.asUint8List());
