@@ -1,3 +1,7 @@
+## 3.29.1 - 2025-08-20
+
+-   Fix for YustWebHelpers
+
 ## 3.29.0 - 2025-08-20
 
 -   Upgrade to newest flutter version
