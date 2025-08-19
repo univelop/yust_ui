@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 
@@ -17,9 +18,6 @@ import 'yust_file_picker.dart';
 import 'yust_image_picker.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_grid_view.dart';
-
-// ignore: depend_on_referenced_packages
-import 'package:flutter_dropzone_platform_interface/flutter_dropzone_platform_interface.dart';
 
 /// Base class for file pickers.
 ///
