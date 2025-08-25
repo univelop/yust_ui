@@ -13,6 +13,7 @@ import 'util/yust_file_handler_manager.dart';
 enum YustInputStyle {
   normal,
   outlineBorder,
+  underlineBorder,
 }
 
 typedef TapCallback = void Function();
