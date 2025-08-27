@@ -63,13 +63,13 @@ class YustTextField extends StatefulWidget {
   /// The color of the prefix label icon
   final Color? prefixLabelIconColor;
 
-  /// Thee optional helper text below the text field
+  /// The optional helper text below the text field
   final String? helperText;
 
   /// Whether the TextField should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
-  final bool filledInputDecoration;
+  final bool useFilledInputDecoration;
   
-  /// The color to be used for [InputDecoration.fillColor] if [filledInputDecoration] is true
+  /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
 
@@ -120,7 +120,7 @@ class YustTextField extends StatefulWidget {
     this.forceErrorText,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-    this.filledInputDecoration = false,
+    this.useFilledInputDecoration = false,
     this.filledInputDecorationColor
   });
 
@@ -323,7 +323,7 @@ class _YustTextFieldState extends State<YustTextField>
         errorMaxLines: 5,
         helperText: widget.helperText,
         helperMaxLines: 5,
-        filled: widget.filledInputDecoration,
+        filled: widget.useFilledInputDecoration,
         fillColor: widget.filledInputDecorationColor,
         
       ),
