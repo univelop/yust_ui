@@ -34,6 +34,9 @@ class YustInputTile extends StatelessWidget {
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
 
+    /// The optional helper text below the text field
+  final String? helperText;
+
   const YustInputTile({
     super.key,
     this.label,
@@ -56,6 +59,7 @@ class YustInputTile extends StatelessWidget {
     this.prefixLabelIconColor,
     this.useFilledInputDecoration = false,
     this.filledInputDecorationColor,
+    this.helperText,
   });
 
   @override
@@ -89,6 +93,7 @@ class YustInputTile extends StatelessWidget {
         prefixLabelIconColor: prefixLabelIconColor,
         useFilledInputDecoration: useFilledInputDecoration,
         filledInputDecorationColor: filledInputDecorationColor,
+        helperText: helperText,
       ),
     );
   }

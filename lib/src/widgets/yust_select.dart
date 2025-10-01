@@ -46,6 +46,9 @@ class YustSelect<T> extends StatelessWidget {
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
 
+  /// The optional helper text below the text field
+  final String? helperText;
+
   static const maxVisibleOptions = 10;
 
   YustSelect({
@@ -75,6 +78,7 @@ class YustSelect<T> extends StatelessWidget {
     this.prefixValueIconColor,
     this.useFilledInputDecoration = false,
     this.filledInputDecorationColor,
+    this.helperText,
   }) : _isSelectable = isSelectable ?? ((_) => true);
 
   @override
