@@ -39,6 +39,13 @@ class YustSelect<T> extends StatelessWidget {
   /// The color of the prefix value icon
   final Color? prefixValueIconColor;
 
+  /// Whether the InputTile should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
+  final bool useFilledInputDecoration;
+  
+  /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
+  /// If null, the default color from the current Theme will be used
+  final Color? filledInputDecorationColor;
+
   static const maxVisibleOptions = 10;
 
   YustSelect({
@@ -66,6 +73,8 @@ class YustSelect<T> extends StatelessWidget {
     this.optionEquals,
     this.prefixValueIcon,
     this.prefixValueIconColor,
+    this.useFilledInputDecoration = false,
+    this.filledInputDecorationColor,
   }) : _isSelectable = isSelectable ?? ((_) => true);
 
   @override
@@ -84,6 +93,8 @@ class YustSelect<T> extends StatelessWidget {
       minLines: minLines,
       prefixLabelIcon: prefixValueIcon,
       prefixLabelIconColor: prefixValueIconColor,
+      useFilledInputDecoration: useFilledInputDecoration,
+      filledInputDecorationColor: filledInputDecorationColor,
       onTap: (onSelected == null || readOnly)
           ? null
           : () => _selectValue(context),
