@@ -329,10 +329,10 @@ class YustAlertService {
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
+    dynamic returnValue;
     return showDialog<T?>(
       context: context,
       builder: (BuildContext context) {
-        dynamic returnValue;
         return AlertDialog(
           scrollable: true,
           title: Text(title),
