@@ -103,6 +103,7 @@ class YustSelect<T> extends StatelessWidget {
           ? null
           : () => _selectValue(context),
       onDelete: readOnly ? null : onDelete,
+      helperText: helperText,
     );
   }
 
