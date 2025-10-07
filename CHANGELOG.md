@@ -1,3 +1,7 @@
+## 3.29.2 - 2025-10-06
+
+-   Fix for AlertService
+
 ## 3.29.1 - 2025-08-20
 
 -   Fix for YustWebHelpers
