@@ -88,12 +88,12 @@ class YustWebHelpers implements YustWebHelpersInterface {
   void setFavicon(YustImage? image) {
     if (image == null) return;
     final nodes = web.document.head?.querySelectorAll('link[rel="icon"]');
-    if (nodes != null) {
-      for (var i = 0; i < nodes.length; i++) {
-        final link = nodes.item(i);
-        if (link == null) continue;
-        web.document.head?.removeChild(link);
-      }
+    if (nodes == null) return;
+
+    for (var i = 0; i < nodes.length; i++) {
+      final link = nodes.item(i);
+      if (link == null) continue;
+      web.document.head?.removeChild(link);
     }
 
     final link = web.HTMLLinkElement();
