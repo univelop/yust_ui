@@ -1,3 +1,7 @@
+## 3.29.3 - 2025-10-16
+
+-   Add setFavicon Function for Web
+
 ## 3.29.2 - 2025-10-06
 
 -   Fix for AlertService
