@@ -57,10 +57,33 @@ class YustInputTile extends StatelessWidget {
     this.showHighlightFocus = false,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-    this.useFilledInputDecoration = false,
+    this.helperText,
+  }) : useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  const YustInputTile.filled({
+    super.key,
+    this.label,
+    this.text,
+    this.textStyle,
+    this.labelStyle,
+    this.prefixIcon,
+    this.style = YustInputStyle.normal,
+    this.onTap,
+    this.onDelete,
+    this.suffixChild,
+    this.validator,
+    this.divider = true,
+    this.maxLines,
+    this.minLines,
+    this.autovalidateMode,
+    this.skipFocus = false,
+    this.showHighlightFocus = false,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
     this.filledInputDecorationColor,
     this.helperText,
-  });
+  }) : useFilledInputDecoration = true;
 
   @override
   Widget build(BuildContext context) {

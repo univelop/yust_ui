@@ -41,7 +41,7 @@ class YustSelect<T> extends StatelessWidget {
 
   /// Whether the InputTile should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
   final bool useFilledInputDecoration;
-  
+
   /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
@@ -76,35 +76,85 @@ class YustSelect<T> extends StatelessWidget {
     this.optionEquals,
     this.prefixValueIcon,
     this.prefixValueIconColor,
-    this.useFilledInputDecoration = false,
+    this.helperText,
+  }) : _isSelectable = isSelectable ?? ((_) => true),
+       useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  YustSelect.filled({
+    super.key,
+    this.label,
+    required this.value,
+    required this.optionValues,
+    required this.optionLabels,
+    this.prefixWidgets,
+    bool Function(T)? isSelectable,
+    this.onSelected,
+    this.onDelete,
+    this.style = YustInputStyle.normal,
+    this.prefixIcon,
+    this.suffixChild,
+    this.validator,
+    this.readOnly = false,
+    this.showUnknownValue = false,
+    this.divider = true,
+    this.maxLines,
+    this.minLines,
+    this.allowSearch = true,
+    this.autovalidateMode,
+    this.showHighlightFocus = false,
+    this.optionEquals,
+    this.prefixValueIcon,
+    this.prefixValueIconColor,
     this.filledInputDecorationColor,
     this.helperText,
-  }) : _isSelectable = isSelectable ?? ((_) => true);
+  }) : _isSelectable = isSelectable ?? ((_) => true),
+       useFilledInputDecoration = true;
 
   @override
   Widget build(BuildContext context) {
-    return YustInputTile(
-      label: label ?? '',
-      text: _valueCaption(value),
-      prefixIcon: prefixIcon,
-      suffixChild: suffixChild,
-      validator: validator,
-      autovalidateMode: autovalidateMode,
-      style: style,
-      showHighlightFocus: showHighlightFocus,
-      divider: divider,
-      maxLines: maxLines,
-      minLines: minLines,
-      prefixLabelIcon: prefixValueIcon,
-      prefixLabelIconColor: prefixValueIconColor,
-      useFilledInputDecoration: useFilledInputDecoration,
-      filledInputDecorationColor: filledInputDecorationColor,
-      onTap: (onSelected == null || readOnly)
-          ? null
-          : () => _selectValue(context),
-      onDelete: readOnly ? null : onDelete,
-      helperText: helperText,
-    );
+    return useFilledInputDecoration
+        ? YustInputTile.filled(
+            label: label ?? '',
+            text: _valueCaption(value),
+            prefixIcon: prefixIcon,
+            suffixChild: suffixChild,
+            validator: validator,
+            autovalidateMode: autovalidateMode,
+            style: style,
+            showHighlightFocus: showHighlightFocus,
+            divider: divider,
+            maxLines: maxLines,
+            minLines: minLines,
+            prefixLabelIcon: prefixValueIcon,
+            prefixLabelIconColor: prefixValueIconColor,
+            filledInputDecorationColor: filledInputDecorationColor,
+            onTap: (onSelected == null || readOnly)
+                ? null
+                : () => _selectValue(context),
+            onDelete: readOnly ? null : onDelete,
+            helperText: helperText,
+          )
+        : YustInputTile(
+            label: label ?? '',
+            text: _valueCaption(value),
+            prefixIcon: prefixIcon,
+            suffixChild: suffixChild,
+            validator: validator,
+            autovalidateMode: autovalidateMode,
+            style: style,
+            showHighlightFocus: showHighlightFocus,
+            divider: divider,
+            maxLines: maxLines,
+            minLines: minLines,
+            prefixLabelIcon: prefixValueIcon,
+            prefixLabelIconColor: prefixValueIconColor,
+            onTap: (onSelected == null || readOnly)
+                ? null
+                : () => _selectValue(context),
+            onDelete: readOnly ? null : onDelete,
+            helperText: helperText,
+          );
   }
 
   String _valueCaption(T value) {
