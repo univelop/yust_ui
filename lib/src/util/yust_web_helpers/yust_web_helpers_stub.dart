@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers_interface.dart';
 
 class YustWebHelpers implements YustWebHelpersInterface {
@@ -15,4 +16,7 @@ class YustWebHelpers implements YustWebHelpersInterface {
     required int maxWidth,
     required int quality,
   }) => throw UnimplementedError();
+
+  @override
+  void setFavicon(YustImage? image) => throw UnimplementedError();
 }
