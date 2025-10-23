@@ -5,6 +5,7 @@ import '../yust_ui.dart';
 
 class YustTextField extends StatefulWidget {
   final String? label;
+  final IconData? labelIcon;
   final String? value;
   final String? placeholder;
   final TextStyle? textStyle;
@@ -66,6 +67,7 @@ class YustTextField extends StatefulWidget {
   const YustTextField({
     super.key,
     this.label,
+    this.labelIcon,
     this.value,
     this.placeholder,
     this.placeholderTextStyle,
@@ -285,7 +287,12 @@ class _YustTextFieldState extends State<YustTextField>
               )
             : null,
         counter: const SizedBox.shrink(),
-        labelText: label.isNotEmpty ? label : null,
+        // labelText: label.isNotEmpty ? label : null,
+        label: Row(mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(widget.labelIcon),
+          Text(label),
+        ]),
         labelStyle:
             widget.labelStyle ??
             (widget.readOnly
