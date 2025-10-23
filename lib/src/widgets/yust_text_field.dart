@@ -289,7 +289,7 @@ class _YustTextFieldState extends State<YustTextField>
         counter: const SizedBox.shrink(),
         labelText: label.isNotEmpty && widget.labelIcon == null ? label : null,
         label:  label.isNotEmpty && widget.labelIcon != null ? Row(mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             widget.labelIcon,
