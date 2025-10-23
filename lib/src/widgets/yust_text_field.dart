@@ -288,7 +288,7 @@ class _YustTextFieldState extends State<YustTextField>
             : null,
         counter: const SizedBox.shrink(),
         labelText: label.isNotEmpty && widget.labelIcon == null ? label : null,
-        label: Row(mainAxisSize: MainAxisSize.min,
+        label:  label.isNotEmpty && widget.labelIcon != null ? Row(mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
@@ -298,7 +298,7 @@ class _YustTextFieldState extends State<YustTextField>
           ),
           SizedBox(width: 4.0,),
           Text(label, overflow: TextOverflow.ellipsis),
-        ]),
+        ]) : null,
         labelStyle:
             widget.labelStyle ??
             (widget.readOnly
