@@ -293,6 +293,7 @@ class _YustTextFieldState extends State<YustTextField>
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4.0,
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 2.0),
@@ -302,7 +303,6 @@ class _YustTextFieldState extends State<YustTextField>
                       color: Theme.of(context).disabledColor,
                     ),
                   ),
-                  SizedBox(width: 4.0),
                   Flexible(
                     child: Text(
                       label,
