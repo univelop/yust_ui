@@ -303,7 +303,13 @@ class _YustTextFieldState extends State<YustTextField>
                     ),
                   ),
                   SizedBox(width: 4.0),
-                  Text(label, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                    ),
+                  ),
                 ],
               )
             : null,
