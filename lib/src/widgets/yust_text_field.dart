@@ -290,8 +290,9 @@ class _YustTextFieldState extends State<YustTextField>
         // labelText: label.isNotEmpty ? label : null,
         label: Row(mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(widget.labelIcon, size:  widget.labelStyle?.fontSize ?? Theme.of(context).textTheme.bodySmall?.fontSize ?? 14.0,
+          Icon(widget.labelIcon, size: 14.0,
               color: Theme.of(context).disabledColor,),
+          SizedBox(width: 8.0,),
           Text(label),
         ]),
         labelStyle:
