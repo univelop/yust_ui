@@ -288,19 +288,25 @@ class _YustTextFieldState extends State<YustTextField>
             : null,
         counter: const SizedBox.shrink(),
         labelText: label.isNotEmpty && widget.labelIcon == null ? label : null,
-        label:  label.isNotEmpty && widget.labelIcon != null ? 
-        Row(mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            widget.labelIcon,
-            size: 8.0,
-            color: Theme.of(context).disabledColor,
-          ),
-          SizedBox(width: 4.0),
-          Text(label, overflow: TextOverflow.ellipsis),
-        ]) : null,
+        label: label.isNotEmpty && widget.labelIcon != null
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 2.0),
+                    child: Icon(
+                      widget.labelIcon,
+                      size: 16.0,
+                      color: Theme.of(context).disabledColor,
+                    ),
+                  ),
+                  SizedBox(width: 4.0),
+                  Text(label, overflow: TextOverflow.ellipsis),
+                ],
+              )
+            : null,
         labelStyle:
             widget.labelStyle ??
             (widget.readOnly
