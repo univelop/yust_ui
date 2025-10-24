@@ -310,19 +310,30 @@ class _YustTextFieldState extends State<YustTextField>
                         label,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
+                        style:
+                            widget.labelStyle ??
+                            (widget.readOnly
+                                ? TextStyle(
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall?.color ??
+                                        Colors.black,
+                                  )
+                                : null),
                       ),
                     ),
                 ],
               ),
-        labelStyle:
-            widget.labelStyle ??
-            (widget.readOnly
-                ? TextStyle(
-                    color:
-                        Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.black,
-                  )
-                : null),
+        // labelStyle:
+        //     widget.labelStyle ??
+        //     (widget.readOnly
+        //         ? TextStyle(
+        //             color:
+        //                 Theme.of(context).textTheme.bodySmall?.color ??
+        //                 Colors.black,
+        //           )
+        //         : null),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
