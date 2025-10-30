@@ -18,6 +18,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
   final Widget Function(BuildContext context, Object error, StackTrace trace)?
   errorBuilder;
   final bool reverse;
+  final double? bottomPadding;
 
   const YustPaginatedListView({
     super.key,
@@ -31,6 +32,7 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
     this.loadingWidget,
     this.errorBuilder,
     this.reverse = false,
+    this.bottomPadding,
   });
 
   @override
@@ -45,6 +47,9 @@ class YustPaginatedListView<T extends YustDoc> extends StatelessWidget {
 
     return FirestoreListView(
       key: key,
+      padding: bottomPadding != null
+          ? EdgeInsets.only(bottom: bottomPadding!)
+          : null,
       controller: scrollController,
       emptyBuilder: (_) => emptyInfo ?? const SizedBox(),
       itemBuilder: (context, documentSnapshot) =>
