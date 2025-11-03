@@ -29,12 +29,12 @@ class YustInputTile extends StatelessWidget {
 
   /// Whether the InputTile should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
   final bool useFilledInputDecoration;
-  
+
   /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
 
-    /// The optional helper text below the text field
+  /// The optional helper text below the text field
   final String? helperText;
 
   const YustInputTile({
@@ -57,10 +57,33 @@ class YustInputTile extends StatelessWidget {
     this.showHighlightFocus = false,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-    this.useFilledInputDecoration = false,
+    this.helperText,
+  }) : useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  const YustInputTile.filled({
+    super.key,
+    this.label,
+    this.text,
+    this.textStyle,
+    this.labelStyle,
+    this.prefixIcon,
+    this.style = YustInputStyle.normal,
+    this.onTap,
+    this.onDelete,
+    this.suffixChild,
+    this.validator,
+    this.divider = true,
+    this.maxLines,
+    this.minLines,
+    this.autovalidateMode,
+    this.skipFocus = false,
+    this.showHighlightFocus = false,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
     this.filledInputDecorationColor,
     this.helperText,
-  });
+  }) : useFilledInputDecoration = true;
 
   @override
   Widget build(BuildContext context) {
@@ -69,32 +92,56 @@ class YustInputTile extends StatelessWidget {
       focusNodeDebugLabel: 'yust-input-tile-$label',
       shouldHighlightFocusedWidget: showHighlightFocus,
       onFocusAction: onTap,
-      builder: (focusContext) => YustTextField(
-        label: label,
-        labelStyle: labelStyle,
-        value: text,
-        textStyle: textStyle,
-        style: style,
-        readOnly: true,
-        divider: divider,
-        maxLines: maxLines,
-        minLines: minLines,
-        prefixIcon: prefixIcon,
-        suffixIcon: suffixChild,
-        onTap: onTap,
-        onDelete: onDelete == null
-            ? null
-            : () async {
-                await onDelete!();
-              },
-        validator: validator,
-        autovalidateMode: autovalidateMode,
-        prefixLabelIcon: prefixLabelIcon,
-        prefixLabelIconColor: prefixLabelIconColor,
-        useFilledInputDecoration: useFilledInputDecoration,
-        filledInputDecorationColor: filledInputDecorationColor,
-        helperText: helperText,
-      ),
+      builder: (focusContext) => useFilledInputDecoration
+          ? YustTextField.filled(
+              label: label,
+              labelStyle: labelStyle,
+              value: text,
+              textStyle: textStyle,
+              style: style,
+              readOnly: true,
+              divider: divider,
+              maxLines: maxLines,
+              minLines: minLines,
+              prefixIcon: prefixIcon,
+              suffixIcon: suffixChild,
+              onTap: onTap,
+              onDelete: onDelete == null
+                  ? null
+                  : () async {
+                      await onDelete!();
+                    },
+              validator: validator,
+              autovalidateMode: autovalidateMode,
+              prefixLabelIcon: prefixLabelIcon,
+              prefixLabelIconColor: prefixLabelIconColor,
+              filledInputDecorationColor: filledInputDecorationColor,
+              helperText: helperText,
+            )
+          : YustTextField(
+              label: label,
+              labelStyle: labelStyle,
+              value: text,
+              textStyle: textStyle,
+              style: style,
+              readOnly: true,
+              divider: divider,
+              maxLines: maxLines,
+              minLines: minLines,
+              prefixIcon: prefixIcon,
+              suffixIcon: suffixChild,
+              onTap: onTap,
+              onDelete: onDelete == null
+                  ? null
+                  : () async {
+                      await onDelete!();
+                    },
+              validator: validator,
+              autovalidateMode: autovalidateMode,
+              prefixLabelIcon: prefixLabelIcon,
+              prefixLabelIconColor: prefixLabelIconColor,
+              helperText: helperText,
+            ),
     );
   }
 }
