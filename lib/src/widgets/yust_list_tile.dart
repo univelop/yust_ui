@@ -31,7 +31,9 @@ class YustListTile extends StatelessWidget {
   final bool wrapSuffixChild;
 
   /// Custom content padding for the list tile. If null, default padding will be used.
-  final EdgeInsets? contentPadding;
+  ///
+  /// Padding between the inner content and the below widget.
+  final EdgeInsets? innerPadding;
 
   const YustListTile({
     super.key,
@@ -51,7 +53,7 @@ class YustListTile extends StatelessWidget {
     this.skipFocus = false,
     this.showHighlightFocus = false,
     this.wrapSuffixChild = false,
-    this.contentPadding,
+    this.innerPadding,
   });
 
   @override
@@ -84,8 +86,8 @@ class YustListTile extends StatelessWidget {
 
   Widget _buildInner(BuildContext context) {
     EdgeInsets padding;
-    if (contentPadding != null) {
-      padding = contentPadding!;
+    if (innerPadding != null) {
+      padding = innerPadding!;
     } else if (style == YustInputStyle.normal) {
       if (label != null && prefixIcon != null) {
         padding = const EdgeInsets.only(
