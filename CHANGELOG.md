@@ -1,3 +1,8 @@
+## 3.29.4 - 2025-11-13
+
+-   Add underline border style option to input fields
+-   Add label icon support to YustTextField
+
 ## 3.29.3 - 2025-10-16
 
 -   Add setFavicon Function for Web
