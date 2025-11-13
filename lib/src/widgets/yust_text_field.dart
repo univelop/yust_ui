@@ -64,11 +64,22 @@ class YustTextField extends StatefulWidget {
   /// The color of the prefix label icon
   final Color? prefixLabelIconColor;
 
+  /// The optional helper text below the text field
+  final String? helperText;
+
+  /// Whether the TextField should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
+  final bool useFilledInputDecoration;
+  
+  /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
+  /// If null, the default color from the current Theme will be used
+  final Color? filledInputDecorationColor;
+
   const YustTextField({
     super.key,
     this.label,
     this.labelIcon,
     this.value,
+    this.helperText,
     this.placeholder,
     this.placeholderTextStyle,
     this.textStyle,
@@ -111,6 +122,8 @@ class YustTextField extends StatefulWidget {
     this.forceErrorText,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
+    this.useFilledInputDecoration = false,
+    this.filledInputDecorationColor
   });
 
   @override
@@ -328,7 +341,9 @@ class _YustTextFieldState extends State<YustTextField>
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
-            : InputBorder.none,
+            : widget.style == YustInputStyle.underlineBorder
+                ? const UnderlineInputBorder()
+                : InputBorder.none,
         prefixIcon: widget.prefixIcon,
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
@@ -336,6 +351,11 @@ class _YustTextFieldState extends State<YustTextField>
         hintText: widget.placeholder,
         hintStyle: widget.placeholderTextStyle,
         errorMaxLines: 5,
+        helperText: widget.helperText,
+        helperMaxLines: 5,
+        filled: widget.useFilledInputDecoration,
+        fillColor: widget.filledInputDecorationColor,
+        
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,

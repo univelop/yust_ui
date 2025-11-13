@@ -27,6 +27,16 @@ class YustInputTile extends StatelessWidget {
   /// The color of the prefix label icon
   final Color? prefixLabelIconColor;
 
+  /// Whether the InputTile should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
+  final bool useFilledInputDecoration;
+  
+  /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
+  /// If null, the default color from the current Theme will be used
+  final Color? filledInputDecorationColor;
+
+    /// The optional helper text below the text field
+  final String? helperText;
+
   const YustInputTile({
     super.key,
     this.label,
@@ -47,6 +57,9 @@ class YustInputTile extends StatelessWidget {
     this.showHighlightFocus = false,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
+    this.useFilledInputDecoration = false,
+    this.filledInputDecorationColor,
+    this.helperText,
   });
 
   @override
@@ -78,6 +91,9 @@ class YustInputTile extends StatelessWidget {
         autovalidateMode: autovalidateMode,
         prefixLabelIcon: prefixLabelIcon,
         prefixLabelIconColor: prefixLabelIconColor,
+        useFilledInputDecoration: useFilledInputDecoration,
+        filledInputDecorationColor: filledInputDecorationColor,
+        helperText: helperText,
       ),
     );
   }
