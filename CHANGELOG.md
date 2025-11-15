@@ -1,3 +1,8 @@
+## 3.29.5 - 2025-11-15
+
+-   Add optional bottom padding to YustPaginatedListView
+-   Add innerPadding parameter to YustListTile for custom content padding
+
 ## 3.29.4 - 2025-11-13
 
 -   Add underline border style option to input fields
