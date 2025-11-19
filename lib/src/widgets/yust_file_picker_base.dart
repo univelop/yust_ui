@@ -312,6 +312,9 @@ abstract class YustFilePickerBaseState<
 
     try {
       await createDatabaseEntry();
+      
+      file.linkedDocPath ??= widget.linkedDocPath;
+      file.linkedDocAttribute ??= widget.linkedDocAttribute;
       await fileHandler.addFile(file);
 
       clearFileProcessing(file);

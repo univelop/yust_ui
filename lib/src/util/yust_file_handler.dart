@@ -376,6 +376,13 @@ class YustFileHandler {
       name: yustFile.name!,
       file: yustFile.file,
       bytes: yustFile.bytes,
+      metadata:
+          yustFile.linkedDocPath != null && yustFile.linkedDocAttribute != null
+          ? {
+              'linkedDocPath': yustFile.linkedDocPath!,
+              'linkedDocAttribute': yustFile.linkedDocAttribute!,
+            }
+          : null,
     );
     yustFile.url = url;
     await _addFileHash(yustFile);
