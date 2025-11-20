@@ -46,6 +46,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
+    super.generateDownloadUrl,
   });
 
   /// A convenience constructor for a single file picker.
@@ -67,6 +68,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
     super.overwriteSingleFile = false,
+    super.generateDownloadUrl,
   }) : super(numberOfFiles: 1);
 
   @override
@@ -275,18 +277,32 @@ class YustFilePickerState
       return IconButton(
         icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
         color: Theme.of(buttonContext).primaryColor,
-        onPressed: () async {
-          if (file.isValid()) {
-            await YustUi.fileHelpers.downloadAndLaunchFile(
-              context: buttonContext,
-              url: file.url!,
-              name: file.name!,
-            );
-          }
-        },
+        onPressed: () =>
+            unawaited(_onDownloadButtonPressed(buttonContext, file)),
       );
     },
   );
+
+  Future<void> _onDownloadButtonPressed(
+    BuildContext context,
+    YustFile file,
+  ) async {
+    if (!file.isValid()) return;
+
+    String? url = file.url ?? '';
+
+    if (widget.generateDownloadUrl != null) {
+      url = await widget.generateDownloadUrl!(file);
+    }
+
+    if (url == null || !context.mounted) return;
+
+    await YustUi.fileHelpers.downloadAndLaunchFile(
+      context: context,
+      url: url,
+      name: file.name!,
+    );
+  }
 
   Widget _buildFileRenameButton(YustFile file) {
     if (!enabled) {

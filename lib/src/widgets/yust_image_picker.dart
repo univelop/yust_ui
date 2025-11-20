@@ -80,6 +80,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
+    super.generateDownloadUrl,
   }) : super(files: images);
 
   /// A convenience constructor for a single image picker.
@@ -109,6 +110,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
+    super.generateDownloadUrl,
   }) : super(files: images, numberOfFiles: 1);
 
   @override

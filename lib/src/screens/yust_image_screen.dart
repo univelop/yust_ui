@@ -28,6 +28,11 @@ class YustImageScreen extends StatefulWidget {
   /// Keep native resolution of the image
   final bool keepNativeResolution;
 
+  /// Callback to generate a download URL for an image.
+  ///
+  /// This gets called when the user wants to download an image.
+  final Future<String?> Function(YustImage image)? generateDownloadUrl;
+
   const YustImageScreen({
     super.key,
     required this.images,
@@ -36,6 +41,7 @@ class YustImageScreen extends StatefulWidget {
     this.allowDrawing = false,
     this.allowShare = true,
     this.keepNativeResolution = false,
+    this.generateDownloadUrl,
   });
 
   static void navigateToScreen({
@@ -46,6 +52,7 @@ class YustImageScreen extends StatefulWidget {
     bool allowShare = true,
     bool keepNativeResolution = false,
     void Function(YustImage image, Uint8List newImage)? onSave,
+    Future<String?> Function(YustImage image)? generateDownloadUrl,
   }) {
     unawaited(
       Navigator.of(context).push(
@@ -57,6 +64,7 @@ class YustImageScreen extends StatefulWidget {
             keepNativeResolution: keepNativeResolution,
             allowDrawing: allowDrawing,
             allowShare: allowShare,
+            generateDownloadUrl: generateDownloadUrl,
           ),
         ),
       ),
@@ -371,13 +379,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
                 return IconButton(
                   iconSize: 35,
                   color: Colors.white,
-                  onPressed: () {
-                    YustUi.fileHelpers.downloadAndLaunchFile(
-                      context: buttonContext,
-                      url: image.url!,
-                      name: image.name!,
-                    );
-                  },
+                  onPressed: () =>
+                      unawaited(_onDownloadButtonPressed(buttonContext, image)),
                   icon: kIsWeb
                       ? const Icon(Icons.download)
                       : const Icon(Icons.share),
@@ -387,6 +390,27 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _onDownloadButtonPressed(
+    BuildContext context,
+    YustImage image,
+  ) async {
+    if (!image.isValid()) return;
+
+    String? url = image.url ?? '';
+
+    if (widget.generateDownloadUrl != null) {
+      url = await widget.generateDownloadUrl!(image);
+    }
+
+    if (url == null || !context.mounted) return;
+
+    await YustUi.fileHelpers.downloadAndLaunchFile(
+      context: context,
+      url: url,
+      name: image.name!,
     );
   }
 
