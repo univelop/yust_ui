@@ -614,6 +614,7 @@ class YustImagePickerState
           setState(() {});
         }
       },
+      generateDownloadUrl: widget.generateDownloadUrl,
     );
   }
 }
