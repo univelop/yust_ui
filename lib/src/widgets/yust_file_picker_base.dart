@@ -320,12 +320,6 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   void clearFileProcessing(T? file) => _processing.remove(file?.name);
 
-  /// Check and upload files.
-  Future<void> checkAndUploadFiles<U>(
-    List<U> fileData,
-    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
-  );
-
   // Upload a file
   @nonVirtual
   Future<void> uploadFile({
