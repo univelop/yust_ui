@@ -356,6 +356,8 @@ class _YustTextFieldState extends State<YustTextField>
         errorMaxLines: 5,
         helperText: widget.helperText,
         helperMaxLines: 5,
+        filled: widget.useFilledInputDecoration,
+        fillColor: widget.filledInputDecorationColor,
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,
@@ -405,25 +407,11 @@ class _YustTextFieldState extends State<YustTextField>
       forceErrorText: widget.forceErrorText,
     );
 
-    final Widget wrappedTextField = widget.useFilledInputDecoration
-        ? Container(
-            decoration: BoxDecoration(
-              color: widget.filledInputDecorationColor ??
-                  Theme.of(context).inputDecorationTheme.fillColor ??
-                  Colors.grey[200],
-              borderRadius: widget.style == YustInputStyle.outlineBorder
-                  ? BorderRadius.circular(4.0)
-                  : null,
-            ),
-            child: textField,
-          )
-        : textField;
-
     if (widget.reserveDefaultTextEditingShortcuts) {
-      return DefaultTextEditingShortcuts(child: wrappedTextField);
+      return DefaultTextEditingShortcuts(child: textField);
     }
 
-    return wrappedTextField;
+    return textField;
   }
 
   @override
