@@ -69,7 +69,7 @@ class YustTextField extends StatefulWidget {
 
   /// Whether the TextField should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
   final bool useFilledInputDecoration;
-  
+
   /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
@@ -123,7 +123,7 @@ class YustTextField extends StatefulWidget {
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
     this.useFilledInputDecoration = false,
-    this.filledInputDecorationColor
+    this.filledInputDecorationColor,
   });
 
   @override
@@ -258,22 +258,28 @@ class _YustTextFieldState extends State<YustTextField>
     }
     if (widget.slimDesign) return _buildTextField();
 
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildTextField()),
-            if (widget.onDelete != null && widget.value != '')
-              IconButton(
-                onPressed: widget.onDelete!,
-                icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
-              ),
-            widget.suffixIcon ?? const SizedBox(),
-          ],
-        ),
-        if (widget.style == YustInputStyle.normal && widget.divider)
-          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-      ],
+    return Container(
+      color: widget.filledInputDecorationColor,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildTextField()),
+              if (widget.onDelete != null && widget.value != '')
+                IconButton(
+                  onPressed: widget.onDelete!,
+                  icon: Icon(
+                    Icons.delete,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              widget.suffixIcon ?? const SizedBox(),
+            ],
+          ),
+          if (widget.style == YustInputStyle.normal && widget.divider)
+            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+        ],
+      ),
     );
   }
 
@@ -342,8 +348,8 @@ class _YustTextFieldState extends State<YustTextField>
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
             : widget.style == YustInputStyle.underlineBorder
-                ? const UnderlineInputBorder()
-                : InputBorder.none,
+            ? const UnderlineInputBorder()
+            : InputBorder.none,
         prefixIcon: widget.prefixIcon,
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
@@ -355,7 +361,6 @@ class _YustTextFieldState extends State<YustTextField>
         helperMaxLines: 5,
         filled: widget.useFilledInputDecoration,
         fillColor: widget.filledInputDecorationColor,
-        
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,
