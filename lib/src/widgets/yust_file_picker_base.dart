@@ -299,6 +299,12 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   void clearFileProcessing(T? file) => _processing.remove(file?.name);
 
+  /// Check and upload files.
+  Future<void> checkAndUploadFiles<U>(
+    List<U> fileData,
+    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
+  );
+
   // Upload a file
   @nonVirtual
   Future<void> uploadFile({
@@ -353,7 +359,7 @@ abstract class YustFilePickerBaseState<
         below: buildFileDisplay(context),
         divider: widget.divider,
         onDropMultiple: (controller, ev) async {
-          await _handleDroppedFiles<DropzoneFileInterface>(ev ?? [], (
+          await checkAndUploadFiles<DropzoneFileInterface>(ev ?? [], (
             fileData,
           ) async {
             final data = await controller.getFileData(fileData);
@@ -572,32 +578,6 @@ abstract class YustFilePickerBaseState<
     }
 
     return true;
-  }
-
-  Future<void> _handleDroppedFiles<U>(
-    List<U> fileData,
-    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
-  ) async {
-    final filesValid = await checkFileCount(fileData);
-    if (!filesValid) return;
-
-    if (widget.overwriteSingleFile) {
-      await deleteFiles(widget.files);
-    }
-
-    for (final fileData in fileData) {
-      try {
-        final (name, file, bytes) = await fileDataExtractor(fileData);
-        final newFile = await processFile(name, file, bytes);
-
-        await uploadFile(file: newFile);
-      } catch (e) {
-        await YustUi.alertService.showAlert(
-          LocaleKeys.error.tr(),
-          e.toString(),
-        );
-      }
-    }
   }
 
   @override
