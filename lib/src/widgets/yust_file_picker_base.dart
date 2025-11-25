@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
-
+import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
@@ -189,24 +189,39 @@ abstract class YustFilePickerBaseState<
   ///
   /// This is used to convert the files to the type of the file picker.
   /// e.g. [YustImage] for [YustImagePicker] and [YustFile] for [YustFilePicker].
+  @mustBeOverridden
   List<T> convertFiles(List<YustFile> files);
 
   /// Build the file display.
   ///
   /// This is used to build the file display.
   /// e.g. [YustFileListView] for [YustFilePicker] and [YustFileGridView] for [YustImagePicker].
+  @mustBeOverridden
   Widget buildFileDisplay(BuildContext context);
 
   /// Build the specific action buttons.
+  @mustBeOverridden
   List<Widget> buildActionButtons(BuildContext context);
 
   /// Open the file picker.
+  @mustBeOverridden
   Future<void> pickFiles();
 
   /// Create a file object from the given parameters.
   ///
   /// This is used to create the appropriate file type for each picker.
+  @mustBeOverridden
   Future<T> processFile(String name, File? file, Uint8List? bytes);
+
+  /// Check and upload files.
+  ///
+  /// Can be overridden by subclasses to implement their own validation and upload
+  /// logic that will be used for dropped files.
+  @mustBeOverridden
+  Future<void> checkAndUploadFiles<U>(
+    List<U> fileData,
+    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
+  );
 
   /// Sort the files.
   List<T> sortFiles(List<T> files) => files;
@@ -304,12 +319,6 @@ abstract class YustFilePickerBaseState<
   // Clear a file from processing
   @nonVirtual
   void clearFileProcessing(T? file) => _processing.remove(file?.name);
-
-  /// Check and upload files.
-  Future<void> checkAndUploadFiles<U>(
-    List<U> fileData,
-    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
-  );
 
   // Upload a file
   @nonVirtual
