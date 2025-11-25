@@ -258,9 +258,7 @@ class _YustTextFieldState extends State<YustTextField>
     }
     if (widget.slimDesign) return _buildTextField();
 
-    return Container(
-      color: widget.filledInputDecorationColor,
-      child: Column(
+    return Column(
         children: [
           Row(
             children: [
@@ -279,7 +277,6 @@ class _YustTextFieldState extends State<YustTextField>
           if (widget.style == YustInputStyle.normal && widget.divider)
             const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
         ],
-      ),
     );
   }
 
@@ -408,11 +405,25 @@ class _YustTextFieldState extends State<YustTextField>
       forceErrorText: widget.forceErrorText,
     );
 
+    final Widget wrappedTextField = widget.useFilledInputDecoration
+        ? Container(
+            decoration: BoxDecoration(
+              color: widget.filledInputDecorationColor ??
+                  Theme.of(context).inputDecorationTheme.fillColor ??
+                  Colors.grey[200],
+              borderRadius: widget.style == YustInputStyle.outlineBorder
+                  ? BorderRadius.circular(4.0)
+                  : null,
+            ),
+            child: textField,
+          )
+        : textField;
+
     if (widget.reserveDefaultTextEditingShortcuts) {
-      return DefaultTextEditingShortcuts(child: textField);
+      return DefaultTextEditingShortcuts(child: wrappedTextField);
     }
 
-    return textField;
+    return wrappedTextField;
   }
 
   @override
