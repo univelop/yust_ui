@@ -71,7 +71,8 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.generateDownloadUrl,
-    super.signedUrlQueryParameters,
+    super.originalSignedUrlPart,
+    super.thumbnailSignedUrlPart,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -102,7 +103,8 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.generateDownloadUrl,
-    super.signedUrlQueryParameters,
+    super.originalSignedUrlPart,
+    super.thumbnailSignedUrlPart,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -624,6 +626,7 @@ class YustImagePickerState
         }
       },
       generateDownloadUrl: widget.generateDownloadUrl,
+      originalSignedUrlPart: widget.originalSignedUrlPart,
     );
   }
 }

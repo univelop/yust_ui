@@ -34,8 +34,8 @@ class YustImageScreen extends StatefulWidget {
   /// This gets called when the user wants to download an image.
   final Future<String?> Function(YustImage image)? generateDownloadUrl;
 
-  /// Optional signed query parameters that will be added to the file url
-  final String? signedUrlQueryParameters;
+  final String? originalSignedUrlPart;
+  final String? originalBaseUrl;
 
   const YustImageScreen({
     super.key,
@@ -46,7 +46,8 @@ class YustImageScreen extends StatefulWidget {
     this.allowShare = true,
     this.keepNativeResolution = false,
     this.generateDownloadUrl,
-    this.signedUrlQueryParameters,
+    this.originalSignedUrlPart,
+    this.originalBaseUrl,
   });
 
   static void navigateToScreen({
@@ -58,6 +59,7 @@ class YustImageScreen extends StatefulWidget {
     bool keepNativeResolution = false,
     void Function(YustImage image, Uint8List newImage)? onSave,
     Future<String?> Function(YustImage image)? generateDownloadUrl,
+    String? originalSignedUrlPart,
   }) {
     unawaited(
       Navigator.of(context).push(
@@ -70,6 +72,7 @@ class YustImageScreen extends StatefulWidget {
             allowDrawing: allowDrawing,
             allowShare: allowShare,
             generateDownloadUrl: generateDownloadUrl,
+            originalSignedUrlPart: originalSignedUrlPart,
           ),
         ),
       ),
@@ -229,10 +232,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   PhotoView _getScaledUpPhotoView(YustImage image) {
     return PhotoView(
-      imageProvider: _getImageOfUrl(image),
+      imageProvider: _loadImage(image),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: image.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+        tag:
+            image.getOriginalUrl(
+              widget.originalBaseUrl!,
+              widget.originalSignedUrlPart!,
+            ) ??
+            '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -251,10 +259,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
     YustImage currentImage,
   ) {
     return PhotoViewGalleryPageOptions(
-      imageProvider: _getImageOfUrl(currentImage),
+      imageProvider: _loadImage(currentImage),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: currentImage.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+        tag:
+            currentImage.getOriginalUrl(
+              widget.originalBaseUrl,
+              widget.originalSignedUrlPart,
+            ) ??
+            '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -268,12 +281,17 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: image.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+        tag:
+            image.getOriginalUrl(
+              widget.originalBaseUrl,
+              widget.originalSignedUrlPart,
+            ) ??
+            '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
-      child: _buildScalableImage(_getImageOfUrl(image)),
+      child: _buildScalableImage(_loadImage(image)),
     );
   }
 
@@ -282,14 +300,15 @@ class _YustImageScreenState extends State<YustImageScreen> {
     int index,
   ) {
     return PhotoViewGalleryPageOptions.customChild(
-      child: _buildScalableImage(_getImageOfUrl(currentImage)),
+      child: _buildScalableImage(_loadImage(currentImage)),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
         tag:
-            widget.images[index].getSignedUrl(
-              widget.signedUrlQueryParameters,
+            widget.images[index].getOriginalUrl(
+              widget.originalBaseUrl,
+              widget.originalSignedUrlPart,
             ) ??
             '',
       ),
@@ -322,7 +341,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildDrawButton(BuildContext context, YustImage image) {
-    if (image.getSignedUrl(widget.signedUrlQueryParameters) == null &&
+    if (image.getOriginalUrl(
+              widget.originalBaseUrl,
+              widget.originalSignedUrlPart,
+            ) ==
+            null &&
         image.devicePath == null) {
       return const SizedBox.shrink();
     }
@@ -343,7 +366,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   onPressed: () {
                     YustImageDrawingScreen.navigateToScreen(
                       context: context,
-                      image: _getImageOfUrl(image),
+                      image: _loadImage(image),
                       onSave: (imageBytes) async {
                         if (imageBytes != null) {
                           widget.onSave!(image, imageBytes);
@@ -431,13 +454,16 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   /// because of the offline cache the file could be a stored online or on device
-  ImageProvider<Object> _getImageOfUrl(YustImage image) {
+  ImageProvider<Object> _loadImage(YustImage image) {
     if (image.cached) {
       var imageFile = File(image.devicePath!);
       return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
       return NetworkImage(
-        image.getSignedUrl(widget.signedUrlQueryParameters)!,
+        image.getOriginalUrl(
+          widget.originalBaseUrl,
+          widget.originalSignedUrlPart,
+        )!,
       );
     }
   }

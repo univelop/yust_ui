@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/extensions/yust_file_extension.dart';
 
 import '../yust_ui.dart';
 
@@ -28,6 +29,15 @@ class YustCachedImage extends StatelessWidget {
   /// This may destroy the aspect ratio of the image
   final bool? resizeInCache;
 
+  final String? originalSignedUrlPart;
+  final String? thumbnailSignedUrlPart;
+
+  final String? originalBaseUrl;
+  final String? thumbnailBaseUrl;
+
+  /// Whether to show the thumbnail instead of the original image, if available.
+  final bool preferThumbnail;
+
   const YustCachedImage({
     super.key,
     required this.file,
@@ -36,6 +46,11 @@ class YustCachedImage extends StatelessWidget {
     this.width,
     this.placeholder,
     this.resizeInCache,
+    this.originalSignedUrlPart,
+    this.thumbnailSignedUrlPart,
+    this.preferThumbnail = false,
+    this.originalBaseUrl,
+    this.thumbnailBaseUrl,
   });
 
   @override
@@ -59,9 +74,21 @@ class YustCachedImage extends StatelessWidget {
         fit: fit,
       );
     } else if (file.url != null) {
+      final showThumbnail =
+          preferThumbnail &&
+          file.hasThumbnail() &&
+          thumbnailBaseUrl != null &&
+          thumbnailSignedUrlPart != null;
+
+      final url = showThumbnail
+          ? file.getThumbnailUrl(thumbnailBaseUrl!, thumbnailSignedUrlPart!)!
+          : (originalBaseUrl != null && originalSignedUrlPart != null
+                ? file.getOriginalUrl(originalBaseUrl!, originalSignedUrlPart!)!
+                : file.url!);
+
       if (kIsWeb) {
         return Image.network(
-          file.url!,
+          url,
           width: width,
           height: height,
           fit: fit,
@@ -95,7 +122,7 @@ class YustCachedImage extends StatelessWidget {
       preview = CachedNetworkImage(
         width: width,
         height: height,
-        imageUrl: file.url!,
+        imageUrl: url,
         maxWidthDiskCache: !kIsWeb && (Platform.isAndroid || Platform.isIOS)
             ? 300
             : null,
