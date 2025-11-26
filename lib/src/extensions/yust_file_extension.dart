@@ -4,7 +4,7 @@ extension YustFileExtension on YustFile {
   bool hasThumbnail() => thumbnails?.isNotEmpty ?? false;
 
   String? getOriginalUrl(String? baseUrl, String? signedUrlPart) {
-    if (baseUrl == null || signedUrlPart == null) return url;
+    if (baseUrl == null || signedUrlPart == null || path == null) return url;
     return '${_tryAppendSlash(baseUrl)}$path?$signedUrlPart';
   }
 
