@@ -48,7 +48,7 @@ class YustCachedImage extends StatelessWidget {
     this.resizeInCache,
     this.originalSignedUrlPart,
     this.thumbnailSignedUrlPart,
-    this.preferThumbnail = false,
+    this.preferThumbnail = true,
     this.originalBaseUrl,
     this.thumbnailBaseUrl,
   });

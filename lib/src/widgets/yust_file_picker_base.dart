@@ -94,6 +94,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final String? originalSignedUrlPart;
   final String? thumbnailSignedUrlPart;
 
+  final String? originalBaseUrl;
+  final String? thumbnailBaseUrl;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -118,6 +121,8 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.generateDownloadUrl,
     this.originalSignedUrlPart,
     this.thumbnailSignedUrlPart,
+    this.originalBaseUrl,
+    this.thumbnailBaseUrl,
   });
 
   /// Default number of items to show initially and load more on demand.
