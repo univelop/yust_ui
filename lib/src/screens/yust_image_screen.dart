@@ -60,6 +60,7 @@ class YustImageScreen extends StatefulWidget {
     void Function(YustImage image, Uint8List newImage)? onSave,
     Future<String?> Function(YustImage image)? generateDownloadUrl,
     String? originalSignedUrlPart,
+    String? originalBaseUrl,
   }) {
     unawaited(
       Navigator.of(context).push(
@@ -73,6 +74,7 @@ class YustImageScreen extends StatefulWidget {
             allowShare: allowShare,
             generateDownloadUrl: generateDownloadUrl,
             originalSignedUrlPart: originalSignedUrlPart,
+            originalBaseUrl: originalBaseUrl,
           ),
         ),
       ),
@@ -237,8 +239,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
       heroAttributes: PhotoViewHeroAttributes(
         tag:
             image.getOriginalUrl(
-              widget.originalBaseUrl!,
-              widget.originalSignedUrlPart!,
+              widget.originalBaseUrl,
+              widget.originalSignedUrlPart,
             ) ??
             '',
       ),

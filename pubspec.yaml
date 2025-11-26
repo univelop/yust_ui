@@ -60,4 +60,4 @@ dependency_overrides:
     yust:
         git:
             url: https://github.com/univelop/yust.git
-            ref: 6004-preview-of-images-and-files
+            ref: 6006-preview-of-images-and-files

@@ -635,6 +635,7 @@ class YustImagePickerState
       },
       generateDownloadUrl: widget.generateDownloadUrl,
       originalSignedUrlPart: widget.originalSignedUrlPart,
+      originalBaseUrl: widget.originalBaseUrl,
     );
   }
 }
