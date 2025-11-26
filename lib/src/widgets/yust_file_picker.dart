@@ -42,11 +42,12 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
+    super.generateDownloadUrl,
+    super.signedUrlQueryParameters,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
-    super.generateDownloadUrl,
   });
 
   /// A convenience constructor for a single file picker.
@@ -64,11 +65,12 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.readOnly = false,
     super.divider = true,
     super.wrapSuffixChild = false,
+    super.overwriteSingleFile = false,
+    super.generateDownloadUrl,
+    super.signedUrlQueryParameters,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
-    super.overwriteSingleFile = false,
-    super.generateDownloadUrl,
   }) : super(numberOfFiles: 1);
 
   @override

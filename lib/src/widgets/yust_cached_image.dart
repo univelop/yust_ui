@@ -8,10 +8,19 @@ import 'package:yust/yust.dart';
 import '../yust_ui.dart';
 
 class YustCachedImage extends StatelessWidget {
+  /// The file to display.
   final YustFile file;
+
+  /// Placeholder text to display while the image is loading.
   final String? placeholder;
+
+  /// Fit of the image.
   final BoxFit? fit;
+
+  /// Width of the image.
   final double? width;
+
+  /// Height of the image.
   final double? height;
 
   /// Resize image in cache to 300x300
@@ -31,7 +40,6 @@ class YustCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // define default preview
     Widget preview = Container(
       height: height ?? 150,
       width: width ?? 150,

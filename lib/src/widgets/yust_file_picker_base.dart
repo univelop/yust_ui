@@ -91,6 +91,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This gets called when the user wants to download a file.
   final Future<String?> Function(YustFile file)? generateDownloadUrl;
 
+  /// Optional signed query parameters that will be added to the file url
+  final String? signedUrlQueryParameters;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -113,6 +116,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
     this.generateDownloadUrl,
+    this.signedUrlQueryParameters,
   });
 
   /// Default number of items to show initially and load more on demand.

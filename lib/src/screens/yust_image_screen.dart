@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/extensions/yust_file_extension.dart';
 import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 
 import '../yust_ui.dart';
@@ -33,6 +34,9 @@ class YustImageScreen extends StatefulWidget {
   /// This gets called when the user wants to download an image.
   final Future<String?> Function(YustImage image)? generateDownloadUrl;
 
+  /// Optional signed query parameters that will be added to the file url
+  final String? signedUrlQueryParameters;
+
   const YustImageScreen({
     super.key,
     required this.images,
@@ -42,6 +46,7 @@ class YustImageScreen extends StatefulWidget {
     this.allowShare = true,
     this.keepNativeResolution = false,
     this.generateDownloadUrl,
+    this.signedUrlQueryParameters,
   });
 
   static void navigateToScreen({
@@ -226,7 +231,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return PhotoView(
       imageProvider: _getImageOfUrl(image),
       minScale: PhotoViewComputedScale.contained,
-      heroAttributes: PhotoViewHeroAttributes(tag: image.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: image.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -246,7 +253,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return PhotoViewGalleryPageOptions(
       imageProvider: _getImageOfUrl(currentImage),
       minScale: PhotoViewComputedScale.contained,
-      heroAttributes: PhotoViewHeroAttributes(tag: currentImage.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: currentImage.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -258,7 +267,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
-      heroAttributes: PhotoViewHeroAttributes(tag: image.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: image.getSignedUrl(widget.signedUrlQueryParameters) ?? '',
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -276,7 +287,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: widget.images[index].url ?? '',
+        tag:
+            widget.images[index].getSignedUrl(
+              widget.signedUrlQueryParameters,
+            ) ??
+            '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -307,7 +322,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildDrawButton(BuildContext context, YustImage image) {
-    if (image.url == null && image.devicePath == null) {
+    if (image.getSignedUrl(widget.signedUrlQueryParameters) == null &&
+        image.devicePath == null) {
       return const SizedBox.shrink();
     }
 
@@ -420,7 +436,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
       var imageFile = File(image.devicePath!);
       return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
-      return NetworkImage(image.url!);
+      return NetworkImage(
+        image.getSignedUrl(widget.signedUrlQueryParameters)!,
+      );
     }
   }
 }

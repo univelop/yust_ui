@@ -70,6 +70,8 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.generateDownloadUrl,
+    super.signedUrlQueryParameters,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -80,7 +82,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-    super.generateDownloadUrl,
   }) : super(files: images);
 
   /// A convenience constructor for a single image picker.
@@ -100,6 +101,8 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
+    super.generateDownloadUrl,
+    super.signedUrlQueryParameters,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -110,7 +113,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-    super.generateDownloadUrl,
   }) : super(files: images, numberOfFiles: 1);
 
   @override
@@ -307,6 +309,7 @@ class YustImagePickerState
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
+      // Resize 'original' quality images because of their potential big size
       resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
     );
     final zoomEnabled =
