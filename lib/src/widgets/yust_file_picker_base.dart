@@ -86,17 +86,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Default is [defaultPreviewCount].
   final int previewCount;
 
-  /// Callback to generate a download URL for a file.
-  ///
-  /// This gets called when the user wants to download a file.
-  final Future<String?> Function(YustFile file)? generateDownloadUrl;
-
-  final String? originalSignedUrlPart;
-  final String? thumbnailSignedUrlPart;
-
-  final String? originalBaseUrl;
-  final String? thumbnailBaseUrl;
-
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -118,11 +107,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.numberOfFiles = defaultNumberOfFiles,
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
-    this.generateDownloadUrl,
-    this.originalSignedUrlPart,
-    this.thumbnailSignedUrlPart,
-    this.originalBaseUrl,
-    this.thumbnailBaseUrl,
   });
 
   /// Default number of items to show initially and load more on demand.

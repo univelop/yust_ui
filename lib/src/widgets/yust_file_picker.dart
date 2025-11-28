@@ -42,9 +42,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
-    super.generateDownloadUrl,
-    super.originalSignedUrlPart,
-    super.thumbnailSignedUrlPart,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -67,9 +64,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.divider = true,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
-    super.generateDownloadUrl,
-    super.originalSignedUrlPart,
-    super.thumbnailSignedUrlPart,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -295,8 +289,8 @@ class YustFilePickerState
 
     String? url = file.url ?? '';
 
-    if (widget.generateDownloadUrl != null) {
-      url = await widget.generateDownloadUrl!(file);
+    if (Yust.fileAccessService.generateDownloadUrl != null) {
+      url = await Yust.fileAccessService.generateDownloadUrl!(file);
     }
 
     if (url == null || !context.mounted) return;

@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/extensions/yust_file_extension.dart';
 import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 
 import '../yust_ui.dart';
@@ -29,14 +28,6 @@ class YustImageScreen extends StatefulWidget {
   /// Keep native resolution of the image
   final bool keepNativeResolution;
 
-  /// Callback to generate a download URL for an image.
-  ///
-  /// This gets called when the user wants to download an image.
-  final Future<String?> Function(YustImage image)? generateDownloadUrl;
-
-  final String? originalSignedUrlPart;
-  final String? originalBaseUrl;
-
   const YustImageScreen({
     super.key,
     required this.images,
@@ -45,9 +36,6 @@ class YustImageScreen extends StatefulWidget {
     this.allowDrawing = false,
     this.allowShare = true,
     this.keepNativeResolution = false,
-    this.generateDownloadUrl,
-    this.originalSignedUrlPart,
-    this.originalBaseUrl,
   });
 
   static void navigateToScreen({
@@ -72,9 +60,6 @@ class YustImageScreen extends StatefulWidget {
             keepNativeResolution: keepNativeResolution,
             allowDrawing: allowDrawing,
             allowShare: allowShare,
-            generateDownloadUrl: generateDownloadUrl,
-            originalSignedUrlPart: originalSignedUrlPart,
-            originalBaseUrl: originalBaseUrl,
           ),
         ),
       ),
@@ -237,12 +222,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       imageProvider: _loadImage(image),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag:
-            image.getOriginalUrl(
-              widget.originalBaseUrl,
-              widget.originalSignedUrlPart,
-            ) ??
-            '',
+        tag: image.getOriginalUrl() ?? '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -264,12 +244,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       imageProvider: _loadImage(currentImage),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag:
-            currentImage.getOriginalUrl(
-              widget.originalBaseUrl,
-              widget.originalSignedUrlPart,
-            ) ??
-            '',
+        tag: currentImage.getOriginalUrl() ?? '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -283,12 +258,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag:
-            image.getOriginalUrl(
-              widget.originalBaseUrl,
-              widget.originalSignedUrlPart,
-            ) ??
-            '',
+        tag: image.getOriginalUrl() ?? '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -307,12 +277,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag:
-            widget.images[index].getOriginalUrl(
-              widget.originalBaseUrl,
-              widget.originalSignedUrlPart,
-            ) ??
-            '',
+        tag: widget.images[index].getOriginalUrl() ?? '',
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -343,12 +308,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildDrawButton(BuildContext context, YustImage image) {
-    if (image.getOriginalUrl(
-              widget.originalBaseUrl,
-              widget.originalSignedUrlPart,
-            ) ==
-            null &&
-        image.devicePath == null) {
+    if (image.getOriginalUrl() == null && image.devicePath == null) {
       return const SizedBox.shrink();
     }
 
@@ -442,8 +402,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
     String? url = image.url ?? '';
 
-    if (widget.generateDownloadUrl != null) {
-      url = await widget.generateDownloadUrl!(image);
+    if (Yust.fileAccessService.generateDownloadUrl != null) {
+      url = await Yust.fileAccessService.generateDownloadUrl!(image);
     }
 
     if (url == null || !context.mounted) return;
@@ -462,10 +422,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
       return NetworkImage(
-        image.getOriginalUrl(
-          widget.originalBaseUrl,
-          widget.originalSignedUrlPart,
-        )!,
+        image.getOriginalUrl()!,
       );
     }
   }

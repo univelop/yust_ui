@@ -70,11 +70,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
-    super.generateDownloadUrl,
-    super.originalSignedUrlPart,
-    super.thumbnailSignedUrlPart,
-    super.originalBaseUrl,
-    super.thumbnailBaseUrl,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -104,11 +99,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
-    super.generateDownloadUrl,
-    super.originalSignedUrlPart,
-    super.thumbnailSignedUrlPart,
-    super.originalBaseUrl,
-    super.thumbnailBaseUrl,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -317,10 +307,6 @@ class YustImagePickerState
       fit: BoxFit.cover,
       // Resize 'original' quality images because of their potential big size
       resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
-      originalBaseUrl: widget.originalBaseUrl,
-      thumbnailBaseUrl: widget.thumbnailBaseUrl,
-      originalSignedUrlPart: widget.originalSignedUrlPart,
-      thumbnailSignedUrlPart: widget.thumbnailSignedUrlPart,
     );
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
@@ -633,9 +619,6 @@ class YustImagePickerState
           setState(() {});
         }
       },
-      generateDownloadUrl: widget.generateDownloadUrl,
-      originalSignedUrlPart: widget.originalSignedUrlPart,
-      originalBaseUrl: widget.originalBaseUrl,
     );
   }
 }
