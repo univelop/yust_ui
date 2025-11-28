@@ -46,9 +46,6 @@ class YustImageScreen extends StatefulWidget {
     bool allowShare = true,
     bool keepNativeResolution = false,
     void Function(YustImage image, Uint8List newImage)? onSave,
-    Future<String?> Function(YustImage image)? generateDownloadUrl,
-    String? originalSignedUrlPart,
-    String? originalBaseUrl,
   }) {
     unawaited(
       Navigator.of(context).push(
