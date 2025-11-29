@@ -86,6 +86,11 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Default is [defaultPreviewCount].
   final int previewCount;
 
+  /// Whether thumbnails should be created for new files and be shown for existing ones.
+  ///
+  /// If false, no thumbnails will be created or shown.
+  final bool thumbnails;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -107,6 +112,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.numberOfFiles = defaultNumberOfFiles,
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
+    this.thumbnails = false,
   });
 
   /// Default number of items to show initially and load more on demand.
