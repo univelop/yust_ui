@@ -7,6 +7,12 @@ import 'package:yust/yust.dart';
 
 import '../yust_ui.dart';
 
+enum YustCachedImageMode {
+  preferThumbnail,
+  originalOnly,
+  thumbnailOnly,
+}
+
 class YustCachedImage extends StatelessWidget {
   /// The file to display.
   final YustFile file;
@@ -28,8 +34,8 @@ class YustCachedImage extends StatelessWidget {
   /// This may destroy the aspect ratio of the image
   final bool? resizeInCache;
 
-  /// Whether to show the thumbnail instead of the original image, if available.
-  final bool preferThumbnail;
+  /// Mode to display the image.
+  final YustCachedImageMode mode;
 
   const YustCachedImage({
     super.key,
@@ -39,7 +45,7 @@ class YustCachedImage extends StatelessWidget {
     this.width,
     this.placeholder,
     this.resizeInCache,
-    this.preferThumbnail = true,
+    this.mode = YustCachedImageMode.preferThumbnail,
   });
 
   @override
@@ -67,10 +73,15 @@ class YustCachedImage extends StatelessWidget {
       final thumbnailGrant = Yust.fileAccessService.getGrantForFile(file);
 
       final showThumbnail =
-          preferThumbnail &&
+          (mode == YustCachedImageMode.preferThumbnail ||
+              mode == YustCachedImageMode.originalOnly) &&
           file.hasThumbnail() &&
           thumbnailBaseUrl != null &&
           thumbnailGrant != null;
+
+      if (mode == YustCachedImageMode.thumbnailOnly && !showThumbnail) {
+        return preview;
+      }
 
       final url = showThumbnail
           ? file.getThumbnailUrl()!
