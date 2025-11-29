@@ -57,7 +57,7 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
-    # yust:
-    #     git:
-    #         url: https://github.com/univelop/yust.git
-    #         ref: master
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 6006-preview-of-images-and-files
