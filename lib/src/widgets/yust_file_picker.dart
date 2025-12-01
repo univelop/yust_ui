@@ -107,7 +107,7 @@ class YustFilePickerState
     );
     if (result == null) return;
 
-    await _checkAndUploadFiles(
+    await checkAndUploadFiles(
       result.files,
       (file) async =>
           (_getFileName(file), _platformFileToFile(file), file.bytes),
@@ -316,7 +316,8 @@ class YustFilePickerState
     );
   }
 
-  Future<void> _checkAndUploadFiles<T>(
+  @override
+  Future<void> checkAndUploadFiles<T>(
     List<T> fileData,
     Future<(String, File?, Uint8List?)> Function(T) fileDataExtractor,
   ) async {
@@ -407,7 +408,7 @@ class YustFilePickerState
         LocaleKeys.alertFileAlreadyExists.tr(namedArgs: {'fileName': fileName}),
         LocaleKeys.continue_.tr(),
       );
-      if (confirmed == false) return false;
+      if (confirmed != true) return false;
 
       final fileToDelete = fileHandler.getFiles().firstWhere(
         (file) => file.name == fileName,

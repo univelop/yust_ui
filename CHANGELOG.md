@@ -1,3 +1,7 @@
+## 3.29.6 - 2025-11-26
+
+-   Fix validation on file dropping
+
 ## 3.29.5 - 2025-11-15
 
 -   Add optional bottom padding to YustPaginatedListView
