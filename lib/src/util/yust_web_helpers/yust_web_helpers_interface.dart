@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yust/yust.dart';
 
 abstract class YustWebHelpersInterface {
   /// Replaces the current URL with the given path.
@@ -22,4 +23,11 @@ abstract class YustWebHelpersInterface {
     required int maxWidth,
     required int quality,
   });
+
+  /// Sets the favicon to the given [image].
+  ///
+  /// Will remove all existing favicon nodes and add a new one.
+  /// NOTE: This does not work in Safari or Internet Explorer.
+  /// Also this will not affect the PWA App Icons.
+  void setFavicon(YustImage? image);
 }

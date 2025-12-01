@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:web/web.dart' as web;
+import 'package:yust/yust.dart';
 import 'dart:js_interop' as js;
 
 import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers_interface.dart';
@@ -81,5 +82,23 @@ class YustWebHelpers implements YustWebHelpersInterface {
       }
     }).toJS;
     return completer.future;
+  }
+
+  @override
+  void setFavicon(YustImage? image) {
+    if (image == null) return;
+    final nodes = web.document.head?.querySelectorAll('link[rel="icon"]');
+    if (nodes == null) return;
+
+    for (var i = 0; i < nodes.length; i++) {
+      final link = nodes.item(i);
+      if (link == null) continue;
+      web.document.head?.removeChild(link);
+    }
+
+    final link = web.HTMLLinkElement();
+    link.rel = 'icon';
+    link.href = image.url!;
+    web.document.head?.appendChild(link);
   }
 }

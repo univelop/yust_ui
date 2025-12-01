@@ -5,6 +5,7 @@ import '../yust_ui.dart';
 
 class YustTextField extends StatefulWidget {
   final String? label;
+  final IconData? labelIcon;
   final String? value;
   final String? placeholder;
   final TextStyle? textStyle;
@@ -76,6 +77,7 @@ class YustTextField extends StatefulWidget {
   const YustTextField({
     super.key,
     this.label,
+    this.labelIcon,
     this.value,
     this.helperText,
     this.placeholder,
@@ -347,16 +349,44 @@ class _YustTextFieldState extends State<YustTextField>
               )
             : null,
         counter: const SizedBox.shrink(),
-        labelText: label.isNotEmpty ? label : null,
-        labelStyle:
-            widget.labelStyle ??
-            (widget.readOnly
-                ? TextStyle(
-                    color:
-                        Theme.of(context).textTheme.bodySmall?.color ??
-                        Colors.black,
-                  )
-                : null),
+        label: label.isEmpty && widget.labelIcon == null
+            ? null
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4.0,
+                children: [
+                  if (widget.labelIcon != null)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2.0),
+                      child: Icon(
+                        widget.labelIcon,
+                        size: 16.0,
+                        color: Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  if (label.isNotEmpty)
+                    Flexible(
+                      child: Text(
+                        label,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style:
+                            widget.labelStyle ??
+                            (widget.readOnly
+                                ? TextStyle(
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall?.color ??
+                                        Colors.black,
+                                  )
+                                : null),
+                      ),
+                    ),
+                ],
+              ),
         contentPadding: widget.contentPadding,
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()

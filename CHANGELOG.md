@@ -1,3 +1,21 @@
+## 3.29.6 - 2025-11-26
+
+-   Fix validation on file dropping
+
+## 3.29.5 - 2025-11-15
+
+-   Add optional bottom padding to YustPaginatedListView
+-   Add innerPadding parameter to YustListTile for custom content padding
+
+## 3.29.4 - 2025-11-13
+
+-   Add underline border style option to input fields
+-   Add label icon support to YustTextField
+
+## 3.29.3 - 2025-10-16
+
+-   Add setFavicon Function for Web
+
 ## 3.29.2 - 2025-10-06
 
 -   Fix for AlertService

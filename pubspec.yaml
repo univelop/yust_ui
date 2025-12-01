@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.29.2
+version: 3.29.6
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -40,6 +40,7 @@ dependencies:
     geolocator: ^14.0.2
     geocoding: ^4.0.0
     web: ^1.1.1
+    meta: ^1.16.0
 
 dev_dependencies:
     flutter_lints: ^6.0.0
