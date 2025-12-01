@@ -37,6 +37,7 @@ class YustTextField extends StatefulWidget {
   final bool divider;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextStyle? suffixStyle;
   final TextCapitalization textCapitalization;
   final AutovalidateMode? autovalidateMode;
   final SmartQuotesType? smartQuotesType;
@@ -108,6 +109,7 @@ class YustTextField extends StatefulWidget {
     this.divider = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixStyle,
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
@@ -259,24 +261,25 @@ class _YustTextFieldState extends State<YustTextField>
     if (widget.slimDesign) return _buildTextField();
 
     return Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: _buildTextField()),
-              if (widget.onDelete != null && widget.value != '')
-                IconButton(
-                  onPressed: widget.onDelete!,
-                  icon: Icon(
-                    Icons.delete,
-                    color: Theme.of(context).primaryColor,
-                  ),
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildTextField()),
+            if (widget.onDelete != null && widget.value != '') ...[
+              SizedBox(width: 8.0),
+              IconButton(
+                onPressed: widget.onDelete!,
+                icon: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).primaryColor,
                 ),
-              widget.suffixIcon ?? const SizedBox(),
+              ),
             ],
-          ),
-          if (widget.style == YustInputStyle.normal && widget.divider)
-            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-        ],
+          ],
+        ),
+        if (widget.style == YustInputStyle.normal && widget.divider)
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+      ],
     );
   }
 
@@ -302,6 +305,8 @@ class _YustTextFieldState extends State<YustTextField>
                 ),
               )
             : null,
+        suffix: widget.suffixIcon,
+        suffixStyle: widget.suffixStyle,
         counter: const SizedBox.shrink(),
         label: label.isEmpty && widget.labelIcon == null
             ? null
