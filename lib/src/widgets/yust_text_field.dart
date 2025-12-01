@@ -128,6 +128,7 @@ class YustTextField extends StatefulWidget {
   const YustTextField.filled({
     super.key,
     this.label,
+    this.labelIcon,
     this.value,
     this.helperText,
     this.placeholder,
