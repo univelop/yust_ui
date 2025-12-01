@@ -59,9 +59,30 @@ class YustListTile extends StatelessWidget {
     this.showHighlightFocus = false,
     this.wrapSuffixChild = false,
     this.innerPadding,
-    this.useFilledInputDecoration = false,
+  }) : useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  const YustListTile.filled({
+    super.key,
+    this.label,
+    this.navigate = false,
+    this.center = false,
+    this.heading = false,
+    this.largeHeading = false,
+    this.suffixChild,
+    this.onTap,
+    this.style = YustInputStyle.normal,
+    this.labelStyle,
+    this.labelOverflow = false,
+    this.prefixIcon,
+    this.below,
+    this.divider = true,
+    this.skipFocus = false,
+    this.showHighlightFocus = false,
+    this.wrapSuffixChild = false,
+    this.innerPadding,
     this.filledInputDecorationColor,
-  });
+  }) : useFilledInputDecoration = true;
 
   @override
   Widget build(BuildContext context) {
@@ -132,12 +153,16 @@ class YustListTile extends StatelessWidget {
     );
   }
 
-  ListTile _buildNormalListTile(BuildContext context, Text text, EdgeInsets padding) {
+  ListTile _buildNormalListTile(
+    BuildContext context,
+    Text text,
+    EdgeInsets padding,
+  ) {
     return ListTile(
-      tileColor: useFilledInputDecoration
-          ? filledInputDecorationColor
+      tileColor: useFilledInputDecoration ? filledInputDecorationColor : null,
+      shape: style == YustInputStyle.underlineBorder
+          ? const UnderlineInputBorder()
           : null,
-      shape: style == YustInputStyle.underlineBorder ? const UnderlineInputBorder() : null,
       title: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
