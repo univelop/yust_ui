@@ -115,6 +115,8 @@ class YustFileHelpers {
         final r = await http.get(
           Uri.parse(url),
         );
+        _validateFileResponse(r);
+
         final data = r.bodyBytes;
         await launchFileWithoutContext(
           size: size,
@@ -141,6 +143,16 @@ class YustFileHelpers {
         LocaleKeys.oops.tr(),
         LocaleKeys.alertCannotOpenFileWithError.tr(
           namedArgs: {'error': e.toString()},
+        ),
+      );
+    }
+  }
+
+  void _validateFileResponse(http.Response response) {
+    if (response.statusCode >= 300) {
+      throw Exception(
+        LocaleKeys.errorOnFileDownload.tr(
+          namedArgs: {'statusCode': response.statusCode.toString()},
         ),
       );
     }
