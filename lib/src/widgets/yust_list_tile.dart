@@ -35,6 +35,11 @@ class YustListTile extends StatelessWidget {
   /// Padding between the inner content and the below widget.
   final EdgeInsets? innerPadding;
 
+  /// Whether to use given filled input decoration;
+  final bool useFilledInputDecoration;
+
+  final Color? filledInputDecorationColor;
+
   const YustListTile({
     super.key,
     this.label,
@@ -54,6 +59,8 @@ class YustListTile extends StatelessWidget {
     this.showHighlightFocus = false,
     this.wrapSuffixChild = false,
     this.innerPadding,
+    this.useFilledInputDecoration = false,
+    this.filledInputDecorationColor,
   });
 
   @override
@@ -121,12 +128,16 @@ class YustListTile extends StatelessWidget {
       onFocusAction: onTap,
       builder: (focusContext) => wrapSuffixChild && suffixChild != null
           ? _buildWrapListTile(text, suffixChild!, padding)
-          : _buildNormalListTile(text, padding),
+          : _buildNormalListTile(context, text, padding),
     );
   }
 
-  ListTile _buildNormalListTile(Text text, EdgeInsets padding) {
+  ListTile _buildNormalListTile(BuildContext context, Text text, EdgeInsets padding) {
     return ListTile(
+      tileColor: useFilledInputDecoration
+          ? filledInputDecorationColor
+          : null,
+      shape: style == YustInputStyle.underlineBorder ? const UnderlineInputBorder() : null,
       title: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
