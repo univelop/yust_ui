@@ -452,6 +452,12 @@ class YustImagePickerState
     );
   }
 
+  @override
+  Future<void> checkAndUploadFiles<U>(
+    List<U> fileData,
+    Future<(String, File?, Uint8List?)> Function(U) fileDataExtractor,
+  ) => _checkAndUploadImages(fileData, fileDataExtractor);
+
   Future<void> _checkAndUploadImages<T>(
     List<T> images,
     Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor, {
@@ -495,7 +501,7 @@ class YustImagePickerState
         LocaleKeys.alertConfirmOverwriteFile.tr(),
         LocaleKeys.continue_.tr(),
       );
-      if (confirmed == false) return;
+      if (confirmed != true) return;
     }
 
     for (final image in images) {
