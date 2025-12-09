@@ -37,6 +37,7 @@ class YustTextField extends StatefulWidget {
   final bool divider;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextStyle? suffixStyle;
   final TextCapitalization textCapitalization;
   final AutovalidateMode? autovalidateMode;
   final SmartQuotesType? smartQuotesType;
@@ -69,7 +70,7 @@ class YustTextField extends StatefulWidget {
 
   /// Whether the TextField should use the decoration from [InputDecoration.filled] with [InputDecoration.fillColor] from the current Theme
   final bool useFilledInputDecoration;
-  
+
   /// The color to be used for [InputDecoration.fillColor] if [useFilledInputDecoration] is true
   /// If null, the default color from the current Theme will be used
   final Color? filledInputDecorationColor;
@@ -108,6 +109,7 @@ class YustTextField extends StatefulWidget {
     this.divider = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixStyle,
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
@@ -122,9 +124,60 @@ class YustTextField extends StatefulWidget {
     this.forceErrorText,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-    this.useFilledInputDecoration = false,
-    this.filledInputDecorationColor
-  });
+  }) : useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  const YustTextField.filled({
+    super.key,
+    this.label,
+    this.labelIcon,
+    this.value,
+    this.helperText,
+    this.placeholder,
+    this.placeholderTextStyle,
+    this.textStyle,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onFieldSubmitted,
+    this.controller,
+    this.validator,
+    this.onTap,
+    this.onDelete,
+    this.maxLength,
+    this.maxLines,
+    this.labelStyle,
+    this.minLines,
+    this.expands = false,
+    this.enabled = true,
+    this.autocorrect = true,
+    this.readOnly = false,
+    this.slimDesign = false,
+    this.obscureText = false,
+    this.autofocus = false,
+    this.notTrim = false,
+    this.hideKeyboardOnAutofocus = false,
+    this.focusNode,
+    this.style = YustInputStyle.normal,
+    this.divider = true,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.suffixStyle,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.autovalidateMode,
+    this.inputFormatters = const [],
+    this.smartQuotesType,
+    this.keyboardType,
+    this.textInputAction,
+    this.contentPadding = const EdgeInsets.fromLTRB(12, 8, 12, 8),
+    this.shouldCompleteNotValidInput = false,
+    this.completeOnUnfocus = true,
+    this.autofillHints,
+    this.reserveDefaultTextEditingShortcuts = true,
+    this.forceErrorText,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
+    this.filledInputDecorationColor,
+  }) : useFilledInputDecoration = true;
 
   @override
   State<YustTextField> createState() => _YustTextFieldState();
@@ -263,12 +316,16 @@ class _YustTextFieldState extends State<YustTextField>
         Row(
           children: [
             Expanded(child: _buildTextField()),
-            if (widget.onDelete != null && widget.value != '')
+            if (widget.onDelete != null && widget.value != '') ...[
+              SizedBox(width: 8.0),
               IconButton(
                 onPressed: widget.onDelete!,
-                icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
+                icon: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
-            widget.suffixIcon ?? const SizedBox(),
+            ],
           ],
         ),
         if (widget.style == YustInputStyle.normal && widget.divider)
@@ -299,6 +356,8 @@ class _YustTextFieldState extends State<YustTextField>
                 ),
               )
             : null,
+        suffix: widget.suffixIcon,
+        suffixStyle: widget.suffixStyle,
         counter: const SizedBox.shrink(),
         label: label.isEmpty && widget.labelIcon == null
             ? null
@@ -342,8 +401,8 @@ class _YustTextFieldState extends State<YustTextField>
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
             : widget.style == YustInputStyle.underlineBorder
-                ? const UnderlineInputBorder()
-                : InputBorder.none,
+            ? const UnderlineInputBorder()
+            : InputBorder.none,
         prefixIcon: widget.prefixIcon,
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
@@ -355,7 +414,6 @@ class _YustTextFieldState extends State<YustTextField>
         helperMaxLines: 5,
         filled: widget.useFilledInputDecoration,
         fillColor: widget.filledInputDecorationColor,
-        
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,
