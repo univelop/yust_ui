@@ -70,6 +70,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.thumbnails = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -99,6 +100,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
+    super.thumbnails = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -305,7 +307,11 @@ class YustImagePickerState
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
+      // Resize 'original' quality images because of their potential big size
       resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
+      mode: widget.thumbnails
+          ? YustCachedImageMode.preferThumbnail
+          : YustCachedImageMode.originalOnly,
     );
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
