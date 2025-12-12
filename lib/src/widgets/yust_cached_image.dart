@@ -83,7 +83,7 @@ class YustCachedImage extends StatelessWidget {
 
       final showThumbnail =
           (mode == YustCachedImageMode.preferThumbnail ||
-              mode == YustCachedImageMode.originalOnly) &&
+              mode == YustCachedImageMode.thumbnailOnly) &&
           file.hasThumbnail() &&
           thumbnailBaseUrl != null &&
           thumbnailGrant != null;
