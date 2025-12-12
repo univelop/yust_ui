@@ -7,9 +7,18 @@ import 'package:yust/yust.dart';
 
 import '../yust_ui.dart';
 
+/// Mode to display the image.
 enum YustCachedImageMode {
+  /// If a thumbnail is available, it will be preferred over the original image.
+  /// Otherwise the original image will be displayed.
   preferThumbnail,
+
+  /// Only the original image will be displayed.
   originalOnly,
+
+  /// Only the thumbnail will be displayed.
+  ///
+  /// If no thumbnail is available, a placeholder will be shown.
   thumbnailOnly,
 }
 

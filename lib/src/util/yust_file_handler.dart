@@ -244,7 +244,7 @@ class YustFileHandler {
     }
 
     if (length < uploadedFiles + getCachedFiles().length) {
-      // retry upload with reseted uploadTime, because new files where added
+      // retry upload with reset uploadTime, because new files where added
       uploadError = true;
       reuploadTime = _reuploadTime;
     }
@@ -376,13 +376,9 @@ class YustFileHandler {
       name: yustFile.name!,
       file: yustFile.file,
       bytes: yustFile.bytes,
-      metadata:
-          yustFile.linkedDocPath != null && yustFile.linkedDocAttribute != null
-          ? {
-              'linkedDocPath': yustFile.linkedDocPath!,
-              'linkedDocAttribute': yustFile.linkedDocAttribute!,
-            }
-          : null,
+      linkedDocPath: yustFile.linkedDocPath,
+      linkedDocAttribute: yustFile.linkedDocAttribute,
+      createThumbnail: yustFile.createThumbnail,
     );
     yustFile.url = url;
     await _addFileHash(yustFile);

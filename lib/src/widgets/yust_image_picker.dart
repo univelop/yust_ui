@@ -309,6 +309,9 @@ class YustImagePickerState
       fit: BoxFit.cover,
       // Resize 'original' quality images because of their potential big size
       resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
+      mode: widget.thumbnails
+          ? YustCachedImageMode.preferThumbnail
+          : YustCachedImageMode.originalOnly,
     );
     final zoomEnabled =
         ((file.url != null || file.bytes != null || file.file != null) &&
