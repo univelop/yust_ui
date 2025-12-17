@@ -424,10 +424,12 @@ class YustFileHandler {
         : [fileData];
 
     if (cachedFile.linkedDocStoresFilesAsMap == true) {
+      // Update individual file inside the map
       await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
-        '${cachedFile.linkedDocAttribute!}.${cachedFile.hash}': firestoreData,
+        '${cachedFile.linkedDocAttribute!}.${cachedFile.hash}': fileData,
       });
     } else {
+      // Update all files at the given attribute (list or single file map)
       await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
         cachedFile.linkedDocAttribute!: firestoreData,
       });
