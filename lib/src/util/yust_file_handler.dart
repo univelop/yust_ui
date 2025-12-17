@@ -396,7 +396,7 @@ class YustFileHandler {
   Future<void> _updateDocAttribute(YustFile cachedFile) async {
     var firestoreData = await _getDocAttribute(cachedFile);
 
-    var fileData = _tryGetExistingFileMap(cachedFile.name!, firestoreData);
+    var fileData = _tryGetExistingFileMap(cachedFile, firestoreData);
 
     // If the file does not exist, we can just use the new cachedFile
     fileData ??= cachedFile.toJson();
@@ -408,29 +408,49 @@ class YustFileHandler {
     fileData['hash'] = cachedFile.hash;
 
     if (firestoreData is Map) {
-      firestoreData = fileData;
-    }
-    if (firestoreData is List) {
+      // Store file in new format - Map of hash and file
+      if (cachedFile.linkedDocStoresFilesAsMap == true) {
+        firestoreData[cachedFile.hash] = fileData;
+      } else {
+        firestoreData = fileData;
+      }
+    } else if (firestoreData is List) {
       firestoreData.removeWhere((f) => f['name'] == fileData['name']);
       firestoreData.add(fileData);
     }
 
-    firestoreData ??= [fileData];
+    firestoreData ??= cachedFile.linkedDocStoresFilesAsMap == true
+        ? {cachedFile.hash: fileData}
+        : [fileData];
 
-    await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
-      cachedFile.linkedDocAttribute!: firestoreData,
-    });
+    if (cachedFile.linkedDocStoresFilesAsMap == true) {
+      await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
+        '${cachedFile.linkedDocAttribute!}.${cachedFile.hash}': firestoreData,
+      });
+    } else {
+      await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
+        cachedFile.linkedDocAttribute!: firestoreData,
+      });
+    }
   }
 
   /// Get the existing file map for the given name (if it exists).
   /// If it doesn't exist, return null.
-  dynamic _tryGetExistingFileMap(String fileName, dynamic yustFileOrYustFiles) {
+  dynamic _tryGetExistingFileMap(
+    YustFile cachedFile,
+    dynamic yustFileOrYustFiles,
+  ) {
     dynamic result;
-    if (yustFileOrYustFiles is Map) {
+    if (cachedFile.linkedDocStoresFilesAsMap == true &&
+        yustFileOrYustFiles is Map) {
+      result = yustFileOrYustFiles.entries.firstWhereOrNull(
+        (entry) => entry.value['name'] == cachedFile.name!,
+      );
+    } else if (yustFileOrYustFiles is Map) {
       result = yustFileOrYustFiles;
     } else if (yustFileOrYustFiles is List) {
       result = yustFileOrYustFiles.firstWhereOrNull(
-        (f) => f['name'] == fileName,
+        (f) => f['name'] == cachedFile.name!,
       );
     }
     if (result is Map) {

@@ -70,6 +70,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -99,6 +100,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
+    super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.yustQuality = 'medium',
@@ -181,6 +183,7 @@ class YustImagePickerState
     watermarkPosition: widget.watermarkPosition,
     locale: widget.locale,
     watermarkLocationAppearance: widget.watermarkLocationAppearance,
+    linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
   );
 
   List<Widget> _buildPickButtons(BuildContext context) {
