@@ -407,6 +407,15 @@ class YustFileHandler {
     fileData['url'] = cachedFile.url;
     fileData['hash'] = cachedFile.hash;
 
+    if (cachedFile.linkedDocStoresFilesAsMap == true) {
+      // Update individual file inside the map
+      await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
+        '${cachedFile.linkedDocAttribute!}.${cachedFile.hash}': fileData,
+      });
+
+      return;
+    }
+
     if (firestoreData is Map) {
       // Store file in new format - Map of hash and file
       if (cachedFile.linkedDocStoresFilesAsMap == true) {
@@ -445,8 +454,8 @@ class YustFileHandler {
     dynamic result;
     if (cachedFile.linkedDocStoresFilesAsMap == true &&
         yustFileOrYustFiles is Map) {
-      result = yustFileOrYustFiles.entries.firstWhereOrNull(
-        (entry) => entry.value['name'] == cachedFile.name!,
+      result = yustFileOrYustFiles.values.firstWhereOrNull(
+        (value) => value['name'] == cachedFile.name!,
       );
     } else if (yustFileOrYustFiles is Map) {
       result = yustFileOrYustFiles;
