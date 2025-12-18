@@ -417,32 +417,18 @@ class YustFileHandler {
     }
 
     if (firestoreData is Map) {
-      // Store file in new format - Map of hash and file
-      if (cachedFile.linkedDocStoresFilesAsMap == true) {
-        firestoreData[cachedFile.hash] = fileData;
-      } else {
-        firestoreData = fileData;
-      }
-    } else if (firestoreData is List) {
+      firestoreData = fileData;
+    }
+    if (firestoreData is List) {
       firestoreData.removeWhere((f) => f['name'] == fileData['name']);
       firestoreData.add(fileData);
     }
 
-    firestoreData ??= cachedFile.linkedDocStoresFilesAsMap == true
-        ? {cachedFile.hash: fileData}
-        : [fileData];
+    firestoreData ??= [fileData];
 
-    if (cachedFile.linkedDocStoresFilesAsMap == true) {
-      // Update individual file inside the map
-      await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
-        '${cachedFile.linkedDocAttribute!}.${cachedFile.hash}': fileData,
-      });
-    } else {
-      // Update all files at the given attribute (list or single file map)
-      await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
-        cachedFile.linkedDocAttribute!: firestoreData,
-      });
-    }
+    await FirebaseFirestore.instance.doc(cachedFile.linkedDocPath!).update({
+      cachedFile.linkedDocAttribute!: firestoreData,
+    });
   }
 
   /// Get the existing file map for the given name (if it exists).
