@@ -1,3 +1,7 @@
+## 3.30.1 - 2025-12-19
+
+-   Add "filled" options to yust widgets
+
 ## 3.30.0 - 2025-12-19
 
 -   Add support for map based file structure
