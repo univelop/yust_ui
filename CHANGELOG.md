@@ -1,3 +1,7 @@
+## 3.30.0 - 2025-12-19
+
+-   Add support for map based file structure
+
 ## 3.29.7 - 2025-12-08
 
 -   Improve file download error handling
