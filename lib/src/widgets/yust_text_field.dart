@@ -316,7 +316,10 @@ class _YustTextFieldState extends State<YustTextField>
             if (widget.onDelete != null && widget.value != '')
               IconButton(
                 onPressed: widget.onDelete!,
-                icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
+                icon: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             widget.suffixIcon ?? const SizedBox(),
           ],
