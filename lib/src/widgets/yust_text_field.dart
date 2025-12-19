@@ -122,9 +122,59 @@ class YustTextField extends StatefulWidget {
     this.forceErrorText,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-    this.useFilledInputDecoration = false,
+  }) : useFilledInputDecoration = false,
+       filledInputDecorationColor = null;
+
+  const YustTextField.filled({
+    super.key,
+    this.label,
+    this.labelIcon,
+    this.value,
+    this.helperText,
+    this.placeholder,
+    this.placeholderTextStyle,
+    this.textStyle,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onFieldSubmitted,
+    this.controller,
+    this.validator,
+    this.onTap,
+    this.onDelete,
+    this.maxLength,
+    this.maxLines,
+    this.labelStyle,
+    this.minLines,
+    this.expands = false,
+    this.enabled = true,
+    this.autocorrect = true,
+    this.readOnly = false,
+    this.slimDesign = false,
+    this.obscureText = false,
+    this.autofocus = false,
+    this.notTrim = false,
+    this.hideKeyboardOnAutofocus = false,
+    this.focusNode,
+    this.style = YustInputStyle.normal,
+    this.divider = true,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.autovalidateMode,
+    this.inputFormatters = const [],
+    this.smartQuotesType,
+    this.keyboardType,
+    this.textInputAction,
+    this.contentPadding = const EdgeInsets.fromLTRB(12, 8, 12, 8),
+    this.shouldCompleteNotValidInput = false,
+    this.completeOnUnfocus = true,
+    this.autofillHints,
+    this.reserveDefaultTextEditingShortcuts = true,
+    this.forceErrorText,
+    this.prefixLabelIcon,
+    this.prefixLabelIconColor,
     this.filledInputDecorationColor,
-  });
+  }) : useFilledInputDecoration = true;
 
   @override
   State<YustTextField> createState() => _YustTextFieldState();
@@ -259,24 +309,24 @@ class _YustTextFieldState extends State<YustTextField>
     if (widget.slimDesign) return _buildTextField();
 
     return Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: _buildTextField()),
-              if (widget.onDelete != null && widget.value != '')
-                IconButton(
-                  onPressed: widget.onDelete!,
-                  icon: Icon(
-                    Icons.delete,
-                    color: Theme.of(context).primaryColor,
-                  ),
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildTextField()),
+            if (widget.onDelete != null && widget.value != '')
+              IconButton(
+                onPressed: widget.onDelete!,
+                icon: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).primaryColor,
                 ),
-              widget.suffixIcon ?? const SizedBox(),
-            ],
-          ),
-          if (widget.style == YustInputStyle.normal && widget.divider)
-            const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
-        ],
+              ),
+            widget.suffixIcon ?? const SizedBox(),
+          ],
+        ),
+        if (widget.style == YustInputStyle.normal && widget.divider)
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+      ],
     );
   }
 

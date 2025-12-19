@@ -86,6 +86,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Default is [defaultPreviewCount].
   final int previewCount;
 
+  /// Whether the linked document stores files as a map with hash and file
+  /// instead of a list e.g. array of files.
+  ///
+  /// This is needed for the offline upload of files.
+  final bool linkedDocStoresFilesAsMap;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -107,6 +113,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.numberOfFiles = defaultNumberOfFiles,
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
+    this.linkedDocStoresFilesAsMap = false,
   });
 
   /// Default number of items to show initially and load more on demand.
