@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.29.0
+    yust: ^3.30.0
     cached_network_image: ^3.4.1
     cloud_firestore: ^6.0.0
     collection: ^1.19.1
@@ -57,7 +57,7 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: 6643-store-images-and-files-as-map
+    # yust:
+    #     git:
+    #         url: https://github.com/univelop/yust.git
+    #         ref: master
