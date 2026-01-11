@@ -8,7 +8,6 @@ import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 import 'package:meta/meta.dart';
-import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';

@@ -68,7 +68,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
-    super.overwriteSingleFile = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
