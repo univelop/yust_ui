@@ -8,6 +8,7 @@ import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust/yust.dart';
 import 'package:meta/meta.dart';
+import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/yust_file_handler.dart';
@@ -91,6 +92,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// If false, no thumbnails will be created or shown.
   final bool thumbnails;
 
+  /// Whether the linked document stores files as a map with hash and file
+  /// instead of a list e.g. array of files.
+  ///
+  /// This is needed for the offline upload of files.
+  final bool linkedDocStoresFilesAsMap;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -113,6 +120,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
+    this.linkedDocStoresFilesAsMap = false,
   });
 
   /// Default number of items to show initially and load more on demand.

@@ -44,6 +44,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
+    super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -66,6 +67,8 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.thumbnails = false,
+    super.linkedDocStoresFilesAsMap = false,
+    super.overwriteSingleFile = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -136,6 +139,7 @@ class YustFilePickerState
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
       createThumbnail: widget.thumbnails,
+      linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
     );
   }
 
