@@ -118,7 +118,7 @@ class YustSelect<T> extends StatelessWidget {
     return useFilledInputDecoration
         ? YustInputTile.filled(
             label: label ?? '',
-            text: _valueCaption(value),
+            text: valueCaption ?? _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
@@ -139,7 +139,7 @@ class YustSelect<T> extends StatelessWidget {
           )
         : YustInputTile(
             label: label ?? '',
-            text: _valueCaption(value),
+            text: valueCaption ?? _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
