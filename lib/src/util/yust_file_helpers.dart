@@ -100,6 +100,32 @@ class YustFileHelpers {
     );
   }
 
+  /// Download and launch a YustFile.
+  ///
+  /// This function will silently return if the given file is not valid.
+  /// If the file is valid, it will try to generate a download URL and then download
+  /// and launch the file via this generated URL.
+  Future<void> downloadAndLaunchYustFile({
+    required BuildContext context,
+    required YustFile file,
+  }) async {
+    if (!file.isValid()) return;
+
+    String? url = file.url;
+
+    if (Yust.fileAccessService.generateDownloadUrl != null) {
+      url = await Yust.fileAccessService.generateDownloadUrl!(file);
+    }
+
+    if (url == null || !context.mounted) return;
+
+    await YustUi.fileHelpers.downloadAndLaunchFile(
+      context: context,
+      url: url,
+      name: file.name!,
+    );
+  }
+
   /// Downloads a file. On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
   Future<void> downloadAndLaunchFile({

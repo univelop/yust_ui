@@ -78,15 +78,10 @@ class YustCachedImage extends StatelessWidget {
         fit: fit,
       );
     } else if (file.url != null) {
-      final thumbnailBaseUrl = Yust.fileAccessService.thumbnailCdnBaseUrl;
-      final thumbnailGrant = Yust.fileAccessService.getGrantForFile(file);
-
       final showThumbnail =
           (mode == YustCachedImageMode.preferThumbnail ||
               mode == YustCachedImageMode.thumbnailOnly) &&
-          file.hasThumbnail() &&
-          thumbnailBaseUrl != null &&
-          thumbnailGrant != null;
+          file.hasThumbnail();
 
       if (mode == YustCachedImageMode.thumbnailOnly && !showThumbnail) {
         return preview;
@@ -94,7 +89,9 @@ class YustCachedImage extends StatelessWidget {
 
       final url = showThumbnail
           ? file.getThumbnailUrl()!
-          : file.getOriginalUrl() ?? file.url ?? '';
+          : file.getOriginalUrl();
+
+      if (url == null) return preview;
 
       if (kIsWeb) {
         return Image.network(

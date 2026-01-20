@@ -219,7 +219,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       imageProvider: _loadImage(image),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: image.getOriginalUrl() ?? '',
+        tag: _getImageTag(image),
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -241,7 +241,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       imageProvider: _loadImage(currentImage),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: currentImage.getOriginalUrl() ?? '',
+        tag: _getImageTag(currentImage),
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -255,7 +255,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: image.getOriginalUrl() ?? '',
+        tag: _getImageTag(image),
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
@@ -274,13 +274,16 @@ class _YustImageScreenState extends State<YustImageScreen> {
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: widget.images[index].getOriginalUrl() ?? '',
+        tag: _getImageTag(widget.images[index]),
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
     );
   }
+
+  String _getImageTag(YustImage image) =>
+      image.path ?? image.getOriginalUrl() ?? '';
 
   Widget _buildScalableImage(ImageProvider<Object> imageProvider) {
     return Image(
@@ -377,8 +380,12 @@ class _YustImageScreenState extends State<YustImageScreen> {
                 return IconButton(
                   iconSize: 35,
                   color: Colors.white,
-                  onPressed: () =>
-                      unawaited(_onDownloadButtonPressed(buttonContext, image)),
+                  onPressed: () => unawaited(
+                    YustUi.fileHelpers.downloadAndLaunchYustFile(
+                      context: buttonContext,
+                      file: image,
+                    ),
+                  ),
                   icon: kIsWeb
                       ? const Icon(Icons.download)
                       : const Icon(Icons.share),
@@ -388,27 +395,6 @@ class _YustImageScreenState extends State<YustImageScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _onDownloadButtonPressed(
-    BuildContext context,
-    YustImage image,
-  ) async {
-    if (!image.isValid()) return;
-
-    String? url = image.url ?? '';
-
-    if (Yust.fileAccessService.generateDownloadUrl != null) {
-      url = await Yust.fileAccessService.generateDownloadUrl!(image);
-    }
-
-    if (url == null || !context.mounted) return;
-
-    await YustUi.fileHelpers.downloadAndLaunchFile(
-      context: context,
-      url: url,
-      name: image.name!,
     );
   }
 
