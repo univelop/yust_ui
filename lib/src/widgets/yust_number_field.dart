@@ -15,6 +15,7 @@ class YustNumberField extends StatelessWidget {
   final bool thousandsSeparator;
   final ChangeCallback? onChanged;
   final ChangeCallback? onEditingComplete;
+  final ChangeCallback? onFieldSubmitted;
   final TextEditingController? controller;
   final TapCallback? onTap;
   final bool expands;
@@ -44,6 +45,7 @@ class YustNumberField extends StatelessWidget {
     this.thousandsSeparator = false,
     this.onChanged,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.controller,
     this.onTap,
     this.expands = false,
@@ -103,6 +105,14 @@ class YustNumberField extends StatelessWidget {
             onEditingComplete: onEditingComplete == null
                 ? null
                 : (value) => onEditingComplete!(
+                    Yust.helpers.stringToNumber(
+                      value?.trim() ?? '',
+                      precision: decimalCount,
+                    ),
+                  ),
+            onFieldSubmitted: onFieldSubmitted == null
+                ? null
+                : (value) => onFieldSubmitted!(
                     Yust.helpers.stringToNumber(
                       value?.trim() ?? '',
                       precision: decimalCount,
