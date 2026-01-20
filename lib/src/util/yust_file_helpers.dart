@@ -111,6 +111,7 @@ class YustFileHelpers {
   }) async {
     if (!file.isValid()) return;
 
+    // ignore: deprecated_member_use
     String? url = file.url;
 
     if (Yust.fileAccessService.generateDownloadUrl != null) {

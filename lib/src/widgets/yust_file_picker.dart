@@ -207,6 +207,7 @@ class YustFilePickerState
             file.bytes == null &&
             file.file == null &&
             file.devicePath == null) ||
+        // ignore: deprecated_member_use
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
     final shouldShowDate =
         !isBroken && widget.showModifiedAt && file.modifiedAt != null;
@@ -281,32 +282,15 @@ class YustFilePickerState
       return IconButton(
         icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
         color: Theme.of(buttonContext).primaryColor,
-        onPressed: () =>
-            unawaited(_onDownloadButtonPressed(buttonContext, file)),
+        onPressed: () => unawaited(
+          YustUi.fileHelpers.downloadAndLaunchYustFile(
+            context: buttonContext,
+            file: file,
+          ),
+        ),
       );
     },
   );
-
-  Future<void> _onDownloadButtonPressed(
-    BuildContext context,
-    YustFile file,
-  ) async {
-    if (!file.isValid()) return;
-
-    String? url = file.url ?? '';
-
-    if (Yust.fileAccessService.generateDownloadUrl != null) {
-      url = await Yust.fileAccessService.generateDownloadUrl!(file);
-    }
-
-    if (url == null || !context.mounted) return;
-
-    await YustUi.fileHelpers.downloadAndLaunchFile(
-      context: context,
-      url: url,
-      name: file.name!,
-    );
-  }
 
   Widget _buildFileRenameButton(YustFile file) {
     if (!enabled) {

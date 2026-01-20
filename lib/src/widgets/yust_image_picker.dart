@@ -317,6 +317,7 @@ class YustImagePickerState
           : YustCachedImageMode.originalOnly,
     );
     final zoomEnabled =
+        // ignore: deprecated_member_use
         ((file.url != null || file.bytes != null || file.file != null) &&
         widget.zoomable);
     if (widget.numberOfFiles > 1) {
@@ -333,8 +334,10 @@ class YustImagePickerState
               _showImages(file);
             }
           },
+          // ignore: deprecated_member_use
           child: file.url != null
               ? Hero(
+                  // ignore: deprecated_member_use
                   tag: file.url!,
                   child: preview,
                 )
@@ -345,8 +348,10 @@ class YustImagePickerState
       if (widget.showCentered) {
         return FittedBox(
           fit: BoxFit.scaleDown,
+          // ignore: deprecated_member_use
           child: file.url != null
               ? Hero(
+                  // ignore: deprecated_member_use
                   tag: file.url!,
                   child: preview,
                 )
@@ -373,8 +378,10 @@ class YustImagePickerState
                   _showImages(file);
                 }
               },
+              // ignore: deprecated_member_use
               child: file.url != null
                   ? Hero(
+                      // ignore: deprecated_member_use
                       tag: file.url!,
                       child: preview,
                     )

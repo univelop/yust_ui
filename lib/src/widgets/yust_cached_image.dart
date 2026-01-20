@@ -77,11 +77,12 @@ class YustCachedImage extends StatelessWidget {
         height: height,
         fit: fit,
       );
+      // ignore: deprecated_member_use
     } else if (file.url != null) {
       final showThumbnail =
           (mode == YustCachedImageMode.preferThumbnail ||
               mode == YustCachedImageMode.thumbnailOnly) &&
-          file.hasThumbnail();
+          file.hasThumbnail;
 
       if (mode == YustCachedImageMode.thumbnailOnly && !showThumbnail) {
         return preview;
