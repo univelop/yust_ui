@@ -8,6 +8,7 @@ import '../generated/locale_keys.g.dart';
 class YustSelect<T> extends StatelessWidget {
   final String? label;
   final T value;
+  final String? valueCaption;
   final List<T> optionValues;
   final List<String> optionLabels;
 
@@ -55,6 +56,7 @@ class YustSelect<T> extends StatelessWidget {
     super.key,
     this.label,
     required this.value,
+    this.valueCaption,
     required this.optionValues,
     required this.optionLabels,
     this.prefixWidgets,
@@ -85,6 +87,7 @@ class YustSelect<T> extends StatelessWidget {
     super.key,
     this.label,
     required this.value,
+    this.valueCaption,
     required this.optionValues,
     required this.optionLabels,
     this.prefixWidgets,
@@ -116,7 +119,7 @@ class YustSelect<T> extends StatelessWidget {
     return useFilledInputDecoration
         ? YustInputTile.filled(
             label: label ?? '',
-            text: _valueCaption(value),
+            text: valueCaption ?? _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
@@ -137,7 +140,7 @@ class YustSelect<T> extends StatelessWidget {
           )
         : YustInputTile(
             label: label ?? '',
-            text: _valueCaption(value),
+            text: valueCaption ?? _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
