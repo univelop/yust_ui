@@ -8,7 +8,9 @@ import '../generated/locale_keys.g.dart';
 class YustSelect<T> extends StatelessWidget {
   final String? label;
   final T value;
-  final String? valueCaption;
+
+  /// The label to be displayed for unknown options.
+  final String? unknownOptionLabel;
   final List<T> optionValues;
   final List<String> optionLabels;
 
@@ -21,7 +23,6 @@ class YustSelect<T> extends StatelessWidget {
   final Widget? suffixChild;
   final FormFieldValidator<String>? validator;
   final bool readOnly;
-  final bool showUnknownValue;
   final bool divider;
   final int? maxLines;
   final int? minLines;
@@ -56,7 +57,7 @@ class YustSelect<T> extends StatelessWidget {
     super.key,
     this.label,
     required this.value,
-    this.valueCaption,
+    this.unknownOptionLabel,
     required this.optionValues,
     required this.optionLabels,
     this.prefixWidgets,
@@ -68,7 +69,6 @@ class YustSelect<T> extends StatelessWidget {
     this.suffixChild,
     this.validator,
     this.readOnly = false,
-    this.showUnknownValue = false,
     this.divider = true,
     this.maxLines,
     this.minLines,
@@ -87,7 +87,7 @@ class YustSelect<T> extends StatelessWidget {
     super.key,
     this.label,
     required this.value,
-    this.valueCaption,
+    this.unknownOptionLabel,
     required this.optionValues,
     required this.optionLabels,
     this.prefixWidgets,
@@ -99,7 +99,6 @@ class YustSelect<T> extends StatelessWidget {
     this.suffixChild,
     this.validator,
     this.readOnly = false,
-    this.showUnknownValue = false,
     this.divider = true,
     this.maxLines,
     this.minLines,
@@ -119,7 +118,7 @@ class YustSelect<T> extends StatelessWidget {
     return useFilledInputDecoration
         ? YustInputTile.filled(
             label: label ?? '',
-            text: valueCaption ?? _valueCaption(value),
+            text: _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
@@ -140,7 +139,7 @@ class YustSelect<T> extends StatelessWidget {
           )
         : YustInputTile(
             label: label ?? '',
-            text: valueCaption ?? _valueCaption(value),
+            text: _valueCaption(value),
             prefixIcon: prefixIcon,
             suffixChild: suffixChild,
             validator: validator,
@@ -169,7 +168,7 @@ class YustSelect<T> extends StatelessWidget {
     }
 
     if (index == -1) {
-      return showUnknownValue ? value.toString() : '';
+      return unknownOptionLabel ?? value.toString();
     }
     return optionLabels[index];
   }

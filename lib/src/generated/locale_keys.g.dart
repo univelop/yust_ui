@@ -3248,6 +3248,8 @@ abstract class LocaleKeys {
   static const recordPickerAutoAppliedIcon = 'recordPickerAutoAppliedIcon';
   static const recordPickerAutoClearedIcon = 'recordPickerAutoClearedIcon';
   static const recordPickerBrickDescription = 'recordPickerBrickDescription';
+  static const recordPickerFilterInfoId = 'recordPickerFilterInfoId';
+  static const recordPickerFilterInfoTitle = 'recordPickerFilterInfoTitle';
   static const recordSpecId = 'recordSpecId';
   static const recordSpecWithTemplateIdNotFound =
       'recordSpecWithTemplateIdNotFound';
