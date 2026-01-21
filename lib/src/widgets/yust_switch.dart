@@ -73,7 +73,7 @@ class YustSwitch extends StatelessWidget {
   Widget _buildSwitch(BuildContext context) {
     return Switch(
       value: value,
-      activeColor: activeColor ?? Theme.of(context).primaryColor,
+      activeThumbColor: activeColor ?? Theme.of(context).primaryColor,
       onChanged: readOnly || onChanged == null
           ? null
           : (value) {
