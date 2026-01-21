@@ -11,7 +11,6 @@ class YustSwitch extends StatelessWidget {
   final void Function(bool)? onChanged;
   final bool readOnly;
   final bool slimDesign;
-    final YustInputStyle style;
   //switchRepresentation could be: 'yesNo', 'checkbox', 'label',
   final String switchRepresentation;
   final bool divider;
@@ -28,7 +27,6 @@ class YustSwitch extends StatelessWidget {
     this.onChanged,
     this.readOnly = false,
     this.slimDesign = false,
-    this.style = YustInputStyle.normal,
     this.switchRepresentation = 'yesNo',
     this.divider = true,
     this.unfocusOnChange = true,
@@ -42,7 +40,6 @@ class YustSwitch extends StatelessWidget {
     if (slimDesign) return checkboxOrSwitchBuilder(context);
     return YustListTile(
       label: label,
-      style: style,
       suffixChild: Row(
         children: [
           checkboxOrSwitchBuilder(context),
