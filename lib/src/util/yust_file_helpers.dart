@@ -11,6 +11,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:yust/yust.dart';
 
 import '../../yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
@@ -115,6 +116,8 @@ class YustFileHelpers {
         final r = await http.get(
           Uri.parse(url),
         );
+        _validateFileResponse(r);
+
         final data = r.bodyBytes;
         await launchFileWithoutContext(
           size: size,
@@ -141,6 +144,16 @@ class YustFileHelpers {
         LocaleKeys.oops.tr(),
         LocaleKeys.alertCannotOpenFileWithError.tr(
           namedArgs: {'error': e.toString()},
+        ),
+      );
+    }
+  }
+
+  void _validateFileResponse(http.Response response) {
+    if (response.statusCode >= 300) {
+      throw YustException(
+        LocaleKeys.errorOnFileDownload.tr(
+          namedArgs: {'statusCode': response.statusCode.toString()},
         ),
       );
     }

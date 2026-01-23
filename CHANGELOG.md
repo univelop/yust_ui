@@ -1,3 +1,19 @@
+## 3.30.2 - 2026-01-22
+
+-   Add onFieldSubmitted callback to YustNumberField
+
+## 3.30.1 - 2025-12-19
+
+-   Add "filled" options to yust widgets
+
+## 3.30.0 - 2025-12-19
+
+-   Add support for map based file structure
+
+## 3.29.7 - 2025-12-08
+
+-   Improve file download error handling
+
 ## 3.29.6 - 2025-11-26
 
 -   Fix validation on file dropping

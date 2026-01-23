@@ -43,6 +43,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -63,10 +64,11 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.readOnly = false,
     super.divider = true,
     super.wrapSuffixChild = false,
+    super.linkedDocStoresFilesAsMap = false,
+    super.overwriteSingleFile = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
-    super.overwriteSingleFile = false,
   }) : super(numberOfFiles: 1);
 
   @override
@@ -133,6 +135,7 @@ class YustFilePickerState
       storageFolderPath: widget.storageFolderPath,
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
+      linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
     );
   }
 
