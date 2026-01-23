@@ -168,7 +168,7 @@ class YustSelect<T> extends StatelessWidget {
     }
 
     if (index == -1) {
-      return unknownOptionLabel ?? value.toString();
+      return unknownOptionLabel ?? '';
     }
     return optionLabels[index];
   }
