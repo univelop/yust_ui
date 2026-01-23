@@ -42,6 +42,7 @@ abstract class LocaleKeys {
   static const addAnyways = 'addAnyways';
   static const addDaysDatesDescription = 'addDaysDatesDescription';
   static const addDaysDescription = 'addDaysDescription';
+  static const addEntry = 'addEntry';
   static const addFrequentlyUsedActions = 'addFrequentlyUsedActions';
   static const addHoursDatesDescription = 'addHoursDatesDescription';
   static const addHoursDescription = 'addHoursDescription';
@@ -953,6 +954,7 @@ abstract class LocaleKeys {
   static const confirmDiscard = 'confirmDiscard';
   static const confirmEdit = 'confirmEdit';
   static const confirmPassword = 'confirmPassword';
+  static const confirmRecordPickerFilterOnId = 'confirmRecordPickerFilterOnId';
   static const confirmResetDomainSettings = 'confirmResetDomainSettings';
   static const confirmRun = 'confirmRun';
   static const confirmShareList = 'confirmShareList';
@@ -3243,6 +3245,7 @@ abstract class LocaleKeys {
   static const recordPickerFilterInfoId = 'recordPickerFilterInfoId';
   static const recordPickerFilterInfoTitle = 'recordPickerFilterInfoTitle';
   static const recordSpecId = 'recordSpecId';
+  static const recordSpecTechName = 'recordSpecTechName';
   static const recordSpecWithTemplateIdNotFound =
       'recordSpecWithTemplateIdNotFound';
   static const recordWithConditionTrigger = 'recordWithConditionTrigger';
@@ -3272,6 +3275,7 @@ abstract class LocaleKeys {
   static const remainingTime = 'remainingTime';
   static const remove = 'remove';
   static const removeDuplicatesDescription = 'removeDuplicatesDescription';
+  static const removeEntry = 'removeEntry';
   static const removeFromListDescription = 'removeFromListDescription';
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
