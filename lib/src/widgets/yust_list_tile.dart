@@ -38,6 +38,7 @@ class YustListTile extends StatelessWidget {
   /// Whether to use given filled input decoration;
   final bool useFilledInputDecoration;
 
+  /// The color to use for the filled input decoration
   final Color? filledInputDecorationColor;
 
   const YustListTile({
@@ -149,12 +150,11 @@ class YustListTile extends StatelessWidget {
       onFocusAction: onTap,
       builder: (focusContext) => wrapSuffixChild && suffixChild != null
           ? _buildWrapListTile(text, suffixChild!, padding)
-          : _buildNormalListTile(context, text, padding),
+          : _buildNormalListTile(text, padding),
     );
   }
 
   ListTile _buildNormalListTile(
-    BuildContext context,
     Text text,
     EdgeInsets padding,
   ) {
