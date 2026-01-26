@@ -91,7 +91,6 @@ class YustFileHelpers {
 
   /// Sanitizes the given [rawFileName] by removing or replacing invalid characters.
   static String sanitizeFileName(String rawFileName) {
-    const maxFileNameLength = 400;
     // Replace invalid characters
     final fileName = rawFileName
         .replaceAll(
@@ -100,9 +99,6 @@ class YustFileHelpers {
         )
         // Replace any whitespace characters (tabs, etc.) with a single space
         .replaceAll(RegExp(r'\s+'), ' ');
-    if (fileName.length > maxFileNameLength) {
-      return fileName.substring(0, maxFileNameLength).trim();
-    }
     return fileName.trim();
   }
 
