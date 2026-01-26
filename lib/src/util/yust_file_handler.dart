@@ -19,6 +19,7 @@ import 'package:yust/yust.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
+import 'yust_file_helpers.dart';
 
 class YustFileHandler {
   /// Path to the storage folder.
@@ -279,7 +280,10 @@ class YustFileHandler {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
           await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
-          filePath = '${await _getDirectory(yustFile)}${yustFile.name}';
+          final fileName = Platform.isIOS
+              ? YustFileHelpers.sanitizeFileName(yustFile.name!)
+              : yustFile.name;
+          filePath = '${await _getDirectory(yustFile)}$fileName';
 
           // ignore: deprecated_member_use
           await Dio().download(yustFile.url!, filePath);
