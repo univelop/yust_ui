@@ -65,17 +65,45 @@ class YustFileHelpers {
                 clampedButtonLocation.right > size.width)
             ? centerLocation
             : clampedButtonLocation;
-        // ignore: todo
-        // TODO: use shareXFiles
+        // iOS has problems handling files with special characters in the name,
+        // therefore we share the file as data.
+        if (Platform.isIOS) {
+          data ??= await file.readAsBytes();
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile.fromData(data)],
+              fileNameOverrides: [sanitizeFileName(name)],
+              sharePositionOrigin: sharePositionOrigin,
+              title: name,
+            ),
+          );
+          return;
+        }
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path)],
             subject: name,
-            sharePositionOrigin: sharePositionOrigin,
           ),
         );
       }
     }
+  }
+
+  /// Sanitizes the given [rawFileName] by removing or replacing invalid characters.
+  static String sanitizeFileName(String rawFileName) {
+    const maxFileNameLength = 400;
+    // Replace invalid characters
+    final fileName = rawFileName
+        .replaceAll(
+          RegExp(r"[^A-Za-z\s0-9!#$%&'()+.,´\-—_;:=@\[\]^{}]", unicode: true),
+          '_',
+        )
+        // Replace any whitespace characters (tabs, etc.) with a single space
+        .replaceAll(RegExp(r'\s+'), ' ');
+    if (fileName.length > maxFileNameLength) {
+      return fileName.substring(0, maxFileNameLength).trim();
+    }
+    return fileName.trim();
   }
 
   /// Shares or downloads a file.
