@@ -274,6 +274,8 @@ class YustFileHandler {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
           await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
+          // iOS has problems handling files with special characters in the name,
+          // therefore we sanitize the file name.
           final fileName = Platform.isIOS
               ? YustFileHelpers.sanitizeFileName(yustFile.name!)
               : yustFile.name;
