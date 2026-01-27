@@ -37,6 +37,7 @@ class YustTextField extends StatefulWidget {
   final bool divider;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextStyle? suffixStyle;
   final TextCapitalization textCapitalization;
   final AutovalidateMode? autovalidateMode;
   final SmartQuotesType? smartQuotesType;
@@ -108,6 +109,7 @@ class YustTextField extends StatefulWidget {
     this.divider = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixStyle,
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
@@ -159,6 +161,7 @@ class YustTextField extends StatefulWidget {
     this.divider = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixStyle,
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
@@ -313,7 +316,8 @@ class _YustTextFieldState extends State<YustTextField>
         Row(
           children: [
             Expanded(child: _buildTextField()),
-            if (widget.onDelete != null && widget.value != '')
+            if (widget.onDelete != null && widget.value != '') ...[
+              SizedBox(width: 8.0),
               IconButton(
                 onPressed: widget.onDelete!,
                 icon: Icon(
@@ -321,7 +325,7 @@ class _YustTextFieldState extends State<YustTextField>
                   color: Theme.of(context).primaryColor,
                 ),
               ),
-            widget.suffixIcon ?? const SizedBox(),
+            ],
           ],
         ),
         if (widget.style == YustInputStyle.normal && widget.divider)
@@ -352,6 +356,8 @@ class _YustTextFieldState extends State<YustTextField>
                 ),
               )
             : null,
+        suffix: widget.suffixIcon,
+        suffixStyle: widget.suffixStyle,
         counter: const SizedBox.shrink(),
         label: label.isEmpty && widget.labelIcon == null
             ? null
