@@ -2,8 +2,26 @@ import 'package:flutter/material.dart';
 
 class YustBadge extends StatelessWidget {
   final int counter;
+  final double size;
+  final double textSize;
+  final BoxShape shape;
+  final Alignment? alignment;
+  final BoxConstraints? _constraints;
 
-  const YustBadge({super.key, required this.counter});
+  YustBadge({
+    super.key,
+    required this.counter,
+    this.size = 16,
+    this.textSize = 12,
+    this.shape = BoxShape.rectangle,
+    this.alignment,
+    constraints,
+  }) : _constraints =
+           constraints ??
+           BoxConstraints(
+             minWidth: size,
+             minHeight: size,
+           );
 
   @override
   Widget build(BuildContext context) {
@@ -11,17 +29,18 @@ class YustBadge extends StatelessWidget {
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         color: Colors.red,
-        borderRadius: BorderRadius.circular(8),
+        shape: shape,
+        borderRadius: shape == BoxShape.rectangle
+            ? BorderRadius.circular(8)
+            : null,
       ),
-      constraints: const BoxConstraints(
-        minWidth: 16,
-        minHeight: 16,
-      ),
+      constraints: _constraints,
+      alignment: alignment,
       child: Text(
         '$counter',
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: textSize,
         ),
         textAlign: TextAlign.center,
       ),
