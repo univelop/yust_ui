@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 
 class YustBadge extends StatelessWidget {
+  // The counter to display inside the badge
   final int counter;
+
+  // The size of the badge. Symmetric width and height.
   final double size;
+
+  // The text size of the counter inside the badge.
   final double textSize;
+
+  // The shape of the badge: rectangle or circle.
   final BoxShape shape;
+
+  // The alignment of the badge content.
   final Alignment? alignment;
+
+  // The constraints of the badge. Can be used to override the default size and make it more flexible.
   final BoxConstraints? _constraints;
 
   YustBadge({
@@ -15,7 +26,7 @@ class YustBadge extends StatelessWidget {
     this.textSize = 12,
     this.shape = BoxShape.rectangle,
     this.alignment,
-    constraints,
+    BoxConstraints? constraints,
   }) : _constraints =
            constraints ??
            BoxConstraints(
