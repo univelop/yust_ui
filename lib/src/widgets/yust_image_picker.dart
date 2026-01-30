@@ -186,6 +186,7 @@ class YustImagePickerState
     locale: widget.locale,
     watermarkLocationAppearance: widget.watermarkLocationAppearance,
     linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
+    createThumbnail: widget.thumbnails,
   );
 
   List<Widget> _buildPickButtons(BuildContext context) {
