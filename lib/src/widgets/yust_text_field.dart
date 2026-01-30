@@ -161,6 +161,7 @@ class YustTextField extends StatefulWidget {
     this.divider = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixStyle,
     this.textCapitalization = TextCapitalization.sentences,
     this.autovalidateMode,
     this.inputFormatters = const [],
