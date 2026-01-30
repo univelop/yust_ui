@@ -89,7 +89,7 @@ class YustCachedImage extends StatelessWidget {
       }
 
       final url = showThumbnail
-          ? file.getThumbnailUrl()!
+          ? file.getThumbnailUrl()
           : file.getOriginalUrl();
 
       if (url == null) return preview;
