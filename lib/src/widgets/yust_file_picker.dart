@@ -139,6 +139,7 @@ class YustFilePickerState
       linkedDocAttribute: widget.linkedDocAttribute,
       createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
+      path: widget.storageFolderPath,
     );
   }
 

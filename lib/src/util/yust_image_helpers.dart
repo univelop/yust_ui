@@ -205,6 +205,7 @@ class YustImageHelpers {
       createdAt: now,
       createThumbnail: createThumbnail,
       linkedDocStoresFilesAsMap: linkedDocStoresFilesAsMap,
+      path: storageFolderPath,
     );
   }
 }
