@@ -326,6 +326,7 @@ class YustAlertService {
     T? initialValue,
     required Widget Function(void Function(T?) onChanged, T? currentValue)
     buildInner,
+    bool showCancelButton = true,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
@@ -345,6 +346,7 @@ class YustAlertService {
             },
           ),
           actions: <Widget>[
+            if (showCancelButton)
             TextButton(
               child: Text(LocaleKeys.cancel.tr()),
               onPressed: () {
