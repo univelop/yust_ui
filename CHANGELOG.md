@@ -1,3 +1,14 @@
+## 3.31.0 - 2026-01-27
+
+-   Sanitize file names for iOS compatibility
+-   Add `initialValueCaption` parameter to YustSelect
+-   Add style parameter to YustSwitch
+
+
+## 3.30.2 - 2026-01-22
+
+-   Add onFieldSubmitted callback to YustNumberField
+
 ## 3.30.1 - 2025-12-19
 
 -   Add "filled" options to yust widgets

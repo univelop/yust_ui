@@ -109,7 +109,6 @@ class YustImageHelpers {
       final quality = yustImageQuality[yustQuality]!['quality']!;
 
       // This is required because we cannot access the static YustUi.[...] from the isolated process
-      final fileHelpers = YustUi.fileHelpers;
       final timestampText =
           '${Yust.helpers.formatDate(now, locale: locale.languageCode)} ${Yust.helpers.formatTime(now)}';
 
@@ -128,14 +127,27 @@ class YustImageHelpers {
         }
       }
 
-      Future<Uint8List> helper(RootIsolateToken? token) async {
+      /// Returns a function that computes the image processing on an isolate.
+      Future<Uint8List> Function(RootIsolateToken?) runProcessingOnIsolate(
+        YustFileHelpers fileHelpers,
+        Function(
+          String key, {
+          String? localeOverride,
+          List<String>? args,
+          Map<String, String>? namedArgs,
+          String? gender,
+        })
+        trCallback,
+      ) => (RootIsolateToken? token) async {
+        /// This code runs on an isolate. Since static variables are not shared on an isolate,
+        /// we need to reset the relevant static variables.
+        YustUi.fileHelpers = fileHelpers;
+        YustUi.trCallback = trCallback;
+
         // This is needed for the geolocator plugin to work
         if (token != null) {
           BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         }
-
-        // Make sure the YustUI statics are initialized for this thread too
-        YustUi.fileHelpers = fileHelpers;
 
         return await _transformImage(
           name: sanitizedPath,
@@ -148,7 +160,6 @@ class YustImageHelpers {
           setGPSToLocation: setGPSToLocation,
           addTimestampWatermark: addTimestampWatermark,
           addGpsWatermark: addGpsWatermark,
-          locale: locale,
           watermarkLocationAppearance: watermarkLocationAppearance,
           watermarkPosition: watermarkPosition,
           now: now,
@@ -156,13 +167,19 @@ class YustImageHelpers {
           timestampText: timestampText,
           position: position,
         );
-      }
+      };
 
       RootIsolateToken? token;
       if (!kIsWeb) {
         token = RootIsolateToken.instance;
       }
-      transformedBytes = await compute(helper, token);
+      transformedBytes = await compute(
+        runProcessingOnIsolate(
+          YustUi.fileHelpers,
+          YustUi.trCallback,
+        ),
+        token,
+      );
     }
 
     final newImageExtension = convertToJPEG ? 'jpeg' : path.split('.').last;
@@ -193,7 +210,6 @@ class YustImageHelpers {
 /// Transforms an image
 Future<Uint8List> _transformImage({
   required String name,
-  required Locale locale,
   required bool resize,
   required bool convertToJPEG,
   required bool setGPSToLocation,
@@ -270,7 +286,6 @@ Future<Uint8List> _transformImage({
       addGps: addGpsWatermark,
       position: position,
       watermarkPosition: watermarkPosition,
-      locale: locale,
       watermarkLocationAppearance: watermarkLocationAppearance,
       timestampText: timestampText,
     );
@@ -289,7 +304,6 @@ void _addWatermarks({
   required bool addTimestamp,
   required bool addGps,
   required YustWatermarkPosition watermarkPosition,
-  required Locale locale,
   Position? position,
   YustLocationAppearance watermarkLocationAppearance =
       YustLocationAppearance.decimalDegree,

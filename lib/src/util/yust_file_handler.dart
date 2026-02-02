@@ -19,6 +19,7 @@ import 'package:yust/yust.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
+import 'yust_file_helpers.dart';
 
 class YustFileHandler {
   /// Path to the storage folder.
@@ -273,7 +274,12 @@ class YustFileHandler {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
           await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
-          filePath = '${await _getDirectory(yustFile)}${yustFile.name}';
+          // iOS has problems handling files with special characters in the name,
+          // therefore we sanitize the file name.
+          final fileName = Platform.isIOS
+              ? YustFileHelpers.sanitizeFileName(yustFile.name!)
+              : yustFile.name;
+          filePath = '${await _getDirectory(yustFile)}$fileName';
 
           await Dio().download(yustFile.url!, filePath);
           await EasyLoading.dismiss();
