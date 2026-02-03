@@ -320,13 +320,33 @@ class YustAlertService {
     );
   }
 
+  Future<void> showCustomizableDialog({
+    required Widget title,
+    List<Widget>? actions,
+    bool scrollable = false,
+    required Widget buildInner,
+  }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: scrollable,
+          title: title,
+          content: buildInner,
+          actions: actions,
+        );
+      },
+    );
+  }
+
   Future<T?> showCustomDialog<T>({
     required String title,
     String? actionName,
     T? initialValue,
     required Widget Function(void Function(T?) onChanged, T? currentValue)
     buildInner,
-    bool showCancelButton = true,
   }) {
     final context = navStateKey.currentContext;
     if (context == null) return Future.value();
@@ -346,7 +366,6 @@ class YustAlertService {
             },
           ),
           actions: <Widget>[
-            if (showCancelButton)
             TextButton(
               child: Text(LocaleKeys.cancel.tr()),
               onPressed: () {
