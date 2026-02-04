@@ -70,6 +70,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -100,6 +101,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
+    super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -184,6 +186,7 @@ class YustImagePickerState
     locale: widget.locale,
     watermarkLocationAppearance: widget.watermarkLocationAppearance,
     linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
+    createThumbnail: widget.thumbnails,
   );
 
   List<Widget> _buildPickButtons(BuildContext context) {
@@ -308,9 +311,14 @@ class YustImagePickerState
     Widget? preview = YustCachedImage(
       file: file,
       fit: BoxFit.cover,
+      // Resize 'original' quality images because of their potential big size
       resizeInCache: widget.yustQuality == 'original' && !widget.showCentered,
+      mode: widget.thumbnails
+          ? YustCachedImageMode.preferThumbnail
+          : YustCachedImageMode.originalOnly,
     );
     final zoomEnabled =
+        // ignore: deprecated_member_use
         ((file.url != null || file.bytes != null || file.file != null) &&
         widget.zoomable);
     if (widget.numberOfFiles > 1) {
@@ -327,8 +335,10 @@ class YustImagePickerState
               _showImages(file);
             }
           },
+          // ignore: deprecated_member_use
           child: file.url != null
               ? Hero(
+                  // ignore: deprecated_member_use
                   tag: file.url!,
                   child: preview,
                 )
@@ -339,8 +349,10 @@ class YustImagePickerState
       if (widget.showCentered) {
         return FittedBox(
           fit: BoxFit.scaleDown,
+          // ignore: deprecated_member_use
           child: file.url != null
               ? Hero(
+                  // ignore: deprecated_member_use
                   tag: file.url!,
                   child: preview,
                 )
@@ -367,8 +379,10 @@ class YustImagePickerState
                   _showImages(file);
                 }
               },
+              // ignore: deprecated_member_use
               child: file.url != null
                   ? Hero(
+                      // ignore: deprecated_member_use
                       tag: file.url!,
                       child: preview,
                     )

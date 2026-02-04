@@ -216,9 +216,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   PhotoView _getScaledUpPhotoView(YustImage image) {
     return PhotoView(
-      imageProvider: _getImageOfUrl(image),
+      imageProvider: _loadImage(image),
       minScale: PhotoViewComputedScale.contained,
-      heroAttributes: PhotoViewHeroAttributes(tag: image.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: _getImageTag(image),
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -236,9 +238,11 @@ class _YustImageScreenState extends State<YustImageScreen> {
     YustImage currentImage,
   ) {
     return PhotoViewGalleryPageOptions(
-      imageProvider: _getImageOfUrl(currentImage),
+      imageProvider: _loadImage(currentImage),
       minScale: PhotoViewComputedScale.contained,
-      heroAttributes: PhotoViewHeroAttributes(tag: currentImage.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: _getImageTag(currentImage),
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
@@ -250,11 +254,13 @@ class _YustImageScreenState extends State<YustImageScreen> {
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
-      heroAttributes: PhotoViewHeroAttributes(tag: image.url ?? ''),
+      heroAttributes: PhotoViewHeroAttributes(
+        tag: _getImageTag(image),
+      ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
-      child: _buildScalableImage(_getImageOfUrl(image)),
+      child: _buildScalableImage(_loadImage(image)),
     );
   }
 
@@ -263,18 +269,21 @@ class _YustImageScreenState extends State<YustImageScreen> {
     int index,
   ) {
     return PhotoViewGalleryPageOptions.customChild(
-      child: _buildScalableImage(_getImageOfUrl(currentImage)),
+      child: _buildScalableImage(_loadImage(currentImage)),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
       heroAttributes: PhotoViewHeroAttributes(
-        tag: widget.images[index].url ?? '',
+        tag: _getImageTag(widget.images[index]),
       ),
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
     );
   }
+
+  String _getImageTag(YustImage image) =>
+      image.path ?? image.getOriginalUrl() ?? '';
 
   Widget _buildScalableImage(ImageProvider<Object> imageProvider) {
     return Image(
@@ -299,7 +308,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildDrawButton(BuildContext context, YustImage image) {
-    if (image.url == null && image.devicePath == null) {
+    if (image.getOriginalUrl() == null && image.devicePath == null) {
       return const SizedBox.shrink();
     }
 
@@ -319,7 +328,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
                   onPressed: () {
                     YustImageDrawingScreen.navigateToScreen(
                       context: context,
-                      image: _getImageOfUrl(image),
+                      image: _loadImage(image),
                       onSave: (imageBytes) async {
                         if (imageBytes != null) {
                           widget.onSave!(image, imageBytes);
@@ -371,13 +380,12 @@ class _YustImageScreenState extends State<YustImageScreen> {
                 return IconButton(
                   iconSize: 35,
                   color: Colors.white,
-                  onPressed: () {
-                    YustUi.fileHelpers.downloadAndLaunchFile(
+                  onPressed: () => unawaited(
+                    YustUi.fileHelpers.downloadAndLaunchYustFile(
                       context: buttonContext,
-                      url: image.url!,
-                      name: image.name!,
-                    );
-                  },
+                      file: image,
+                    ),
+                  ),
                   icon: kIsWeb
                       ? const Icon(Icons.download)
                       : const Icon(Icons.share),
@@ -391,12 +399,14 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   /// because of the offline cache the file could be a stored online or on device
-  ImageProvider<Object> _getImageOfUrl(YustImage image) {
+  ImageProvider<Object> _loadImage(YustImage image) {
     if (image.cached) {
       var imageFile = File(image.devicePath!);
       return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
     } else {
-      return NetworkImage(image.url!);
+      return NetworkImage(
+        image.getOriginalUrl()!,
+      );
     }
   }
 }

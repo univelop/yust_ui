@@ -475,6 +475,8 @@ abstract class LocaleKeys {
   static const allRecords = 'allRecords';
   static const allRoles = 'allRoles';
   static const allTeams = 'allTeams';
+  static const allocation = 'allocation';
+  static const allocationTarget = 'allocationTarget';
   static const allowAccess = 'allowAccess';
   static const allowCreate = 'allowCreate';
   static const allowCustomColor = 'allowCustomColor';
@@ -1223,6 +1225,7 @@ abstract class LocaleKeys {
   static const drawingBrickDescription = 'drawingBrickDescription';
   static const dropDown = 'dropDown';
   static const dropDownBrickDescription = 'dropDownBrickDescription';
+  static const dropRecordsHere = 'dropRecordsHere';
   static const dueDate = 'dueDate';
   static const dueUntil = 'dueUntil';
   static const dummyMode = 'dummyMode';
@@ -1402,6 +1405,8 @@ abstract class LocaleKeys {
       'exceptionCannotAssignAdminLicense';
   static const exceptionCannotAssignOwnerLicense =
       'exceptionCannotAssignOwnerLicense';
+  static const exceptionCannotAssignRecordDoesNotMatchFilters =
+      'exceptionCannotAssignRecordDoesNotMatchFilters';
   static const exceptionCannotChangeLicenseMaxNumberExceeded =
       'exceptionCannotChangeLicenseMaxNumberExceeded';
   static const exceptionCannotChangeLicenseUsersWithOldLicense =
@@ -2577,6 +2582,7 @@ abstract class LocaleKeys {
   static const linkSettings = 'linkSettings';
   static const linkSettingsExplanation = 'linkSettingsExplanation';
   static const linkTo = 'linkTo';
+  static const linkToAllocationTarget = 'linkToAllocationTarget';
   static const linkToAnotherList = 'linkToAnotherList';
   static const linkToBrick = 'linkToBrick';
   static const linkToDate = 'linkToDate';
@@ -2584,6 +2590,7 @@ abstract class LocaleKeys {
   static const linkToImage = 'linkToImage';
   static const linkToList = 'linkToList';
   static const linkToListNoun = 'linkToListNoun';
+  static const linkToResource = 'linkToResource';
   static const linkVia = 'linkVia';
   static const linkedIn = 'linkedIn';
   static const linkedProcessText = 'linkedProcessText';
@@ -3128,6 +3135,7 @@ abstract class LocaleKeys {
   static const powerDescription = 'powerDescription';
   static const powerFeature = 'powerFeature';
   static const powerFeatureExplanation = 'powerFeatureExplanation';
+  static const powerFeatureReadOnlyMode = 'powerFeatureReadOnlyMode';
   static const powerShellSync = 'powerShellSync';
   static const powerShellSyncApiKeyName = 'powerShellSyncApiKeyName';
   static const powerUserMinimum = 'powerUserMinimum';
@@ -3313,6 +3321,15 @@ abstract class LocaleKeys {
   static const resetSelection = 'resetSelection';
   static const resetStatus = 'resetStatus';
   static const resource = 'resource';
+  static const resourceAllocation = 'resourceAllocation';
+  static const resourceAllocationAllocationExplanation =
+      'resourceAllocationAllocationExplanation';
+  static const resourceAllocationAllocationTargetExplanation =
+      'resourceAllocationAllocationTargetExplanation';
+  static const resourceAllocationDescription = 'resourceAllocationDescription';
+  static const resourceAllocationResourceExplanation =
+      'resourceAllocationResourceExplanation';
+  static const resourceAllocationSetSettings = 'resourceAllocationSetSettings';
   static const resourceBrick = 'resourceBrick';
   static const resourceExplanation = 'resourceExplanation';
   static const resourceFiltersAndOrder = 'resourceFiltersAndOrder';

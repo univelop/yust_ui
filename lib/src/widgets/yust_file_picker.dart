@@ -43,6 +43,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
+    super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -64,8 +65,9 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.readOnly = false,
     super.divider = true,
     super.wrapSuffixChild = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.overwriteSingleFile = false,
+    super.thumbnails = false,
+    super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -135,7 +137,9 @@ class YustFilePickerState
       storageFolderPath: widget.storageFolderPath,
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
+      createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
+      path: widget.storageFolderPath,
     );
   }
 
@@ -204,6 +208,7 @@ class YustFilePickerState
             file.bytes == null &&
             file.file == null &&
             file.devicePath == null) ||
+        // ignore: deprecated_member_use
         (kIsWeb && file.url == null && file.bytes == null && file.file == null);
     final shouldShowDate =
         !isBroken && widget.showModifiedAt && file.modifiedAt != null;
@@ -278,15 +283,12 @@ class YustFilePickerState
       return IconButton(
         icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
         color: Theme.of(buttonContext).primaryColor,
-        onPressed: () async {
-          if (file.isValid()) {
-            await YustUi.fileHelpers.downloadAndLaunchFile(
-              context: buttonContext,
-              url: file.url!,
-              name: file.name!,
-            );
-          }
-        },
+        onPressed: () => unawaited(
+          YustUi.fileHelpers.downloadAndLaunchYustFile(
+            context: buttonContext,
+            file: file,
+          ),
+        ),
       );
     },
   );
