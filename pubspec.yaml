@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.31.0
+version: 3.32.0
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -57,7 +57,7 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: 6006-preview-of-images-and-files
+    # yust:
+    #     git:
+    #         url: https://github.com/univelop/yust.git
+    #         ref: master
