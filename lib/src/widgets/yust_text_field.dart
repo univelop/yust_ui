@@ -356,7 +356,7 @@ class _YustTextFieldState extends State<YustTextField>
                 ),
               )
             : null,
-        suffix: widget.suffixIcon,
+        suffixIcon: widget.suffixIcon,
         suffixStyle: widget.suffixStyle,
         counter: const SizedBox.shrink(),
         label: label.isEmpty && widget.labelIcon == null
