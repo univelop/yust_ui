@@ -41,6 +41,7 @@ class YustSwitch extends StatelessWidget {
     return YustListTile(
       label: label,
       suffixChild: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           checkboxOrSwitchBuilder(context),
           if (suffixIcon != null) suffixIcon!,
