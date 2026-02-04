@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.30.0
+    yust: ^3.31.0
     cached_network_image: ^3.4.1
     cloud_firestore: ^6.0.0
     collection: ^1.19.1
