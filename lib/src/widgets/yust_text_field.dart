@@ -124,8 +124,8 @@ class YustTextField extends StatefulWidget {
     this.forceErrorText,
     this.prefixLabelIcon,
     this.prefixLabelIconColor,
-  }) : useFilledInputDecoration = false,
-       filledInputDecorationColor = null;
+  })  : useFilledInputDecoration = false,
+        filledInputDecorationColor = null;
 
   const YustTextField.filled({
     super.key,
@@ -195,9 +195,8 @@ class _YustTextFieldState extends State<YustTextField>
     if (widget.onEditingComplete == null) return;
     if (widget.readOnly) return;
 
-    final textFieldText = widget.notTrim
-        ? _controller.value.text
-        : _controller.value.text.trim();
+    final textFieldText =
+        widget.notTrim ? _controller.value.text : _controller.value.text.trim();
     final textFieldValue = textFieldText == '' ? null : textFieldText;
 
     if (widget.validator == null ||
@@ -217,8 +216,7 @@ class _YustTextFieldState extends State<YustTextField>
     _valueDidChange = false;
     _controller =
         widget.controller ?? TextEditingController(text: widget.value);
-    _focusNode =
-        widget.focusNode ??
+    _focusNode = widget.focusNode ??
         FocusNode(debugLabel: 'yust-text-field-${widget.label}');
     _initValue = widget.value ?? '';
     _focusNode.addListener(() {
@@ -317,7 +315,6 @@ class _YustTextFieldState extends State<YustTextField>
           children: [
             Expanded(child: _buildTextField()),
             if (widget.onDelete != null && widget.value != '') ...[
-              SizedBox(width: 8.0),
               IconButton(
                 onPressed: widget.onDelete!,
                 icon: Icon(
@@ -348,8 +345,7 @@ class _YustTextFieldState extends State<YustTextField>
                 padding: const EdgeInsets.only(right: 4.0),
                 child: Icon(
                   widget.prefixLabelIcon,
-                  color:
-                      widget.prefixLabelIconColor ??
+                  color: widget.prefixLabelIconColor ??
                       Theme.of(context).textTheme.bodySmall?.color ??
                       Colors.black,
                   size: 12.0,
@@ -382,12 +378,10 @@ class _YustTextFieldState extends State<YustTextField>
                         label,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
-                        style:
-                            widget.labelStyle ??
+                        style: widget.labelStyle ??
                             (widget.readOnly
                                 ? TextStyle(
-                                    color:
-                                        Theme.of(
+                                    color: Theme.of(
                                           context,
                                         ).textTheme.bodySmall?.color ??
                                         Colors.black,
@@ -401,8 +395,8 @@ class _YustTextFieldState extends State<YustTextField>
         border: widget.style == YustInputStyle.outlineBorder
             ? const OutlineInputBorder()
             : widget.style == YustInputStyle.underlineBorder
-            ? const UnderlineInputBorder()
-            : InputBorder.none,
+                ? const UnderlineInputBorder()
+                : InputBorder.none,
         prefixIcon: widget.prefixIcon,
         prefixIconColor: widget.readOnly
             ? Theme.of(context).textTheme.bodySmall?.color ?? Colors.black
@@ -417,29 +411,27 @@ class _YustTextFieldState extends State<YustTextField>
       ),
       style: widget.textStyle,
       maxLength: widget.maxLength,
-      maxLengthEnforcement: widget.maxLength != null
-          ? MaxLengthEnforcement.enforced
-          : null,
+      maxLengthEnforcement:
+          widget.maxLength != null ? MaxLengthEnforcement.enforced : null,
       maxLines: widget.expands
           ? null
           : widget.obscureText
-          ? 1
-          : widget.maxLines,
+              ? 1
+              : widget.maxLines,
       minLines: widget.expands ? null : widget.minLines,
       expands: widget.expands,
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
-      textInputAction:
-          widget.textInputAction ??
+      textInputAction: widget.textInputAction ??
           (widget.minLines != null
               ? TextInputAction.newline
               : TextInputAction.next),
       onChanged: widget.onChanged == null
           ? null
           : (value) => widget.onChanged!(
-              value == '' ? null : (widget.notTrim ? value : value.trim()),
-            ),
+                value == '' ? null : (widget.notTrim ? value : value.trim()),
+              ),
       onEditingComplete: widget.completeOnUnfocus ? null : onComplete,
       onTap: widget.onTap,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -450,8 +442,7 @@ class _YustTextFieldState extends State<YustTextField>
       textCapitalization: widget.textCapitalization,
       inputFormatters: widget.inputFormatters,
       smartQuotesType: widget.smartQuotesType,
-      autovalidateMode:
-          widget.autovalidateMode ??
+      autovalidateMode: widget.autovalidateMode ??
           (widget.validator != null
               ? AutovalidateMode.onUserInteraction
               : null),
