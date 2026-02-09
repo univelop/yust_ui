@@ -98,6 +98,7 @@ class YustWebHelpers implements YustWebHelpersInterface {
 
     final link = web.HTMLLinkElement();
     link.rel = 'icon';
+    // ignore: deprecated_member_use
     link.href = image.url!;
     web.document.head?.appendChild(link);
   }

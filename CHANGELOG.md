@@ -1,9 +1,15 @@
+## 3.32.0 - 2026-02-04
+
+-   Add new UI parameters to YustBadge
+-   Fix YustTextField: use suffixIcon instead of suffix
+-   Add `unknownOptionLabel` to YustSelect (renamed from initial value caption)
+-   Support for file/image preview: pass createThumbnail and path into file
+
 ## 3.31.0 - 2026-01-27
 
 -   Sanitize file names for iOS compatibility
 -   Add `initialValueCaption` parameter to YustSelect
 -   Add style parameter to YustSwitch
-
 
 ## 3.30.2 - 2026-01-22
 

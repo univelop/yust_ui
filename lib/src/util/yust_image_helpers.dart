@@ -94,6 +94,7 @@ class YustImageHelpers {
     Locale locale = const Locale('de'),
     YustLocationAppearance watermarkLocationAppearance =
         YustLocationAppearance.decimalDegree,
+    bool createThumbnail = false,
     bool linkedDocStoresFilesAsMap = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
@@ -202,7 +203,9 @@ class YustImageHelpers {
             )
           : null,
       createdAt: now,
+      createThumbnail: createThumbnail,
       linkedDocStoresFilesAsMap: linkedDocStoresFilesAsMap,
+      path: storageFolderPath,
     );
   }
 }

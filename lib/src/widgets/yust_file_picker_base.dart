@@ -86,6 +86,11 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Default is [defaultPreviewCount].
   final int previewCount;
 
+  /// Whether thumbnails should be created for new files and be shown for existing ones.
+  ///
+  /// If false, no thumbnails will be created or shown.
+  final bool thumbnails;
+
   /// Whether the linked document stores files as a map with hash and file
   /// instead of a list e.g. array of files.
   ///
@@ -113,6 +118,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.numberOfFiles = defaultNumberOfFiles,
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
+    this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
   });
 

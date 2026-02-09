@@ -63,6 +63,7 @@ class YustFileHandler {
   }
 
   List<YustFile> getOnlineFiles() {
+    // ignore: deprecated_member_use
     return _yustFiles.where((f) => f.url != null).toList();
   }
 
@@ -97,6 +98,7 @@ class YustFileHandler {
       if (onlineFiles.any((oFile) => oFile.name == file.name)) {
         _recentlyUploadedFiles.remove(file);
       } else if (!file.cached &&
+          // ignore: deprecated_member_use
           file.url != null &&
           !_recentlyUploadedFiles.contains(file)) {
         _yustFiles.remove(file);
@@ -107,7 +109,9 @@ class YustFileHandler {
   void _removeLocalDeletedFiles(List<YustFile> onlineFiles) {
     final copyRecentlyDeletedFiles = List.from(_recentlyDeletedFileUrls);
     onlineFiles.removeWhere((f) {
+      // ignore: deprecated_member_use
       if (_recentlyDeletedFileUrls.contains(f.url)) {
+        // ignore: deprecated_member_use
         copyRecentlyDeletedFiles.remove(f.url);
         return true;
       }
@@ -209,6 +213,7 @@ class YustFileHandler {
       }
       try {
         await _deleteFileFromStorage(yustFile);
+        // ignore: deprecated_member_use
         _recentlyDeletedFileUrls.add(yustFile.url!);
         // ignore: empty_catches
       } catch (e) {}
@@ -245,7 +250,7 @@ class YustFileHandler {
     }
 
     if (length < uploadedFiles + getCachedFiles().length) {
-      // retry upload with reseted uploadTime, because new files where added
+      // retry upload with reset uploadTime, because new files where added
       uploadError = true;
       reuploadTime = _reuploadTime;
     }
@@ -270,6 +275,7 @@ class YustFileHandler {
         String filePath;
         if (yustFile.cached) {
           filePath = yustFile.devicePath!;
+        // ignore: deprecated_member_use
         } else if (yustFile.url == null) {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
@@ -281,6 +287,7 @@ class YustFileHandler {
               : yustFile.name;
           filePath = '${await _getDirectory(yustFile)}$fileName';
 
+          // ignore: deprecated_member_use
           await Dio().download(yustFile.url!, filePath);
           await EasyLoading.dismiss();
         }
@@ -382,7 +389,11 @@ class YustFileHandler {
       name: yustFile.name!,
       file: yustFile.file,
       bytes: yustFile.bytes,
+      linkedDocPath: yustFile.linkedDocPath,
+      linkedDocAttribute: yustFile.linkedDocAttribute,
+      createThumbnail: yustFile.createThumbnail,
     );
+    // ignore: deprecated_member_use
     yustFile.url = url;
     await _addFileHash(yustFile);
     if (yustFile.cached) {
@@ -410,6 +421,7 @@ class YustFileHandler {
     // Update all attributes, that may have changed for an updated
     fileData['name'] = cachedFile.name;
     fileData['modifiedAt'] = cachedFile.modifiedAt;
+    // ignore: deprecated_member_use
     fileData['url'] = cachedFile.url;
     fileData['hash'] = cachedFile.hash;
 
@@ -549,7 +561,9 @@ class YustFileHandler {
   }
 
   Future<void> _launchBrowser(YustFile file) async {
+    // ignore: deprecated_member_use
     final uri = Uri.parse(file.url ?? '');
+    // ignore: deprecated_member_use
     if (file.url != null && await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
