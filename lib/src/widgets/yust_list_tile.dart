@@ -138,7 +138,6 @@ class YustListTile extends StatelessWidget {
           ((heading || largeHeading)
               ? TextStyle(
                   fontSize: largeHeading ? 24 : 20,
-                  color: Theme.of(context).primaryColor,
                 )
               : null),
       overflow: labelOverflow ? TextOverflow.ellipsis : null,
