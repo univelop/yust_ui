@@ -6,7 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
+import 'package:collection/collection.dart';
+
 import '../extensions/string_translate_extension.dart';
+import '../extensions/yust_file_validation_options_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
@@ -18,10 +21,10 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   final bool showModifiedAt;
 
   /// Allowed file extensions.
-  final List<String>? allowedExtensions;
+  List<String>? get allowedExtensions => validationOptions.allowedExtensions;
 
   /// Maximum file size in KiB.
-  final num? maximumFileSizeInKiB;
+  num? get maximumFileSizeInKiB => validationOptions.maximumFileSizeInKiB;
 
   const YustFilePicker({
     super.key,
@@ -35,9 +38,8 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.prefixIcon,
     super.enableDropzone = false,
     super.readOnly = false,
-    super.numberOfFiles = YustFilePickerBase.defaultNumberOfFiles,
+    super.validationOptions,
     super.divider = true,
-    super.overwriteSingleFile = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
     super.onMultiSelectDownload,
@@ -46,8 +48,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
-    this.allowedExtensions,
-    this.maximumFileSizeInKiB,
   });
 
   /// A convenience constructor for a single file picker.
@@ -65,13 +65,13 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.readOnly = false,
     super.divider = true,
     super.wrapSuffixChild = false,
-    super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.showModifiedAt = false,
-    this.allowedExtensions,
-    this.maximumFileSizeInKiB,
-  }) : super(numberOfFiles: 1);
+  }) : super(
+          validationOptions:
+              const YustFileValidationOptions(numberOfFiles: 1),
+        );
 
   @override
   YustFilePickerState createState() => YustFilePickerState();
@@ -345,83 +345,31 @@ class YustFilePickerState
     for (final fileData in fileData) {
       final (name, file, bytes) = await fileDataExtractor(fileData);
 
-      final filesExtensionsValid = await _checkFileExtension(name);
-      if (!filesExtensionsValid) return;
+      final int fileSizeInKiB = file != null
+          ? await file.length() ~/ 1024
+          : bytes != null
+              ? bytes.length ~/ 1024
+              : 0;
 
-      final existingFileNamesValid = await _checkExistingFileNames(name);
-      if (!existingFileNamesValid) return;
+      final tempFile = YustFile(name: name, file: file, bytes: bytes);
+      final valid = await widget.validationOptions.verifyFile(
+        newFile: tempFile,
+        existingFiles: fileHandler.getFiles(),
+        newFileSizeInKiB: fileSizeInKiB,
+      );
+      if (!valid) return;
 
-      final fileSizeValid = await _checkFileSize(name, file, bytes);
-      if (!fileSizeValid) return;
+      // If the user confirmed overwrite of an existing file, delete it.
+      final existingFile = fileHandler
+          .getFiles()
+          .firstWhereOrNull((f) => f.name == name);
+      if (existingFile != null) {
+        await fileHandler.deleteFile(existingFile);
+      }
 
       final newFile = await processFile(name, file, bytes);
       await uploadFile(file: newFile);
     }
-  }
-
-  Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
-    final maxSizeKiB = widget.maximumFileSizeInKiB;
-    if (maxSizeKiB == null) return true;
-
-    final int fileSizeInKiB = file != null
-        ? await file.length() ~/ 1024
-        : bytes != null
-        ? bytes.length ~/ 1024
-        : 0;
-
-    if (fileSizeInKiB > maxSizeKiB) {
-      unawaited(
-        YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          LocaleKeys.alertFileTooBig.tr(
-            namedArgs: {
-              'fileName': name,
-              'maxFileSize': YustUi.fileHelpers.formatFileSize(maxSizeKiB),
-            },
-          ),
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  Future<bool> _checkFileExtension<T>(String fileName) async {
-    final extension = fileName.split('.').last;
-    if (widget.allowedExtensions != null &&
-        !widget.allowedExtensions!.contains(extension)) {
-      unawaited(
-        YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          widget.allowedExtensions!.isEmpty
-              ? LocaleKeys.alertNoAllowedExtensions.tr()
-              : LocaleKeys.alertAllowedExtensions.tr(
-                  namedArgs: {
-                    'allowedExtensions': widget.allowedExtensions!.join(', '),
-                  },
-                ),
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  Future<bool> _checkExistingFileNames(String fileName) async {
-    if (fileHandler.getFiles().any((file) => file.name == fileName)) {
-      final confirmed = await YustUi.alertService.showConfirmation(
-        LocaleKeys.alertFileAlreadyExists.tr(namedArgs: {'fileName': fileName}),
-        LocaleKeys.continue_.tr(),
-      );
-      if (confirmed != true) return false;
-
-      final fileToDelete = fileHandler.getFiles().firstWhere(
-        (file) => file.name == fileName,
-        orElse: () => YustFile(),
-      );
-      await fileHandler.deleteFile(fileToDelete);
-    }
-    return true;
   }
 
   bool fileExists(String? fileName) =>
