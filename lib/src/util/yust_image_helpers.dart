@@ -22,14 +22,9 @@ final Map<String, Map<String, int>> yustImageQuality = {
   'low': {'quality': 70, 'size': 800},
 };
 
-final yustAllowedImageExtensions = [
-  'jpg',
-  'jpeg',
-  'png',
-  'gif',
-  'tiff',
-  if (!kIsWeb) 'heic',
-];
+final yustAllowedImageExtensions = YustImage.allowedExtensions
+    .where((e) => !kIsWeb || e != 'heic')
+    .toList();
 
 /// Position of the watermark on the image.
 enum YustWatermarkPosition {

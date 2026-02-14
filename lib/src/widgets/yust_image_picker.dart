@@ -56,14 +56,13 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     required List<YustImage> images,
     super.linkedDocPath,
     super.linkedDocAttribute,
-    super.numberOfFiles = YustFilePickerBase.defaultNumberOfFiles,
+    super.validationOptions,
     super.suffixIcon,
     super.onChanged,
     super.prefixIcon,
     super.readOnly = false,
     super.newestFirst = false,
     super.divider = true,
-    super.overwriteSingleFile = false,
     super.enableDropzone = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
@@ -100,7 +99,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.divider = true,
     super.enableDropzone = false,
     super.wrapSuffixChild = false,
-    super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
@@ -113,7 +111,11 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     this.watermarkLocationAppearance = YustLocationAppearance.decimalDegree,
     this.locale = const Locale('de'),
     this.watermarkPosition = YustWatermarkPosition.bottomLeft,
-  }) : super(files: images, numberOfFiles: 1);
+  }) : super(
+          files: images,
+          validationOptions:
+              const YustFileValidationOptions(numberOfFiles: 1),
+        );
 
   @override
   YustImagePickerState createState() => YustImagePickerState();
@@ -525,19 +527,6 @@ class YustImagePickerState
       final (path, file, bytes) = await imageDataExtractor(image);
 
       final fileExtension = path.split('.').lastOrNull?.toLowerCase();
-
-      if (kIsWeb && fileExtension == 'heic') {
-        await EasyLoading.dismiss();
-        await YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          LocaleKeys.alertInvalidFileType.tr(
-            namedArgs: {
-              'supportedTypes': yustAllowedImageExtensions.join(', '),
-            },
-          ),
-        );
-        continue;
-      }
 
       if (!yustAllowedImageExtensions.contains(fileExtension)) {
         await EasyLoading.dismiss();

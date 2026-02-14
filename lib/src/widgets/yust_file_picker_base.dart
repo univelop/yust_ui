@@ -75,11 +75,14 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Whether to show the newest files first.
   final bool newestFirst;
 
+  /// Validation options for file picking.
+  final YustFileValidationOptions validationOptions;
+
   /// Number of files to pick.
-  final num numberOfFiles;
+  num get numberOfFiles => validationOptions.numberOfFiles;
 
   /// Whether a single file can be overwritten.
-  final bool overwriteSingleFile;
+  bool get overwriteSingleFile => validationOptions.overwriteSingleFile;
 
   /// Number of items to show initially and load more on demand.
   ///
@@ -115,8 +118,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.onMultiSelectDownload,
     this.wrapSuffixChild = false,
     this.newestFirst = false,
-    this.numberOfFiles = defaultNumberOfFiles,
-    this.overwriteSingleFile = false,
+    this.validationOptions = const YustFileValidationOptions(
+      numberOfFiles: defaultNumberOfFiles,
+    ),
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
