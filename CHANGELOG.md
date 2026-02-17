@@ -1,3 +1,8 @@
+## 3.32.2 - 2026-02-17
+
+- Add inner padding option to YustSwitch
+- New heading color for YustListTile
+
 ## 3.32.1 - 2026-02-16
 
 - Refactor spacing and formatting in YustTextField
