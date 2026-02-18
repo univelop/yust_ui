@@ -96,6 +96,41 @@ class YustAlertService {
     );
   }
 
+  Future<T?> showSelectDialog<T>({
+    required List<T> optionValues,
+    required List<String> optionLabels,
+    required String label,
+    List<Widget> prefixWidgets = const [],
+  }) {
+    final context = navStateKey.currentContext;
+    if (context == null) return Future.value();
+    final selectedValues = <T>[];
+    return showDialog<T?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
+        title: Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label})),
+        content: YustSelectForm(
+          selectedValues: selectedValues,
+          optionValues: optionValues,
+          optionLabels: optionLabels,
+          prefixWidgets: prefixWidgets,
+          formType: YustSelectFormType.singleWithoutIndicator,
+          onChanged: () {
+            final value = selectedValues.firstOrNull;
+            Navigator.pop(context, value);
+          },
+          optionListConstraints: const BoxConstraints(
+            maxHeight: 400.0,
+            maxWidth: 400.0,
+          ),
+          divider: false,
+          autofocus: true,
+        ),
+      ),
+    );
+  }
+
   /// Shows a text field dialog
   /// if validator is set, action gets only triggered if the validator returns null (means true)
   Future<String?> showTextFieldDialog(
