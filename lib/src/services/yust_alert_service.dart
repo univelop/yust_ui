@@ -99,7 +99,7 @@ class YustAlertService {
   Future<T?> showSelectDialog<T>({
     required List<T> optionValues,
     required List<String> optionLabels,
-    required String label,
+    String? label,
     List<Widget> prefixWidgets = const [],
   }) {
     final context = navStateKey.currentContext;
@@ -109,7 +109,11 @@ class YustAlertService {
       context: context,
       builder: (context) => AlertDialog(
         contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
-        title: Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label})),
+        title: label == null
+            ? null
+            : Text(
+                LocaleKeys.selectValue.tr(namedArgs: {'label': label}),
+              ),
         content: YustSelectForm(
           selectedValues: selectedValues,
           optionValues: optionValues,

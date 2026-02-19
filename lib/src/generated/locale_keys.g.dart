@@ -3431,6 +3431,7 @@ abstract class LocaleKeys {
   static const roleName = 'roleName';
   static const roleNameExample = 'roleNameExample';
   static const roleNameOrId = 'roleNameOrId';
+  static const roleNameTooLong = 'roleNameTooLong';
   static const rolePlural = 'rolePlural';
   static const roleReferenceDeleteFilter = 'roleReferenceDeleteFilter';
   static const roleReferenceDeletePermissions =
@@ -3519,6 +3520,7 @@ abstract class LocaleKeys {
   static const searchRole = 'searchRole';
   static const searchRows = 'searchRows';
   static const searchRuleWorkflow = 'searchRuleWorkflow';
+  static const searchSteps = 'searchSteps';
   static const searchTile = 'searchTile';
   static const searchWorkflow = 'searchWorkflow';
   static const searching = 'searching';

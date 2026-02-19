@@ -1,9 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 import 'package:yust_ui/yust_ui.dart';
-
-import '../generated/locale_keys.g.dart';
 
 class YustSelect<T> extends StatelessWidget {
   final String? label;
@@ -186,7 +183,7 @@ class YustSelect<T> extends StatelessWidget {
       optionValues: enabledOptionValues,
       optionLabels: enabledOptionLabels,
       prefixWidgets: enabledPrefixWidgets ?? [],
-      label: label ?? '',
+      label: label,
     );
     if (selectedValue != null) {
       onSelected!(selectedValue);
