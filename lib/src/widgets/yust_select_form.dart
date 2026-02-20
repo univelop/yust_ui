@@ -23,7 +23,7 @@ class YustSelectForm<T> extends StatefulWidget {
   final bool disabled;
   final YustSelectFormType formType;
   final String noOptionsText;
-  final Function? onChanged;
+  final void Function()? onChanged;
   final bool divider;
   final bool allowSearch;
   final BoxConstraints optionListConstraints;

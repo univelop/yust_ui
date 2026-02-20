@@ -1,9 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:yust_ui/src/extensions/string_translate_extension.dart';
 import 'package:yust_ui/yust_ui.dart';
-
-import '../generated/locale_keys.g.dart';
 
 class YustSelect<T> extends StatelessWidget {
   final String? label;
@@ -175,22 +172,6 @@ class YustSelect<T> extends StatelessWidget {
 
   void _selectValue(BuildContext context) async {
     if (onSelected == null) return;
-
-    final selectedValues = <T>[];
-
-    await showDialog<T>(
-      context: context,
-      builder: (BuildContext context) {
-        return _buildDialog(context, selectedValues);
-      },
-    );
-    final selectedValue = selectedValues.firstOrNull;
-    if (selectedValue != null) {
-      onSelected!(selectedValue);
-    }
-  }
-
-  Widget _buildDialog(BuildContext context, List<T> selectedValues) {
     final enabledOptionValues = optionValues.where(_isSelectable).toList();
     final enabledOptionLabels = optionLabels
         .whereIndexed((index, value) => _isSelectable(optionValues[index]))
@@ -198,28 +179,14 @@ class YustSelect<T> extends StatelessWidget {
     final enabledPrefixWidgets = prefixWidgets
         ?.whereIndexed((index, value) => _isSelectable(optionValues[index]))
         .toList();
-
-    return AlertDialog(
-      contentPadding: const EdgeInsets.only(top: 16, bottom: 24),
-      title: label == null
-          ? null
-          : Text(LocaleKeys.selectValue.tr(namedArgs: {'label': label ?? ''})),
-      content: YustSelectForm(
-        optionValues: enabledOptionValues,
-        optionLabels: enabledOptionLabels,
-        prefixWidgets: enabledPrefixWidgets,
-        selectedValues: selectedValues,
-        formType: YustSelectFormType.singleWithoutIndicator,
-        onChanged: () {
-          Navigator.pop(context);
-        },
-        optionListConstraints: const BoxConstraints(
-          maxHeight: 400.0,
-          maxWidth: 400.0,
-        ),
-        divider: false,
-        autofocus: true,
-      ),
+    final selectedValue = await YustUi.alertService.showSelectDialog(
+      optionValues: enabledOptionValues,
+      optionLabels: enabledOptionLabels,
+      prefixWidgets: enabledPrefixWidgets ?? [],
+      label: label,
     );
+    if (selectedValue != null) {
+      onSelected!(selectedValue);
+    }
   }
 }
