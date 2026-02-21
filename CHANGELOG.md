@@ -1,3 +1,8 @@
+## 3.32.3 - 2026-02-21
+
+- Move showDialog logic from YustSelect to YustAlertService
+- Fix label naming
+
 ## 3.32.2 - 2026-02-17
 
 - Add inner padding option to YustSwitch
