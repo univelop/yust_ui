@@ -182,11 +182,11 @@ class YustListTile extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          ?suffixChild,
           if (navigate)
             const Icon(
               Icons.navigate_next,
             ),
-          if (suffixChild != null) suffixChild!,
         ],
       ),
       onTap: onTap,
@@ -227,11 +227,11 @@ class YustListTile extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        suffixChild,
         if (navigate)
           const Icon(
             Icons.navigate_next,
           ),
-        suffixChild,
       ],
     );
   }
