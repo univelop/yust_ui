@@ -1,3 +1,7 @@
+## 3.32.4 - 2026-03-16
+
+- YustListTile: show suffix child in front of the navigate icon
+
 ## 3.32.3 - 2026-02-21
 
 - Move showDialog logic from YustSelect to YustAlertService
