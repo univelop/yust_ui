@@ -347,16 +347,21 @@ class YustImagePickerState
       );
     } else {
       if (widget.showCentered) {
-        return FittedBox(
-          fit: BoxFit.scaleDown,
-          // ignore: deprecated_member_use
-          child: file.url != null
-              ? Hero(
-                  // ignore: deprecated_member_use
-                  tag: file.url!,
-                  child: preview,
-                )
-              : preview,
+        return GestureDetector(
+          onTap: () {
+            if (zoomEnabled) _showImages(file);
+          },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            // ignore: deprecated_member_use
+            child: file.url != null
+                ? Hero(
+                    // ignore: deprecated_member_use
+                    tag: file.url!,
+                    child: preview,
+                  )
+                : preview,
+          ),
         );
       } else {
         return Container(
