@@ -18,6 +18,11 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   /// Whether the image can be zoomed e.g. clicked to show the image in a full screen view.
   final bool zoomable;
 
+  /// Whether the share/download button should be shown in the zoom detail screen.
+  ///
+  /// Defaults to false for single image pickers, true otherwise.
+  final bool allowSharing;
+
   /// Quality of the image
   final String yustQuality;
 
@@ -74,6 +79,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
+    this.allowSharing = true,
     this.yustQuality = 'medium',
     this.showCentered = false,
     this.showPreview = true,
@@ -105,6 +111,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
+    this.allowSharing = false,
     this.yustQuality = 'medium',
     this.showCentered = false,
     this.showPreview = true,
@@ -629,6 +636,7 @@ class YustImagePickerState
         (file) => file.hash == activeFile.hash && file.name == activeFile.name,
       ),
       allowDrawing: !widget.readOnly,
+      allowShare: widget.allowSharing,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;
         file.linkedDocPath = widget.linkedDocPath;
