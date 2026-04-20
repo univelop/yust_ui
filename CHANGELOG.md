@@ -1,3 +1,7 @@
+## 3.32.5 - 2026-04-21
+
+- Allow zooming in single images and disable sharing for them in YustImagePicker
+
 ## 3.32.4 - 2026-03-16
 
 - YustListTile: show suffix child in front of the navigate icon
