@@ -29,7 +29,7 @@ dependencies:
     open_filex:
         git:
             url: https://github.com/univelop/open_filex.git
-            ref: feat/use-ios-default-app
+            ref: master
     path_provider: ^2.1.5
     photo_view: ^0.15.0
     share_plus: ^11.1.0
