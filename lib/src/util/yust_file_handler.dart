@@ -310,6 +310,12 @@ class YustFileHandler {
     }
   }
 
+  /// Opens the file in the user's default app instead of the built-in preview.
+  ///
+  /// On iOS 26+, uses [UIApplication.shared.open(fileURL)] which respects the
+  /// user's default app preference. Falls back to Quick Look on older iOS.
+  /// On Android, behaves the same as [showFile] (ACTION_VIEW).
+  /// On web, falls back to [downloadAndLaunchYustFile] (file download).
   Future<void> showFileInDefaultApp(
     BuildContext context,
     YustFile yustFile,
