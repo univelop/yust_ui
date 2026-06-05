@@ -275,7 +275,7 @@ class YustFileHandler {
         String filePath;
         if (yustFile.cached) {
           filePath = yustFile.devicePath!;
-        // ignore: deprecated_member_use
+          // ignore: deprecated_member_use
         } else if (yustFile.url == null) {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
@@ -299,6 +299,49 @@ class YustFileHandler {
         await _launchBrowser(yustFile);
       }
       await EasyLoading.dismiss();
+    } catch (e) {
+      await EasyLoading.dismiss();
+      await YustUi.alertService.showAlert(
+        LocaleKeys.oops.tr(),
+        LocaleKeys.alertCannotOpenFileWithError.tr(
+          namedArgs: {'error': e.toString()},
+        ),
+      );
+    }
+  }
+
+  Future<void> showFileInDefaultApp(
+    BuildContext context,
+    YustFile yustFile,
+  ) async {
+    if (kIsWeb) {
+      await YustUi.fileHelpers.downloadAndLaunchYustFile(
+        context: context,
+        file: yustFile,
+      );
+      return;
+    }
+    await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
+    try {
+      String filePath;
+      if (yustFile.cached) {
+        filePath = yustFile.devicePath!;
+        // ignore: deprecated_member_use
+      } else if (yustFile.url == null) {
+        throw YustException(LocaleKeys.exceptionFileNotFound.tr());
+      } else {
+        final fileName = Platform.isIOS
+            ? YustFileHelpers.sanitizeFileName(yustFile.name!)
+            : yustFile.name;
+        filePath = '${await _getDirectory(yustFile)}$fileName';
+        // ignore: deprecated_member_use
+        await Dio().download(yustFile.url!, filePath);
+      }
+      await EasyLoading.dismiss();
+      var result = await OpenFilex.open(filePath, useIosDefaultApp: true);
+      if (result.type != ResultType.done) {
+        await _launchBrowser(yustFile);
+      }
     } catch (e) {
       await EasyLoading.dismiss();
       await YustUi.alertService.showAlert(
