@@ -616,6 +616,8 @@ abstract class LocaleKeys {
   static const bccNames = 'bccNames';
   static const beganAt = 'beganAt';
   static const behavior = 'behavior';
+  static const belongsToLinkedRecordConfirmDescription =
+      'belongsToLinkedRecordConfirmDescription';
   static const belongsToLinkedRecordLabel = 'belongsToLinkedRecordLabel';
   static const beta = 'beta';
   static const betaTester = 'betaTester';
@@ -647,9 +649,13 @@ abstract class LocaleKeys {
   static const billingAddress = 'billingAddress';
   static const billingAdmin = 'billingAdmin';
   static const billingCycle = 'billingCycle';
+  static const billingLinkedCustomerDisclaimer =
+      'billingLinkedCustomerDisclaimer';
   static const billingOptions = 'billingOptions';
   static const billingOptionsInfoText = 'billingOptionsInfoText';
   static const billingOwner = 'billingOwner';
+  static const billingPartnerAccountDisclaimer =
+      'billingPartnerAccountDisclaimer';
   static const billingType = 'billingType';
   static const binary = 'binary';
   static const binaryToBase64Description = 'binaryToBase64Description';
@@ -969,6 +975,7 @@ abstract class LocaleKeys {
   static const connectBillingAccount = 'connectBillingAccount';
   static const connectBillingAccount2 = 'connectBillingAccount2';
   static const connectBillingAccountInfo = 'connectBillingAccountInfo';
+  static const connectPartnerAccount = 'connectPartnerAccount';
   static const connectedBillingAccounts = 'connectedBillingAccounts';
   static const connection = 'connection';
   static const connectionTestFailed = 'connectionTestFailed';
@@ -1031,6 +1038,8 @@ abstract class LocaleKeys {
   static const createRecordIfNoneFound = 'createRecordIfNoneFound';
   static const createRecordStepDescription = 'createRecordStepDescription';
   static const createRuleWorkflow = 'createRuleWorkflow';
+  static const createSubBillingAccount = 'createSubBillingAccount';
+  static const createSubBillingAccountInfo = 'createSubBillingAccountInfo';
   static const createSubscription = 'createSubscription';
   static const createSubscriptionInfo = 'createSubscriptionInfo';
   static const createUser = 'createUser';
@@ -1328,6 +1337,46 @@ abstract class LocaleKeys {
   static const embeddedInBrowser = 'embeddedInBrowser';
   static const embeddedList = 'embeddedList';
   static const embeddedMobile = 'embeddedMobile';
+  static const embeddedRecordBrick = 'embeddedRecordBrick';
+  static const embeddedRecordBrickBelongsToRequired =
+      'embeddedRecordBrickBelongsToRequired';
+  static const embeddedRecordBrickChildNotLinked =
+      'embeddedRecordBrickChildNotLinked';
+  static const embeddedRecordBrickDescription =
+      'embeddedRecordBrickDescription';
+  static const embeddedRecordBrickHideDetailButton =
+      'embeddedRecordBrickHideDetailButton';
+  static const embeddedRecordBrickInvalidRelation =
+      'embeddedRecordBrickInvalidRelation';
+  static const embeddedRecordBrickLinkToLocked =
+      'embeddedRecordBrickLinkToLocked';
+  static const embeddedRecordBrickListPickerInfo =
+      'embeddedRecordBrickListPickerInfo';
+  static const embeddedRecordBrickModeDynamic =
+      'embeddedRecordBrickModeDynamic';
+  static const embeddedRecordBrickModeDynamicDescription =
+      'embeddedRecordBrickModeDynamicDescription';
+  static const embeddedRecordBrickModeFixed = 'embeddedRecordBrickModeFixed';
+  static const embeddedRecordBrickModeFixedDescription =
+      'embeddedRecordBrickModeFixedDescription';
+  static const embeddedRecordBrickNestingNotAllowed =
+      'embeddedRecordBrickNestingNotAllowed';
+  static const embeddedRecordBrickNoOptionsAvailable =
+      'embeddedRecordBrickNoOptionsAvailable';
+  static const embeddedRecordBrickOptionInUse =
+      'embeddedRecordBrickOptionInUse';
+  static const embeddedRecordBrickPermissionIndependent =
+      'embeddedRecordBrickPermissionIndependent';
+  static const embeddedRecordBrickPermissionIndependentDescription =
+      'embeddedRecordBrickPermissionIndependentDescription';
+  static const embeddedRecordBrickPermissionInherit =
+      'embeddedRecordBrickPermissionInherit';
+  static const embeddedRecordBrickPermissionInheritDescription =
+      'embeddedRecordBrickPermissionInheritDescription';
+  static const embeddedRecordBrickPermissionMode =
+      'embeddedRecordBrickPermissionMode';
+  static const embeddedRecordBrickSelectType = 'embeddedRecordBrickSelectType';
+  static const embeddedRecordBrickType = 'embeddedRecordBrickType';
   static const embeddingNotPossible = 'embeddingNotPossible';
   static const emptyDescription = 'emptyDescription';
   static const emptyTextField = 'emptyTextField';
@@ -1526,6 +1575,12 @@ abstract class LocaleKeys {
   static const exceptionEmailOnFlowError = 'exceptionEmailOnFlowError';
   static const exceptionEmailsCouldNotBeFetched =
       'exceptionEmailsCouldNotBeFetched';
+  static const exceptionEmbeddedRecordBrickActionAlreadyLinked =
+      'exceptionEmbeddedRecordBrickActionAlreadyLinked';
+  static const exceptionEmbeddedRecordBrickActionOnlyInFixedMode =
+      'exceptionEmbeddedRecordBrickActionOnlyInFixedMode';
+  static const exceptionEmbeddedRecordBrickRecordIdRequiresSpec =
+      'exceptionEmbeddedRecordBrickRecordIdRequiresSpec';
   static const exceptionEmptyEmailContent = 'exceptionEmptyEmailContent';
   static const exceptionEmptyEmailSubject = 'exceptionEmptyEmailSubject';
   static const exceptionEmptyFileContent = 'exceptionEmptyFileContent';
@@ -1762,6 +1817,8 @@ abstract class LocaleKeys {
   static const exceptionRecordNotFoundById = 'exceptionRecordNotFoundById';
   static const exceptionRecordNotFoundCannotImport =
       'exceptionRecordNotFoundCannotImport';
+  static const exceptionRecordPickerHasBelongsToRecordSelected =
+      'exceptionRecordPickerHasBelongsToRecordSelected';
   static const exceptionRecordSpecNotFound = 'exceptionRecordSpecNotFound';
   static const exceptionRecordTitleSemicolon = 'exceptionRecordTitleSemicolon';
   static const exceptionRoleExternallySynced = 'exceptionRoleExternallySynced';
@@ -2531,6 +2588,9 @@ abstract class LocaleKeys {
   static const invoiceBilling = 'invoiceBilling';
   static const invoiceInfo1 = 'invoiceInfo1';
   static const invoiceInfo2 = 'invoiceInfo2';
+  static const invoiceReference = 'invoiceReference';
+  static const invoiceReferenceInputHelperText =
+      'invoiceReferenceInputHelperText';
   static const invoiceScreenTitle = 'invoiceScreenTitle';
   static const invoiceTaxConfirmationMessage = 'invoiceTaxConfirmationMessage';
   static const invoiceTaxConfirmationTitle = 'invoiceTaxConfirmationTitle';
@@ -2841,6 +2901,7 @@ abstract class LocaleKeys {
   static const name = 'name';
   static const nameDefaultPath = 'nameDefaultPath';
   static const nameOfOrganization = 'nameOfOrganization';
+  static const nameOfSubBillingAccount = 'nameOfSubBillingAccount';
   static const namePathWithNumber = 'namePathWithNumber';
   static const names = 'names';
   static const navigateToHomescreen = 'navigateToHomescreen';
@@ -3555,6 +3616,7 @@ abstract class LocaleKeys {
   static const selectList = 'selectList';
   static const selectMember = 'selectMember';
   static const selectOAuthMethods = 'selectOAuthMethods';
+  static const selectPartnerBillingAccount = 'selectPartnerBillingAccount';
   static const selectRecords = 'selectRecords';
   static const selectRole = 'selectRole';
   static const selectStatus = 'selectStatus';
@@ -3889,6 +3951,11 @@ abstract class LocaleKeys {
   static const strokeWidth = 'strokeWidth';
   static const structure = 'structure';
   static const style = 'style';
+  static const subBillingAccountCreated = 'subBillingAccountCreated';
+  static const subBillingAccountCreatedPreheader =
+      'subBillingAccountCreatedPreheader';
+  static const subBillingAccountCreationMailBody =
+      'subBillingAccountCreationMailBody';
   static const subheadingBrickDescription = 'subheadingBrickDescription';
   static const subject = 'subject';
   static const submitButtonLabel = 'submitButtonLabel';
@@ -4109,9 +4176,11 @@ abstract class LocaleKeys {
   static const transferAddress = 'transferAddress';
   static const transferBillingAccount = 'transferBillingAccount';
   static const transferFrom = 'transferFrom';
+  static const transferFromReference = 'transferFromReference';
   static const transferFromSync = 'transferFromSync';
   static const transferIn = 'transferIn';
   static const transferOrigin = 'transferOrigin';
+  static const transferOriginReference = 'transferOriginReference';
   static const transferOut = 'transferOut';
   static const transferRightsFromStatus = 'transferRightsFromStatus';
   static const transferValues = 'transferValues';
@@ -4301,6 +4370,7 @@ abstract class LocaleKeys {
   static const veryLikely = 'veryLikely';
   static const verySmall = 'verySmall';
   static const veryUnlikely = 'veryUnlikely';
+  static const viewBillingAccount = 'viewBillingAccount';
   static const visibility = 'visibility';
   static const visibilityActionButtonExplanation =
       'visibilityActionButtonExplanation';
