@@ -359,6 +359,13 @@ class YustFileHandler {
     }
   }
 
+  /// Opens the share sheet (mobile) or triggers a file download (web).
+  Future<void> shareFile(BuildContext context, YustFile yustFile) =>
+      YustUi.fileHelpers.downloadAndLaunchYustFile(
+        context: context,
+        file: yustFile,
+      );
+
   List<YustFile> yustFilesFromJson(
     List<Map<String, String?>> jsonFiles,
     String storageFolderPath,

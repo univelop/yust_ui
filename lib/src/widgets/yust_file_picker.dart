@@ -268,12 +268,7 @@ class YustFilePickerState
             case YustFileTapMode.defaultApp:
               fileHandler.showFileInDefaultApp(context, file);
             case YustFileTapMode.share:
-              unawaited(
-                YustUi.fileHelpers.downloadAndLaunchYustFile(
-                  context: context,
-                  file: file,
-                ),
-              );
+              unawaited(fileHandler.shareFile(context, file));
           }
         }
       },
