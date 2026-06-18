@@ -1,3 +1,8 @@
+## 3.32.6 - 2026-06-17
+
+- YustFilePicker: add `allowRenaming` flag (default true) to hide the rename action when the file name is used as a stable key and
+custom onFileTap callback behavior.
+
 ## 3.32.5 - 2026-04-21
 
 - Allow zooming in single images and disable sharing for them in YustImagePicker

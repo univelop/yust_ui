@@ -97,6 +97,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This is needed for the offline upload of files.
   final bool linkedDocStoresFilesAsMap;
 
+  /// Whether the rename action is offered for existing files.
+  ///
+  /// Set to false when the file name is used as a stable key elsewhere and a
+  /// rename would break that linkage.
+  final bool allowRenaming;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -120,6 +126,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
+    this.allowRenaming = true,
   });
 
   /// Default number of items to show initially and load more on demand.

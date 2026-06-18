@@ -23,6 +23,10 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   /// Maximum file size in KiB.
   final num? maximumFileSizeInKiB;
 
+  /// Called when a file row is tapped. When set, it replaces the default
+  /// behavior of opening the file in a fullscreen preview.
+  final void Function(YustFile file)? onFileTap;
+
   const YustFilePicker({
     super.key,
     super.label,
@@ -45,9 +49,11 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowRenaming = true,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
+    this.onFileTap,
   });
 
   /// A convenience constructor for a single file picker.
@@ -68,9 +74,11 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowRenaming = true,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
+    this.onFileTap,
   }) : super(numberOfFiles: 1);
 
   @override
@@ -258,7 +266,12 @@ class YustFilePickerState
           return;
         }
 
-        if (!isBroken) {
+        if (isBroken) return;
+
+        final onFileTap = widget.onFileTap;
+        if (onFileTap != null) {
+          onFileTap(file);
+        } else {
           fileHandler.showFile(context, file);
         }
       },
@@ -294,7 +307,7 @@ class YustFilePickerState
   );
 
   Widget _buildFileRenameButton(YustFile file) {
-    if (!enabled) {
+    if (!enabled || !widget.allowRenaming) {
       return const SizedBox.shrink();
     }
     if (isFileProcessing(file)) {
