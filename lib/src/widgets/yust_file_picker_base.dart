@@ -18,6 +18,7 @@ import 'yust_file_picker.dart';
 import 'yust_image_picker.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_grid_view.dart';
+import 'yust_file_tap_mode.dart';
 
 /// Base class for file pickers.
 ///
@@ -103,6 +104,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// rename would break that linkage.
   final bool allowRenaming;
 
+  /// Controls what happens when a file is tapped.
+  final YustFileTapMode tapMode;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -127,6 +131,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
     this.allowRenaming = true,
+    this.tapMode = YustFileTapMode.preview,
   });
 
   /// Default number of items to show initially and load more on demand.
