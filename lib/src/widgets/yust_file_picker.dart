@@ -11,6 +11,7 @@ import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
+import 'yust_file_tap_mode.dart';
 
 /// A widget that allows the user to pick files from their device.
 class YustFilePicker extends YustFilePickerBase<YustFile> {
@@ -46,6 +47,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -70,6 +72,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
     super.allowFavorites = false,
+    super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -261,7 +264,14 @@ class YustFilePickerState
         }
 
         if (!isBroken) {
-          fileHandler.showFile(context, file);
+          switch (widget.tapMode) {
+            case YustFileTapMode.preview:
+              fileHandler.showFile(context, file);
+            case YustFileTapMode.defaultApp:
+              fileHandler.showFileInDefaultApp(context, file);
+            case YustFileTapMode.share:
+              unawaited(fileHandler.shareFile(context, file));
+          }
         }
       },
       contentPadding: const EdgeInsets.symmetric(
@@ -294,20 +304,25 @@ class YustFilePickerState
     onPressed: () => unawaited(toggleFavorite(file)),
   );
 
-  Widget _buildDownloadButton(YustFile file) => Builder(
-    builder: (buttonContext) {
-      return IconButton(
-        icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
-        color: Theme.of(buttonContext).primaryColor,
-        onPressed: () => unawaited(
-          YustUi.fileHelpers.downloadAndLaunchYustFile(
-            context: buttonContext,
-            file: file,
+  Widget _buildDownloadButton(YustFile file) {
+    if (widget.tapMode == YustFileTapMode.share) {
+      return const SizedBox.shrink();
+    }
+    return Builder(
+      builder: (buttonContext) {
+        return IconButton(
+          icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
+          color: Theme.of(buttonContext).primaryColor,
+          onPressed: () => unawaited(
+            YustUi.fileHelpers.downloadAndLaunchYustFile(
+              context: buttonContext,
+              file: file,
+            ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
+  }
 
   Widget _buildFileRenameButton(YustFile file) {
     if (!enabled) {

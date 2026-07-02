@@ -275,7 +275,7 @@ class YustFileHandler {
         String filePath;
         if (yustFile.cached) {
           filePath = yustFile.devicePath!;
-        // ignore: deprecated_member_use
+          // ignore: deprecated_member_use
         } else if (yustFile.url == null) {
           throw YustException(LocaleKeys.exceptionFileNotFound.tr());
         } else {
@@ -309,6 +309,62 @@ class YustFileHandler {
       );
     }
   }
+
+  /// Opens the file in the user's default app instead of the built-in preview.
+  ///
+  /// On iOS 26+, uses [UIApplication.shared.open(fileURL)] which respects the
+  /// user's default app preference. Falls back to Quick Look on older iOS.
+  /// On Android, behaves the same as [showFile] (ACTION_VIEW).
+  /// On web, falls back to [downloadAndLaunchYustFile] (file download).
+  Future<void> showFileInDefaultApp(
+    BuildContext context,
+    YustFile yustFile,
+  ) async {
+    if (kIsWeb) {
+      await YustUi.fileHelpers.downloadAndLaunchYustFile(
+        context: context,
+        file: yustFile,
+      );
+      return;
+    }
+    await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
+    try {
+      String filePath;
+      if (yustFile.cached) {
+        filePath = yustFile.devicePath!;
+        // ignore: deprecated_member_use
+      } else if (yustFile.url == null) {
+        throw YustException(LocaleKeys.exceptionFileNotFound.tr());
+      } else {
+        final fileName = Platform.isIOS
+            ? YustFileHelpers.sanitizeFileName(yustFile.name!)
+            : yustFile.name;
+        filePath = '${await _getDirectory(yustFile)}$fileName';
+        // ignore: deprecated_member_use
+        await Dio().download(yustFile.url!, filePath);
+      }
+      await EasyLoading.dismiss();
+      var result = await OpenFilex.open(filePath, useIosDefaultApp: true);
+      if (result.type != ResultType.done) {
+        await _launchBrowser(yustFile);
+      }
+    } catch (e) {
+      await EasyLoading.dismiss();
+      await YustUi.alertService.showAlert(
+        LocaleKeys.oops.tr(),
+        LocaleKeys.alertCannotOpenFileWithError.tr(
+          namedArgs: {'error': e.toString()},
+        ),
+      );
+    }
+  }
+
+  /// Opens the share sheet (mobile) or triggers a file download (web).
+  Future<void> shareFile(BuildContext context, YustFile yustFile) =>
+      YustUi.fileHelpers.downloadAndLaunchYustFile(
+        context: context,
+        file: yustFile,
+      );
 
   List<YustFile> yustFilesFromJson(
     List<Map<String, String?>> jsonFiles,
