@@ -40,6 +40,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
+    super.allowFavorites = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
@@ -68,6 +69,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowFavorites = false,
     this.showModifiedAt = false,
     this.allowedExtensions,
     this.maximumFileSizeInKiB,
@@ -272,10 +274,24 @@ class YustFilePickerState
   Widget _buildTrailing(YustFile file) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
+      if (widget.allowFavorites && enabled) _buildFavoriteButton(file),
       _buildDownloadButton(file),
       _buildFileRenameButton(file),
       _buildDeleteButton(file),
     ],
+  );
+
+  Widget _buildFavoriteButton(YustFile file) => IconButton(
+    icon: Icon(
+      file.favorite
+          ? YustFilePickerBase.favoriteIcon
+          : YustFilePickerBase.favoriteBorderIcon,
+    ),
+    color: Theme.of(context).colorScheme.primary,
+    tooltip: file.favorite
+        ? LocaleKeys.removeFromFavorites.tr()
+        : LocaleKeys.addToFavorites.tr(),
+    onPressed: () => unawaited(toggleFavorite(file)),
   );
 
   Widget _buildDownloadButton(YustFile file) => Builder(

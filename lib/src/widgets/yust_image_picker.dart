@@ -72,6 +72,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
+    super.allowFavorites = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
@@ -109,6 +110,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = false,
@@ -283,8 +285,33 @@ class YustImagePickerState
         selecting
             ? _buildSelectionCheckbox(file)
             : _buildRemoveButton(context, file),
+        if (widget.allowFavorites && enabled && !selecting && file != null)
+          _buildFavoriteOverlay(context, file),
         if (file != null) buildCachedIndicator(file),
       ],
+    );
+  }
+
+  Widget _buildFavoriteOverlay(BuildContext context, YustImage image) {
+    return Positioned(
+      top: 10,
+      left: 10,
+      child: CircleAvatar(
+        radius: 20,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: IconButton(
+          icon: Icon(
+            image.favorite
+                ? YustFilePickerBase.favoriteIcon
+                : YustFilePickerBase.favoriteBorderIcon,
+          ),
+          color: Colors.black,
+          tooltip: image.favorite
+              ? LocaleKeys.removeFromFavorites.tr()
+              : LocaleKeys.addToFavorites.tr(),
+          onPressed: () => unawaited(toggleFavorite(image)),
+        ),
+      ),
     );
   }
 

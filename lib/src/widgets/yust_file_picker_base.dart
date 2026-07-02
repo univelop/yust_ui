@@ -63,6 +63,13 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Whether to allow multi-select deletion.
   final bool allowMultiSelectDeletion;
 
+  /// Whether files can be marked as favorites.
+  ///
+  /// When enabled, a favorite toggle is shown per file, favorite files are
+  /// sorted first and the multi-select toolbar gains favorite / un-favorite
+  /// buttons.
+  final bool allowFavorites;
+
   /// Callback when multi-select download is triggered.
   ///
   /// The real download functionality has to be implemented
@@ -112,6 +119,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.divider = true,
     this.allowMultiSelectDownload = false,
     this.allowMultiSelectDeletion = false,
+    this.allowFavorites = false,
     this.onMultiSelectDownload,
     this.wrapSuffixChild = false,
     this.newestFirst = false,
@@ -127,6 +135,13 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
 
   /// Default number of files to pick.
   static const defaultNumberOfFiles = 2;
+
+  /// Icon shown for a favorite file. Single source of truth so the glyph can
+  /// be swapped in one place.
+  static const IconData favoriteIcon = Icons.star;
+
+  /// Icon shown for a non-favorite file.
+  static const IconData favoriteBorderIcon = Icons.star_border;
 }
 
 abstract class YustFilePickerBaseState<
@@ -241,9 +256,36 @@ abstract class YustFilePickerBaseState<
 
   /// Get the currently visible files based on how they are displayed.
   @nonVirtual
-  List<T> getVisibleFiles({List<T>? files}) => sortFiles(
-    convertFiles(files ?? _fileHandler.getFiles()),
-  ).take(currentDisplayCount).toList();
+  List<T> getVisibleFiles({List<T>? files}) {
+    var ordered = sortFiles(convertFiles(files ?? _fileHandler.getFiles()));
+    if (widget.allowFavorites) {
+      // Stable partition: favorites first, existing order kept within groups.
+      ordered = [
+        ...ordered.where((file) => file.favorite),
+        ...ordered.where((file) => !file.favorite),
+      ];
+    }
+    return ordered.take(currentDisplayCount).toList();
+  }
+
+  /// Toggle the favorite flag of a file and notify listeners.
+  @nonVirtual
+  Future<void> toggleFavorite(T file) async {
+    file.favorite = !file.favorite;
+    // The handler stores the same instances, so mutating [file] is enough;
+    // re-emitting the full list lets the parent persist the change.
+    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
+    if (mounted) setState(() {});
+  }
+
+  /// Set the favorite flag on every currently selected file, then notify.
+  Future<void> _favoriteSelectedFiles({required bool favorite}) async {
+    for (final file in _selectedFiles) {
+      file.favorite = favorite;
+    }
+    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
+    _cancelSelection();
+  }
 
   /// Create a database entry for the files.
   @nonVirtual
@@ -415,10 +457,15 @@ abstract class YustFilePickerBaseState<
               _buildDownloadSelectedButton(context),
             if (widget.allowMultiSelectDeletion)
               _buildDeleteSelectedButton(context),
+            if (widget.allowFavorites) ...[
+              _buildFavoriteSelectedButton(context, favorite: true),
+              _buildFavoriteSelectedButton(context, favorite: false),
+            ],
           ]
         : [
             if ((widget.allowMultiSelectDownload ||
-                    widget.allowMultiSelectDeletion) &&
+                    widget.allowMultiSelectDeletion ||
+                    widget.allowFavorites) &&
                 _fileHandler.getFiles().length > 1)
               _buildStartSelectionButton(),
             ...buildActionButtons(context),
@@ -535,6 +582,27 @@ abstract class YustFilePickerBaseState<
       tooltip: LocaleKeys.delete.tr(),
       onPressed: _enabled && _selectedFiles.isNotEmpty
           ? () => unawaited(_deleteSelectedFiles())
+          : null,
+    );
+  }
+
+  /// Build the favorite / un-favorite selected button.
+  Widget _buildFavoriteSelectedButton(
+    BuildContext context, {
+    required bool favorite,
+  }) {
+    return IconButton(
+      color: Theme.of(context).colorScheme.primary,
+      icon: Icon(
+        favorite
+            ? YustFilePickerBase.favoriteIcon
+            : YustFilePickerBase.favoriteBorderIcon,
+      ),
+      tooltip: favorite
+          ? LocaleKeys.addToFavorites.tr()
+          : LocaleKeys.removeFromFavorites.tr(),
+      onPressed: _enabled && _selectedFiles.isNotEmpty
+          ? () => unawaited(_favoriteSelectedFiles(favorite: favorite))
           : null,
     );
   }
