@@ -18,6 +18,7 @@ import 'yust_file_picker.dart';
 import 'yust_image_picker.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_grid_view.dart';
+import 'yust_file_tap_mode.dart';
 
 /// Base class for file pickers.
 ///
@@ -97,6 +98,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This is needed for the offline upload of files.
   final bool linkedDocStoresFilesAsMap;
 
+  /// Controls what happens when a file is tapped.
+  final YustFileTapMode tapMode;
+
   const YustFilePickerBase({
     super.key,
     this.label,
@@ -120,6 +124,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
+    this.tapMode = YustFileTapMode.preview,
   });
 
   /// Default number of items to show initially and load more on demand.
