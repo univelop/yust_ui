@@ -75,9 +75,17 @@ class _YustSelectFormState<T> extends State<YustSelectForm<T>>
     }
 
     if (widget.optionValues.isEmpty) {
-      return YustListTile(
-        label: widget.noOptionsText,
-        center: true,
+      // Wrap in a min-height Column: YustListTile expands to the maximum
+      // height inside bounded parents (e.g. as AlertDialog content), which
+      // would make an empty select dialog take the full screen height.
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          YustListTile(
+            label: widget.noOptionsText,
+            center: true,
+          ),
+        ],
       );
     }
 
