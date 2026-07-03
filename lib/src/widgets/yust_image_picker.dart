@@ -284,32 +284,65 @@ class YustImagePickerState
         _buildProgressIndicator(context, file),
         selecting
             ? _buildSelectionCheckbox(file)
-            : _buildRemoveButton(context, file),
-        if (widget.allowFavorites && enabled && !selecting && file != null)
-          _buildFavoriteOverlay(context, file),
+            : (widget.allowFavorites && enabled && file != null
+                  ? _buildImageMenu(context, file)
+                  : _buildRemoveButton(context, file)),
         if (file != null) buildCachedIndicator(file),
       ],
     );
   }
 
-  Widget _buildFavoriteOverlay(BuildContext context, YustImage image) {
+  /// Overflow menu shown in place of the plain remove button when favorites
+  /// are enabled: offers deleting the image and toggling its favorite flag.
+  Widget _buildImageMenu(BuildContext context, YustImage image) {
     return Positioned(
       top: 10,
-      left: 10,
+      right: 10,
       child: CircleAvatar(
         radius: 20,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: IconButton(
-          icon: Icon(
-            image.favorite
-                ? YustFilePickerBase.favoriteIcon
-                : YustFilePickerBase.favoriteBorderIcon,
-          ),
-          color: Colors.black,
-          tooltip: image.favorite
-              ? LocaleKeys.removeFromFavorites.tr()
-              : LocaleKeys.addToFavorites.tr(),
-          onPressed: () => unawaited(toggleFavorite(image)),
+        child: PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Colors.black),
+          onSelected: (value) {
+            switch (value) {
+              case 'favorite':
+                unawaited(toggleFavorite(image));
+                break;
+              case 'delete':
+                unawaited(_deleteImage(image));
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem<String>(
+              value: 'favorite',
+              child: Row(
+                children: [
+                  Icon(
+                    image.favorite
+                        ? YustFilePickerBase.favoriteIcon
+                        : YustFilePickerBase.favoriteBorderIcon,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    image.favorite
+                        ? LocaleKeys.removeFromFavorites.tr()
+                        : LocaleKeys.addToFavorites.tr(),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'delete',
+              child: Row(
+                children: [
+                  const Icon(Icons.delete),
+                  const SizedBox(width: 8),
+                  Text(LocaleKeys.delete.tr()),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -476,36 +509,39 @@ class YustImagePickerState
         child: IconButton(
           icon: const Icon(Icons.delete),
           color: Colors.black,
-          onPressed: () async {
-            YustUi.helpers.unfocusCurrent();
-            final confirmed = await YustUi.alertService.showConfirmation(
-              LocaleKeys.confirmDelete.tr(),
-              LocaleKeys.delete.tr(),
-            );
-            if (confirmed == true) {
-              try {
-                await fileHandler.deleteFile(yustFile);
-                if (!yustFile.cached) {
-                  widget.onChanged!(
-                    YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-                  );
-                }
-                if (mounted) {
-                  setState(() {});
-                }
-              } catch (e) {
-                await YustUi.alertService.showAlert(
-                  LocaleKeys.oops.tr(),
-                  LocaleKeys.alertCannotDeleteImage.tr(
-                    namedArgs: {'error': e.toString()},
-                  ),
-                );
-              }
-            }
-          },
+          onPressed: () => unawaited(_deleteImage(yustFile)),
         ),
       ),
     );
+  }
+
+  /// Deletes an image after confirmation. Shared by the plain remove button
+  /// and the overflow menu's delete action.
+  Future<void> _deleteImage(YustImage yustFile) async {
+    YustUi.helpers.unfocusCurrent();
+    final confirmed = await YustUi.alertService.showConfirmation(
+      LocaleKeys.confirmDelete.tr(),
+      LocaleKeys.delete.tr(),
+    );
+    if (confirmed != true) return;
+    try {
+      await fileHandler.deleteFile(yustFile);
+      if (!yustFile.cached) {
+        widget.onChanged!(
+          YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
+        );
+      }
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      await YustUi.alertService.showAlert(
+        LocaleKeys.oops.tr(),
+        LocaleKeys.alertCannotDeleteImage.tr(
+          namedArgs: {'error': e.toString()},
+        ),
+      );
+    }
   }
 
   @override
