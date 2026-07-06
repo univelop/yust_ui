@@ -286,10 +286,12 @@ class YustImagePickerState
           _buildSelectionCheckbox(file),
           if (widget.allowFavorites && file != null && file.favorite)
             _buildFavoriteIndicator(),
-        ] else
-          (widget.allowFavorites && enabled && file != null
-              ? _buildFavoriteButton(context, file)
-              : _buildRemoveButton(context, file)),
+        ] else if (widget.allowFavorites && enabled && file != null)
+          (file.processing == true || isFileProcessing(file)
+              ? const SizedBox.shrink()
+              : _buildFavoriteButton(context, file))
+        else
+          _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
       ],
     );

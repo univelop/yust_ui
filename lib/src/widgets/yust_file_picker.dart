@@ -295,6 +295,9 @@ class YustFilePickerState
 
   Widget _buildTrailing(YustFile file) {
     if (widget.allowFavorites && enabled) {
+      if (isFileProcessing(file)) {
+        return _buildOverflowMenu(file);
+      }
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
