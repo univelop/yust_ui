@@ -66,9 +66,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
 
   /// Whether files can be marked as favorites.
   ///
-  /// When enabled, a favorite toggle is shown per file, favorite files are
-  /// sorted first and the multi-select toolbar gains favorite / un-favorite
-  /// buttons.
+  /// When enabled, a favorite toggle is shown per file, favorites are shown
+  /// first within the picker (display-only, the stored order is unchanged) and
+  /// the multi-select toolbar gains a single smart favorite toggle.
   final bool allowFavorites;
 
   /// Callback when multi-select download is triggered.
@@ -141,12 +141,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Default number of files to pick.
   static const defaultNumberOfFiles = 2;
 
-  /// Icon shown for a favorite file. Single source of truth so the glyph can
-  /// be swapped in one place.
+  /// Icon shown when a file IS a favorite. Single source of truth so the glyph
+  /// can be swapped in one place.
   static const IconData favoriteIcon = Icons.star;
 
-  /// Icon shown for a non-favorite file.
-  static const IconData favoriteBorderIcon = Icons.star_border;
+  /// Icon shown when a file is NOT a favorite.
+  static const IconData notFavoriteIcon = Icons.star_border;
 
   /// Color of an active (favorite) star. Gold is the universal "favorite"
   /// signal; keeping it here lets the whole feature be re-tinted in one place.
@@ -298,19 +298,12 @@ abstract class YustFilePickerBaseState<
   }
 
   /// Whether every currently selected file is already a favorite.
-  ///
-  /// Drives the single smart favorite toggle: when true the action removes the
-  /// favorite flag from all selected files, otherwise it adds it to all of them.
   bool get _allSelectedAreFavorites =>
       _selectedFiles.isNotEmpty &&
       _selectedFiles.every((file) => file.favorite);
 
   /// Smart toggle for the selection: if all selected files are already
-  /// favorites, un-favorite them all; otherwise favorite them all. This lets a
-  /// single button cleanly flip the favorite state of a selection.
-  ///
-  /// The selection is intentionally kept active so the user can keep toggling
-  /// the same files back and forth; only the UI is rebuilt.
+  /// favorites, un-favorite them all; otherwise favorite them all. 
   Future<void> _toggleFavoriteSelectedFiles() async {
     final favorite = !_allSelectedAreFavorites;
     for (final file in _selectedFiles) {
@@ -616,11 +609,7 @@ abstract class YustFilePickerBaseState<
     );
   }
 
-  /// Build the single smart favorite toggle for the current selection.
-  ///
-  /// Its icon reflects the action it will perform: a filled star (with an
-  /// "un-favorite" tooltip) when every selected file is already a favorite, a
-  /// bordered star (with a "favorite" tooltip) otherwise.
+  /// Builds the smart favorite toggle for the current selection.
   Widget _buildFavoriteSelectedButton(BuildContext context) {
     final allFavorites = _allSelectedAreFavorites;
     return IconButton(
@@ -628,7 +617,7 @@ abstract class YustFilePickerBaseState<
       icon: Icon(
         allFavorites
             ? YustFilePickerBase.favoriteIcon
-            : YustFilePickerBase.favoriteBorderIcon,
+            : YustFilePickerBase.notFavoriteIcon,
         color: allFavorites ? YustFilePickerBase.favoriteActiveColor : null,
       ),
       tooltip: allFavorites

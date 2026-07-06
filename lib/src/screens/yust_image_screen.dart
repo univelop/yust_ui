@@ -132,9 +132,6 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   /// Deletes [image] via the parent callback and removes it from the gallery.
-  ///
-  /// Pops the screen once the last image is gone, otherwise keeps showing the
-  /// neighboring image.
   Future<void> _handleDelete(YustImage image) async {
     final onDelete = widget.onDelete;
     if (onDelete == null) return;
@@ -457,7 +454,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return _actionButton(
       icon: image.favorite
           ? YustFilePickerBase.favoriteIcon
-          : YustFilePickerBase.favoriteBorderIcon,
+          : YustFilePickerBase.notFavoriteIcon,
       iconColor: image.favorite
           ? YustFilePickerBase.favoriteActiveColor
           : Colors.white,

@@ -298,8 +298,7 @@ class YustImagePickerState
   }
 
   /// Favorite star shown in the top-right corner of a thumbnail when favorites
-  /// are enabled. It replaces the plain delete button; deleting an image is
-  /// then done from the full-screen view or via multi-selection.
+  /// are enabled.
   Widget _buildFavoriteButton(BuildContext context, YustImage image) {
     return Positioned(
       top: 10,
@@ -312,7 +311,7 @@ class YustImagePickerState
           icon: Icon(
             image.favorite
                 ? YustFilePickerBase.favoriteIcon
-                : YustFilePickerBase.favoriteBorderIcon,
+                : YustFilePickerBase.notFavoriteIcon,
             color: image.favorite
                 ? YustFilePickerBase.favoriteActiveColor
                 : Colors.white,
@@ -512,9 +511,6 @@ class YustImagePickerState
 
   /// Deletes an image after confirmation. Shared by the plain remove button
   /// and the full-screen view's delete action.
-  ///
-  /// Returns `true` when the image was actually deleted so callers (e.g. the
-  /// full-screen viewer) can update their own state.
   Future<bool> _deleteImage(YustImage yustFile) async {
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService.showConfirmation(

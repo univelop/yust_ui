@@ -317,8 +317,6 @@ class YustFilePickerState
   }
 
   /// Overflow menu shown next to the favorite star when favorites are enabled.
-  /// Bundles the download, rename and delete actions that are otherwise shown
-  /// inline. Each action keeps its existing permission / state checks.
   Widget _buildOverflowMenu(YustFile file) {
     if (isFileProcessing(file)) {
       return const Padding(
@@ -391,7 +389,7 @@ class YustFilePickerState
     icon: Icon(
       file.favorite
           ? YustFilePickerBase.favoriteIcon
-          : YustFilePickerBase.favoriteBorderIcon,
+          : YustFilePickerBase.notFavoriteIcon,
       color: file.favorite ? YustFilePickerBase.favoriteActiveColor : null,
     ),
     tooltip: file.favorite
