@@ -267,19 +267,25 @@ abstract class YustFilePickerBaseState<
     return _selectedFiles.length == totalFiles;
   }
 
-  /// Get the currently visible files based on how they are displayed.
+  /// Get all files in the order they are displayed in (sorted, favorites
+  /// first when enabled), without applying the [currentDisplayCount] limit.
   @nonVirtual
-  List<T> getVisibleFiles({List<T>? files}) {
-    var ordered = sortFiles(convertFiles(files ?? _fileHandler.getFiles()));
+  List<T> getOrderedFiles({List<T>? files}) {
+    final ordered = sortFiles(convertFiles(files ?? _fileHandler.getFiles()));
     if (widget.allowFavorites) {
       // Stable partition: favorites first, existing order kept within groups.
-      ordered = [
+      return [
         ...ordered.where((file) => file.favorite),
         ...ordered.where((file) => !file.favorite),
       ];
     }
-    return ordered.take(currentDisplayCount).toList();
+    return ordered;
   }
+
+  /// Get the currently visible files based on how they are displayed.
+  @nonVirtual
+  List<T> getVisibleFiles({List<T>? files}) =>
+      getOrderedFiles(files: files).take(currentDisplayCount).toList();
 
   /// Toggle the favorite flag of a file and notify listeners.
   @nonVirtual

@@ -690,10 +690,11 @@ class YustImagePickerState
 
   void _showImages(YustImage activeFile) {
     YustUi.helpers.unfocusCurrent();
+    final orderedImages = getOrderedFiles();
     YustImageScreen.navigateToScreen(
       context: context,
-      images: YustImage.fromYustFiles(fileHandler.getFiles()),
-      activeImageIndex: fileHandler.getFiles().indexWhere(
+      images: orderedImages,
+      activeImageIndex: orderedImages.indexWhere(
         (file) => file.hash == activeFile.hash && file.name == activeFile.name,
       ),
       allowDrawing: !widget.readOnly,
