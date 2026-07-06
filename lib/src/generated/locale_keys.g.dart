@@ -3437,6 +3437,7 @@ abstract class LocaleKeys {
   static const removedInvalidRoleConfigurations =
       'removedInvalidRoleConfigurations';
   static const removingUser = 'removingUser';
+  static const rename = 'rename';
   static const repairNowBtn = 'repairNowBtn';
   static const repeatWorkflow = 'repeatWorkflow';
   static const replaceDescription = 'replaceDescription';

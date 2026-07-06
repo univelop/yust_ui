@@ -615,6 +615,7 @@ abstract class YustFilePickerBaseState<
   Widget _buildFavoriteSelectedButton(BuildContext context) {
     final allFavorites = _allSelectedAreFavorites;
     return IconButton(
+      mouseCursor: SystemMouseCursors.click,
       icon: Icon(
         allFavorites
             ? YustFilePickerBase.favoriteIcon

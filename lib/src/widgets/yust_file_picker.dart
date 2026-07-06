@@ -353,7 +353,7 @@ class YustFilePickerState
               children: [
                 const Icon(Icons.edit),
                 const SizedBox(width: 8),
-                Text(LocaleKeys.alertFileRename.tr()),
+                Text(LocaleKeys.rename.tr()),
               ],
             ),
           ),
@@ -372,6 +372,7 @@ class YustFilePickerState
   }
 
   Widget _buildFavoriteButton(YustFile file) => IconButton(
+    mouseCursor: SystemMouseCursors.click,
     icon: Icon(
       file.favorite
           ? YustFilePickerBase.favoriteIcon

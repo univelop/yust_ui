@@ -421,6 +421,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         backgroundColor: Colors.black,
         radius: 25,
         child: IconButton(
+          mouseCursor: SystemMouseCursors.click,
           iconSize: 35,
           color: iconColor,
           tooltip: tooltip,

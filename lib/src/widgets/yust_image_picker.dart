@@ -303,6 +303,7 @@ class YustImagePickerState
         radius: 20,
         backgroundColor: YustFilePickerBase.thumbnailScrimColor,
         child: IconButton(
+          mouseCursor: SystemMouseCursors.click,
           icon: Icon(
             image.favorite
                 ? YustFilePickerBase.favoriteIcon
