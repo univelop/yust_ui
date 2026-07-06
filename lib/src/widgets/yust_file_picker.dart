@@ -281,15 +281,95 @@ class YustFilePickerState
     );
   }
 
-  Widget _buildTrailing(YustFile file) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      if (widget.allowFavorites && enabled) _buildFavoriteButton(file),
-      _buildDownloadButton(file),
-      _buildFileRenameButton(file),
-      _buildDeleteButton(file),
-    ],
-  );
+  Widget _buildTrailing(YustFile file) {
+    if (widget.allowFavorites && enabled) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildFavoriteButton(file),
+          _buildOverflowMenu(file),
+        ],
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildDownloadButton(file),
+        _buildFileRenameButton(file),
+        _buildDeleteButton(file),
+      ],
+    );
+  }
+
+  /// Overflow menu shown next to the favorite star when favorites are enabled.
+  /// Bundles the download, rename and delete actions that are otherwise shown
+  /// inline. Each action keeps its existing permission / state checks.
+  Widget _buildOverflowMenu(YustFile file) {
+    if (isFileProcessing(file)) {
+      return const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    final showDownload = widget.tapMode != YustFileTapMode.share;
+    final showRename = enabled && !file.cached;
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
+      onSelected: (value) {
+        switch (value) {
+          case 'download':
+            unawaited(
+              YustUi.fileHelpers.downloadAndLaunchYustFile(
+                context: context,
+                file: file,
+              ),
+            );
+          case 'rename':
+            unawaited(_renameFile(file));
+          case 'delete':
+            unawaited(_deleteFileWithConfirmation(file));
+        }
+      },
+      itemBuilder: (context) => [
+        if (showDownload)
+          PopupMenuItem<String>(
+            value: 'download',
+            child: Row(
+              children: [
+                Icon(kIsWeb ? Icons.download : Icons.share),
+                const SizedBox(width: 8),
+                Text(kIsWeb ? LocaleKeys.download.tr() : LocaleKeys.share.tr()),
+              ],
+            ),
+          ),
+        if (showRename)
+          PopupMenuItem<String>(
+            value: 'rename',
+            child: Row(
+              children: [
+                const Icon(Icons.edit),
+                const SizedBox(width: 8),
+                Text(LocaleKeys.alertFileRename.tr()),
+              ],
+            ),
+          ),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: Row(
+            children: [
+              const Icon(Icons.delete),
+              const SizedBox(width: 8),
+              Text(LocaleKeys.delete.tr()),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildFavoriteButton(YustFile file) => IconButton(
     icon: Icon(

@@ -283,8 +283,19 @@ abstract class YustFilePickerBaseState<
     if (mounted) setState(() {});
   }
 
-  /// Set the favorite flag on every currently selected file, then notify.
-  Future<void> _favoriteSelectedFiles({required bool favorite}) async {
+  /// Whether every currently selected file is already a favorite.
+  ///
+  /// Drives the single smart favorite toggle: when true the action removes the
+  /// favorite flag from all selected files, otherwise it adds it to all of them.
+  bool get _allSelectedAreFavorites =>
+      _selectedFiles.isNotEmpty &&
+      _selectedFiles.every((file) => file.favorite);
+
+  /// Smart toggle for the selection: if all selected files are already
+  /// favorites, un-favorite them all; otherwise favorite them all. This lets a
+  /// single button cleanly flip the favorite state of a selection.
+  Future<void> _toggleFavoriteSelectedFiles() async {
+    final favorite = !_allSelectedAreFavorites;
     for (final file in _selectedFiles) {
       file.favorite = favorite;
     }
@@ -462,10 +473,7 @@ abstract class YustFilePickerBaseState<
               _buildDownloadSelectedButton(context),
             if (widget.allowMultiSelectDeletion)
               _buildDeleteSelectedButton(context),
-            if (widget.allowFavorites) ...[
-              _buildFavoriteSelectedButton(context, favorite: true),
-              _buildFavoriteSelectedButton(context, favorite: false),
-            ],
+            if (widget.allowFavorites) _buildFavoriteSelectedButton(context),
           ]
         : [
             if ((widget.allowMultiSelectDownload ||
@@ -591,23 +599,25 @@ abstract class YustFilePickerBaseState<
     );
   }
 
-  /// Build the favorite / un-favorite selected button.
-  Widget _buildFavoriteSelectedButton(
-    BuildContext context, {
-    required bool favorite,
-  }) {
+  /// Build the single smart favorite toggle for the current selection.
+  ///
+  /// Its icon reflects the action it will perform: a filled star (with an
+  /// "un-favorite" tooltip) when every selected file is already a favorite, a
+  /// bordered star (with a "favorite" tooltip) otherwise.
+  Widget _buildFavoriteSelectedButton(BuildContext context) {
+    final allFavorites = _allSelectedAreFavorites;
     return IconButton(
       color: Theme.of(context).colorScheme.primary,
       icon: Icon(
-        favorite
+        allFavorites
             ? YustFilePickerBase.favoriteIcon
             : YustFilePickerBase.favoriteBorderIcon,
       ),
-      tooltip: favorite
-          ? LocaleKeys.addToFavorites.tr()
-          : LocaleKeys.removeFromFavorites.tr(),
+      tooltip: allFavorites
+          ? LocaleKeys.removeFromFavorites.tr()
+          : LocaleKeys.addToFavorites.tr(),
       onPressed: _enabled && _selectedFiles.isNotEmpty
-          ? () => unawaited(_favoriteSelectedFiles(favorite: favorite))
+          ? () => unawaited(_toggleFavoriteSelectedFiles())
           : null,
     );
   }

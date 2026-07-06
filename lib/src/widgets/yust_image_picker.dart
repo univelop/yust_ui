@@ -285,64 +285,34 @@ class YustImagePickerState
         selecting
             ? _buildSelectionCheckbox(file)
             : (widget.allowFavorites && enabled && file != null
-                  ? _buildImageMenu(context, file)
+                  ? _buildFavoriteButton(context, file)
                   : _buildRemoveButton(context, file)),
         if (file != null) buildCachedIndicator(file),
       ],
     );
   }
 
-  /// Overflow menu shown in place of the plain remove button when favorites
-  /// are enabled: offers deleting the image and toggling its favorite flag.
-  Widget _buildImageMenu(BuildContext context, YustImage image) {
+  /// Favorite star shown in the top-right corner of a thumbnail when favorites
+  /// are enabled. It replaces the plain delete button; deleting an image is
+  /// then done from the full-screen view or via multi-selection.
+  Widget _buildFavoriteButton(BuildContext context, YustImage image) {
     return Positioned(
       top: 10,
       right: 10,
       child: CircleAvatar(
         radius: 20,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: Colors.black),
-          onSelected: (value) {
-            switch (value) {
-              case 'favorite':
-                unawaited(toggleFavorite(image));
-                break;
-              case 'delete':
-                unawaited(_deleteImage(image));
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem<String>(
-              value: 'favorite',
-              child: Row(
-                children: [
-                  Icon(
-                    image.favorite
-                        ? YustFilePickerBase.favoriteIcon
-                        : YustFilePickerBase.favoriteBorderIcon,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    image.favorite
-                        ? LocaleKeys.removeFromFavorites.tr()
-                        : LocaleKeys.addToFavorites.tr(),
-                  ),
-                ],
-              ),
-            ),
-            PopupMenuItem<String>(
-              value: 'delete',
-              child: Row(
-                children: [
-                  const Icon(Icons.delete),
-                  const SizedBox(width: 8),
-                  Text(LocaleKeys.delete.tr()),
-                ],
-              ),
-            ),
-          ],
+        child: IconButton(
+          icon: Icon(
+            image.favorite
+                ? YustFilePickerBase.favoriteIcon
+                : YustFilePickerBase.favoriteBorderIcon,
+          ),
+          color: Colors.black,
+          tooltip: image.favorite
+              ? LocaleKeys.removeFromFavorites.tr()
+              : LocaleKeys.addToFavorites.tr(),
+          onPressed: () => unawaited(toggleFavorite(image)),
         ),
       ),
     );
@@ -516,14 +486,17 @@ class YustImagePickerState
   }
 
   /// Deletes an image after confirmation. Shared by the plain remove button
-  /// and the overflow menu's delete action.
-  Future<void> _deleteImage(YustImage yustFile) async {
+  /// and the full-screen view's delete action.
+  ///
+  /// Returns `true` when the image was actually deleted so callers (e.g. the
+  /// full-screen viewer) can update their own state.
+  Future<bool> _deleteImage(YustImage yustFile) async {
     YustUi.helpers.unfocusCurrent();
     final confirmed = await YustUi.alertService.showConfirmation(
       LocaleKeys.confirmDelete.tr(),
       LocaleKeys.delete.tr(),
     );
-    if (confirmed != true) return;
+    if (confirmed != true) return false;
     try {
       await fileHandler.deleteFile(yustFile);
       if (!yustFile.cached) {
@@ -534,6 +507,7 @@ class YustImagePickerState
       if (mounted) {
         setState(() {});
       }
+      return true;
     } catch (e) {
       await YustUi.alertService.showAlert(
         LocaleKeys.oops.tr(),
@@ -541,6 +515,7 @@ class YustImagePickerState
           namedArgs: {'error': e.toString()},
         ),
       );
+      return false;
     }
   }
 
@@ -700,6 +675,10 @@ class YustImagePickerState
       ),
       allowDrawing: !widget.readOnly,
       allowShare: widget.allowSharing,
+      allowFavorites: widget.allowFavorites && enabled,
+      allowDelete: enabled,
+      onToggleFavorite: (image) => unawaited(toggleFavorite(image)),
+      onDelete: _deleteImage,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;
         file.linkedDocPath = widget.linkedDocPath;
