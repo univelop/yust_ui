@@ -254,7 +254,9 @@ class YustFilePickerState
           buildCachedIndicator(file),
         ],
       ),
-      trailing: selecting ? null : _buildTrailing(file),
+      trailing: selecting
+          ? _buildSelectionFavoriteIndicator(file)
+          : _buildTrailing(file),
       onTap: () {
         YustUi.helpers.unfocusCurrent();
 
@@ -278,6 +280,16 @@ class YustFilePickerState
         horizontal: 16.0,
         vertical: 8.0,
       ),
+    );
+  }
+
+  /// Read-only favorite marker shown on the right while selecting, so favorites
+  /// remain recognizable. Returns null (no trailing) for non-favorite files.
+  Widget? _buildSelectionFavoriteIndicator(YustFile file) {
+    if (!widget.allowFavorites || !file.favorite) return null;
+    return const Icon(
+      YustFilePickerBase.favoriteIcon,
+      color: YustFilePickerBase.favoriteActiveColor,
     );
   }
 

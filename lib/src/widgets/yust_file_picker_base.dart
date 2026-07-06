@@ -302,13 +302,16 @@ abstract class YustFilePickerBaseState<
   /// Smart toggle for the selection: if all selected files are already
   /// favorites, un-favorite them all; otherwise favorite them all. This lets a
   /// single button cleanly flip the favorite state of a selection.
+  ///
+  /// The selection is intentionally kept active so the user can keep toggling
+  /// the same files back and forth; only the UI is rebuilt.
   Future<void> _toggleFavoriteSelectedFiles() async {
     final favorite = !_allSelectedAreFavorites;
     for (final file in _selectedFiles) {
       file.favorite = favorite;
     }
     widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
-    _cancelSelection();
+    if (mounted) setState(() {});
   }
 
   /// Create a database entry for the files.

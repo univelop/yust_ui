@@ -282,11 +282,14 @@ class YustImagePickerState
       children: [
         _buildImagePreview(context, file),
         _buildProgressIndicator(context, file),
-        selecting
-            ? _buildSelectionCheckbox(file)
-            : (widget.allowFavorites && enabled && file != null
-                  ? _buildFavoriteButton(context, file)
-                  : _buildRemoveButton(context, file)),
+        if (selecting) ...[
+          _buildSelectionCheckbox(file),
+          if (widget.allowFavorites && file != null && file.favorite)
+            _buildFavoriteIndicator(),
+        ] else
+          (widget.allowFavorites && enabled && file != null
+              ? _buildFavoriteButton(context, file)
+              : _buildRemoveButton(context, file)),
         if (file != null) buildCachedIndicator(file),
       ],
     );
@@ -316,6 +319,23 @@ class YustImagePickerState
               ? LocaleKeys.removeFromFavorites.tr()
               : LocaleKeys.addToFavorites.tr(),
           onPressed: () => unawaited(toggleFavorite(image)),
+        ),
+      ),
+    );
+  }
+
+  /// Read-only favorite marker shown in the top-right corner while selecting,
+  /// so favorites remain recognizable. Only rendered for favorited images.
+  Widget _buildFavoriteIndicator() {
+    return const Positioned(
+      top: 10,
+      right: 10,
+      child: CircleAvatar(
+        radius: 20,
+        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
+        child: Icon(
+          YustFilePickerBase.favoriteIcon,
+          color: YustFilePickerBase.favoriteActiveColor,
         ),
       ),
     );
