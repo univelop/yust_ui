@@ -147,6 +147,14 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
 
   /// Icon shown for a non-favorite file.
   static const IconData favoriteBorderIcon = Icons.star_border;
+
+  /// Color of an active (favorite) star. Gold is the universal "favorite"
+  /// signal; keeping it here lets the whole feature be re-tinted in one place.
+  static const Color favoriteActiveColor = Colors.amber;
+
+  /// Translucent scrim used behind favorite / action buttons that sit on top
+  /// of image thumbnails, so the icon stays legible over any photo.
+  static const Color thumbnailScrimColor = Colors.black54;
 }
 
 abstract class YustFilePickerBaseState<
@@ -607,11 +615,11 @@ abstract class YustFilePickerBaseState<
   Widget _buildFavoriteSelectedButton(BuildContext context) {
     final allFavorites = _allSelectedAreFavorites;
     return IconButton(
-      color: Theme.of(context).colorScheme.primary,
       icon: Icon(
         allFavorites
             ? YustFilePickerBase.favoriteIcon
             : YustFilePickerBase.favoriteBorderIcon,
+        color: allFavorites ? YustFilePickerBase.favoriteActiveColor : null,
       ),
       tooltip: allFavorites
           ? LocaleKeys.removeFromFavorites.tr()

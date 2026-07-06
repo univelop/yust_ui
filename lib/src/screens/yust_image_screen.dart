@@ -414,6 +414,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     required IconData icon,
     required VoidCallback onPressed,
     String? tooltip,
+    Color iconColor = Colors.white,
   }) {
     return RepaintBoundary(
       child: CircleAvatar(
@@ -421,7 +422,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         radius: 25,
         child: IconButton(
           iconSize: 35,
-          color: Colors.white,
+          color: iconColor,
           tooltip: tooltip,
           icon: Icon(icon),
           onPressed: onPressed,
@@ -456,6 +457,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
       icon: image.favorite
           ? YustFilePickerBase.favoriteIcon
           : YustFilePickerBase.favoriteBorderIcon,
+      iconColor: image.favorite
+          ? YustFilePickerBase.favoriteActiveColor
+          : Colors.white,
       tooltip: image.favorite
           ? LocaleKeys.removeFromFavorites.tr()
           : LocaleKeys.addToFavorites.tr(),

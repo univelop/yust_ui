@@ -376,8 +376,8 @@ class YustFilePickerState
       file.favorite
           ? YustFilePickerBase.favoriteIcon
           : YustFilePickerBase.favoriteBorderIcon,
+      color: file.favorite ? YustFilePickerBase.favoriteActiveColor : null,
     ),
-    color: Theme.of(context).colorScheme.primary,
     tooltip: file.favorite
         ? LocaleKeys.removeFromFavorites.tr()
         : LocaleKeys.addToFavorites.tr(),

@@ -301,14 +301,16 @@ class YustImagePickerState
       right: 10,
       child: CircleAvatar(
         radius: 20,
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
         child: IconButton(
           icon: Icon(
             image.favorite
                 ? YustFilePickerBase.favoriteIcon
                 : YustFilePickerBase.favoriteBorderIcon,
+            color: image.favorite
+                ? YustFilePickerBase.favoriteActiveColor
+                : Colors.white,
           ),
-          color: Colors.black,
           tooltip: image.favorite
               ? LocaleKeys.removeFromFavorites.tr()
               : LocaleKeys.addToFavorites.tr(),
