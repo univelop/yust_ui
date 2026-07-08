@@ -13,6 +13,12 @@ import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_tap_mode.dart';
 
+/// Actions offered by the file overflow menu (shown when favorites are on).
+enum _FileMenuAction { download, rename, delete }
+
+/// Horizontal gap between a menu item's icon and its label.
+const double _menuItemSpacing = 8;
+
 /// A widget that allows the user to pick files from their device.
 class YustFilePicker extends YustFilePickerBase<YustFile> {
   /// Whether to show the modified date of the file.
@@ -287,10 +293,7 @@ class YustFilePickerState
   /// remain recognizable. Returns null (no trailing) for non-favorite files.
   Widget? _buildSelectionFavoriteIndicator(YustFile file) {
     if (!widget.allowFavorites || !file.favorite) return null;
-    return const Icon(
-      YustFilePickerBase.favoriteIcon,
-      color: YustFilePickerBase.favoriteActiveColor,
-    );
+    return YustFilePickerBase.favoriteStarIcon(true);
   }
 
   Widget _buildTrailing(YustFile file) {
@@ -330,71 +333,65 @@ class YustFilePickerState
     }
     final showDownload = widget.tapMode != YustFileTapMode.share;
     final showRename = enabled && !file.cached;
-    return PopupMenuButton<String>(
+    return PopupMenuButton<_FileMenuAction>(
       icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
-      onSelected: (value) {
-        switch (value) {
-          case 'download':
+      onSelected: (action) {
+        switch (action) {
+          case _FileMenuAction.download:
             unawaited(
               YustUi.fileHelpers.downloadAndLaunchYustFile(
                 context: context,
                 file: file,
               ),
             );
-          case 'rename':
+          case _FileMenuAction.rename:
             unawaited(_renameFile(file));
-          case 'delete':
+          case _FileMenuAction.delete:
             unawaited(_deleteFileWithConfirmation(file));
         }
       },
       itemBuilder: (context) => [
         if (showDownload)
-          PopupMenuItem<String>(
-            value: 'download',
-            child: Row(
-              children: [
-                Icon(kIsWeb ? Icons.download : Icons.share),
-                const SizedBox(width: 8),
-                Text(kIsWeb ? LocaleKeys.download.tr() : LocaleKeys.share.tr()),
-              ],
-            ),
+          _buildMenuItem(
+            _FileMenuAction.download,
+            kIsWeb ? Icons.download : Icons.share,
+            kIsWeb ? LocaleKeys.download.tr() : LocaleKeys.share.tr(),
           ),
         if (showRename)
-          PopupMenuItem<String>(
-            value: 'rename',
-            child: Row(
-              children: [
-                const Icon(Icons.edit),
-                const SizedBox(width: 8),
-                Text(LocaleKeys.rename.tr()),
-              ],
-            ),
+          _buildMenuItem(
+            _FileMenuAction.rename,
+            Icons.edit,
+            LocaleKeys.rename.tr(),
           ),
-        PopupMenuItem<String>(
-          value: 'delete',
-          child: Row(
-            children: [
-              const Icon(Icons.delete),
-              const SizedBox(width: 8),
-              Text(LocaleKeys.delete.tr()),
-            ],
-          ),
+        _buildMenuItem(
+          _FileMenuAction.delete,
+          Icons.delete,
+          LocaleKeys.delete.tr(),
         ),
       ],
     );
   }
 
+  /// Builds a single overflow-menu entry for [action].
+  PopupMenuItem<_FileMenuAction> _buildMenuItem(
+    _FileMenuAction action,
+    IconData icon,
+    String label,
+  ) => PopupMenuItem<_FileMenuAction>(
+    value: action,
+    child: Row(
+      children: [
+        Icon(icon),
+        const SizedBox(width: _menuItemSpacing),
+        Text(label),
+      ],
+    ),
+  );
+
   Widget _buildFavoriteButton(YustFile file) => IconButton(
     mouseCursor: SystemMouseCursors.click,
-    icon: Icon(
-      file.favorite
-          ? YustFilePickerBase.favoriteIcon
-          : YustFilePickerBase.notFavoriteIcon,
-      color: file.favorite ? YustFilePickerBase.favoriteActiveColor : null,
-    ),
-    tooltip: file.favorite
-        ? LocaleKeys.removeFromFavorites.tr()
-        : LocaleKeys.addToFavorites.tr(),
+    icon: YustFilePickerBase.favoriteStarIcon(file.favorite),
+    tooltip: YustFilePickerBase.favoriteTooltip(file.favorite),
     onPressed: () => unawaited(toggleFavorite(file)),
   );
 

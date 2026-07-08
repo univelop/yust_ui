@@ -287,6 +287,9 @@ class YustImagePickerState
           if (widget.allowFavorites && file != null && file.favorite)
             _buildFavoriteIndicator(),
         ] else if (widget.allowFavorites && enabled && file != null)
+          // Hide the favorite toggle while the image is still being processed
+          // (`processing` = local convert/compress, `isFileProcessing` = upload)
+          // so a favorite can't be set on a not-yet-persisted file.
           (file.processing == true || isFileProcessing(file)
               ? const SizedBox.shrink()
               : _buildFavoriteButton(context, file))
@@ -301,24 +304,19 @@ class YustImagePickerState
   /// are enabled.
   Widget _buildFavoriteButton(BuildContext context, YustImage image) {
     return Positioned(
-      top: 10,
-      right: 10,
+      top: YustFilePickerBase.thumbnailOverlayInset,
+      right: YustFilePickerBase.thumbnailOverlayInset,
       child: CircleAvatar(
-        radius: 20,
+        radius: YustFilePickerBase.thumbnailOverlayRadius,
         backgroundColor: YustFilePickerBase.thumbnailScrimColor,
         child: IconButton(
           mouseCursor: SystemMouseCursors.click,
-          icon: Icon(
-            image.favorite
-                ? YustFilePickerBase.favoriteIcon
-                : YustFilePickerBase.notFavoriteIcon,
-            color: image.favorite
-                ? YustFilePickerBase.favoriteActiveColor
-                : Colors.white,
+          // Non-favorite star is white to stay legible on the dark scrim.
+          icon: YustFilePickerBase.favoriteStarIcon(
+            image.favorite,
+            inactiveColor: Colors.white,
           ),
-          tooltip: image.favorite
-              ? LocaleKeys.removeFromFavorites.tr()
-              : LocaleKeys.addToFavorites.tr(),
+          tooltip: YustFilePickerBase.favoriteTooltip(image.favorite),
           onPressed: () => unawaited(toggleFavorite(image)),
         ),
       ),
@@ -328,16 +326,13 @@ class YustImagePickerState
   /// Read-only favorite marker shown in the top-right corner while selecting,
   /// so favorites remain recognizable. Only rendered for favorited images.
   Widget _buildFavoriteIndicator() {
-    return const Positioned(
-      top: 10,
-      right: 10,
+    return Positioned(
+      top: YustFilePickerBase.thumbnailOverlayInset,
+      right: YustFilePickerBase.thumbnailOverlayInset,
       child: CircleAvatar(
-        radius: 20,
+        radius: YustFilePickerBase.thumbnailOverlayRadius,
         backgroundColor: YustFilePickerBase.thumbnailScrimColor,
-        child: Icon(
-          YustFilePickerBase.favoriteIcon,
-          color: YustFilePickerBase.favoriteActiveColor,
-        ),
+        child: YustFilePickerBase.favoriteStarIcon(true),
       ),
     );
   }

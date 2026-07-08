@@ -155,6 +155,24 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Translucent scrim used behind favorite / action buttons that sit on top
   /// of image thumbnails, so the icon stays legible over any photo.
   static const Color thumbnailScrimColor = Colors.black54;
+
+  /// Inset (top & right) of an overlay button on an image thumbnail.
+  static const double thumbnailOverlayInset = 10;
+
+  /// Radius of the circular scrim behind a thumbnail overlay button.
+  static const double thumbnailOverlayRadius = 20;
+
+  /// Star icon reflecting [isFavorite]. [inactiveColor] tints the non-favorite
+  /// glyph (e.g. white on a dark thumbnail); the active star is always gold.
+  static Icon favoriteStarIcon(bool isFavorite, {Color? inactiveColor}) => Icon(
+    isFavorite ? favoriteIcon : notFavoriteIcon,
+    color: isFavorite ? favoriteActiveColor : inactiveColor,
+  );
+
+  /// Tooltip for a favorite toggle reflecting [isFavorite].
+  static String favoriteTooltip(bool isFavorite) => isFavorite
+      ? LocaleKeys.removeFromFavorites.tr()
+      : LocaleKeys.addToFavorites.tr();
 }
 
 abstract class YustFilePickerBaseState<
@@ -287,14 +305,19 @@ abstract class YustFilePickerBaseState<
   List<T> getVisibleFiles({List<T>? files}) =>
       getOrderedFiles(files: files).take(currentDisplayCount).toList();
 
+  /// Re-emits the current file list so the parent can persist changes, then
+  /// rebuilds. The handler stores the same instances, so mutating a file in
+  /// place and re-emitting is enough.
+  void _persistAndRefresh() {
+    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
+    if (mounted) setState(() {});
+  }
+
   /// Toggle the favorite flag of a file and notify listeners.
   @nonVirtual
   Future<void> toggleFavorite(T file) async {
     file.favorite = !file.favorite;
-    // The handler stores the same instances, so mutating [file] is enough;
-    // re-emitting the full list lets the parent persist the change.
-    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
-    if (mounted) setState(() {});
+    _persistAndRefresh();
   }
 
   /// Whether every currently selected file is already a favorite.
@@ -303,14 +326,13 @@ abstract class YustFilePickerBaseState<
       _selectedFiles.every((file) => file.favorite);
 
   /// Smart toggle for the selection: if all selected files are already
-  /// favorites, un-favorite them all; otherwise favorite them all. 
+  /// favorites, un-favorite them all; otherwise favorite them all.
   Future<void> _toggleFavoriteSelectedFiles() async {
     final favorite = !_allSelectedAreFavorites;
     for (final file in _selectedFiles) {
       file.favorite = favorite;
     }
-    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
-    if (mounted) setState(() {});
+    _persistAndRefresh();
   }
 
   /// Create a database entry for the files.
@@ -614,15 +636,8 @@ abstract class YustFilePickerBaseState<
     final allFavorites = _allSelectedAreFavorites;
     return IconButton(
       mouseCursor: SystemMouseCursors.click,
-      icon: Icon(
-        allFavorites
-            ? YustFilePickerBase.favoriteIcon
-            : YustFilePickerBase.notFavoriteIcon,
-        color: allFavorites ? YustFilePickerBase.favoriteActiveColor : null,
-      ),
-      tooltip: allFavorites
-          ? LocaleKeys.removeFromFavorites.tr()
-          : LocaleKeys.addToFavorites.tr(),
+      icon: YustFilePickerBase.favoriteStarIcon(allFavorites),
+      tooltip: YustFilePickerBase.favoriteTooltip(allFavorites),
       onPressed: _enabled && _selectedFiles.isNotEmpty
           ? () => unawaited(_toggleFavoriteSelectedFiles())
           : null,

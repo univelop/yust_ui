@@ -458,9 +458,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       iconColor: image.favorite
           ? YustFilePickerBase.favoriteActiveColor
           : Colors.white,
-      tooltip: image.favorite
-          ? LocaleKeys.removeFromFavorites.tr()
-          : LocaleKeys.addToFavorites.tr(),
+      tooltip: YustFilePickerBase.favoriteTooltip(image.favorite),
       onPressed: () => _handleToggleFavorite(image),
     );
   }
