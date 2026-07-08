@@ -1399,6 +1399,7 @@ abstract class LocaleKeys {
   static const emptyWorkspacesInfo = 'emptyWorkspacesInfo';
   static const enableDebugMode = 'enableDebugMode';
   static const enableFavorites = 'enableFavorites';
+  static const enableFavoritesExplanation = 'enableFavoritesExplanation';
   static const enableMultiSelect = 'enableMultiSelect';
   static const enableNotifications = 'enableNotifications';
   static const enableQuickAdd = 'enableQuickAdd';

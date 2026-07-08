@@ -505,12 +505,15 @@ abstract class YustFilePickerBaseState<
               _buildDownloadSelectedButton(context),
             if (widget.allowMultiSelectDeletion)
               _buildDeleteSelectedButton(context),
-            if (widget.allowFavorites) _buildFavoriteSelectedButton(context),
+            // Favorite toggling is an edit action; only offer it when editable,
+            // so read-only views (e.g. link bricks) show markers but no toggle.
+            if (widget.allowFavorites && _enabled)
+              _buildFavoriteSelectedButton(context),
           ]
         : [
             if ((widget.allowMultiSelectDownload ||
                     widget.allowMultiSelectDeletion ||
-                    widget.allowFavorites) &&
+                    (widget.allowFavorites && _enabled)) &&
                 _fileHandler.getFiles().length > 1)
               _buildStartSelectionButton(),
             ...buildActionButtons(context),

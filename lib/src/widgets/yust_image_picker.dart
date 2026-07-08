@@ -293,6 +293,10 @@ class YustImagePickerState
           (file.processing == true || isFileProcessing(file)
               ? const SizedBox.shrink()
               : _buildFavoriteButton(context, file))
+        else if (widget.allowFavorites && file != null && file.favorite)
+          // Read-only: show a plain star marker (no button/scrim) so favorites
+          // stay recognizable without inviting interaction.
+          _buildFavoriteIndicator()
         else
           _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
@@ -323,16 +327,17 @@ class YustImagePickerState
     );
   }
 
-  /// Read-only favorite marker shown in the top-right corner while selecting,
-  /// so favorites remain recognizable. Only rendered for favorited images.
+  /// Read-only favorite marker shown in the top-right corner while selecting or
+  /// in read-only mode, so favorites remain recognizable. Rendered as a plain
+  /// star (no button/scrim) so it reads as a marker, not an interactive control.
+  /// Only rendered for favorited images.
   Widget _buildFavoriteIndicator() {
-    return Positioned(
+    return const Positioned(
       top: YustFilePickerBase.thumbnailOverlayInset,
       right: YustFilePickerBase.thumbnailOverlayInset,
-      child: CircleAvatar(
-        radius: YustFilePickerBase.thumbnailOverlayRadius,
-        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
-        child: YustFilePickerBase.favoriteStarIcon(true),
+      child: Icon(
+        YustFilePickerBase.favoriteIcon,
+        color: YustFilePickerBase.favoriteActiveColor,
       ),
     );
   }

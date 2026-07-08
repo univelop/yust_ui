@@ -312,6 +312,11 @@ class YustFilePickerState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Read-only: a plain star marker (no button) next to the actions so
+        // favorites stay recognizable without inviting interaction. Only
+        // reached when favorites are on but editing is disabled.
+        if (widget.allowFavorites && file.favorite)
+          YustFilePickerBase.favoriteStarIcon(true),
         _buildDownloadButton(file),
         _buildFileRenameButton(file),
         _buildDeleteButton(file),
