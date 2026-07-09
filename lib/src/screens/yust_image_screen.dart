@@ -28,20 +28,16 @@ class YustImageScreen extends StatefulWidget {
   /// Indicates whether the share button should be shown.
   final bool allowShare;
 
-  /// Whether the favorite toggle should be shown.
-  final bool allowFavorites;
-
-  /// Whether the delete action should be shown.
-  final bool allowDelete;
-
-  /// Called when the favorite flag of an image should be toggled.
+  /// Called when the favorite flag of an image should be toggled. When null the
+  /// favorite toggle is hidden.
   ///
   /// The callback is responsible for flipping [YustImage.favorite] and
   /// persisting the change; the screen re-renders afterwards.
   final void Function(YustImage image)? onToggleFavorite;
 
-  /// Called when an image should be deleted. Should return `true` when the
-  /// image was actually deleted so the screen can drop it from the gallery.
+  /// Called when an image should be deleted. When null the delete action is
+  /// hidden. Should return `true` when the image was actually deleted so the
+  /// screen can drop it from the gallery.
   final Future<bool> Function(YustImage image)? onDelete;
 
   /// Keep native resolution of the image
@@ -54,8 +50,6 @@ class YustImageScreen extends StatefulWidget {
     this.activeImageIndex = 0,
     this.allowDrawing = false,
     this.allowShare = true,
-    this.allowFavorites = false,
-    this.allowDelete = false,
     this.onToggleFavorite,
     this.onDelete,
     this.keepNativeResolution = false,
@@ -67,8 +61,6 @@ class YustImageScreen extends StatefulWidget {
     int activeImageIndex = 0,
     bool allowDrawing = false,
     bool allowShare = true,
-    bool allowFavorites = false,
-    bool allowDelete = false,
     bool keepNativeResolution = false,
     void Function(YustImage image)? onToggleFavorite,
     Future<bool> Function(YustImage image)? onDelete,
@@ -84,8 +76,6 @@ class YustImageScreen extends StatefulWidget {
             keepNativeResolution: keepNativeResolution,
             allowDrawing: allowDrawing,
             allowShare: allowShare,
-            allowFavorites: allowFavorites,
-            allowDelete: allowDelete,
             onToggleFavorite: onToggleFavorite,
             onDelete: onDelete,
           ),
@@ -380,9 +370,8 @@ class _YustImageScreenState extends State<YustImageScreen> {
         : null;
     final buttons = <Widget>[
       if (drawButton != null) drawButton,
-      if (widget.allowDelete && widget.onDelete != null)
-        _buildDeleteButton(context, image),
-      if (widget.allowFavorites) _buildFavoriteButton(context, image),
+      if (widget.onDelete != null) _buildDeleteButton(context, image),
+      if (widget.onToggleFavorite != null) _buildFavoriteButton(context, image),
       if (widget.allowShare) _buildShareButton(context, image),
       if (kIsWeb) _buildCloseButton(context),
     ];

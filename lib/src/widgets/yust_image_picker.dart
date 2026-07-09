@@ -294,9 +294,9 @@ class YustImagePickerState
               ? const SizedBox.shrink()
               : _buildFavoriteButton(context, file))
         else if (widget.allowFavorites && file != null && file.favorite)
-          // Read-only: show a plain star marker (no button/scrim) so favorites
-          // stay recognizable without inviting interaction.
-          _buildFavoriteIndicator()
+          // Read-only: a plain star badge hugging the corner (no checkbox to
+          // align with here, so it sits in the corner like a standard badge).
+          _buildReadOnlyFavoriteMarker()
         else
           _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
@@ -327,11 +327,10 @@ class YustImagePickerState
     );
   }
 
-  /// Read-only favorite marker shown in the top-right corner while selecting or
-  /// in read-only mode, so favorites remain recognizable. Rendered as a plain
-  /// star (no button/scrim) so it reads as a marker, not an interactive control.
-  /// Sized to the checkbox footprint so both corners line up. Only rendered for
-  /// favorite images.
+  /// Favorite marker shown while selecting, paired with the selection checkbox
+  /// on the opposite corner. Sized to the checkbox footprint so the two line
+  /// up. Plain star (no button/scrim) so it reads as a marker. Only rendered
+  /// for favorite images.
   Widget _buildFavoriteIndicator() {
     return Positioned(
       top: YustFilePickerBase.thumbnailOverlayInset,
@@ -339,6 +338,18 @@ class YustImagePickerState
       child: YustFilePickerBase.favoriteMarker(),
     );
   }
+
+  /// Read-only favorite badge hugging the top-right corner (no paired checkbox,
+  /// so it sits in the corner like a standard image badge rather than inset to
+  /// match a control). Plain star, no button/scrim.
+  Widget _buildReadOnlyFavoriteMarker() => const Positioned(
+    top: YustFilePickerBase.thumbnailOverlayInset,
+    right: YustFilePickerBase.thumbnailOverlayInset,
+    child: Icon(
+      YustFilePickerBase.favoriteIcon,
+      color: YustFilePickerBase.favoriteActiveColor,
+    ),
+  );
 
   Widget _buildSelectionCheckbox(YustImage? image) {
     if (!selecting || image == null) {
@@ -695,10 +706,10 @@ class YustImagePickerState
       ),
       allowDrawing: !widget.readOnly,
       allowShare: widget.allowSharing,
-      allowFavorites: widget.allowFavorites && enabled,
-      allowDelete: enabled,
-      onToggleFavorite: (image) => unawaited(toggleFavorite(image)),
-      onDelete: _deleteImage,
+      onToggleFavorite: widget.allowFavorites && enabled
+          ? (image) => unawaited(toggleFavorite(image))
+          : null,
+      onDelete: enabled ? _deleteImage : null,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;
         file.linkedDocPath = widget.linkedDocPath;
