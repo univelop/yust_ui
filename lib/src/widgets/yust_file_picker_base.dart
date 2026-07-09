@@ -174,15 +174,15 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
       ? LocaleKeys.removeFromFavorites.tr()
       : LocaleKeys.addToFavorites.tr();
 
-  /// Non-interactive favorite marker (plain star) sized to the standard
-  /// interactive footprint, so it lines up with the selection checkbox and the
-  /// action icon buttons it sits next to. Used in read-only / selecting views.
-  static Widget favoriteMarker() => const SizedBox(
-    width: kMinInteractiveDimension,
-    height: kMinInteractiveDimension,
-    child: Center(
-      child: Icon(favoriteIcon, color: favoriteActiveColor),
-    ),
+  /// Non-interactive favorite marker: a disabled [IconButton] so it inherits
+  /// the exact same density / padding / tap-target metrics as the checkbox and
+  /// action icon buttons it sits next to, and therefore lines up with them.
+  /// [onPressed] is null (not tappable); the star stays gold via [disabledColor].
+  /// Used in read-only / selecting views.
+  static Widget favoriteMarker() => const IconButton(
+    onPressed: null,
+    disabledColor: favoriteActiveColor,
+    icon: Icon(favoriteIcon),
   );
 }
 
