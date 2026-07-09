@@ -293,7 +293,7 @@ class YustFilePickerState
   /// remain recognizable. Returns null (no trailing) for non-favorite files.
   Widget? _buildSelectionFavoriteIndicator(YustFile file) {
     if (!widget.allowFavorites || !file.favorite) return null;
-    return YustFilePickerBase.favoriteStarIcon(true);
+    return YustFilePickerBase.favoriteMarker();
   }
 
   Widget _buildTrailing(YustFile file) {
@@ -313,10 +313,11 @@ class YustFilePickerState
       mainAxisSize: MainAxisSize.min,
       children: [
         // Read-only: a plain star marker (no button) next to the actions so
-        // favorites stay recognizable without inviting interaction. Only
-        // reached when favorites are on but editing is disabled.
+        // favorites stay recognizable without inviting interaction. Sized like
+        // an icon button so it lines up. Only reached when favorites are on but
+        // editing is disabled.
         if (widget.allowFavorites && file.favorite)
-          YustFilePickerBase.favoriteStarIcon(true),
+          YustFilePickerBase.favoriteMarker(),
         _buildDownloadButton(file),
         _buildFileRenameButton(file),
         _buildDeleteButton(file),

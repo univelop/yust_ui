@@ -330,15 +330,13 @@ class YustImagePickerState
   /// Read-only favorite marker shown in the top-right corner while selecting or
   /// in read-only mode, so favorites remain recognizable. Rendered as a plain
   /// star (no button/scrim) so it reads as a marker, not an interactive control.
-  /// Only rendered for favorited images.
+  /// Sized to the checkbox footprint so both corners line up. Only rendered for
+  /// favorite images.
   Widget _buildFavoriteIndicator() {
-    return const Positioned(
+    return Positioned(
       top: YustFilePickerBase.thumbnailOverlayInset,
       right: YustFilePickerBase.thumbnailOverlayInset,
-      child: Icon(
-        YustFilePickerBase.favoriteIcon,
-        color: YustFilePickerBase.favoriteActiveColor,
-      ),
+      child: YustFilePickerBase.favoriteMarker(),
     );
   }
 

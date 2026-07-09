@@ -173,6 +173,17 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   static String favoriteTooltip(bool isFavorite) => isFavorite
       ? LocaleKeys.removeFromFavorites.tr()
       : LocaleKeys.addToFavorites.tr();
+
+  /// Non-interactive favorite marker (plain star) sized to the standard
+  /// interactive footprint, so it lines up with the selection checkbox and the
+  /// action icon buttons it sits next to. Used in read-only / selecting views.
+  static Widget favoriteMarker() => const SizedBox(
+    width: kMinInteractiveDimension,
+    height: kMinInteractiveDimension,
+    child: Center(
+      child: Icon(favoriteIcon, color: favoriteActiveColor),
+    ),
+  );
 }
 
 abstract class YustFilePickerBaseState<
