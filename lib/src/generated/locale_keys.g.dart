@@ -38,8 +38,6 @@ abstract class LocaleKeys {
   static const add = 'add';
   static const addAndDone = 'addAndDone';
   static const addAnyways = 'addAnyways';
-  static const addAsFavorite = 'addAsFavorite';
-  static const addAsFavoriteDescription = 'addAsFavoriteDescription';
   static const addBillingAdmin = 'addBillingAdmin';
   static const addDaysDescription = 'addDaysDescription';
   static const addEntry = 'addEntry';
@@ -1280,6 +1278,29 @@ abstract class LocaleKeys {
   static const dragFilesHere = 'dragFilesHere';
   static const dragToReschedule = 'dragToReschedule';
   static const drawing = 'drawing';
+  static const drawingAnnotations = 'drawingAnnotations';
+  static const drawingAnnotationsDeletePlan = 'drawingAnnotationsDeletePlan';
+  static const drawingAnnotationsDeletePlanConfirm =
+      'drawingAnnotationsDeletePlanConfirm';
+  static const drawingAnnotationsDescription = 'drawingAnnotationsDescription';
+  static const drawingAnnotationsDownloadPlan =
+      'drawingAnnotationsDownloadPlan';
+  static const drawingAnnotationsEnterFullscreen =
+      'drawingAnnotationsEnterFullscreen';
+  static const drawingAnnotationsExitFullscreen =
+      'drawingAnnotationsExitFullscreen';
+  static const drawingAnnotationsHotspots = 'drawingAnnotationsHotspots';
+  static const drawingAnnotationsNoPlanSelected =
+      'drawingAnnotationsNoPlanSelected';
+  static const drawingAnnotationsPinCreateHint =
+      'drawingAnnotationsPinCreateHint';
+  static const drawingAnnotationsPlanBrick = 'drawingAnnotationsPlanBrick';
+  static const drawingAnnotationsRotateHint = 'drawingAnnotationsRotateHint';
+  static const drawingAnnotationsStylingBrick =
+      'drawingAnnotationsStylingBrick';
+  static const drawingAnnotationsUploadPlan = 'drawingAnnotationsUploadPlan';
+  static const drawingAnnotationsXBrick = 'drawingAnnotationsXBrick';
+  static const drawingAnnotationsYBrick = 'drawingAnnotationsYBrick';
   static const drawingBrickDescription = 'drawingBrickDescription';
   static const dropDown = 'dropDown';
   static const dropDownBrickDescription = 'dropDownBrickDescription';
@@ -1407,6 +1428,7 @@ abstract class LocaleKeys {
   static const enableSyncWithExternalSource = 'enableSyncWithExternalSource';
   static const enableSyncWithExternalSourceAdminUserRole =
       'enableSyncWithExternalSourceAdminUserRole';
+  static const enableTableDragAndDrop = 'enableTableDragAndDrop';
   static const enableTimeTravel = 'enableTimeTravel';
   static const enabledRoles = 'enabledRoles';
   static const enabledRolesToAdd = 'enabledRolesToAdd';
@@ -2242,6 +2264,7 @@ abstract class LocaleKeys {
   static const flowLogInactiveRequest = 'flowLogInactiveRequest';
   static const flowLogInfoMergePdfSuccess = 'flowLogInfoMergePdfSuccess';
   static const flowLogItemsFoundPlural = 'flowLogItemsFoundPlural';
+  static const flowLogMarkedAsFavorite = 'flowLogMarkedAsFavorite';
   static const flowLogMetAbortConditionForItem =
       'flowLogMetAbortConditionForItem';
   static const flowLogMetAbortConditionForRecord =
@@ -2297,7 +2320,6 @@ abstract class LocaleKeys {
       'flowLogStartedWorkflowOnServer';
   static const flowLogStartedWorkflowOnServerWithParameters =
       'flowLogStartedWorkflowOnServerWithParameters';
-  static const flowLogToggledFavorite = 'flowLogToggledFavorite';
   static const flowLogTriggeredWebhook = 'flowLogTriggeredWebhook';
   static const flowLogUploadedFileToCloudStorage =
       'flowLogUploadedFileToCloudStorage';
@@ -3264,6 +3286,7 @@ abstract class LocaleKeys {
       'pleaseSaveDesignModeChangesBeforeShareList';
   static const pleaseSaveDesignModeChangesStopShareList =
       'pleaseSaveDesignModeChangesStopShareList';
+  static const pleaseSetAllSettings = 'pleaseSetAllSettings';
   static const plusDescription = 'plusDescription';
   static const position = 'position';
   static const possibleColors = 'possibleColors';
@@ -3286,8 +3309,25 @@ abstract class LocaleKeys {
   static const prefix = 'prefix';
   static const prefixSearch = 'prefixSearch';
   static const preview = 'preview';
+  static const previewCycleCost = 'previewCycleCost';
+  static const previewCycleCostHint = 'previewCycleCostHint';
+  static const previewDirectCharge = 'previewDirectCharge';
+  static const previewDirectChargeHint = 'previewDirectChargeHint';
+  static const previewDiscount = 'previewDiscount';
   static const previewExplanation = 'previewExplanation';
+  static const previewInvoiceError = 'previewInvoiceError';
   static const previewLimit = 'previewLimit';
+  static const previewLoading = 'previewLoading';
+  static const previewNotAvailable = 'previewNotAvailable';
+  static const previewNotAvailableForReduction =
+      'previewNotAvailableForReduction';
+  static const previewNotAvailableForSchedule =
+      'previewNotAvailableForSchedule';
+  static const previewSessionExpired = 'previewSessionExpired';
+  static const previewSubtotal = 'previewSubtotal';
+  static const previewTax = 'previewTax';
+  static const previewTaxNoRate = 'previewTaxNoRate';
+  static const previewTotal = 'previewTotal';
   static const previousWeek = 'previousWeek';
   static const prices = 'prices';
   static const primaryButton = 'primaryButton';
@@ -3325,6 +3365,8 @@ abstract class LocaleKeys {
   static const prompt = 'prompt';
   static const prompting = 'prompting';
   static const promptingExplanation = 'promptingExplanation';
+  static const prorationDiscountHint = 'prorationDiscountHint';
+  static const prorationSubtotal = 'prorationSubtotal';
   static const publicTiles = 'publicTiles';
   static const publishSolution = 'publishSolution';
   static const publishSolutionDialog = 'publishSolutionDialog';
@@ -4521,6 +4563,8 @@ abstract class LocaleKeys {
   static const writePermissions = 'writePermissions';
   static const xmlBrickDescription = 'xmlBrickDescription';
   static const xmlInput = 'xmlInput';
+  static const xmlInputEncoding = 'xmlInputEncoding';
+  static const xmlInputEncodingHelperText = 'xmlInputEncodingHelperText';
   static const xmlToJson = 'xmlToJson';
   static const xmlToJsonStepDescription = 'xmlToJsonStepDescription';
   static const xpathFilter = 'xpathFilter';
