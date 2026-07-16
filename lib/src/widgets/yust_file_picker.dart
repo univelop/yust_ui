@@ -8,6 +8,7 @@ import 'package:yust/yust.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../util/offline/file_presenter.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
@@ -264,11 +265,11 @@ class YustFilePickerState
         if (!isBroken) {
           switch (widget.tapMode) {
             case YustFileTapMode.preview:
-              fileHandler.showFile(context, file);
+              unawaited(FilePresenter.open(context, file));
             case YustFileTapMode.defaultApp:
-              fileHandler.showFileInDefaultApp(context, file);
+              unawaited(FilePresenter.openInDefaultApp(context, file));
             case YustFileTapMode.share:
-              unawaited(fileHandler.shareFile(context, file));
+              unawaited(FilePresenter.share(context, file));
           }
         }
       },
