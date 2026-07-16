@@ -72,6 +72,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.enableDropzone = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
+    super.allowFavorites = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
@@ -109,6 +110,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = false,
@@ -280,13 +282,74 @@ class YustImagePickerState
       children: [
         _buildImagePreview(context, file),
         _buildProgressIndicator(context, file),
-        selecting
-            ? _buildSelectionCheckbox(file)
-            : _buildRemoveButton(context, file),
+        if (selecting) ...[
+          _buildSelectionCheckbox(file),
+          if (widget.allowFavorites && file != null && file.favorite)
+            _buildFavoriteIndicator(),
+        ] else if (widget.allowFavorites && enabled && file != null)
+          // Hide the favorite toggle while the image is still being processed
+          // (`processing` = local convert/compress, `isFileProcessing` = upload)
+          // so a favorite can't be set on a not-yet-persisted file.
+          (file.processing == true || isFileProcessing(file)
+              ? const SizedBox.shrink()
+              : _buildFavoriteButton(context, file))
+        else if (widget.allowFavorites && file != null && file.favorite)
+          // Read-only: a plain star badge hugging the corner (no checkbox to
+          // align with here, so it sits in the corner like a standard badge).
+          _buildReadOnlyFavoriteMarker()
+        else
+          _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
       ],
     );
   }
+
+  /// Favorite star shown in the top-right corner of a thumbnail when favorites
+  /// are enabled.
+  Widget _buildFavoriteButton(BuildContext context, YustImage image) {
+    return Positioned(
+      top: YustFilePickerBase.thumbnailOverlayInset,
+      right: YustFilePickerBase.thumbnailOverlayInset,
+      child: CircleAvatar(
+        radius: YustFilePickerBase.thumbnailOverlayRadius,
+        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
+        child: IconButton(
+          mouseCursor: SystemMouseCursors.click,
+          // Non-favorite star is white to stay legible on the dark scrim.
+          icon: YustFilePickerBase.favoriteStarIcon(
+            image.favorite,
+            inactiveColor: Colors.white,
+          ),
+          tooltip: YustFilePickerBase.favoriteTooltip(image.favorite),
+          onPressed: () => unawaited(toggleFavorite(image)),
+        ),
+      ),
+    );
+  }
+
+  /// Favorite marker shown while selecting, paired with the selection checkbox
+  /// on the opposite corner. Sized to the checkbox footprint so the two line
+  /// up. Plain star (no button/scrim) so it reads as a marker. Only rendered
+  /// for favorite images.
+  Widget _buildFavoriteIndicator() {
+    return Positioned(
+      top: YustFilePickerBase.thumbnailOverlayInset,
+      right: YustFilePickerBase.thumbnailOverlayInset,
+      child: YustFilePickerBase.favoriteMarker(),
+    );
+  }
+
+  /// Read-only favorite badge hugging the top-right corner (no paired checkbox,
+  /// so it sits in the corner like a standard image badge rather than inset to
+  /// match a control). Plain star, no button/scrim.
+  Widget _buildReadOnlyFavoriteMarker() => const Positioned(
+    top: YustFilePickerBase.thumbnailOverlayInset,
+    right: YustFilePickerBase.thumbnailOverlayInset,
+    child: Icon(
+      YustFilePickerBase.favoriteIcon,
+      color: YustFilePickerBase.favoriteActiveColor,
+    ),
+  );
 
   Widget _buildSelectionCheckbox(YustImage? image) {
     if (!selecting || image == null) {
@@ -449,36 +512,41 @@ class YustImagePickerState
         child: IconButton(
           icon: const Icon(Icons.delete),
           color: Colors.black,
-          onPressed: () async {
-            YustUi.helpers.unfocusCurrent();
-            final confirmed = await YustUi.alertService.showConfirmation(
-              LocaleKeys.confirmDelete.tr(),
-              LocaleKeys.delete.tr(),
-            );
-            if (confirmed == true) {
-              try {
-                await fileHandler.deleteFile(yustFile);
-                if (!yustFile.cached) {
-                  widget.onChanged!(
-                    YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-                  );
-                }
-                if (mounted) {
-                  setState(() {});
-                }
-              } catch (e) {
-                await YustUi.alertService.showAlert(
-                  LocaleKeys.oops.tr(),
-                  LocaleKeys.alertCannotDeleteImage.tr(
-                    namedArgs: {'error': e.toString()},
-                  ),
-                );
-              }
-            }
-          },
+          onPressed: () => unawaited(_deleteImage(yustFile)),
         ),
       ),
     );
+  }
+
+  /// Deletes an image after confirmation. Shared by the plain remove button
+  /// and the full-screen view's delete action.
+  Future<bool> _deleteImage(YustImage yustFile) async {
+    YustUi.helpers.unfocusCurrent();
+    final confirmed = await YustUi.alertService.showConfirmation(
+      LocaleKeys.confirmDelete.tr(),
+      LocaleKeys.delete.tr(),
+    );
+    if (confirmed != true) return false;
+    try {
+      await fileHandler.deleteFile(yustFile);
+      if (!yustFile.cached) {
+        widget.onChanged!(
+          YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
+        );
+      }
+      if (mounted) {
+        setState(() {});
+      }
+      return true;
+    } catch (e) {
+      await YustUi.alertService.showAlert(
+        LocaleKeys.oops.tr(),
+        LocaleKeys.alertCannotDeleteImage.tr(
+          namedArgs: {'error': e.toString()},
+        ),
+      );
+      return false;
+    }
   }
 
   @override
@@ -629,14 +697,19 @@ class YustImagePickerState
 
   void _showImages(YustImage activeFile) {
     YustUi.helpers.unfocusCurrent();
+    final orderedImages = getOrderedFiles();
     YustImageScreen.navigateToScreen(
       context: context,
-      images: YustImage.fromYustFiles(fileHandler.getFiles()),
-      activeImageIndex: fileHandler.getFiles().indexWhere(
+      images: orderedImages,
+      activeImageIndex: orderedImages.indexWhere(
         (file) => file.hash == activeFile.hash && file.name == activeFile.name,
       ),
       allowDrawing: !widget.readOnly,
       allowShare: widget.allowSharing,
+      onToggleFavorite: widget.allowFavorites && enabled
+          ? (image) => unawaited(toggleFavorite(image))
+          : null,
+      onDelete: enabled ? _deleteImage : null,
       onSave: (file, newImage) {
         file.storageFolderPath = widget.storageFolderPath;
         file.linkedDocPath = widget.linkedDocPath;

@@ -8,7 +8,10 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
+import 'package:yust_ui/src/widgets/yust_file_picker_base.dart';
 
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 
 class YustImageScreen extends StatefulWidget {
@@ -25,6 +28,18 @@ class YustImageScreen extends StatefulWidget {
   /// Indicates whether the share button should be shown.
   final bool allowShare;
 
+  /// Called when the favorite flag of an image should be toggled. When null the
+  /// favorite toggle is hidden.
+  ///
+  /// The callback is responsible for flipping [YustImage.favorite] and
+  /// persisting the change; the screen re-renders afterwards.
+  final void Function(YustImage image)? onToggleFavorite;
+
+  /// Called when an image should be deleted. When null the delete action is
+  /// hidden. Should return `true` when the image was actually deleted so the
+  /// screen can drop it from the gallery.
+  final Future<bool> Function(YustImage image)? onDelete;
+
   /// Keep native resolution of the image
   final bool keepNativeResolution;
 
@@ -35,6 +50,8 @@ class YustImageScreen extends StatefulWidget {
     this.activeImageIndex = 0,
     this.allowDrawing = false,
     this.allowShare = true,
+    this.onToggleFavorite,
+    this.onDelete,
     this.keepNativeResolution = false,
   });
 
@@ -45,6 +62,8 @@ class YustImageScreen extends StatefulWidget {
     bool allowDrawing = false,
     bool allowShare = true,
     bool keepNativeResolution = false,
+    void Function(YustImage image)? onToggleFavorite,
+    Future<bool> Function(YustImage image)? onDelete,
     void Function(YustImage image, Uint8List newImage)? onSave,
   }) {
     unawaited(
@@ -57,6 +76,8 @@ class YustImageScreen extends StatefulWidget {
             keepNativeResolution: keepNativeResolution,
             allowDrawing: allowDrawing,
             allowShare: allowShare,
+            onToggleFavorite: onToggleFavorite,
+            onDelete: onDelete,
           ),
         ),
       ),
@@ -72,8 +93,13 @@ class _YustImageScreenState extends State<YustImageScreen> {
   late PageController _pageController;
   late FocusNode _focusNode;
 
+  /// Local, mutable copy of the images so the gallery can shrink when an image
+  /// is deleted from within the viewer.
+  late List<YustImage> _images;
+
   @override
   void initState() {
+    _images = List<YustImage>.of(widget.images);
     activeImageIndex = widget.activeImageIndex;
     _pageController = PageController(initialPage: activeImageIndex);
     _focusNode = FocusNode();
@@ -86,6 +112,41 @@ class _YustImageScreenState extends State<YustImageScreen> {
     super.dispose();
   }
 
+  /// Toggles the favorite flag of [image] via the parent callback and rebuilds.
+  ///
+  /// The callback flips [YustImage.favorite] on the shared instance, so a plain
+  /// [setState] is enough to reflect the new state here.
+  void _handleToggleFavorite(YustImage image) {
+    widget.onToggleFavorite?.call(image);
+    if (mounted) setState(() {});
+  }
+
+  /// Deletes [image] via the parent callback and removes it from the gallery.
+  Future<void> _handleDelete(YustImage image) async {
+    final onDelete = widget.onDelete;
+    if (onDelete == null) return;
+    final deleted = await onDelete(image);
+    if (!deleted || !mounted) return;
+
+    setState(() {
+      final index = _images.indexOf(image);
+      if (index >= 0) _images.removeAt(index);
+      if (activeImageIndex >= _images.length && activeImageIndex > 0) {
+        activeImageIndex = _images.length - 1;
+      }
+    });
+
+    if (_images.isEmpty) {
+      Navigator.of(context).pop();
+      return;
+    }
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(
+        activeImageIndex.clamp(0, _images.length - 1),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -95,7 +156,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         autofocus: true,
         onKeyEvent: _handleKeyEvent,
         child: SafeArea(
-          child: widget.images.length == 1
+          child: _images.length == 1
               ? _buildSingle(context)
               : _buildMultiple(context),
         ),
@@ -104,7 +165,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   void _handleKeyEvent(KeyEvent event) {
-    if (event is KeyDownEvent && widget.images.length > 1) {
+    if (event is KeyDownEvent && _images.length > 1) {
       if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
           activeImageIndex > 0) {
         _pageController.previousPage(
@@ -112,7 +173,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
           curve: Curves.easeInOut,
         );
       } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
-          activeImageIndex < widget.images.length - 1) {
+          activeImageIndex < _images.length - 1) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -122,16 +183,13 @@ class _YustImageScreenState extends State<YustImageScreen> {
   }
 
   Widget _buildSingle(BuildContext context) {
-    final image = widget.images.first;
+    final image = _images.first;
     return Stack(
       children: [
         widget.keepNativeResolution
             ? _getNativeResolutionPhotoView(image)
             : _getScaledUpPhotoView(image),
-        if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
-          _buildDrawButton(context, image),
-        if (kIsWeb) _buildCloseButton(context),
-        if (widget.allowShare) _buildShareButton(context, image),
+        _buildActionBar(context, image),
       ],
     );
   }
@@ -140,7 +198,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     return Stack(
       children: [
         PhotoViewGallery.builder(
-          itemCount: widget.images.length,
+          itemCount: _images.length,
           scrollPhysics: const BouncingScrollPhysics(),
           pageController: _pageController,
           onPageChanged: (index) {
@@ -149,7 +207,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
             });
           },
           builder: (BuildContext context, int index) {
-            final currentImage = widget.images[index];
+            final currentImage = _images[index];
 
             return widget.keepNativeResolution
                 ? _getNativeResolutionPhotoViewOptions(currentImage, index)
@@ -185,7 +243,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (kIsWeb && activeImageIndex < widget.images.length - 1)
+        if (kIsWeb && activeImageIndex < _images.length - 1)
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerRight,
@@ -205,11 +263,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
               ),
             ),
           ),
-        if (!kIsWeb && widget.allowDrawing && widget.onSave != null)
-          _buildDrawButton(context, widget.images[activeImageIndex]),
-        if (kIsWeb) _buildCloseButton(context),
-        if (widget.allowShare)
-          _buildShareButton(context, widget.images[activeImageIndex]),
+        _buildActionBar(context, _images[activeImageIndex]),
       ],
     );
   }
@@ -307,92 +361,119 @@ class _YustImageScreenState extends State<YustImageScreen> {
     );
   }
 
-  Widget _buildDrawButton(BuildContext context, YustImage image) {
-    if (image.getOriginalUrl() == null && image.devicePath == null) {
-      return const SizedBox.shrink();
-    }
+  /// Top-right bar bundling all image actions (draw, delete, favorite, share)
+  /// plus the web close button, laid out as a single row so buttons never
+  /// overlap regardless of which ones are enabled.
+  Widget _buildActionBar(BuildContext context, YustImage image) {
+    final drawButton = (!kIsWeb && widget.allowDrawing && widget.onSave != null)
+        ? _buildDrawButton(context, image)
+        : null;
+    final buttons = <Widget>[
+      if (drawButton != null) drawButton,
+      if (widget.onDelete != null) _buildDeleteButton(context, image),
+      if (widget.onToggleFavorite != null) _buildFavoriteButton(context, image),
+      if (widget.allowShare) _buildShareButton(context, image),
+      if (kIsWeb) _buildCloseButton(context),
+    ];
+    if (buttons.isEmpty) return const SizedBox.shrink();
 
     return Positioned(
-      right: 70.0,
-      child: RepaintBoundary(
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          child: CircleAvatar(
-            backgroundColor: Colors.black,
-            radius: 25,
-            child: Builder(
-              builder: (BuildContext context) {
-                return IconButton(
-                  iconSize: 35,
-                  color: Colors.white,
-                  onPressed: () {
-                    YustImageDrawingScreen.navigateToScreen(
-                      context: context,
-                      image: _loadImage(image),
-                      onSave: (imageBytes) async {
-                        if (imageBytes != null) {
-                          widget.onSave!(image, imageBytes);
-                          setState(() {});
-                        }
-                      },
-                    );
-                  },
-                  icon: const Icon(Icons.draw_outlined),
-                );
-              },
-            ),
-          ),
+      top: 0,
+      right: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < buttons.length; i++) ...[
+              if (i != 0) const SizedBox(width: 10),
+              buttons[i],
+            ],
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildCloseButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      alignment: Alignment.topRight,
+  /// Wraps an action [icon] in the shared circular button used across the bar.
+  Widget _actionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    String? tooltip,
+    Color iconColor = Colors.white,
+  }) {
+    return RepaintBoundary(
       child: CircleAvatar(
         backgroundColor: Colors.black,
         radius: 25,
         child: IconButton(
+          mouseCursor: SystemMouseCursors.click,
           iconSize: 35,
-          color: Colors.white,
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          color: iconColor,
+          tooltip: tooltip,
+          icon: Icon(icon),
+          onPressed: onPressed,
         ),
       ),
     );
   }
 
+  Widget? _buildDrawButton(BuildContext context, YustImage image) {
+    if (image.getOriginalUrl() == null && image.devicePath == null) {
+      return null;
+    }
+    return _actionButton(
+      icon: Icons.draw_outlined,
+      onPressed: () {
+        YustImageDrawingScreen.navigateToScreen(
+          context: context,
+          image: _loadImage(image),
+          onSave: (imageBytes) async {
+            if (imageBytes != null) {
+              widget.onSave!(image, imageBytes);
+              setState(() {});
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFavoriteButton(BuildContext context, YustImage image) {
+    return _actionButton(
+      icon: image.favorite
+          ? YustFilePickerBase.favoriteIcon
+          : YustFilePickerBase.notFavoriteIcon,
+      iconColor: image.favorite
+          ? YustFilePickerBase.favoriteActiveColor
+          : Colors.white,
+      tooltip: YustFilePickerBase.favoriteTooltip(image.favorite),
+      onPressed: () => _handleToggleFavorite(image),
+    );
+  }
+
+  Widget _buildDeleteButton(BuildContext context, YustImage image) {
+    return _actionButton(
+      icon: Icons.delete,
+      tooltip: LocaleKeys.delete.tr(),
+      onPressed: () => unawaited(_handleDelete(image)),
+    );
+  }
+
+  Widget _buildCloseButton(BuildContext context) {
+    return _actionButton(
+      icon: Icons.close,
+      onPressed: () => Navigator.pop(context),
+    );
+  }
+
   Widget _buildShareButton(BuildContext context, YustImage image) {
-    return Positioned(
-      right: kIsWeb ? 70.0 : 0.0,
-      child: RepaintBoundary(
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          child: CircleAvatar(
-            backgroundColor: Colors.black,
-            radius: 25,
-            child: Builder(
-              builder: (BuildContext buttonContext) {
-                return IconButton(
-                  iconSize: 35,
-                  color: Colors.white,
-                  onPressed: () => unawaited(
-                    YustUi.fileHelpers.downloadAndLaunchYustFile(
-                      context: buttonContext,
-                      file: image,
-                    ),
-                  ),
-                  icon: kIsWeb
-                      ? const Icon(Icons.download)
-                      : const Icon(Icons.share),
-                );
-              },
-            ),
-          ),
+    return _actionButton(
+      icon: kIsWeb ? Icons.download : Icons.share,
+      onPressed: () => unawaited(
+        YustUi.fileHelpers.downloadAndLaunchYustFile(
+          context: context,
+          file: image,
         ),
       ),
     );
