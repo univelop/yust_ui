@@ -1,3 +1,7 @@
+## 3.32.7 - 2026-07-23
+
+- Replace `open_filex` git dependency with published `yust_open_file_x` (Univelop fork of `open_filex` including iOS 26 default-app support). Unblocks pub.dev publishing of yust_ui.
+
 ## 3.32.6 - 2026-07-23
 
 - Add tap mode options to `YustFilePicker` (preview, open in default app, or share)
