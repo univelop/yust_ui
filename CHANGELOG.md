@@ -1,3 +1,8 @@
+## 3.32.6 - 2026-07-23
+
+- Add tap mode options to `YustFilePicker` (preview, open in default app, or share)
+- Fix empty options dialog height in `YustSelect`
+
 ## 3.32.5 - 2026-04-21
 
 - Allow zooming in single images and disable sharing for them in YustImagePicker
