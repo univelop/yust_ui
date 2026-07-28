@@ -13,6 +13,12 @@ import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_tap_mode.dart';
 
+/// Actions offered by the file overflow menu (shown when favorites are on).
+enum _FileMenuAction { download, rename, delete }
+
+/// Horizontal gap between a menu item's icon and its label.
+const double _menuItemSpacing = 8;
+
 /// A widget that allows the user to pick files from their device.
 class YustFilePicker extends YustFilePickerBase<YustFile> {
   /// Whether to show the modified date of the file.
@@ -41,6 +47,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.allowMultiSelectDownload = false,
     super.allowMultiSelectDeletion = false,
+    super.allowFavorites = false,
     super.onMultiSelectDownload,
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
@@ -70,6 +77,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -252,7 +260,9 @@ class YustFilePickerState
           buildCachedIndicator(file),
         ],
       ),
-      trailing: selecting ? null : _buildTrailing(file),
+      trailing: selecting
+          ? _buildSelectionFavoriteIndicator(file)
+          : _buildTrailing(file),
       onTap: () {
         YustUi.helpers.unfocusCurrent();
 
@@ -279,13 +289,116 @@ class YustFilePickerState
     );
   }
 
-  Widget _buildTrailing(YustFile file) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      _buildDownloadButton(file),
-      _buildFileRenameButton(file),
-      _buildDeleteButton(file),
-    ],
+  /// Read-only favorite marker shown on the right while selecting, so favorites
+  /// remain recognizable. Returns null (no trailing) for non-favorite files.
+  Widget? _buildSelectionFavoriteIndicator(YustFile file) {
+    if (!widget.allowFavorites || !file.favorite) return null;
+    return YustFilePickerBase.favoriteMarker();
+  }
+
+  Widget _buildTrailing(YustFile file) {
+    if (widget.allowFavorites && enabled) {
+      if (isFileProcessing(file)) {
+        return _buildOverflowMenu(file);
+      }
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildFavoriteButton(file),
+          _buildOverflowMenu(file),
+        ],
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Read-only: a plain star marker (no button) next to the actions so
+        // favorites stay recognizable without inviting interaction. Sized like
+        // an icon button so it lines up. Only reached when favorites are on but
+        // editing is disabled.
+        if (widget.allowFavorites && file.favorite)
+          YustFilePickerBase.favoriteMarker(),
+        _buildDownloadButton(file),
+        _buildFileRenameButton(file),
+        _buildDeleteButton(file),
+      ],
+    );
+  }
+
+  /// Overflow menu shown next to the favorite star when favorites are enabled.
+  Widget _buildOverflowMenu(YustFile file) {
+    if (isFileProcessing(file)) {
+      return const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    final showDownload = widget.tapMode != YustFileTapMode.share;
+    final showRename = enabled && !file.cached;
+    return PopupMenuButton<_FileMenuAction>(
+      icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
+      onSelected: (action) {
+        switch (action) {
+          case _FileMenuAction.download:
+            unawaited(
+              YustUi.fileHelpers.downloadAndLaunchYustFile(
+                context: context,
+                file: file,
+              ),
+            );
+          case _FileMenuAction.rename:
+            unawaited(_renameFile(file));
+          case _FileMenuAction.delete:
+            unawaited(_deleteFileWithConfirmation(file));
+        }
+      },
+      itemBuilder: (context) => [
+        if (showDownload)
+          _buildMenuItem(
+            _FileMenuAction.download,
+            kIsWeb ? Icons.download : Icons.share,
+            kIsWeb ? LocaleKeys.download.tr() : LocaleKeys.share.tr(),
+          ),
+        if (showRename)
+          _buildMenuItem(
+            _FileMenuAction.rename,
+            Icons.edit,
+            LocaleKeys.rename.tr(),
+          ),
+        _buildMenuItem(
+          _FileMenuAction.delete,
+          Icons.delete,
+          LocaleKeys.delete.tr(),
+        ),
+      ],
+    );
+  }
+
+  /// Builds a single overflow-menu entry for [action].
+  PopupMenuItem<_FileMenuAction> _buildMenuItem(
+    _FileMenuAction action,
+    IconData icon,
+    String label,
+  ) => PopupMenuItem<_FileMenuAction>(
+    value: action,
+    child: Row(
+      children: [
+        Icon(icon),
+        const SizedBox(width: _menuItemSpacing),
+        Text(label),
+      ],
+    ),
+  );
+
+  Widget _buildFavoriteButton(YustFile file) => IconButton(
+    mouseCursor: SystemMouseCursors.click,
+    icon: YustFilePickerBase.favoriteStarIcon(file.favorite),
+    tooltip: YustFilePickerBase.favoriteTooltip(file.favorite),
+    onPressed: () => unawaited(toggleFavorite(file)),
   );
 
   Widget _buildDownloadButton(YustFile file) {

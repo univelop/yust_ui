@@ -366,15 +366,6 @@ class YustFileHandler {
         file: yustFile,
       );
 
-  List<YustFile> yustFilesFromJson(
-    List<Map<String, String?>> jsonFiles,
-    String storageFolderPath,
-  ) {
-    return jsonFiles
-        .map((f) => YustFile.fromJson(f)..storageFolderPath = storageFolderPath)
-        .toList();
-  }
-
   /// works for cacheable and non-cacheable files
   void _mergeIntoYustFiles(List<YustFile> yustFiles, List<YustFile> newFiles) {
     for (final newFile in newFiles) {
