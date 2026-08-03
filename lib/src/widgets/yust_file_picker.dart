@@ -537,24 +537,24 @@ class YustFilePickerState
   }
 
   Future<bool> _checkExistingFileNames(String fileName) async {
-    if (fileHandler.getFiles().any((file) => file.name == fileName)) {
+    if (sourceFiles.any((file) => file.name == fileName)) {
       final confirmed = await YustUi.alertService.showConfirmation(
         LocaleKeys.alertFileAlreadyExists.tr(namedArgs: {'fileName': fileName}),
         LocaleKeys.continue_.tr(),
       );
       if (confirmed != true) return false;
 
-      final fileToDelete = fileHandler.getFiles().firstWhere(
+      final fileToDelete = sourceFiles.firstWhere(
         (file) => file.name == fileName,
         orElse: () => YustFile(),
       );
-      await fileHandler.deleteFile(fileToDelete);
+      await deleteSourceFile(fileToDelete);
     }
     return true;
   }
 
   bool fileExists(String? fileName) =>
-      fileHandler.getFiles().any((file) => file.name == fileName);
+      sourceFiles.any((file) => file.name == fileName);
 
   Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
@@ -580,9 +580,9 @@ class YustFilePickerState
   }
 
   Future<void> _deleteFileAndCallOnChanged(YustFile yustFile) async {
-    await fileHandler.deleteFile(yustFile);
+    await deleteSourceFile(yustFile);
     if (!yustFile.cached) {
-      widget.onChanged!(fileHandler.getOnlineFiles());
+      widget.onChanged!(sourceOnlineFiles);
     }
   }
 
@@ -608,8 +608,16 @@ class YustFilePickerState
     final newFileNameWithExtension =
         '$newFileName.${yustFile.getFilenameExtension()}';
 
-    await _reuploadFileForRename(yustFile, newFileNameWithExtension);
-    await _deleteFileAndCallOnChanged(yustFile);
+    final viaController = renameViaController(
+      yustFile,
+      newFileNameWithExtension,
+    );
+    if (viaController != null) {
+      await viaController;
+    } else {
+      await _reuploadFileForRename(yustFile, newFileNameWithExtension);
+      await _deleteFileAndCallOnChanged(yustFile);
+    }
 
     clearFileProcessing(yustFile);
     setState(() {});

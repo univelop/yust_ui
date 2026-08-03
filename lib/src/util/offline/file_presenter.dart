@@ -13,8 +13,7 @@ import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
 import '../../yust_ui.dart';
 import '../yust_file_helpers.dart';
-import 'offline_file_cache.dart';
-import 'offline_file_target.dart';
+import 'offline_storage.dart';
 
 /// Presents offline files to the user (open / open-in-default-app / share).
 ///
@@ -68,20 +67,18 @@ class FilePresenter {
     }
   }
 
-  /// Returns a local file path for [file], using the cached copy when present
+  /// Returns a local file path for [file], using the on-device copy when present
   /// and downloading to a temp file otherwise.
   static Future<String> _resolveLocalPath(YustFile file) async {
-    // Offline copies live in the documents directory (durable), the same place
-    // OfflineDownloadManager writes them — look there, not the temp staging dir.
-    final cache = OfflineFileCache(
-      target: OfflineFileTarget(
-        storageFolderPath: file.storageFolderPath ?? file.path ?? '',
-      ),
-      directoryProvider: getApplicationDocumentsDirectory,
-    );
     file.storageFolderPath ??= file.path;
-    if (file.cached || await cache.locateOnDevice(file)) {
-      return file.devicePath!;
+    // Offline copies live in [OfflineStorage] (app-support, durable), the same
+    // place DownloadManager writes them — look there, not the temp staging dir.
+    final offlinePath = file.cached
+        ? file.devicePath
+        : await OfflineStorage().pathForFile(file);
+    if (offlinePath != null) {
+      file.devicePath = offlinePath;
+      return offlinePath;
     }
 
     final url = file.getOriginalUrl();

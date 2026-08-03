@@ -7,6 +7,7 @@ import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers.dart';
 
 import 'services/yust_alert_service.dart';
+import 'util/offline/file_operation_handler.dart';
 import 'util/yust_file_helpers.dart';
 import 'util/yust_file_handler_manager.dart';
 
@@ -24,6 +25,13 @@ class YustUi {
   static late YustAlertService alertService;
   static late YustLocationService locationService;
   static YustFileHandlerManager fileHandlerManager = YustFileHandlerManager();
+
+  /// App-scoped handler every file change flows through — uploads, renames,
+  /// deletes and offline downloads. Set once at app start (null before then, and
+  /// on builds without offline file handling); the successor to
+  /// [fileHandlerManager]. File pickers drive it when it is set, else fall back
+  /// to the legacy [YustFileHandler].
+  static FileOperationHandler? fileOperationHandler;
   static late YustUiHelpers helpers;
   static YustFileHelpers fileHelpers = YustFileHelpers();
   static YustWebHelpers webHelpers = YustWebHelpers();

@@ -10,6 +10,8 @@ import 'package:yust/yust.dart';
 import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../util/offline/file_list_controller.dart';
+import '../util/offline/offline_file_target.dart';
 import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
@@ -192,7 +194,12 @@ abstract class YustFilePickerBaseState<
 >
     extends State<W>
     with AutomaticKeepAliveClientMixin {
-  late YustFileHandler _fileHandler;
+  /// Legacy path: built only when [YustFilePickerBase.docWriter] is null.
+  YustFileHandler? _fileHandler;
+
+  /// New path: built (and owned) here when a [docWriter] is supplied.
+  FileListController<T>? _controller;
+
   late bool _enabled;
   bool _selecting = false;
   final List<T> _selectedFiles = [];
@@ -204,32 +211,103 @@ abstract class YustFilePickerBaseState<
   void initState() {
     super.initState();
 
-    _fileHandler = YustUi.fileHandlerManager.createFileHandler(
-      storageFolderPath: widget.storageFolderPath,
-      linkedDocAttribute: widget.linkedDocAttribute,
-      linkedDocPath: widget.linkedDocPath,
-      newestFirst: widget.newestFirst,
-      onFileUploaded: () {
-        if (mounted) {
-          setState(() {});
-        }
-        if (currentDisplayCount < _fileHandler.getFiles().length) {
-          currentDisplayCount += widget.previewCount;
-        }
-        widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
-      },
-    );
-
     _enabled = (widget.onChanged != null && !widget.readOnly);
     currentDisplayCount = widget.previewCount;
-    _updateFuture = _fileHandler.updateFiles(widget.files, loadFiles: true);
+
+    final handler = YustUi.fileOperationHandler;
+    if (handler != null) {
+      _controller = FileListController<T>(
+        handler: handler,
+        target: OfflineFileTarget(
+          storageFolderPath: widget.storageFolderPath,
+          linkedDocPath: widget.linkedDocPath,
+          linkedDocAttribute: widget.linkedDocAttribute,
+          storesFilesAsMap: widget.linkedDocStoresFilesAsMap,
+        ),
+        newestFirst: widget.newestFirst,
+        onOnlineFilesChanged: (files) => widget.onChanged?.call(files),
+      )..addListener(_onControllerChanged);
+      _updateFuture = _controller!.setOnlineFiles(widget.files);
+    } else {
+      _fileHandler = YustUi.fileHandlerManager.createFileHandler(
+        storageFolderPath: widget.storageFolderPath,
+        linkedDocAttribute: widget.linkedDocAttribute,
+        linkedDocPath: widget.linkedDocPath,
+        newestFirst: widget.newestFirst,
+        onFileUploaded: () {
+          if (mounted) {
+            setState(() {});
+          }
+          if (currentDisplayCount < _fileHandler!.getFiles().length) {
+            currentDisplayCount += widget.previewCount;
+          }
+          widget.onChanged!(convertFiles(_fileHandler!.getOnlineFiles()));
+        },
+      );
+      _updateFuture = _fileHandler!.updateFiles(widget.files, loadFiles: true);
+    }
+  }
+
+  /// Rebuilds when the controller's file list changes (upload completes, cache
+  /// resolves). The controller notifies its own [onOnlineFilesChanged] for
+  /// persistence; here we only refresh the UI and grow the display window.
+  void _onControllerChanged() {
+    if (!mounted) return;
+    if (currentDisplayCount < _controller!.files.length) {
+      currentDisplayCount += widget.previewCount;
+    }
+    setState(() {});
+  }
+
+  /// All tracked files (both paths), in the source's storage order.
+  List<T> get sourceFiles => _controller != null
+      ? _controller!.files
+      : convertFiles(_fileHandler!.getFiles());
+
+  /// Files already persisted online (both paths).
+  List<T> get sourceOnlineFiles => _controller != null
+      ? _controller!.onlineFiles
+      : convertFiles(_fileHandler!.getOnlineFiles());
+
+  /// Adds and uploads [file] through whichever backend is active.
+  Future<void> addSourceFile(T file) => _controller != null
+      ? _controller!.add(file)
+      : _fileHandler!.addFile(file);
+
+  /// Deletes [file] through whichever backend is active.
+  Future<void> deleteSourceFile(T file) => _controller != null
+      ? _controller!.delete(file)
+      : _fileHandler!.deleteFile(file);
+
+  /// Replaces [file]'s bytes (e.g. a re-drawn image) and re-uploads.
+  Future<void> replaceSourceFileBytes(T file, Uint8List bytes) =>
+      _controller != null
+      ? _controller!.replaceBytes(file, bytes)
+      : _fileHandler!.updateFile(file, bytes: bytes);
+
+  /// Renames [file] to [newName] through the controller, or null on the legacy
+  /// path (the caller falls back to its own reupload flow). The controller
+  /// enqueues a single rename op instead of a download + reupload + delete.
+  Future<void>? renameViaController(T file, String newName) =>
+      _controller?.rename(file, newName);
+
+  Future<void> _reconcileSourceFiles(List<T> files) => _controller != null
+      ? _controller!.setOnlineFiles(files)
+      : _fileHandler!.updateFiles(files, loadFiles: true);
+
+  @override
+  void dispose() {
+    _controller?.removeListener(_onControllerChanged);
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
-    _fileHandler.newestFirst = widget.newestFirst;
+    _fileHandler?.newestFirst = widget.newestFirst;
+    _controller?.newestFirst = widget.newestFirst;
 
     return FutureBuilder(
       future: _updateFuture,
@@ -237,8 +315,9 @@ abstract class YustFilePickerBaseState<
     );
   }
 
-  /// Get the file handler.
-  YustFileHandler get fileHandler => _fileHandler;
+  /// Get the legacy file handler. Null on the new controller-backed path;
+  /// subclasses should prefer [sourceFiles] / [addSourceFile] / etc.
+  YustFileHandler? get fileHandler => _fileHandler;
 
   /// Whether the file picker is enabled.
   bool get enabled => _enabled;
@@ -292,7 +371,7 @@ abstract class YustFilePickerBaseState<
 
   /// Whether all files are selected.
   bool get _allSelected {
-    final totalFiles = _fileHandler.getFiles().length;
+    final totalFiles = sourceFiles.length;
     return _selectedFiles.length == totalFiles;
   }
 
@@ -300,7 +379,7 @@ abstract class YustFilePickerBaseState<
   /// first when enabled), without applying the [currentDisplayCount] limit.
   @nonVirtual
   List<T> getOrderedFiles({List<T>? files}) {
-    final ordered = sortFiles(convertFiles(files ?? _fileHandler.getFiles()));
+    final ordered = sortFiles(files ?? sourceFiles);
     if (widget.allowFavorites) {
       // Stable partition: favorites first, existing order kept within groups.
       return [
@@ -320,7 +399,7 @@ abstract class YustFilePickerBaseState<
   /// rebuilds. The handler stores the same instances, so mutating a file in
   /// place and re-emitting is enough.
   void _persistAndRefresh() {
-    widget.onChanged?.call(convertFiles(_fileHandler.getOnlineFiles()));
+    widget.onChanged?.call(sourceOnlineFiles);
     if (mounted) setState(() {});
   }
 
@@ -349,12 +428,16 @@ abstract class YustFilePickerBaseState<
   /// Create a database entry for the files.
   @nonVirtual
   Future<void> createDatabaseEntry() async {
+    // Controller path persists via its injected doc writer, so this
+    // legacy "ensure the linked doc exists" step is a no-op there.
+    final handler = _fileHandler;
+    if (handler == null) return;
     try {
       if (widget.linkedDocPath != null &&
-          !_fileHandler.existsDocData(
-            await _fileHandler.getFirebaseDoc(widget.linkedDocPath!),
+          !handler.existsDocData(
+            await handler.getFirebaseDoc(widget.linkedDocPath!),
           )) {
-        widget.onChanged!(convertFiles(_fileHandler.getOnlineFiles()));
+        widget.onChanged!(convertFiles(handler.getOnlineFiles()));
       }
       // ignore: empty_catches
     } catch (e) {}
@@ -441,10 +524,10 @@ abstract class YustFilePickerBaseState<
 
     try {
       await createDatabaseEntry();
-      await fileHandler.addFile(file);
+      await addSourceFile(file);
 
       clearFileProcessing(file);
-      widget.onChanged!(convertFiles(fileHandler.getOnlineFiles()));
+      widget.onChanged!(sourceOnlineFiles);
       if (mounted && callSetState) {
         setState(() {});
       }
@@ -461,13 +544,13 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   Future<void> deleteFiles(List<T> files) async {
     for (final yustFile in files) {
-      await fileHandler.deleteFile(yustFile);
+      await deleteSourceFile(yustFile);
 
       if (mounted) {
         setState(() {});
       }
     }
-    widget.onChanged!(convertFiles(fileHandler.getOnlineFiles()));
+    widget.onChanged!(sourceOnlineFiles);
     if (mounted) {
       setState(() {});
     }
@@ -525,7 +608,7 @@ abstract class YustFilePickerBaseState<
             if ((widget.allowMultiSelectDownload ||
                     widget.allowMultiSelectDeletion ||
                     (widget.allowFavorites && _enabled)) &&
-                _fileHandler.getFiles().length > 1)
+                sourceFiles.length > 1)
               _buildStartSelectionButton(),
             ...buildActionButtons(context),
             if (widget.suffixIcon != null) widget.suffixIcon!,
@@ -550,7 +633,7 @@ abstract class YustFilePickerBaseState<
       return;
     }
 
-    final allFiles = convertFiles(_fileHandler.getFiles());
+    final allFiles = sourceFiles;
     final hasHiddenItems = allFiles.length > currentDisplayCount;
     bool? includeHiddenItems = false;
 
@@ -729,7 +812,7 @@ abstract class YustFilePickerBaseState<
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.files != widget.files) {
-      _updateFuture = _fileHandler.updateFiles(widget.files, loadFiles: true);
+      _updateFuture = _reconcileSourceFiles(widget.files);
       setState(() {});
     }
   }

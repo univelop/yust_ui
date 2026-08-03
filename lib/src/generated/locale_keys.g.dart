@@ -581,6 +581,7 @@ abstract class LocaleKeys {
   static const automaticBilling = 'automaticBilling';
   static const automaticCleanup = 'automaticCleanup';
   static const automaticCleanupExplanation = 'automaticCleanupExplanation';
+  static const availableOffline = 'availableOffline';
   static const back = 'back';
   static const backCamera = 'backCamera';
   static const backToHome = 'backToHome';
@@ -2830,6 +2831,7 @@ abstract class LocaleKeys {
   static const lookOnly = 'lookOnly';
   static const low = 'low';
   static const mailbox = 'mailbox';
+  static const makeAvailableOffline = 'makeAvailableOffline';
   static const manageBillingAdmins = 'manageBillingAdmins';
   static const manageInvitations = 'manageInvitations';
   static const manageLabels = 'manageLabels';
@@ -3149,6 +3151,7 @@ abstract class LocaleKeys {
   static const objectiveDigitalizationLabel = 'objectiveDigitalizationLabel';
   static const objectiveProcessesLabel = 'objectiveProcessesLabel';
   static const objectivesLabel = 'objectivesLabel';
+  static const offlineLimitReached = 'offlineLimitReached';
   static const ok = 'ok';
   static const oldPassword = 'oldPassword';
   static const oldValue = 'oldValue';
@@ -3470,6 +3473,7 @@ abstract class LocaleKeys {
   static const removeFollowingRoles = 'removeFollowingRoles';
   static const removeFromFavorites = 'removeFromFavorites';
   static const removeFromListDescription = 'removeFromListDescription';
+  static const removeFromOffline = 'removeFromOffline';
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
   static const removeReadAccess = 'removeReadAccess';
@@ -3477,6 +3481,7 @@ abstract class LocaleKeys {
   static const removeUserStepDescription = 'removeUserStepDescription';
   static const removeValue = 'removeValue';
   static const removeWriteAccess = 'removeWriteAccess';
+  static const removedFromOffline = 'removedFromOffline';
   static const removedInvalidRoleConfigurations =
       'removedInvalidRoleConfigurations';
   static const removingUser = 'removingUser';

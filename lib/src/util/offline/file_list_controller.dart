@@ -1,33 +1,42 @@
-import 'dart:typed_data';
+import 'dart:async';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
-import 'offline_file_cache.dart';
-import 'offline_file_doc_writer.dart';
+import 'file_operation.dart';
+import 'file_operation_handler.dart';
+import 'file_upload_decision.dart';
 import 'offline_file_target.dart';
-import 'offline_upload_queue.dart';
+import 'offline_storage.dart';
 
 /// Widget-facing model for a brick's file list.
 ///
-/// Owns the merged view of "online files (already persisted on the record) +
-/// pending uploads still in the queue", reconciles local/remote deletions, and
-/// resolves each file's on-device state. This is the list-model concern that
-/// used to be tangled inside `YustFileHandler`; here it delegates all IO to the
-/// [OfflineUploadQueue] (uploads), [OfflineFileCache] (device state) and the
-/// [OfflineFileDocWriter] (deletes), and notifies listeners so pickers rebuild
-/// — replacing the old `onFileUploaded` + manual `setState`.
+/// Shows the record's persisted files overlaid with the pending ops still in the
+/// shared [FileOperationHandler]'s queue: a pending add shows straight from its
+/// on-device bytes, a pending delete is hidden, a pending rename shows the new
+/// name. The list-model concern that used to be tangled inside `YustFileHandler`;
+/// here every change is a stateless command (write local bytes → enqueue an op),
+/// and the display is derived — the queue is the single source of "not yet
+/// synced", replacing the old in-memory tombstone.
 class FileListController<T extends YustFile> extends ChangeNotifier {
   FileListController({
+    required this.handler,
     required this.target,
-    required this.docWriter,
+    OfflineStorage? storage,
     this.newestFirst = false,
     this.onOnlineFilesChanged,
-  }) : _queue = OfflineUploadQueue<T>(target: target, docWriter: docWriter),
-       _cache = OfflineFileCache(target: target);
+  }) : _storage = storage ?? OfflineStorage() {
+    handler.addListener(_onQueueChanged);
+  }
 
+  /// The one app-scoped handler every file change flows through.
+  final FileOperationHandler handler;
+
+  /// Where this brick's files live (stamps files, filters pending ops).
   final OfflineFileTarget target;
-  final OfflineFileDocWriter docWriter;
+
+  final OfflineStorage _storage;
 
   /// Whether the newest file is shown first.
   bool newestFirst;
@@ -36,98 +45,187 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// host observe the persisted set (e.g. to update a brick value).
   final void Function(List<T>)? onOnlineFilesChanged;
 
-  final OfflineUploadQueue<T> _queue;
-  final OfflineFileCache _cache;
+  /// Persisted files from the record snapshot (last [setOnlineFiles]).
+  final List<T> _online = [];
 
-  /// The merged list, insertion-ordered (oldest first) internally.
-  final List<T> _files = [];
+  /// This target's pending ops, oldest-first (mirrors the queue).
+  List<FileOperation<YustFile>> _pending = [];
 
-  /// Keys of files the user just deleted, so a lagging server snapshot does not
-  /// resurrect them before the delete propagates.
-  final Set<String> _recentlyDeleted = {};
+  /// The files to display: the record snapshot overlaid with pending ops,
+  /// honouring [newestFirst].
+  List<T> get files {
+    final overlaid = _overlay();
+    return newestFirst ? overlaid.reversed.toList(growable: false) : overlaid;
+  }
 
-  /// The files to display, honouring [newestFirst].
-  List<T> get files => newestFirst
-      ? _files.reversed.toList(growable: false)
-      : List.unmodifiable(_files);
-
-  /// Files already uploaded/persisted (carry a storage path or url).
-  List<T> get onlineFiles => _files.where(_isOnline).toList();
+  /// Files already persisted online (carry a storage path or url).
+  List<T> get onlineFiles => _overlay().where(_isOnline).toList();
 
   /// Files with an on-device copy (pending upload or downloaded for offline).
-  List<T> get cachedFiles => _files.where((file) => file.cached).toList();
+  List<T> get cachedFiles => _overlay().where((file) => file.cached).toList();
 
-  bool _isOnline(T file) => file.path != null || file.url != null;
+  bool _isOnline(T file) =>
+      // ignore: deprecated_member_use
+      file.path != null || file.url != null;
 
-  String _keyOf(YustFile file) =>
+  String _key(YustFile file) =>
       file.hash.isNotEmpty ? file.hash : (file.name ?? '');
 
-  /// Reconciles the list with the [incoming] online files from the record,
-  /// keeping pending (still-uploading) files and honouring recent deletes.
+  /// Overlays the pending ops onto the record snapshot, keyed by content hash
+  /// (or name for hashless legacy files). A pending add/replace shows its local
+  /// bytes; a pending delete is hidden. A rename is already reflected on the
+  /// online instance (mutated optimistically by [rename]), so it needs no entry.
+  List<T> _overlay() {
+    final byKey = <String, T>{for (final file in _online) _key(file): file};
+    for (final op in _pending) {
+      switch (op.type) {
+        case FileOperationType.upload:
+          byKey[op.fileKey] = op.file as T;
+        case FileOperationType.delete:
+          byKey.remove(op.fileKey);
+        case FileOperationType.rename:
+        case FileOperationType.download:
+          break;
+      }
+    }
+    return List<T>.unmodifiable(byKey.values);
+  }
+
+  /// Reconciles the list with the [incoming] online files from the record.
   /// Call on init and whenever the brick value changes.
   Future<void> setOnlineFiles(List<T> incoming) async {
-    final merged = <String, T>{};
-
-    // Pending cached files first so an in-flight upload survives a refresh.
-    for (final file in (await _cache.loadForTarget()).whereType<T>()) {
-      await _cache.locateOnDevice(file);
-      merged[_keyOf(file)] = file;
-    }
-
-    for (final file in incoming) {
-      target.apply(file);
-      if (_recentlyDeleted.contains(_keyOf(file))) continue;
-      await _cache.locateOnDevice(file); // sets devicePath if downloaded
-      merged.putIfAbsent(_keyOf(file), () => file); // keep pending over online
-    }
-
-    _files
+    _online
       ..clear()
-      ..addAll(merged.values);
-    notifyListeners();
+      ..addAll(incoming);
+    for (final file in _online) {
+      target.apply(file);
+      final path = await _storage.pathForFile(file);
+      if (path != null) file.devicePath = path;
+    }
+    await _refreshPending();
   }
 
-  /// Adds [file]: shows it immediately, then uploads (and persists via the
-  /// injected doc writer) through the queue.
+  /// Adds [file]: writes its bytes to the device, then enqueues the upload
+  /// (which persists via the shared handler's doc-writer). Shown immediately
+  /// through the pending overlay.
   Future<void> add(T file) async {
     target.apply(file);
-    _files.add(file);
-    notifyListeners();
-    await _queue.enqueue(file);
-    _emitOnlineFiles();
-    notifyListeners();
+    await _computeHash(file);
+    await _writeBytes(file);
+    await handler.enqueue(_op(FileOperationType.upload, file));
   }
 
-  /// Replaces [file]'s bytes (e.g. re-drawn signature/image) and re-uploads it.
+  /// Replaces [file]'s bytes (e.g. a re-drawn signature/image) and re-uploads.
   Future<void> replaceBytes(T file, Uint8List bytes) async {
-    file.bytes = bytes;
-    await _queue.enqueue(file);
-    _emitOnlineFiles();
-    notifyListeners();
+    target.apply(file);
+    file
+      ..bytes = bytes
+      ..hash = '';
+    await _computeHash(file);
+    await _writeBytes(file);
+    await handler.enqueue(_op(FileOperationType.upload, file));
   }
 
-  /// Deletes [file] everywhere: the display list, the device cache/queue, and —
-  /// if already uploaded — Storage and the linked document.
+  /// Deletes [file]: a file still queued for upload is dropped from the queue
+  /// (and its bytes removed); an already-persisted file is removed via a delete
+  /// op.
   Future<void> delete(T file) async {
     target.apply(file);
-    _files.removeWhere((existing) => _keyOf(existing) == _keyOf(file));
-    _recentlyDeleted.add(_keyOf(file));
-    notifyListeners();
-
-    if (_isOnline(file)) {
-      await Yust.fileService.deleteFile(
-        path: file.storageFolderPath ?? target.storageFolderPath,
-        name: file.name!,
-      );
-      if (target.isLinked) await docWriter.removeFile(file);
-    } else {
-      await _queue.remove(file); // still queued → drop from cache + queue
+    final pendingUpload = _pendingUploadFor(file);
+    if (pendingUpload != null) {
+      await handler.cancel(pendingUpload);
+      await _storage.removeFile(file);
+      return;
     }
-    _emitOnlineFiles();
+    if (_isOnline(file)) {
+      await handler.enqueue(_op(FileOperationType.delete, file));
+    }
   }
 
-  /// Retries any queued uploads (e.g. on reconnect / app start).
-  Future<void> flushUploads() => _queue.flush();
+  /// Renames [file] to [newName]: the displayed instance is updated at once,
+  /// while the op carries an old-name snapshot so the executor can still fetch
+  /// the original bytes to re-upload under the new name.
+  Future<void> rename(T file, String newName) async {
+    final snapshot = file.copyWithUrl(null)
+      ..linkedDocStoresFilesAsMap = file.linkedDocStoresFilesAsMap;
+    file.name = newName;
+    await handler.enqueue(
+      FileOperation<YustFile>(
+        type: FileOperationType.rename,
+        file: snapshot,
+        newName: newName,
+      ),
+    );
+  }
+
+  /// Resolves how uploading a file named [newFileName] applies to the current
+  /// list, honouring [numberOfFiles] and single-file overwrite. Pure — the
+  /// caller reacts (confirm dialog / block); see [resolveFileUpload].
+  FileUploadDecision<T> resolveUpload({
+    required String newFileName,
+    required int numberOfFiles,
+    required bool overwriteSingleFile,
+  }) => resolveFileUpload<T>(
+    currentFiles: _overlay(),
+    newFileName: newFileName,
+    numberOfFiles: numberOfFiles,
+    overwriteSingleFile: overwriteSingleFile,
+  );
+
+  /// Retries any queued ops (e.g. on reconnect / app start).
+  Future<void> flushUploads() => handler.processPendingOperations();
+
+  @override
+  void dispose() {
+    handler.removeListener(_onQueueChanged);
+    super.dispose();
+  }
+
+  void _onQueueChanged() => unawaited(_refreshPending());
+
+  Future<void> _refreshPending() async {
+    final all = await handler.pending();
+    _pending = all.where((op) => target.owns(op.file)).toList();
+    _emitOnlineFiles();
+    notifyListeners();
+  }
+
+  FileOperation<YustFile>? _pendingUploadFor(T file) {
+    for (final op in _pending) {
+      if (op.type == FileOperationType.upload && op.fileKey == _key(file)) {
+        return op;
+      }
+    }
+    return null;
+  }
+
+  /// Writes [file]'s bytes (or source file) to [OfflineStorage] and sets its
+  /// [YustFile.devicePath]. A no-op on web (no persistent filesystem).
+  Future<void> _writeBytes(YustFile file) async {
+    if (kIsWeb) return;
+    final key = _key(file);
+    if (key.isEmpty || file.name == null) return;
+    file.devicePath = await _storage.write(
+      hash: key,
+      name: file.name!,
+      bytes: file.bytes,
+      file: file.file,
+    );
+  }
+
+  /// Computes the md5 [YustFile.hash] from the file's bytes so the storage key
+  /// and record-map key are stable before upload.
+  Future<void> _computeHash(YustFile file) async {
+    if (file.hash.isNotEmpty) return;
+    if (file.bytes != null) {
+      file.hash = md5.convert(file.bytes!).toString();
+    } else if (file.file != null) {
+      file.hash = (await file.file!.openRead().transform(md5).first).toString();
+    }
+  }
+
+  FileOperation<YustFile> _op(FileOperationType type, YustFile file) =>
+      FileOperation<YustFile>(type: type, file: file);
 
   void _emitOnlineFiles() => onOnlineFilesChanged?.call(onlineFiles);
 }

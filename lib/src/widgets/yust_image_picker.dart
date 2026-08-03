@@ -150,12 +150,7 @@ class YustImagePickerState
         ? _buildGallery(context)
         : Padding(
             padding: const EdgeInsets.only(bottom: 2.0),
-            child: _buildSingleImage(
-              context,
-              fileHandler.getFiles().firstOrNull != null
-                  ? YustImage.fromYustFile(fileHandler.getFiles().first)
-                  : null,
-            ),
+            child: _buildSingleImage(context, sourceFiles.firstOrNull),
           );
   }
 
@@ -203,12 +198,12 @@ class YustImagePickerState
         (widget.showPreview &&
             // ignore: deprecated_member_use_from_same_package
             widget.numberOfFiles == 1 &&
-            fileHandler.getFiles().firstOrNull != null &&
+            sourceFiles.firstOrNull != null &&
             !widget.overwriteSingleFile)) {
       return [];
     }
 
-    final pictureFiles = [...fileHandler.getFiles()];
+    final pictureFiles = [...sourceFiles];
     final canAddMore =
         pictureFiles.length < widget.numberOfFiles ||
         (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
@@ -229,11 +224,9 @@ class YustImagePickerState
             if (confirmed == true) {
               try {
                 for (final yustFile in pictureFiles) {
-                  await fileHandler.deleteFile(yustFile);
+                  await deleteSourceFile(yustFile);
                 }
-                widget.onChanged!(
-                  YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-                );
+                widget.onChanged!(sourceOnlineFiles);
                 if (mounted) {
                   setState(() {});
                 }
@@ -264,7 +257,7 @@ class YustImagePickerState
   }
 
   Widget _buildGallery(BuildContext context) {
-    if (fileHandler.getFiles().isEmpty) {
+    if (sourceFiles.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -528,11 +521,9 @@ class YustImagePickerState
     );
     if (confirmed != true) return false;
     try {
-      await fileHandler.deleteFile(yustFile);
+      await deleteSourceFile(yustFile);
       if (!yustFile.cached) {
-        widget.onChanged!(
-          YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-        );
+        widget.onChanged!(sourceOnlineFiles);
       }
       if (mounted) {
         setState(() {});
@@ -569,7 +560,7 @@ class YustImagePickerState
       return;
     }
 
-    final pictureFiles = List<YustImage>.from(fileHandler.getFiles());
+    final pictureFiles = List<YustImage>.from(sourceFiles);
 
     final willOverwrite =
         widget.numberOfFiles == 1 &&
@@ -715,7 +706,7 @@ class YustImagePickerState
         file.linkedDocPath = widget.linkedDocPath;
         file.linkedDocAttribute = widget.linkedDocAttribute;
 
-        fileHandler.updateFile(file, bytes: newImage);
+        unawaited(replaceSourceFileBytes(file, newImage));
 
         if (mounted) {
           setState(() {});
