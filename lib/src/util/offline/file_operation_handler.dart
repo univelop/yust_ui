@@ -25,12 +25,24 @@ abstract interface class FileOperationExecutor {
 ///
 /// This is the single offline-aware component. [processPendingOperations]
 /// applies the queue oldest-first, routes each op to the [FileOperationExecutor]
-/// that owns its type, and removes it only on success. On the first failure it
-/// stops and retries later with capped exponential backoff (1s, 2s, 4s … capped
-/// at 30s, forever); a connectivity-regained event resets the backoff and
-/// processes immediately, the backoff timer covering a missed callback. Online =
-/// [enqueue] + process now; offline = enqueue, processes on reconnect. Failures
-/// are not classified — last-write-wins, retry everything (no dead-letter).
+/// that owns its type, and removes it only on success. A failing op is skipped
+/// and left queued so the ops behind it still run — one unsendable file must not
+/// strand a pinned record's downloads. A pass that applied nothing stops instead
+/// of re-reading the same failing snapshot, and any pass with a failure
+/// schedules a retry with capped exponential backoff (1s, 2s, 4s … capped at
+/// 30s, forever).
+///
+/// Ops are always attempted, never gated on a connectivity check: an interface
+/// being up does not mean the network works (captive portals, dead wifi), so a
+/// gate cannot prevent a doomed attempt while adding a signal that lies in both
+/// directions. Connectivity is only a hint to retry sooner — a regained event
+/// resets the backoff and requests another pass, coalescing if one is already
+/// running. Failures are not classified — last-write-wins, retry everything (no
+/// dead-letter).
+///
+/// [enqueue] only waits for the op to be durably queued, never for the transfer:
+/// offline, a real upload retries internally for minutes before failing, and the
+/// picker awaiting it is what left a spinner on screen.
 ///
 /// It is a [ChangeNotifier]: it notifies whenever the queue changes (an op is
 /// enqueued, cancelled or applied), so a [FileListController] can rebuild its
@@ -56,6 +68,18 @@ class FileOperationHandler extends ChangeNotifier {
   final Future<void> Function(Duration) _delay;
   final Map<FileOperationType, FileOperationExecutor> _executors = {};
 
+  /// Emits each op right after it has been applied and dropped from the queue.
+  ///
+  /// A listener receives the executor's own instance, so an applied upload
+  /// already carries the `path` and `url` it was given — the file can be
+  /// adopted as persisted without waiting for the record to come back around.
+  /// Synchronous, so a listener has updated its state before the
+  /// [notifyListeners] that follows.
+  Stream<FileOperation<YustFile>> get applied => _applied.stream;
+
+  final StreamController<FileOperation<YustFile>> _applied =
+      StreamController<FileOperation<YustFile>>.broadcast(sync: true);
+
   static const _base = Duration(seconds: 1);
   static const _cap = Duration(seconds: 30);
 
@@ -65,15 +89,22 @@ class FileOperationHandler extends ChangeNotifier {
   bool _retryScheduled = false;
   bool _disposed = false;
 
-  /// Appends [op] and processes the queue. Online this applies it now; offline
-  /// the pass is a no-op and retries once connectivity returns.
+  /// The pass in flight, so overlapping callers can await the one drain.
+  Future<void>? _pass;
+
+  /// Set when a pass is requested while one is already running, so the drain
+  /// loops once more instead of the request being dropped.
+  bool _processAgain = false;
+
+  /// Appends [op] and starts a drain, returning as soon as the op is durably
+  /// queued. The transfer itself is not awaited — see the class doc.
   Future<void> enqueue(FileOperation<YustFile> op) async {
     await queue.enqueue(op);
     notifyListeners();
-    await processPendingOperations();
+    unawaited(processPendingOperations());
   }
 
-  /// Appends every op in [ops], then processes once — so a batch of downloads
+  /// Appends every op in [ops], then starts one drain — so a batch of downloads
   /// isn't processed per file.
   Future<void> enqueueAll(Iterable<FileOperation<YustFile>> ops) async {
     var enqueued = false;
@@ -83,7 +114,7 @@ class FileOperationHandler extends ChangeNotifier {
     }
     if (!enqueued) return;
     notifyListeners();
-    await processPendingOperations();
+    unawaited(processPendingOperations());
   }
 
   /// Drops a still-pending [op] without applying it — e.g. a file deleted before
@@ -96,37 +127,71 @@ class FileOperationHandler extends ChangeNotifier {
   /// This manager's pending ops, oldest-first.
   Future<List<FileOperation<YustFile>>> pending() => queue.pending();
 
-  /// Applies the pending ops oldest-first, removing each on success. On the
-  /// first failure it stops and schedules a backed-off retry.
+  /// Drains the queue, and completes when the drain in flight does.
   ///
-  /// The guard makes overlapping calls a no-op so two passes never race on the
-  /// same op — a call arriving while one is running (e.g. from [enqueue]) just
-  /// returns. To cover the op that call added after this pass took its snapshot,
-  /// the loop re-reads the queue after each pass and keeps going until it is
-  /// empty, so nothing waits for the next enqueue or reconnect.
-  Future<void> processPendingOperations() async {
-    if (_isProcessing || _disposed) return;
+  /// Only one drain runs at a time so two passes never race on the same op. A
+  /// caller arriving while one is running joins it rather than being dropped:
+  /// it gets the running pass to await, and asks for one more pass afterwards
+  /// so work that arrived mid-pass — a reconnect, a freshly enqueued op — is
+  /// never missed.
+  Future<void> processPendingOperations() {
+    if (_disposed) return Future<void>.value();
+    if (_isProcessing) {
+      _processAgain = true;
+      return _pass ?? Future<void>.value();
+    }
     _isProcessing = true;
-    try {
-      for (
-        var pending = await queue.pending();
-        pending.isNotEmpty;
-        pending = await queue.pending()
-      ) {
-        for (final op in pending) {
-          try {
-            await _executorFor(op).execute(op);
-            await queue.remove(op);
-            notifyListeners();
-          } catch (_) {
-            _scheduleRetry();
-            return;
-          }
+    final pass = _drainUntilSettled().whenComplete(() {
+      _isProcessing = false;
+      _pass = null;
+    });
+    _pass = pass;
+    return pass;
+  }
+
+  /// Runs passes until no further one was requested while the last was running.
+  Future<void> _drainUntilSettled() async {
+    do {
+      _processAgain = false;
+      await _drain();
+    } while (_processAgain && !_disposed);
+  }
+
+  /// One pass: applies what it can, oldest-first, skipping what fails.
+  ///
+  /// The queue is re-read after each sweep so an op enqueued mid-pass is picked
+  /// up without waiting for the next trigger. A sweep that applied nothing ends
+  /// the pass — re-reading would hand back the same failing ops and spin.
+  Future<void> _drain() async {
+    var failed = false;
+    for (
+      var pending = await queue.pending();
+      pending.isNotEmpty;
+      pending = await queue.pending()
+    ) {
+      var applied = 0;
+      for (final op in pending) {
+        if (_disposed) return;
+        try {
+          await _executorFor(op).execute(op);
+          await queue.remove(op);
+          _applied.add(op);
+          notifyListeners();
+          applied++;
+        } catch (error) {
+          debugPrint(
+            '[offline-sync] ${op.type.name} of "${op.file.name}" '
+            'failed, staying queued: $error',
+          );
+          failed = true;
         }
       }
+      if (applied == 0) break;
+    }
+    if (failed) {
+      _scheduleRetry();
+    } else {
       _attempt = 0; // fully drained → reset backoff
-    } finally {
-      _isProcessing = false;
     }
   }
 
@@ -134,6 +199,7 @@ class FileOperationHandler extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     unawaited(_onlineSub.cancel());
+    unawaited(_applied.close());
     super.dispose();
   }
 

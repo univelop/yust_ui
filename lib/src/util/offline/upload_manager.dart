@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 import 'file_operation.dart';
@@ -7,8 +9,9 @@ import 'file_operation_handler.dart';
 import 'offline_file_doc_writer.dart';
 import 'offline_storage.dart';
 
-/// Pushes an outbound op — upload / rename / delete — up to Storage and writes
-/// its metadata back through an [OfflineFileDocWriter]. The outbound executor.
+/// Pushes an outbound op — upload / rename / delete / metadata update — up to
+/// Storage and writes its metadata back through an [OfflineFileDocWriter]. The
+/// outbound executor.
 ///
 /// This is where that logic lives — moved out of the pickers and
 /// `YustFileHandler`. Queueing, retries and connectivity are the
@@ -35,6 +38,7 @@ class UploadManager implements FileOperationExecutor {
     FileOperationType.upload,
     FileOperationType.rename,
     FileOperationType.delete,
+    FileOperationType.updateMetadata,
   };
 
   @override
@@ -42,6 +46,7 @@ class UploadManager implements FileOperationExecutor {
     FileOperationType.upload => _upload(op),
     FileOperationType.rename => _rename(op),
     FileOperationType.delete => _delete(op),
+    FileOperationType.updateMetadata => _updateMetadata(op),
     FileOperationType.download => throw StateError(
       'download is not an upload op',
     ),
@@ -66,15 +71,41 @@ class UploadManager implements FileOperationExecutor {
     await docWriter.writeFile(file);
   }
 
+  /// Detaches the file's record entry first, then deletes its bytes.
+  ///
+  /// The order matters offline. A document write reaches Firestore's local
+  /// cache immediately — every listener sees the file gone at once — while its
+  /// Future only completes once the server acknowledges, which offline is
+  /// never. So the write is handed off rather than awaited: Firestore is itself
+  /// a durable write queue and syncs it on reconnect. This queue owns the
+  /// bytes, which is the part Firestore cannot do.
+  ///
+  /// Deleting the bytes first instead would fail offline before the entry was
+  /// ever detached, leaving the file on screen with nothing visibly happening.
+  /// The byte delete still gates the op: if it fails the op stays queued and
+  /// runs again, and re-detaching an already-detached entry is a no-op.
   Future<void> _delete(FileOperation<YustFile> op) async {
     final file = op.file;
+    unawaited(
+      _docWriterFor(op)
+          .removeFile(file)
+          .catchError(
+            (Object error) => debugPrint(
+              '[offline-sync] detaching "${file.name}" failed: $error',
+            ),
+          ),
+    );
     await Yust.fileService.deleteFile(
       path: file.storageFolderPath!,
       name: file.name,
     );
-    await _docWriterFor(op).removeFile(file);
     await _storage.remove(op.fileKey);
   }
+
+  /// Re-writes the file's document entry with no byte transfer. Queued behind
+  /// any upload of the same file, so it always lands on an entry that exists.
+  Future<void> _updateMetadata(FileOperation<YustFile> op) =>
+      _docWriterFor(op).writeFile(op.file);
 
   Future<void> _rename(FileOperation<YustFile> op) async {
     final file = op.file;

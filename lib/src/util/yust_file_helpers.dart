@@ -210,6 +210,28 @@ class YustFileHelpers {
     }
   }
 
+  /// Whether [file] cannot be opened from anywhere.
+  ///
+  /// A file is broken only when there is nowhere to read it from: it has no
+  /// usable name, no Storage location, and no copy on this device or in memory.
+  ///
+  /// Deliberately *not* keyed on `YustFile.url`: that field is deprecated and
+  /// "will soon be null for valid files", so testing it flagged every
+  /// path-addressed file as broken on web. [YustFile.isValid] is yust's own
+  /// notion of addressability (name plus a `path` or `url`) and follows the
+  /// migration.
+  ///
+  /// Missing bytes on the device is not brokenness — the file simply has to be
+  /// fetched. That is what the pending / not-yet-uploaded marker is for.
+  static bool isFileBroken(YustFile file) {
+    final name = file.name;
+    if (name == null || name.isEmpty) return true;
+    if (file.isValid()) return false;
+    return file.bytes == null &&
+        file.file == null &&
+        (kIsWeb || file.devicePath == null);
+  }
+
   bool isValidFileName(String filename) {
     final invalidChars = ['\\', '/', ':', '*', '?', '<', '>', '|'];
 

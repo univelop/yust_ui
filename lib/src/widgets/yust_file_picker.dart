@@ -9,6 +9,7 @@ import 'package:yust/yust.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/offline/file_presenter.dart';
+import '../util/yust_file_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
@@ -39,6 +40,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.linkedDocPath,
     super.linkedDocAttribute,
     super.onChanged,
+    super.onFilesChangedLocally,
     super.suffixIcon,
     super.prefixIcon,
     super.enableDropzone = false,
@@ -69,6 +71,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.linkedDocPath,
     super.linkedDocAttribute,
     super.onChanged,
+    super.onFilesChangedLocally,
     super.suffixIcon,
     super.prefixIcon,
     super.enableDropzone = false,
@@ -214,14 +217,7 @@ class YustFilePickerState
   }
 
   Widget _buildFile(BuildContext context, YustFile file) {
-    final isBroken =
-        file.name == null ||
-        (file.cached &&
-            file.bytes == null &&
-            file.file == null &&
-            file.devicePath == null) ||
-        // ignore: deprecated_member_use
-        (kIsWeb && file.url == null && file.bytes == null && file.file == null);
+    final isBroken = YustFileHelpers.isFileBroken(file);
     final shouldShowDate =
         !isBroken && widget.showModifiedAt && file.modifiedAt != null;
 
@@ -564,7 +560,7 @@ class YustFilePickerState
     );
     if (confirmed == true) {
       try {
-        await _deleteFileAndCallOnChanged(yustFile);
+        await _deleteFileAndReportChange(yustFile);
         if (mounted) {
           setState(() {});
         }
@@ -579,10 +575,10 @@ class YustFilePickerState
     }
   }
 
-  Future<void> _deleteFileAndCallOnChanged(YustFile yustFile) async {
+  Future<void> _deleteFileAndReportChange(YustFile yustFile) async {
     await deleteSourceFile(yustFile);
     if (!yustFile.cached) {
-      widget.onChanged!(sourceOnlineFiles);
+      notifyFilesChanged(sourceOnlineFiles);
     }
   }
 
@@ -616,7 +612,7 @@ class YustFilePickerState
       await viaController;
     } else {
       await _reuploadFileForRename(yustFile, newFileNameWithExtension);
-      await _deleteFileAndCallOnChanged(yustFile);
+      await _deleteFileAndReportChange(yustFile);
     }
 
     clearFileProcessing(yustFile);

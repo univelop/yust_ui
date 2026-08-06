@@ -43,7 +43,22 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final String? linkedDocAttribute;
 
   /// Callback when files change.
+  ///
+  /// The host is expected to persist the list. Not used for file changes on the
+  /// offline-capable path — see [onFilesChangedLocally].
   final void Function(List<T> files)? onChanged;
+
+  /// Callback when files change while an offline handler is registered.
+  ///
+  /// There the record write has already happened, per file and under its own
+  /// field mask, via the handler's doc writer. The host must therefore only
+  /// refresh its in-memory value and *not* save: persisting the whole attribute
+  /// from this picker's snapshot would drop files another device added while
+  /// this one was offline.
+  ///
+  /// Falls back to [onChanged] when null, which restores the old
+  /// save-the-whole-list behaviour.
+  final void Function(List<T> files)? onFilesChangedLocally;
 
   /// Prefix icon.
   final Widget? prefixIcon;
@@ -118,6 +133,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.linkedDocPath,
     this.linkedDocAttribute,
     this.onChanged,
+    this.onFilesChangedLocally,
     this.prefixIcon,
     this.suffixIcon,
     this.enableDropzone = false,
@@ -225,7 +241,7 @@ abstract class YustFilePickerBaseState<
           storesFilesAsMap: widget.linkedDocStoresFilesAsMap,
         ),
         newestFirst: widget.newestFirst,
-        onOnlineFilesChanged: (files) => widget.onChanged?.call(files),
+        onOnlineFilesChanged: notifyFilesChanged,
       )..addListener(_onControllerChanged);
       _updateFuture = _controller!.setOnlineFiles(widget.files);
     } else {
@@ -257,6 +273,23 @@ abstract class YustFilePickerBaseState<
       currentDisplayCount += widget.previewCount;
     }
     setState(() {});
+  }
+
+  /// Reports the current online files to the host — the one place either
+  /// callback is fired from.
+  ///
+  /// On the controller path the record write is already done, per file, by the
+  /// handler's doc writer, so the host is only asked to refresh its in-memory
+  /// value; routing this through [YustFilePickerBase.onChanged] there would
+  /// save the whole attribute from this picker's snapshot and delete files it
+  /// never saw.
+  @nonVirtual
+  void notifyFilesChanged(List<T> files) {
+    if (_controller != null && widget.onFilesChangedLocally != null) {
+      widget.onFilesChangedLocally!(files);
+    } else {
+      widget.onChanged?.call(files);
+    }
   }
 
   /// All tracked files (both paths), in the source's storage order.
@@ -395,11 +428,21 @@ abstract class YustFilePickerBaseState<
   List<T> getVisibleFiles({List<T>? files}) =>
       getOrderedFiles(files: files).take(currentDisplayCount).toList();
 
-  /// Re-emits the current file list so the parent can persist changes, then
-  /// rebuilds. The handler stores the same instances, so mutating a file in
-  /// place and re-emitting is enough.
-  void _persistAndRefresh() {
-    widget.onChanged?.call(sourceOnlineFiles);
+  /// Persists a metadata change the caller already applied to [files], then
+  /// rebuilds.
+  ///
+  /// On the controller path each file gets its own queued update, so the write
+  /// is field-masked to that file and cannot overwrite entries this device has
+  /// not seen. The legacy handler has no queue, so there the whole list still
+  /// goes back through [YustFilePickerBase.onChanged].
+  Future<void> _persistMetadataAndRefresh(List<T> files) async {
+    if (_controller != null) {
+      for (final file in files) {
+        await _controller!.updateMetadata(file);
+      }
+    } else {
+      widget.onChanged?.call(sourceOnlineFiles);
+    }
     if (mounted) setState(() {});
   }
 
@@ -407,7 +450,7 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   Future<void> toggleFavorite(T file) async {
     file.favorite = !file.favorite;
-    _persistAndRefresh();
+    await _persistMetadataAndRefresh([file]);
   }
 
   /// Whether every currently selected file is already a favorite.
@@ -422,7 +465,7 @@ abstract class YustFilePickerBaseState<
     for (final file in _selectedFiles) {
       file.favorite = favorite;
     }
-    _persistAndRefresh();
+    await _persistMetadataAndRefresh(_selectedFiles.toList());
   }
 
   /// Create a database entry for the files.
@@ -458,24 +501,35 @@ abstract class YustFilePickerBaseState<
     return true;
   }
 
-  /// Build the cached indicator.
+  /// Whether [file] is on this device but not yet in Storage.
+  ///
+  /// The controller knows this exactly — the file still has an upload op in the
+  /// queue. On the legacy path only "has a local copy" is available.
+  @nonVirtual
+  bool isAwaitingUpload(T file) =>
+      _controller?.isPendingUpload(file) ?? file.cached;
+
+  /// Marker for a file that is queued for upload.
+  ///
+  /// A warning triangle rather than a spinner: the file is already usable from
+  /// its local copy and nothing is actively running, so a progress indicator
+  /// both misrepresents the state and reads as though the UI were stuck. Tapping
+  /// still opens the explanation, since a tooltip alone is unreachable by touch.
   @nonVirtual
   Widget buildCachedIndicator(T file) {
-    if (!file.cached || !_enabled) {
+    if (!isAwaitingUpload(file) || !_enabled) {
       return const SizedBox.shrink();
     }
-    if (file.processing == true) {
-      return const CircularProgressIndicator();
-    }
     return IconButton(
-      icon: const Icon(Icons.cloud_upload_outlined),
-      color: Colors.white,
-      onPressed: () async {
-        await YustUi.alertService.showAlert(
+      icon: const Icon(Icons.warning_amber_rounded),
+      color: Colors.amber,
+      tooltip: LocaleKeys.alertLocalFile.tr(),
+      onPressed: () => unawaited(
+        YustUi.alertService.showAlert(
           LocaleKeys.localFile.tr(),
           LocaleKeys.alertLocalFile.tr(),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -527,7 +581,7 @@ abstract class YustFilePickerBaseState<
       await addSourceFile(file);
 
       clearFileProcessing(file);
-      widget.onChanged!(sourceOnlineFiles);
+      notifyFilesChanged(sourceOnlineFiles);
       if (mounted && callSetState) {
         setState(() {});
       }
@@ -550,7 +604,7 @@ abstract class YustFilePickerBaseState<
         setState(() {});
       }
     }
-    widget.onChanged!(sourceOnlineFiles);
+    notifyFilesChanged(sourceOnlineFiles);
     if (mounted) {
       setState(() {});
     }

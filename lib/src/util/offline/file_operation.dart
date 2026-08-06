@@ -1,9 +1,25 @@
 import 'package:yust/yust.dart';
 
-/// What a [FileOperation] does. The first three are outbound (local change →
+/// The key every offline component addresses a file by.
+extension YustFileOfflineKey on YustFile {
+  /// The content [YustFile.hash], falling back to the name for hashless legacy
+  /// (array-layout) files.
+  ///
+  /// The byte store, the sync queue and the list overlay must all agree on
+  /// this: if they drift, a file's bytes and its record entry end up filed
+  /// under different keys and neither side can find the other.
+  String get offlineKey => hash.isNotEmpty ? hash : (name ?? '');
+}
+
+/// What a [FileOperation] does. The first four are outbound (local change →
 /// server, handled by the UploadManager); [download] is inbound (server → local
 /// cache, handled by the DownloadManager). All flow through the one queue.
-enum FileOperationType { upload, rename, delete, download }
+///
+/// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
+/// linked document (e.g. after its favorite flag changed). It exists so that a
+/// metadata-only change is queued and field-masked like every other change,
+/// instead of the picker saving its whole file list back over the record.
+enum FileOperationType { upload, rename, delete, updateMetadata, download }
 
 /// A single file change queued for sync — the queue's entry type.
 ///
@@ -45,7 +61,7 @@ class FileOperation<T extends YustFile> {
   /// The on-device key for this file's bytes: the identifier, or the name for
   /// hashless legacy (array-layout) files.
   String get fileKey =>
-      databaseIdentifier.isNotEmpty ? databaseIdentifier : (file.name ?? '');
+      databaseIdentifier.isNotEmpty ? databaseIdentifier : file.offlineKey;
 
   /// Serialises the op, adding the file's addressing fields that
   /// [YustFile.toJson] drops so the op is replayable after a restart.

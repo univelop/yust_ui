@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yust/yust.dart';
 
+import 'file_operation.dart';
+
 /// Durable on-device storage for offline file bytes.
 ///
 /// Each file's bytes live under [getApplicationSupportDirectory] (durable, never
@@ -52,13 +54,13 @@ class OfflineStorage {
   Future<bool> exists(String hash) async => (await resolvePath(hash)) != null;
 
   /// The path to [file]'s on-device copy, or null when absent.
-  Future<String?> pathForFile(YustFile file) => resolvePath(_keyFor(file));
+  Future<String?> pathForFile(YustFile file) => resolvePath(file.offlineKey);
 
   /// Whether an on-device copy of [file] is present.
-  Future<bool> hasFile(YustFile file) => exists(_keyFor(file));
+  Future<bool> hasFile(YustFile file) => exists(file.offlineKey);
 
   /// Removes [file]'s on-device copy.
-  Future<void> removeFile(YustFile file) => remove(_keyFor(file));
+  Future<void> removeFile(YustFile file) => remove(file.offlineKey);
 
   /// Resolves the best URI to read [file] from, hiding the web/offline decision
   /// from callers (views, renderers) so they never branch on `kIsWeb` or check
@@ -66,7 +68,7 @@ class OfflineStorage {
   /// else the signed network URL, else null.
   Future<Uri?> resolveUri(YustFile file) async {
     if (!kIsWeb) {
-      final path = await resolvePath(_keyFor(file));
+      final path = await resolvePath(file.offlineKey);
       if (path != null) {
         file.devicePath = path;
         return Uri.file(path);
@@ -75,11 +77,6 @@ class OfflineStorage {
     final url = file.getOriginalUrl();
     return url == null ? null : Uri.parse(url);
   }
-
-  /// The on-device key for [file]'s bytes: its content hash, or the name for
-  /// hashless legacy (array-layout) files — the same key the queue ops use.
-  String _keyFor(YustFile file) =>
-      file.hash.isNotEmpty ? file.hash : (file.name ?? '');
 
   /// Removes the entry's bytes. Safe if already gone.
   Future<void> remove(String hash) async {

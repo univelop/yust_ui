@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 import '../../extensions/string_translate_extension.dart';
@@ -29,6 +30,10 @@ class DownloadManager implements FileOperationExecutor {
     final file = op.file;
     final storageFolder = file.storageFolderPath ?? file.path;
     if (file.name == null || storageFolder == null || storageFolder.isEmpty) {
+      debugPrint(
+        '[offline-sync] skipped download of "${file.name}": no storage '
+        'location (storageFolderPath and path are both empty)',
+      );
       return;
     }
     if (await _storage.exists(op.fileKey)) {
@@ -50,6 +55,10 @@ class DownloadManager implements FileOperationExecutor {
       hash: op.fileKey,
       name: file.name!,
       bytes: bytes,
+    );
+    debugPrint(
+      '[offline-sync] cached "${file.name}" (${bytes.length} bytes) '
+      'from $storageFolder under ${op.fileKey}',
     );
   }
 }

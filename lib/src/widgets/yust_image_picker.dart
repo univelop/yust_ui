@@ -64,6 +64,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.numberOfFiles = YustFilePickerBase.defaultNumberOfFiles,
     super.suffixIcon,
     super.onChanged,
+    super.onFilesChangedLocally,
     super.prefixIcon,
     super.readOnly = false,
     super.newestFirst = false,
@@ -101,6 +102,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.linkedDocAttribute,
     super.suffixIcon,
     super.onChanged,
+    super.onFilesChangedLocally,
     super.prefixIcon,
     super.readOnly = false,
     super.newestFirst = false,
@@ -226,7 +228,7 @@ class YustImagePickerState
                 for (final yustFile in pictureFiles) {
                   await deleteSourceFile(yustFile);
                 }
-                widget.onChanged!(sourceOnlineFiles);
+                notifyFilesChanged(sourceOnlineFiles);
                 if (mounted) {
                   setState(() {});
                 }
@@ -523,7 +525,7 @@ class YustImagePickerState
     try {
       await deleteSourceFile(yustFile);
       if (!yustFile.cached) {
-        widget.onChanged!(sourceOnlineFiles);
+        notifyFilesChanged(sourceOnlineFiles);
       }
       if (mounted) {
         setState(() {});
