@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
@@ -12,11 +11,11 @@ import 'offline_storage.dart';
 
 /// Widget-facing model for a brick's file list.
 ///
-/// Shows the record's persisted files overlaid with the pending ops still in the
+/// Shows the record's persisted files overlaid with the pending operations still in the
 /// shared [FileOperationHandler]'s queue: a pending add shows straight from its
 /// on-device bytes, a pending delete is hidden, a pending rename shows the new
 /// name. The list-model concern that used to be tangled inside `YustFileHandler`;
-/// here every change is a stateless command (write local bytes → enqueue an op),
+/// here every change is a stateless command (write local bytes → enqueue an operation),
 /// and the display is derived — the queue is the single source of "not yet
 /// synced", replacing the old in-memory tombstone.
 class FileListController<T extends YustFile> extends ChangeNotifier {
@@ -34,7 +33,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// The one app-scoped handler every file change flows through.
   final FileOperationHandler handler;
 
-  /// Where this brick's files live (stamps files, filters pending ops).
+  /// Where this brick's files live (stamps files, filters pending operations).
   final OfflineFileTarget target;
 
   final OfflineStorage _storage;
@@ -49,7 +48,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Persisted files from the record snapshot (last [setOnlineFiles]).
   final List<T> _online = [];
 
-  /// This target's pending ops, oldest-first (mirrors the queue).
+  /// This target's pending operations, oldest-first (mirrors the queue).
   List<FileOperation<YustFile>> _pending = [];
 
   /// Files this device has just uploaded, carried across one reconciliation.
@@ -71,7 +70,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
 
   bool _disposed = false;
 
-  /// The files to display: the record snapshot overlaid with pending ops,
+  /// The files to display: the record snapshot overlaid with pending operations,
   /// honouring [newestFirst].
   List<T> get files {
     final overlaid = _overlay();
@@ -88,6 +87,14 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// but not yet in Storage. Drives the "not yet uploaded" marker.
   bool isPendingUpload(T file) => _pendingUploadFor(file) != null;
 
+  /// Whether one of [file]'s queued operations is timed out — out of failedAttempts and waiting
+  /// on the user. Drives the "could not be synced" marker.
+  bool isTimedOut(T file) => _pending.any(
+    (operation) =>
+        operation.fileKey == file.offlineKey &&
+        operation.failedAttempts >= FileOperationHandler.maxFailedAttempts,
+  );
+
   /// Whether [file] is persisted in the record.
   ///
   /// A queued upload disqualifies it: both pickers stamp `path` at pick time,
@@ -100,7 +107,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
       // ignore: deprecated_member_use
       (file.path != null || file.url != null);
 
-  /// Overlays the pending ops onto the record snapshot, keyed by content hash
+  /// Overlays the pending operations onto the record snapshot, keyed by content hash
   /// (or name for hashless legacy files). A pending add/replace shows its local
   /// bytes; a pending delete is hidden. A rename or metadata update is already
   /// reflected on the online instance (mutated optimistically by [rename] /
@@ -109,12 +116,12 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     final byKey = <String, T>{
       for (final file in _online) file.offlineKey: file,
     };
-    for (final op in _pending) {
-      switch (op.type) {
+    for (final operation in _pending) {
+      switch (operation.type) {
         case FileOperationType.upload:
-          byKey[op.fileKey] = op.file as T;
+          byKey[operation.fileKey] = operation.file as T;
         case FileOperationType.delete:
-          byKey.remove(op.fileKey);
+          byKey.remove(operation.fileKey);
         case FileOperationType.rename:
         case FileOperationType.updateMetadata:
         case FileOperationType.download:
@@ -148,18 +155,18 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   }
 
   /// Adds [file]: writes its bytes to the device, then enqueues the upload
-  /// (which persists via the shared handler's doc-writer). Shown immediately
+  /// (which persists via the shared handler's document writer). Shown immediately
   /// through the pending overlay.
   ///
-  /// Returns only once the overlay reflects the new op. The caller reads
+  /// Returns only once the overlay reflects the new operation. The caller reads
   /// [onlineFiles] the moment this completes and writes it to the record, so a
   /// stale overlay there would report the queued file as persisted and store an
   /// entry for bytes that are not in Storage yet.
   Future<void> add(T file) async {
     target.apply(file);
-    await _computeHash(file);
+    await file.ensureHash();
     await _writeBytes(file);
-    await handler.enqueue(_op(FileOperationType.upload, file));
+    await handler.enqueue(_uploadOperation(FileOperationType.upload, file));
     await _scheduleRefresh();
   }
 
@@ -169,34 +176,34 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     file
       ..bytes = bytes
       ..hash = '';
-    await _computeHash(file);
+    await file.ensureHash();
     await _writeBytes(file);
-    await handler.enqueue(_op(FileOperationType.upload, file));
+    await handler.enqueue(_uploadOperation(FileOperationType.upload, file));
     await _scheduleRefresh();
   }
 
   /// Deletes [file]: a file still queued for upload is dropped from the queue
   /// (and its bytes removed); an already-persisted file is removed via a delete
-  /// op.
+  /// operation.
   Future<void> delete(T file) async {
     target.apply(file);
     // Deleted here, so it must not be carried across the next reconciliation.
     _justUploaded.remove(file.offlineKey);
-    final pendingUpload = _pendingUploadFor(file);
-    if (pendingUpload != null) {
-      await handler.cancel(pendingUpload);
+    final pendingUploadOperation = _pendingUploadFor(file);
+    if (pendingUploadOperation != null) {
+      await handler.cancel(pendingUploadOperation);
       await _storage.removeFile(file);
       await _scheduleRefresh();
       return;
     }
     if (_isOnline(file)) {
-      await handler.enqueue(_op(FileOperationType.delete, file));
+      await handler.enqueue(_uploadOperation(FileOperationType.delete, file));
     }
     await _scheduleRefresh();
   }
 
   /// Renames [file] to [newName]: the displayed instance is updated at once,
-  /// while the op carries an old-name snapshot so the executor can still fetch
+  /// while the operation carries an old-name snapshot so the executor can still fetch
   /// the original bytes to re-upload under the new name.
   Future<void> rename(T file, String newName) async {
     final snapshot = file.copyWithUrl(null)
@@ -215,12 +222,14 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Persists a metadata-only change to [file] (e.g. its favorite flag), which
   /// the caller has already applied to the instance.
   ///
-  /// A file still queued for upload needs no op of its own: the queued upload
+  /// A file still queued for upload needs no operation of its own: the queued upload
   /// carries this same instance and writes the current metadata when it runs.
   Future<void> updateMetadata(T file) async {
     target.apply(file);
     if (_pendingUploadFor(file) == null) {
-      await handler.enqueue(_op(FileOperationType.updateMetadata, file));
+      await handler.enqueue(
+        _uploadOperation(FileOperationType.updateMetadata, file),
+      );
     }
     await _scheduleRefresh();
   }
@@ -239,7 +248,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     overwriteSingleFile: overwriteSingleFile,
   );
 
-  /// Retries any queued ops (e.g. on reconnect / app start).
+  /// Retries any queued operations (e.g. on reconnect / app start).
   Future<void> flushUploads() => handler.processPendingOperations();
 
   /// Completes once every refresh requested so far has been applied.
@@ -272,14 +281,16 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Adopts a file whose upload has just been applied into the persisted set.
   ///
-  /// Without this the file would vanish the moment its op left the queue: the
+  /// Without this the file would vanish the moment its operation left the queue: the
   /// pending overlay stops carrying it, and the record snapshot that would
-  /// carry it has not arrived yet. The op's file is the executor's own
+  /// carry it has not arrived yet. The operation's file is the executor's own
   /// instance, so it already has the `path` and `url` the upload produced.
-  void _onOperationApplied(FileOperation<YustFile> op) {
+  void _onOperationApplied(FileOperation<YustFile> operation) {
     if (_disposed) return;
-    if (op.type != FileOperationType.upload || !target.owns(op.file)) return;
-    final file = op.file as T;
+    if (operation.type != FileOperationType.upload ||
+        !target.owns(operation.file))
+      return;
+    final file = operation.file as T;
     final key = file.offlineKey;
     final index = _online.indexWhere((online) => online.offlineKey == key);
     if (index == -1) {
@@ -290,7 +301,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     _justUploaded[key] = file;
   }
 
-  /// Re-reads this target's ops from the queue.
+  /// Re-reads this target's operations from the queue.
   ///
   /// The disposal check is after the await, not just before: the picker can be
   /// torn down while this read is in flight (a file added, then the screen
@@ -299,25 +310,24 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     if (_disposed) return;
     final all = await handler.pending();
     if (_disposed) return;
-    _pending = all.where((op) => target.owns(op.file)).toList();
+    _pending = all.where((operation) => target.owns(operation.file)).toList();
     _emitOnlineFiles();
     notifyListeners();
   }
 
   FileOperation<YustFile>? _pendingUploadFor(T file) {
-    for (final op in _pending) {
-      if (op.type == FileOperationType.upload &&
-          op.fileKey == file.offlineKey) {
-        return op;
+    for (final operation in _pending) {
+      if (operation.type == FileOperationType.upload &&
+          operation.fileKey == file.offlineKey) {
+        return operation;
       }
     }
     return null;
   }
 
   /// Writes [file]'s bytes (or source file) to [OfflineStorage] and sets its
-  /// [YustFile.devicePath]. A no-op on web (no persistent filesystem).
+  /// [YustFile.devicePath]. Stays null on web, where nothing is cached.
   Future<void> _writeBytes(YustFile file) async {
-    if (kIsWeb) return;
     final key = file.offlineKey;
     if (key.isEmpty || file.name == null) return;
     file.devicePath = await _storage.write(
@@ -328,19 +338,10 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     );
   }
 
-  /// Computes the md5 [YustFile.hash] from the file's bytes so the storage key
-  /// and record-map key are stable before upload.
-  Future<void> _computeHash(YustFile file) async {
-    if (file.hash.isNotEmpty) return;
-    if (file.bytes != null) {
-      file.hash = md5.convert(file.bytes!).toString();
-    } else if (file.file != null) {
-      file.hash = (await file.file!.openRead().transform(md5).first).toString();
-    }
-  }
-
-  FileOperation<YustFile> _op(FileOperationType type, YustFile file) =>
-      FileOperation<YustFile>(type: type, file: file);
+  FileOperation<YustFile> _uploadOperation(
+    FileOperationType type,
+    YustFile file,
+  ) => FileOperation<YustFile>(type: type, file: file);
 
   void _emitOnlineFiles() => onOnlineFilesChanged?.call(onlineFiles);
 }

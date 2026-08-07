@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/file_list_controller.dart';
@@ -11,6 +12,15 @@ import 'package:yust_ui/src/util/offline/offline_file_target.dart';
 import 'package:yust_ui/src/util/offline/offline_storage.dart';
 import 'package:yust_ui/src/util/offline/sync_queue.dart';
 
+/// What being offline throws, as opposed to a failure that counts as permanent.
+const _offline = SocketException('no route to host');
+
+/// A failure no retry can fix, so it spends the operation's failedAttempts.
+final _permanent = FirebaseException(
+  plugin: 'firebase_storage',
+  code: 'permission-denied',
+);
+
 const _target = OfflineFileTarget(
   storageFolderPath: 'records/rec1',
   linkedDocPath: 'records/rec1',
@@ -18,7 +28,7 @@ const _target = OfflineFileTarget(
   storesFilesAsMap: true,
 );
 
-/// Stands in for the real `UploadManager`: when [succeed] it mutates the op's
+/// Stands in for the real `UploadManager`: when [succeed] it mutates the operation's
 /// file the way an upload does — stamping `path` and `url` — before reporting
 /// success, so the controller sees the same post-upload state it would in
 /// production.
@@ -26,6 +36,10 @@ class _FakeExecutor implements FileOperationExecutor {
   _FakeExecutor({this.succeed = true});
 
   bool succeed;
+
+  /// What a failing execute throws — transient by default, so a test only
+  /// spends the operation's failedAttempts when it means to.
+  Object failure = _offline;
   final List<String> executed = [];
 
   @override
@@ -37,13 +51,13 @@ class _FakeExecutor implements FileOperationExecutor {
   };
 
   @override
-  Future<void> execute(FileOperation<YustFile> op) async {
-    if (!succeed) throw StateError('no connection');
-    op.file
-      ..path = op.file.storageFolderPath
+  Future<void> execute(FileOperation<YustFile> operation) async {
+    if (!succeed) throw failure;
+    operation.file
+      ..path = operation.file.storageFolderPath
       // ignore: deprecated_member_use
-      ..url = 'https://cdn.test/${op.file.name}';
-    executed.add(op.fileKey);
+      ..url = 'https://cdn.test/${operation.file.name}';
+    executed.add(operation.fileKey);
   }
 }
 
@@ -77,7 +91,7 @@ void main() {
   late _FakeExecutor executor;
   late FileOperationHandler handler;
 
-  /// A handler whose retry never fires, so a failed op stays pending for the
+  /// A handler whose retry never fires, so a failed operation stays pending for the
   /// duration of a test instead of churning in the background.
   FileOperationHandler buildHandler([FileOperationExecutor? which]) {
     final built = FileOperationHandler(
@@ -142,17 +156,20 @@ void main() {
       expect(controller.files.map((file) => file.name), ['plan.pdf']);
     });
 
-    test('a file becomes online once its upload op is applied', () async {
-      final controller = buildController();
-      await controller.setOnlineFiles([]);
+    test(
+      'a file becomes online once its upload operation is applied',
+      () async {
+        final controller = buildController();
+        await controller.setOnlineFiles([]);
 
-      await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
-      await controller.settled;
+        await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
+        await handler.processPendingOperations();
+        await controller.settled;
 
-      expect(controller.onlineFiles.map((file) => file.name), ['plan.pdf']);
-      expect(await queue.pending(), isEmpty);
-    });
+        expect(controller.onlineFiles.map((file) => file.name), ['plan.pdf']);
+        expect(await queue.pending(), isEmpty);
+      },
+    );
 
     test('a file restored from the persisted queue is still pending', () async {
       executor.succeed = false;
@@ -163,7 +180,7 @@ void main() {
       await first.settled;
 
       // Simulate a restart: a fresh queue, handler and controller over the same
-      // directory, so the op is read back from disk.
+      // directory, so the operation is read back from disk.
       final restartedQueue = SyncQueue(directoryProvider: () async => root);
       final restartedHandler = FileOperationHandler(
         executors: [_FakeExecutor(succeed: false)],
@@ -180,7 +197,7 @@ void main() {
       expect(restored.onlineFiles, isEmpty);
     });
 
-    test('a persisted file with no queued op is online', () async {
+    test('a persisted file with no queued operation is online', () async {
       final controller = buildController();
 
       await controller.setOnlineFiles([_persistedFile('old.pdf', 'h-old')]);
@@ -199,7 +216,7 @@ void main() {
       await handler.processPendingOperations();
       await controller.settled;
 
-      // The op has left the queue, so the pending overlay no longer carries it;
+      // The operation has left the queue, so the pending overlay no longer carries it;
       // it must have been promoted into the online set instead of vanishing.
       expect(await queue.pending(), isEmpty);
       expect(controller.files.map((file) => file.name), ['plan.pdf']);
@@ -255,7 +272,7 @@ void main() {
       await handler.processPendingOperations();
       await controller.settled;
 
-      // Deleting a file that is still queued drops its op rather than applying
+      // Deleting a file that is still queued drops its operation rather than applying
       // it, so it must not be treated as uploaded.
       await controller.delete(file);
       await controller.settled;
@@ -325,7 +342,7 @@ void main() {
       await controller.rename(controller.files.single, 'new.pdf');
 
       // Like the other mutations, rename must leave the host's in-memory value
-      // current when it returns — not only once the op is applied.
+      // current when it returns — not only once the operation is applied.
       expect(emitted.last, ['new.pdf']);
     });
   });
@@ -406,5 +423,74 @@ void main() {
         expect(files, isNot(contains('offline.pdf')));
       }
     });
+  });
+
+  group('timed out files', () {
+    test(
+      'a file is timed out once its upload runs out of failedAttempts',
+      () async {
+        executor
+          ..succeed = false
+          ..failure = _permanent;
+        final controller = buildController();
+        await controller.setOnlineFiles([]);
+        final file = _pickedFile('plan.pdf', 'pdf-bytes');
+
+        await controller.add(file);
+        expect(controller.isTimedOut(file), isFalse);
+
+        for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+          await handler.processPendingOperations();
+        }
+        await controller.settled;
+
+        expect(controller.isTimedOut(file), isTrue);
+        // Still listed and still pending — timed out is not lost.
+        expect(controller.isPendingUpload(file), isTrue);
+        expect(controller.files.map((f) => f.name), ['plan.pdf']);
+        expect(controller.onlineFiles, isEmpty);
+      },
+    );
+
+    test('a file failing on the connection is never timed out', () async {
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([]);
+      final file = _pickedFile('plan.pdf', 'pdf-bytes');
+
+      await controller.add(file);
+      for (var i = 0; i < FileOperationHandler.maxFailedAttempts + 2; i++) {
+        await handler.processPendingOperations();
+      }
+      await controller.settled;
+
+      expect(controller.isTimedOut(file), isFalse);
+    });
+
+    test(
+      'retryTimedOutOperations clears the marker once the operation succeeds',
+      () async {
+        executor
+          ..succeed = false
+          ..failure = _permanent;
+        final controller = buildController();
+        await controller.setOnlineFiles([]);
+        final file = _pickedFile('plan.pdf', 'pdf-bytes');
+
+        await controller.add(file);
+        for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+          await handler.processPendingOperations();
+        }
+        await controller.settled;
+        expect(controller.isTimedOut(file), isTrue);
+
+        executor.succeed = true;
+        await handler.retryTimedOutOperations();
+        await controller.settled;
+
+        expect(controller.isTimedOut(file), isFalse);
+        expect(controller.onlineFiles.map((f) => f.name), ['plan.pdf']);
+      },
+    );
   });
 }

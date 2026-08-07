@@ -210,10 +210,10 @@ abstract class YustFilePickerBaseState<
 >
     extends State<W>
     with AutomaticKeepAliveClientMixin {
-  /// Legacy path: built only when [YustFilePickerBase.docWriter] is null.
+  /// Legacy path: built only when [YustFilePickerBase.documentWriter] is null.
   YustFileHandler? _fileHandler;
 
-  /// New path: built (and owned) here when a [docWriter] is supplied.
+  /// New path: built (and owned) here when a [documentWriter] is supplied.
   FileListController<T>? _controller;
 
   late bool _enabled;
@@ -320,7 +320,7 @@ abstract class YustFilePickerBaseState<
 
   /// Renames [file] to [newName] through the controller, or null on the legacy
   /// path (the caller falls back to its own reupload flow). The controller
-  /// enqueues a single rename op instead of a download + reupload + delete.
+  /// enqueues a single rename operation instead of a download + reupload + delete.
   Future<void>? renameViaController(T file, String newName) =>
       _controller?.rename(file, newName);
 
@@ -472,7 +472,7 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   Future<void> createDatabaseEntry() async {
     // Controller path persists via its injected doc writer, so this
-    // legacy "ensure the linked doc exists" step is a no-op there.
+    // legacy "ensure the linked doc exists" step is a no-operation there.
     final handler = _fileHandler;
     if (handler == null) return;
     try {
@@ -503,23 +503,25 @@ abstract class YustFilePickerBaseState<
 
   /// Whether [file] is on this device but not yet in Storage.
   ///
-  /// The controller knows this exactly — the file still has an upload op in the
+  /// The controller knows this exactly — the file still has an upload operation in the
   /// queue. On the legacy path only "has a local copy" is available.
   @nonVirtual
   bool isAwaitingUpload(T file) =>
       _controller?.isPendingUpload(file) ?? file.cached;
 
-  /// Marker for a file that is queued for upload.
-  ///
-  /// A warning triangle rather than a spinner: the file is already usable from
-  /// its local copy and nothing is actively running, so a progress indicator
-  /// both misrepresents the state and reads as though the UI were stuck. Tapping
-  /// still opens the explanation, since a tooltip alone is unreachable by touch.
+  /// Whether [file]'s sync is timed out and waiting on the user. Always false on
+  /// the legacy path, which has no queue.
+  @nonVirtual
+  bool hasSyncTimedOut(T file) => _controller?.isTimedOut(file) ?? false;
+
+  /// Marker for a file the queue has not sent yet. Amber: waiting to upload,
+  /// already usable locally. Red: timed out, tap to retry. Both non-blocking, and
+  /// tappable because a tooltip alone is unreachable by touch.
   @nonVirtual
   Widget buildCachedIndicator(T file) {
-    if (!isAwaitingUpload(file) || !_enabled) {
-      return const SizedBox.shrink();
-    }
+    if (!_enabled) return const SizedBox.shrink();
+    if (hasSyncTimedOut(file)) return _buildSyncFailedIndicator();
+    if (!isAwaitingUpload(file)) return const SizedBox.shrink();
     return IconButton(
       icon: const Icon(Icons.warning_amber_rounded),
       color: Colors.amber,
@@ -531,6 +533,22 @@ abstract class YustFilePickerBaseState<
         ),
       ),
     );
+  }
+
+  Widget _buildSyncFailedIndicator() => IconButton(
+    icon: const Icon(Icons.sync_problem),
+    color: Theme.of(context).colorScheme.error,
+    tooltip: LocaleKeys.alertFileSyncFailed.tr(),
+    onPressed: () => unawaited(_confirmRetrySync()),
+  );
+
+  Future<void> _confirmRetrySync() async {
+    final retry = await YustUi.alertService.showConfirmation(
+      LocaleKeys.alertFileSyncFailed.tr(),
+      LocaleKeys.retry.tr(),
+    );
+    if (retry == true)
+      await YustUi.fileOperationHandler?.retryTimedOutOperations();
   }
 
   @nonVirtual

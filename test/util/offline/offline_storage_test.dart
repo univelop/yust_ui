@@ -29,7 +29,7 @@ void main() {
     expect(path, endsWith('/h1/plan.pdf'));
     expect(await storage.resolvePath('h1'), path);
     expect(await storage.exists('h1'), isTrue);
-    expect(File(path).readAsBytesSync(), bytes('pdf-bytes'));
+    expect(File(path!).readAsBytesSync(), bytes('pdf-bytes'));
   });
 
   test('resolvePath / exists are null / false for an unknown entry', () async {

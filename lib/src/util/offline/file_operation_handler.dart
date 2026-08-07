@@ -6,47 +6,53 @@ import 'package:yust/yust.dart';
 
 import '../yust_file_helpers.dart';
 import 'file_operation.dart';
+import 'file_operation_error.dart';
 import 'sync_queue.dart';
 
 /// Carries out one kind of [FileOperation].
 ///
-/// The upload and download managers implement this. They are handed only the op
+/// The upload and download managers implement this. They are handed only the operation
 /// to carry out and know nothing about the queue, connectivity or retries — the
 /// same code runs whether the app is online or offline.
 abstract interface class FileOperationExecutor {
-  /// The op kinds this executor owns.
+  /// The operation kinds this executor owns.
   Set<FileOperationType> get handledTypes;
 
-  /// Carries out [op]: its byte work and record write.
-  Future<void> execute(FileOperation<YustFile> op);
+  /// Carries out [operation]: its byte work and record write.
+  Future<void> execute(FileOperation<YustFile> operation);
 }
 
 /// Drives every file change through the one [SyncQueue].
 ///
 /// This is the single offline-aware component. [processPendingOperations]
-/// applies the queue oldest-first, routes each op to the [FileOperationExecutor]
-/// that owns its type, and removes it only on success. A failing op is skipped
-/// and left queued so the ops behind it still run — one unsendable file must not
-/// strand a pinned record's downloads. A pass that applied nothing stops instead
-/// of re-reading the same failing snapshot, and any pass with a failure
-/// schedules a retry with capped exponential backoff (1s, 2s, 4s … capped at
-/// 30s, forever).
+/// applies the queue oldest-first and routes each operation to the
+/// [FileOperationExecutor] that owns its type, removing it only on success.
+///
+/// The flat queue is read as **one FIFO per file**: only a file's oldest queued
+/// operation is eligible per sweep, so its own operations stay in order while other files
+/// pass freely. A sweep that applied nothing ends the pass; any failure
+/// schedules a retry with capped exponential backoff (1s, 2s, 4s … 30s).
 ///
 /// Ops are always attempted, never gated on a connectivity check: an interface
 /// being up does not mean the network works (captive portals, dead wifi), so a
 /// gate cannot prevent a doomed attempt while adding a signal that lies in both
 /// directions. Connectivity is only a hint to retry sooner — a regained event
 /// resets the backoff and requests another pass, coalescing if one is already
-/// running. Failures are not classified — last-write-wins, retry everything (no
-/// dead-letter).
+/// running.
 ///
-/// [enqueue] only waits for the op to be durably queued, never for the transfer:
+/// Failures are classified. Connection failures retry forever, untracked. A
+/// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
+/// operation's [FileOperation.failedAttempts]; at [maxFailedAttempts] it is timed out — kept in the
+/// queue, reported via [timedOutOperations], cleared by [retryTimedOutOperations]. Nothing is
+/// dropped, and an unrecognised error counts as transient.
+///
+/// [enqueue] only waits for the operation to be durably queued, never for the transfer:
 /// offline, a real upload retries internally for minutes before failing, and the
 /// picker awaiting it is what left a spinner on screen.
 ///
-/// It is a [ChangeNotifier]: it notifies whenever the queue changes (an op is
+/// It is a [ChangeNotifier]: it notifies whenever the queue changes (an operation is
 /// enqueued, cancelled or applied), so a [FileListController] can rebuild its
-/// pending-op overlay without polling.
+/// pending-operation overlay without polling.
 class FileOperationHandler extends ChangeNotifier {
   FileOperationHandler({
     required List<FileOperationExecutor> executors,
@@ -63,12 +69,12 @@ class FileOperationHandler extends ChangeNotifier {
     _onlineSub = (onlineStream ?? _defaultOnlineStream).listen(_onConnectivity);
   }
 
-  /// The queue every op — inbound and outbound — flows through.
+  /// The queue every operation — inbound and outbound — flows through.
   final SyncQueue queue;
   final Future<void> Function(Duration) _delay;
   final Map<FileOperationType, FileOperationExecutor> _executors = {};
 
-  /// Emits each op right after it has been applied and dropped from the queue.
+  /// Emits each operation right after it has been applied and dropped from the queue.
   ///
   /// A listener receives the executor's own instance, so an applied upload
   /// already carries the `path` and `url` it was given — the file can be
@@ -83,6 +89,9 @@ class FileOperationHandler extends ChangeNotifier {
   static const _base = Duration(seconds: 1);
   static const _cap = Duration(seconds: 30);
 
+  /// Permanent failures an operation may collect before it is timed out.
+  static const maxFailedAttempts = 5;
+
   late final StreamSubscription<bool> _onlineSub;
   int _attempt = 0;
   bool _isProcessing = false;
@@ -96,20 +105,20 @@ class FileOperationHandler extends ChangeNotifier {
   /// loops once more instead of the request being dropped.
   bool _processAgain = false;
 
-  /// Appends [op] and starts a drain, returning as soon as the op is durably
+  /// Appends [operation] and starts a drain, returning as soon as the operation is durably
   /// queued. The transfer itself is not awaited — see the class doc.
-  Future<void> enqueue(FileOperation<YustFile> op) async {
-    await queue.enqueue(op);
+  Future<void> enqueue(FileOperation<YustFile> operation) async {
+    await queue.enqueue(operation);
     notifyListeners();
     unawaited(processPendingOperations());
   }
 
-  /// Appends every op in [ops], then starts one drain — so a batch of downloads
+  /// Appends every operation in [operations], then starts one drain — so a batch of downloads
   /// isn't processed per file.
-  Future<void> enqueueAll(Iterable<FileOperation<YustFile>> ops) async {
+  Future<void> enqueueAll(Iterable<FileOperation<YustFile>> operations) async {
     var enqueued = false;
-    for (final op in ops) {
-      await queue.enqueue(op);
+    for (final operation in operations) {
+      await queue.enqueue(operation);
       enqueued = true;
     }
     if (!enqueued) return;
@@ -117,22 +126,41 @@ class FileOperationHandler extends ChangeNotifier {
     unawaited(processPendingOperations());
   }
 
-  /// Drops a still-pending [op] without applying it — e.g. a file deleted before
+  /// Drops a still-pending [operation] without applying it — e.g. a file deleted before
   /// its upload ran.
-  Future<void> cancel(FileOperation<YustFile> op) async {
-    await queue.remove(op);
+  Future<void> cancel(FileOperation<YustFile> operation) async {
+    await queue.remove(operation);
     notifyListeners();
   }
 
-  /// This manager's pending ops, oldest-first.
+  /// This manager's pending operations, oldest-first.
   Future<List<FileOperation<YustFile>>> pending() => queue.pending();
+
+  /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
+  /// user made that has not reached the server.
+  Future<List<FileOperation<YustFile>>> timedOutOperations() async =>
+      (await queue.pending()).where(_hasTimedOut).toList();
+
+  /// Clears the failure count on every timed out operation and drains again.
+  Future<void> retryTimedOutOperations() async {
+    for (final operation in await timedOutOperations()) {
+      await queue.replace(operation.withResetFailedAttempts());
+    }
+    _attempt = 0;
+    notifyListeners();
+    await processPendingOperations();
+  }
+
+  /// Whether [operation] has exhausted its failedAttempts; see [timedOutOperations].
+  bool _hasTimedOut(FileOperation<YustFile> operation) =>
+      operation.failedAttempts >= maxFailedAttempts;
 
   /// Drains the queue, and completes when the drain in flight does.
   ///
-  /// Only one drain runs at a time so two passes never race on the same op. A
+  /// Only one drain runs at a time so two passes never race on the same operation. A
   /// caller arriving while one is running joins it rather than being dropped:
   /// it gets the running pass to await, and asks for one more pass afterwards
-  /// so work that arrived mid-pass — a reconnect, a freshly enqueued op — is
+  /// so work that arrived mid-pass — a reconnect, a freshly enqueued operation — is
   /// never missed.
   Future<void> processPendingOperations() {
     if (_disposed) return Future<void>.value();
@@ -159,31 +187,32 @@ class FileOperationHandler extends ChangeNotifier {
 
   /// One pass: applies what it can, oldest-first, skipping what fails.
   ///
-  /// The queue is re-read after each sweep so an op enqueued mid-pass is picked
+  /// The queue is re-read after each sweep so an operation enqueued mid-pass is picked
   /// up without waiting for the next trigger. A sweep that applied nothing ends
-  /// the pass — re-reading would hand back the same failing ops and spin.
+  /// the pass — re-reading would hand back the same failing operations and spin.
   Future<void> _drain() async {
     var failed = false;
+    final failedOperationIdsThisPass = <String>{};
     for (
       var pending = await queue.pending();
       pending.isNotEmpty;
       pending = await queue.pending()
     ) {
       var applied = 0;
-      for (final op in pending) {
+      for (final operation in _nextOperationPerFile(pending)) {
         if (_disposed) return;
+        // One attempt per operation per pass; the backoff owns the next one.
+        if (failedOperationIdsThisPass.contains(operation.id)) continue;
         try {
-          await _executorFor(op).execute(op);
-          await queue.remove(op);
-          _applied.add(op);
+          await _executorFor(operation).execute(operation);
+          await queue.remove(operation);
+          _applied.add(operation);
           notifyListeners();
           applied++;
         } catch (error) {
-          debugPrint(
-            '[offline-sync] ${op.type.name} of "${op.file.name}" '
-            'failed, staying queued: $error',
-          );
           failed = true;
+          failedOperationIdsThisPass.add(operation.id);
+          await _recordFailedAttempt(operation, error);
         }
       }
       if (applied == 0) break;
@@ -203,10 +232,51 @@ class FileOperationHandler extends ChangeNotifier {
     super.dispose();
   }
 
-  FileOperationExecutor _executorFor(FileOperation<YustFile> op) {
-    final executor = _executors[op.type];
+  /// The oldest queued operation of each file, in the order the files first appear —
+  /// the flat queue read as one FIFO per file. A timed out file yields nothing,
+  /// holding its whole chain until the user retries.
+  Iterable<FileOperation<YustFile>> _nextOperationPerFile(
+    List<FileOperation<YustFile>> pending,
+  ) {
+    final heads = <String, FileOperation<YustFile>>{};
+    for (final operation in pending) {
+      heads.putIfAbsent(operation.fileKey, () => operation);
+    }
+    return heads.values.where((operation) => !_hasTimedOut(operation));
+  }
+
+  /// Logs why [operation] failed and, for a permanent failure, spends one of its
+  /// failedAttempts. The operation stays queued either way.
+  Future<void> _recordFailedAttempt(
+    FileOperation<YustFile> operation,
+    Object error,
+  ) async {
+    if (!isPermanentOperationError(error)) {
+      debugPrint(
+        '[offline-sync] ${operation.type.name} of "${operation.file.name}" could not '
+        'reach the server, staying queued: $error',
+      );
+      return;
+    }
+    final failed = operation.withFailedAttempt();
+    await queue.replace(failed);
+    debugPrint(
+      '[offline-sync] ${operation.type.name} of "${operation.file.name}" failed '
+      '(${failed.failedAttempts}/$maxFailedAttempts, not retryable): $error',
+    );
+    if (_hasTimedOut(failed)) {
+      debugPrint(
+        '[offline-sync] "${operation.file.name}" timed out — it will not be retried '
+        'until the user asks for it',
+      );
+      notifyListeners();
+    }
+  }
+
+  FileOperationExecutor _executorFor(FileOperation<YustFile> operation) {
+    final executor = _executors[operation.type];
     if (executor == null) {
-      throw StateError('No executor registered for ${op.type}');
+      throw StateError('No executor registered for ${operation.type}');
     }
     return executor;
   }

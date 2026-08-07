@@ -8,7 +8,7 @@ import 'package:yust/yust.dart';
 /// (typically via `RecordService.save` with a field mask scoped to the file's
 /// own key, e.g. `brickValues.<brickId>.<hash>`) so every file write — online
 /// or offline-completed — funnels through one sanctioned, conflict-free path.
-abstract interface class OfflineFileDocWriter {
+abstract interface class OfflineFileDocumentWriter {
   /// Writes [file]'s metadata to its linked document, scoped to its own key.
   Future<void> writeFile(YustFile file);
 

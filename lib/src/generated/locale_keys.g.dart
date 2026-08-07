@@ -331,6 +331,7 @@ abstract class LocaleKeys {
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
   static const alertFileNotFound = 'alertFileNotFound';
   static const alertFileRename = 'alertFileRename';
+  static const alertFileSyncFailed = 'alertFileSyncFailed';
   static const alertFileTooBig = 'alertFileTooBig';
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowSpecNotFound = 'alertFlowSpecNotFound';
@@ -2016,6 +2017,7 @@ abstract class LocaleKeys {
   static const fileNameWithoutType = 'fileNameWithoutType';
   static const fileNamesDescription = 'fileNamesDescription';
   static const filePickerBrickDescription = 'filePickerBrickDescription';
+  static const fileSyncFailed = 'fileSyncFailed';
   static const fileTapMode = 'fileTapMode';
   static const fileTapModeDefaultApp = 'fileTapModeDefaultApp';
   static const fileTapModePreview = 'fileTapModePreview';
