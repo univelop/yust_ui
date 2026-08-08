@@ -135,6 +135,24 @@ class YustFileHelpers {
   }) async {
     if (!file.isValid()) return;
 
+    // The on-device copy first: it is the only source while offline, and the
+    // same bytes the viewer already shows.
+    final devicePath = await OfflineStorage().pathForFile(file);
+    if (devicePath != null) {
+      file.devicePath = devicePath;
+      if (!context.mounted) return;
+      try {
+        await launchFile(
+          context: context,
+          name: file.name!,
+          file: File(devicePath),
+        );
+      } catch (e) {
+        await _showFileError(e);
+      }
+      return;
+    }
+
     // ignore: deprecated_member_use
     String? url = file.url;
 
@@ -191,14 +209,16 @@ class YustFileHelpers {
       await EasyLoading.dismiss();
     } catch (e) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(
-        LocaleKeys.oops.tr(),
-        LocaleKeys.alertCannotOpenFileWithError.tr(
-          namedArgs: {'error': e.toString()},
-        ),
-      );
+      await _showFileError(e);
     }
   }
+
+  Future<void> _showFileError(Object error) => YustUi.alertService.showAlert(
+    LocaleKeys.oops.tr(),
+    LocaleKeys.alertCannotOpenFileWithError.tr(
+      namedArgs: {'error': error.toString()},
+    ),
+  );
 
   void _validateFileResponse(http.Response response) {
     if (response.statusCode >= 300) {
