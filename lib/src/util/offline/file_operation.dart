@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 /// The key every offline component addresses a file by.
@@ -29,11 +30,18 @@ extension YustFileOfflineKey on YustFile {
   /// contains a dot.
   Future<void> ensureHash() async {
     if (hash.isNotEmpty) return;
+    final stopwatch = Stopwatch()..start();
     if (bytes != null) {
       hash = md5.convert(bytes!).toString();
     } else if (file != null) {
       hash = (await file!.openRead().transform(md5).first).toString();
     }
+    // Runs on the UI isolate and scales with the file, so its cost is worth
+    // seeing: on web there is no isolate to move it to.
+    debugPrint(
+      '[offline-sync] hashed "$name" '
+      '(${bytes?.lengthInBytes ?? 0} bytes) in ${stopwatch.elapsedMilliseconds}ms',
+    );
   }
 }
 

@@ -17,19 +17,25 @@ import 'file_operation.dart';
 /// removal is by identity — not a head-pop. The list is saved to a single file
 /// under [getApplicationSupportDirectory] so pending operations survive an app restart.
 ///
-/// On web the list is held in memory instead — [getApplicationSupportDirectory]
-/// has no web implementation. Web is online-only and needs the queue's ordering
-/// and routing, not its durability.
+/// On web the operations are held in memory instead — [getApplicationSupportDirectory]
+/// has no web implementation. They are kept as objects, not as their JSON: a
+/// round-trip drops [YustFile.bytes], and on web those are the file's only copy
+/// (nothing is cached on the device), so the upload would find nothing to send.
 class SyncQueue {
-  SyncQueue({Future<Directory> Function()? directoryProvider})
-    : _rootProvider = directoryProvider ?? getApplicationSupportDirectory;
+  SyncQueue({Future<Directory> Function()? directoryProvider, bool? persistent})
+    : _rootProvider = directoryProvider ?? getApplicationSupportDirectory,
+      isPersistent = persistent ?? !kIsWeb;
 
   final Future<Directory> Function() _rootProvider;
 
+  /// Whether operations survive a restart. False on web, and settable so a test
+  /// can exercise the in-memory path the VM never takes on its own.
+  final bool isPersistent;
+
   static const _fileName = 'sync_queue.json';
 
-  /// Backs the queue on web, where there is no filesystem.
-  final List<Map<String, dynamic>> _memory = [];
+  /// Backs the queue when it is not [isPersistent].
+  final List<FileOperation<YustFile>> _memory = [];
 
   /// Serialises every queue access. The backing file is a single blob shared by
   /// all producers (pickers, the sync manager) and the draining consumer, each a
@@ -50,7 +56,7 @@ class SyncQueue {
   Future<void> enqueue<T extends YustFile>(FileOperation<T> operation) =>
       _serialized(() async {
         final operations = await _load();
-        operations.add(operation.toJson());
+        operations.add(operation);
         await _save(operations);
       });
 
@@ -60,11 +66,12 @@ class SyncQueue {
   Future<List<FileOperation<YustFile>>> pending({
     Set<FileOperationType>? types,
   }) => _serialized(() async {
-    final operations = (await _load()).map(_decode);
-    return (types == null
-            ? operations
-            : operations.where((operation) => types.contains(operation.type)))
-        .toList();
+    final operations = await _load();
+    return types == null
+        ? operations
+        : operations
+              .where((operation) => types.contains(operation.type))
+              .toList();
   });
 
   /// Removes the operation with [operation]'s id. No-operation when it is already gone (a manager
@@ -72,7 +79,7 @@ class SyncQueue {
   Future<void> remove(FileOperation<YustFile> operation) =>
       _serialized(() async {
         final operations = await _load();
-        operations.removeWhere((json) => json['id'] == operation.id);
+        operations.removeWhere((entry) => entry.id == operation.id);
         await _save(operations);
       });
 
@@ -81,29 +88,35 @@ class SyncQueue {
   Future<void> replace(FileOperation<YustFile> operation) => _serialized(
     () async {
       final operations = await _load();
-      final index = operations.indexWhere((json) => json['id'] == operation.id);
+      final index = operations.indexWhere(
+        (entry) => entry.id == operation.id,
+      );
       if (index == -1) return;
-      operations[index] = operation.toJson();
+      operations[index] = operation;
       await _save(operations);
     },
   );
 
-  Future<List<Map<String, dynamic>>> _load() async {
-    if (kIsWeb) return List<Map<String, dynamic>>.of(_memory);
+  Future<List<FileOperation<YustFile>>> _load() async {
+    if (!isPersistent) return List<FileOperation<YustFile>>.of(_memory);
     final file = await _file();
     if (!file.existsSync()) return [];
     return (jsonDecode(await file.readAsString()) as List)
-        .cast<Map<String, dynamic>>();
+        .cast<Map<String, dynamic>>()
+        .map(_decode)
+        .toList();
   }
 
-  Future<void> _save(List<Map<String, dynamic>> operations) async {
-    if (kIsWeb) {
+  Future<void> _save(List<FileOperation<YustFile>> operations) async {
+    if (!isPersistent) {
       _memory
         ..clear()
         ..addAll(operations);
       return;
     }
-    await (await _file()).writeAsString(jsonEncode(operations));
+    await (await _file()).writeAsString(
+      jsonEncode(operations.map((operation) => operation.toJson()).toList()),
+    );
   }
 
   Future<File> _file() async =>

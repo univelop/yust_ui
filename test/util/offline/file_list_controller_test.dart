@@ -28,6 +28,11 @@ const _target = OfflineFileTarget(
   storesFilesAsMap: true,
 );
 
+/// A target with no document behind it — a picker bound to a brick's settings,
+/// an email attachment list. Nothing else persists these files, so the host is
+/// the one that has to hear about them.
+const _unlinkedTarget = OfflineFileTarget(storageFolderPath: 'settings/brick1');
+
 /// Stands in for the real `UploadManager`: when [succeed] it mutates the operation's
 /// file the way an upload does — stamping `path` and `url` — before reporting
 /// success, so the controller sees the same post-upload state it would in
@@ -118,11 +123,12 @@ void main() {
 
   FileListController<YustFile> buildController({
     FileOperationHandler? on,
+    OfflineFileTarget target = _target,
     void Function(List<YustFile>)? onOnlineFilesChanged,
   }) {
     final controller = FileListController<YustFile>(
       handler: on ?? handler,
-      target: _target,
+      target: target,
       storage: storage,
       onOnlineFilesChanged: onOnlineFilesChanged,
     );
@@ -314,6 +320,7 @@ void main() {
     test('the host is told about the file once it is persisted', () async {
       final emitted = <List<String>>[];
       final controller = buildController(
+        target: _unlinkedTarget,
         onOnlineFilesChanged: (files) =>
             emitted.add(files.map((file) => file.name ?? '').toList()),
       );
@@ -329,11 +336,45 @@ void main() {
     });
   });
 
+  group('a document-backed target reports nothing to its host', () {
+    test('an add is not reported back', () async {
+      var reports = 0;
+      final controller = buildController(
+        onOnlineFilesChanged: (_) => reports++,
+      );
+      await controller.setOnlineFiles([_persistedFile('a.pdf', 'h-a')]);
+
+      await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
+      await handler.processPendingOperations();
+      await controller.settled;
+
+      // The queue's own document writer persists the file, and the host reads
+      // the result from the document's stream. Reporting it here as well would
+      // have the host write the same list a second time, which rebuilds the
+      // picker, which reconciles, which reports again — the loop that rebuilt
+      // the whole screen on every keystroke.
+      expect(reports, 0);
+    });
+
+    test('a delete is not reported back', () async {
+      var reports = 0;
+      final controller = buildController(
+        onOnlineFilesChanged: (_) => reports++,
+      );
+      await controller.setOnlineFiles([_persistedFile('a.pdf', 'h-a')]);
+
+      await controller.delete(controller.files.single);
+
+      expect(reports, 0);
+    });
+  });
+
   group('rename', () {
     test('reports the updated list to the host', () async {
       executor.succeed = false;
       final emitted = <List<String>>[];
       final controller = buildController(
+        target: _unlinkedTarget,
         onOnlineFilesChanged: (files) =>
             emitted.add(files.map((file) => file.name ?? '').toList()),
       );
@@ -405,6 +446,7 @@ void main() {
       executor.succeed = false;
       final emitted = <List<String>>[];
       final controller = buildController(
+        target: _unlinkedTarget,
         onOnlineFilesChanged: (files) =>
             emitted.add(files.map((file) => file.name ?? '').toList()),
       );

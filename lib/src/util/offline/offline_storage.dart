@@ -25,20 +25,22 @@ class OfflineStorage {
   static const _folder = 'offline_files';
 
   /// Writes [bytes] (or copies [file]) for the entry [hash] under [name] and
-  /// returns the path to them. Null on web, where nothing is cached.
+  /// returns the path to them. Null on web, where nothing is cached, and null
+  /// when there was nothing to write — a path to bytes that do not exist reads
+  /// as [YustFile.cached] everywhere and sends readers to a missing file.
   Future<String?> write({
     required String hash,
     required String name,
     Uint8List? bytes,
     File? file,
   }) async {
-    if (kIsWeb) return null;
+    if (kIsWeb || (bytes == null && file == null)) return null;
     final directory = await _entryDirectory(hash);
     final path = '${directory.path}/$name';
     if (bytes != null) {
       await File(path).writeAsBytes(bytes);
-    } else if (file != null) {
-      await file.copy(path);
+    } else {
+      await file!.copy(path);
     }
     return path;
   }

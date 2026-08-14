@@ -109,7 +109,7 @@ class FileOperationHandler extends ChangeNotifier {
   /// queued. The transfer itself is not awaited — see the class doc.
   Future<void> enqueue(FileOperation<YustFile> operation) async {
     await queue.enqueue(operation);
-    notifyListeners();
+    await _notifyQueueChanged();
     unawaited(processPendingOperations());
   }
 
@@ -122,7 +122,7 @@ class FileOperationHandler extends ChangeNotifier {
       enqueued = true;
     }
     if (!enqueued) return;
-    notifyListeners();
+    await _notifyQueueChanged();
     unawaited(processPendingOperations());
   }
 
@@ -130,11 +130,43 @@ class FileOperationHandler extends ChangeNotifier {
   /// its upload ran.
   Future<void> cancel(FileOperation<YustFile> operation) async {
     await queue.remove(operation);
-    notifyListeners();
+    await _notifyQueueChanged();
   }
 
   /// This manager's pending operations, oldest-first.
   Future<List<FileOperation<YustFile>>> pending() => queue.pending();
+
+  /// Whether [file]'s bytes are still on their way to Storage.
+  ///
+  /// Synchronous, so a widget can ask while it builds: a file enqueued for
+  /// upload has no url yet and would otherwise look like a missing file rather
+  /// than one in flight. Listen to this handler to rebuild when it changes.
+  ///
+  /// A timed out upload is **not** in flight. Nothing is ever dropped from the
+  /// queue, so a permanently failing upload stays in it forever; reporting that
+  /// as uploading turns any progress indicator built on this into one that never
+  /// goes away. Those are reported by [timedOutOperations] instead, which the
+  /// user can act on.
+  bool isUploading(YustFile file) =>
+      _uploadingFileKeys.contains(file.offlineKey);
+
+  /// Backs [isUploading]. Refreshed with every change to the queue, since the
+  /// queue itself can only be read asynchronously.
+  Set<String> _uploadingFileKeys = {};
+
+  /// Re-reads the queue, then notifies. The one way this handler announces a
+  /// change, so [isUploading] can never disagree with the listeners it wakes.
+  Future<void> _notifyQueueChanged() async {
+    _uploadingFileKeys = (await queue.pending())
+        .where(
+          (operation) =>
+              operation.type == FileOperationType.upload &&
+              !_hasTimedOut(operation),
+        )
+        .map((operation) => operation.fileKey)
+        .toSet();
+    if (!_disposed) notifyListeners();
+  }
 
   /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
   /// user made that has not reached the server.
@@ -147,7 +179,7 @@ class FileOperationHandler extends ChangeNotifier {
       await queue.replace(operation.withResetFailedAttempts());
     }
     _attempt = 0;
-    notifyListeners();
+    await _notifyQueueChanged();
     await processPendingOperations();
   }
 
@@ -207,7 +239,7 @@ class FileOperationHandler extends ChangeNotifier {
           await _executorFor(operation).execute(operation);
           await queue.remove(operation);
           _applied.add(operation);
-          notifyListeners();
+          await _notifyQueueChanged();
           applied++;
         } catch (error) {
           failed = true;
@@ -269,7 +301,7 @@ class FileOperationHandler extends ChangeNotifier {
         '[offline-sync] "${operation.file.name}" timed out — it will not be retried '
         'until the user asks for it',
       );
-      notifyListeners();
+      await _notifyQueueChanged();
     }
   }
 

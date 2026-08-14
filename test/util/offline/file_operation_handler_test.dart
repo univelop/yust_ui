@@ -542,4 +542,61 @@ void main() {
       expect(executor.executed, ['ok1', 'ok2', 'ok3']);
     });
   });
+
+  group('isUploading', () {
+    test('is true while the upload is queued, false once applied', () async {
+      final executor = _RecordingExecutor();
+      final handler = handlerWith(executor);
+      final operation = _uploadOperation('h1');
+
+      await handler.enqueue(operation);
+      expect(handler.isUploading(operation.file), isTrue);
+
+      await handler.processPendingOperations();
+      expect(handler.isUploading(operation.file), isFalse);
+    });
+
+    test('stays true while the upload keeps failing', () async {
+      final executor = _RecordingExecutor(
+        onExecute: (_) => throw _offline,
+      );
+      final handler = handlerWith(executor);
+      final operation = _uploadOperation('h1');
+
+      await handler.enqueue(operation);
+      await handler.processPendingOperations();
+
+      expect(handler.isUploading(operation.file), isTrue);
+    });
+
+    test('is false once the upload has timed out', () async {
+      final executor = _RecordingExecutor(onExecute: (_) => throw _permanent);
+      final handler = handlerWith(executor);
+      final operation = _uploadOperation('h1');
+
+      await handler.enqueue(operation);
+      for (
+        var attempt = 0;
+        attempt < FileOperationHandler.maxFailedAttempts;
+        attempt++
+      ) {
+        await handler.processPendingOperations();
+      }
+
+      // A timed out operation stays queued forever, waiting for the user. Any
+      // progress indicator asking this would otherwise never stop spinning.
+      expect(await handler.timedOutOperations(), hasLength(1));
+      expect(handler.isUploading(operation.file), isFalse);
+    });
+
+    test('ignores operations that are not uploads', () async {
+      final executor = _RecordingExecutor();
+      final handler = handlerWith(executor);
+      final operation = _downloadOperation('h1');
+
+      await handler.enqueue(operation);
+
+      expect(handler.isUploading(operation.file), isFalse);
+    });
+  });
 }

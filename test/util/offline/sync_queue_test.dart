@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
@@ -184,6 +185,42 @@ void main() {
       await queue.replace(only.withFailedAttempt());
 
       expect(await queue.pending(), isEmpty);
+    });
+  });
+
+  group('in memory (web)', () {
+    late SyncQueue memoryQueue;
+
+    setUp(() => memoryQueue = SyncQueue(persistent: false));
+
+    test('keeps the bytes, the only copy when nothing is cached', () async {
+      final bytes = Uint8List.fromList([1, 2, 3]);
+      await memoryQueue.enqueue(
+        FileOperation<YustFile>(
+          type: FileOperationType.upload,
+          file: YustFile(name: 'a.pdf', hash: 'h1', bytes: bytes)
+            ..storageFolderPath = 'folder',
+        ),
+      );
+
+      expect((await memoryQueue.pending()).single.file.bytes, bytes);
+    });
+
+    test('remove and replace address the same entries', () async {
+      await memoryQueue.enqueue(
+        _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
+      );
+      await memoryQueue.enqueue(
+        _operation(FileOperationType.upload, hash: 'h2', createdAt: _t2),
+      );
+
+      final first = (await memoryQueue.pending()).first;
+      await memoryQueue.replace(first.withFailedAttempt());
+      await memoryQueue.remove((await memoryQueue.pending()).last);
+
+      final operations = await memoryQueue.pending();
+      expect(operations.map((operation) => operation.fileKey), ['h1']);
+      expect(operations.single.failedAttempts, 1);
     });
   });
 }

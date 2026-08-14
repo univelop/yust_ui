@@ -11,6 +11,7 @@ import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/offline/file_list_controller.dart';
+import '../util/offline/file_operation.dart';
 import '../util/offline/offline_file_target.dart';
 import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
@@ -42,23 +43,16 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Linked document attribute. e.g. 'images'
   final String? linkedDocAttribute;
 
-  /// Callback when files change.
+  /// Callback when files change, for a host that has to persist the list itself.
   ///
-  /// The host is expected to persist the list. Not used for file changes on the
-  /// offline-capable path — see [onFilesChangedLocally].
+  /// Not called for file changes of a picker bound to a document
+  /// ([linkedDocPath]): there the offline queue writes each file to that
+  /// document under its own field mask, and the host sees the result through the
+  /// document's stream. Persisting the whole attribute from this picker's
+  /// snapshot as well would drop files another device added while this one was
+  /// offline. It also still drives the non-file callbacks (enabled/disabled
+  /// state, selection) as before.
   final void Function(List<T> files)? onChanged;
-
-  /// Callback when files change while an offline handler is registered.
-  ///
-  /// There the record write has already happened, per file and under its own
-  /// field mask, via the handler's doc writer. The host must therefore only
-  /// refresh its in-memory value and *not* save: persisting the whole attribute
-  /// from this picker's snapshot would drop files another device added while
-  /// this one was offline.
-  ///
-  /// Falls back to [onChanged] when null, which restores the old
-  /// save-the-whole-list behaviour.
-  final void Function(List<T> files)? onFilesChangedLocally;
 
   /// Prefix icon.
   final Widget? prefixIcon;
@@ -133,7 +127,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.linkedDocPath,
     this.linkedDocAttribute,
     this.onChanged,
-    this.onFilesChangedLocally,
     this.prefixIcon,
     this.suffixIcon,
     this.enableDropzone = false,
@@ -275,21 +268,16 @@ abstract class YustFilePickerBaseState<
     setState(() {});
   }
 
-  /// Reports the current online files to the host — the one place either
-  /// callback is fired from.
+  /// Reports a file change to the host on the legacy path.
   ///
-  /// On the controller path the record write is already done, per file, by the
-  /// handler's doc writer, so the host is only asked to refresh its in-memory
-  /// value; routing this through [YustFilePickerBase.onChanged] there would
-  /// save the whole attribute from this picker's snapshot and delete files it
-  /// never saw.
+  /// A no-op once a [FileListController] is active: it reports after every
+  /// mutation itself, and it — not this widget — knows whether the host is the
+  /// one that has to persist the files (see
+  /// [FileListController.onOnlineFilesChanged]).
   @nonVirtual
   void notifyFilesChanged(List<T> files) {
-    if (_controller != null && widget.onFilesChangedLocally != null) {
-      widget.onFilesChangedLocally!(files);
-    } else {
-      widget.onChanged?.call(files);
-    }
+    if (_controller != null) return;
+    widget.onChanged?.call(files);
   }
 
   /// All tracked files (both paths), in the source's storage order.
@@ -883,9 +871,16 @@ abstract class YustFilePickerBaseState<
   void didUpdateWidget(covariant W oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.files != widget.files) {
+    // Compared by content, not by list identity: the host rebuilds this picker
+    // with a freshly built list on every frame, so an identity check would
+    // reconcile (and re-emit) on every unrelated rebuild.
+    if (_filesSignature(oldWidget.files) != _filesSignature(widget.files)) {
       _updateFuture = _reconcileSourceFiles(widget.files);
       setState(() {});
     }
   }
+
+  String _filesSignature(List<T> files) => files
+      .map((file) => '${file.offlineKey}:${file.name}:${file.path}')
+      .join('|');
 }

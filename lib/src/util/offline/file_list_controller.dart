@@ -41,8 +41,8 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Whether the newest file is shown first.
   bool newestFirst;
 
-  /// Notified with the current online files whenever they change, letting a
-  /// host observe the persisted set (e.g. to update a brick value).
+  /// Notified with the current online files when **this host is the one that has
+  /// to persist them** — see [_emitOnlineFiles].
   final void Function(List<T>)? onOnlineFilesChanged;
 
   /// Persisted files from the record snapshot (last [setOnlineFiles]).
@@ -343,5 +343,19 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     YustFile file,
   ) => FileOperation<YustFile>(type: type, file: file);
 
-  void _emitOnlineFiles() => onOnlineFilesChanged?.call(onlineFiles);
+  /// Reports the persisted set to the host — but only for an unlinked target.
+  ///
+  /// A linked target ([OfflineFileTarget.isLinked]) has a document, so the
+  /// queue's own writer persists every file and the host learns about it from
+  /// the document stream. Reporting there would make the host write the same
+  /// list a second time, which rebuilds the picker, which reconciles, which
+  /// reports again — the loop that rebuilt the screen on every keystroke.
+  ///
+  /// Without a document there is no writer, so the host (a picker bound to a
+  /// brick's settings, an email attachment list) is the only thing that can
+  /// persist the files, and it has to be told.
+  void _emitOnlineFiles() {
+    if (target.isLinked) return;
+    onOnlineFilesChanged?.call(onlineFiles);
+  }
 }
