@@ -144,20 +144,18 @@ class YustFileHelpers {
     );
   }
 
-  /// Download and launch a YustFile.
-  ///
-  /// This function will silently return if the given file is not valid.
-  /// If the file is valid, it will try to generate a download URL and then download
-  /// and launch the file via this generated URL.
+  /// Hands [file] to the platform, downloading it unless the device already
+  /// holds its current content.
   Future<void> downloadAndLaunchYustFile({
     required BuildContext context,
     required YustFile file,
   }) async {
     if (!file.isValid()) return;
 
-    // The on-device copy first: it is the only source while offline, and the
-    // same bytes the viewer already shows.
-    final devicePath = await OfflineStorage().pathForFile(file);
+    // A file needs a hash for its cached copy to be known current.
+    final devicePath = file.hash.isEmpty
+        ? null
+        : await _offlineStorage.resolvePath(file.byteKey);
     if (devicePath != null) {
       file.devicePath = devicePath;
       if (!context.mounted) return;
@@ -173,16 +171,14 @@ class YustFileHelpers {
       return;
     }
 
-    // ignore: deprecated_member_use
-    String? url = file.url;
-
-    if (Yust.fileAccessService.generateDownloadUrl != null) {
-      url = await Yust.fileAccessService.generateDownloadUrl!(file);
-    }
-
+    final generateDownloadUrl = Yust.fileAccessService.generateDownloadUrl;
+    final url = generateDownloadUrl != null
+        ? await generateDownloadUrl(file)
+        // ignore: deprecated_member_use
+        : file.url;
     if (url == null || !context.mounted) return;
 
-    await YustUi.fileHelpers.downloadAndLaunchFile(
+    await downloadAndLaunchFile(
       context: context,
       url: url,
       name: file.name!,
@@ -251,18 +247,6 @@ class YustFileHelpers {
   }
 
   /// Whether [file] cannot be opened from anywhere.
-  ///
-  /// A file is broken only when there is nowhere to read it from: it has no
-  /// usable name, no Storage location, and no copy on this device or in memory.
-  ///
-  /// Deliberately *not* keyed on `YustFile.url`: that field is deprecated and
-  /// "will soon be null for valid files", so testing it flagged every
-  /// path-addressed file as broken on web. [YustFile.isValid] is yust's own
-  /// notion of addressability (name plus a `path` or `url`) and follows the
-  /// migration.
-  ///
-  /// Missing bytes on the device is not brokenness — the file simply has to be
-  /// fetched. That is what the pending / not-yet-uploaded marker is for.
   static bool isFileBroken(YustFile file) {
     final name = file.name;
     if (name == null || name.isEmpty) return true;

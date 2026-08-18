@@ -7,7 +7,12 @@ import 'package:yust_ui/src/util/offline/upload_manager.dart';
 
 FileOperation<YustFile> _metadataOp() => FileOperation<YustFile>(
   type: FileOperationType.updateMetadata,
-  file: YustFile(name: 'logo.png', hash: 'h1', setCreatedAtToNow: false),
+  file: YustFile(
+    name: 'logo.png',
+    hash: 'h1',
+    storageFolderPath: 'records/rec1',
+    setCreatedAtToNow: false,
+  ),
 );
 
 FileOperation<YustFile> _deleteOp() => FileOperation<YustFile>(

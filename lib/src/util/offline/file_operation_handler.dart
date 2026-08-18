@@ -103,22 +103,47 @@ class FileOperationHandler extends ChangeNotifier {
 
   /// Appends [operation] and starts a drain, returning as soon as it is durably
   /// queued. The transfer itself is not awaited.
+  ///
+  /// Throws [ArgumentError] for a file the executor could not address.
   Future<void> enqueue(FileOperation<YustFile> operation) async {
+    _assertAddressable(operation);
     await queue.enqueue(operation);
     await _notifyQueueChanged();
     unawaited(processPendingOperations());
   }
 
-  /// Appends every operation in [operations], then starts one drain.
+  /// Appends every operation in [operations], then starts one drain. Rejects
+  /// the whole batch if any operation is unaddressable.
   Future<void> enqueueAll(Iterable<FileOperation<YustFile>> operations) async {
-    var enqueued = false;
-    for (final operation in operations) {
+    final batch = operations.toList();
+    batch.forEach(_assertAddressable);
+    for (final operation in batch) {
       await queue.enqueue(operation);
-      enqueued = true;
     }
-    if (!enqueued) return;
+    if (batch.isEmpty) return;
     await _notifyQueueChanged();
     unawaited(processPendingOperations());
+  }
+
+  /// Rejects an operation whose file the executor could not act on.
+  ///
+  /// [ArgumentError] because [isPermanentOperationError] counts it as permanent;
+  /// a `TypeError` from a null `!` counts as transient and retries forever.
+  void _assertAddressable(FileOperation<YustFile> operation) {
+    final file = operation.file;
+    if (!file.hasName) {
+      throw ArgumentError('Cannot queue a file without a name.');
+    }
+    // Writes need the Storage folder; a download can read from `path`.
+    final addressable = operation.type == FileOperationType.download
+        ? file.hasStorageLocation
+        : file.storageFolderPath?.isNotEmpty == true;
+    if (!addressable) {
+      throw ArgumentError(
+        'Cannot queue ${operation.type.name} of "${file.name}" without a '
+        'storage location.',
+      );
+    }
   }
 
   /// Drops a still-pending [operation] without applying it, e.g. a file deleted

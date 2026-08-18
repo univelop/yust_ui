@@ -112,10 +112,7 @@ void main() {
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(
-        operation.toJson(),
-        YustFile.fromJson,
-      );
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.id, operation.id);
       expect(restored.type, FileOperationType.download);
@@ -130,10 +127,7 @@ void main() {
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(
-        operation.toJson(),
-        YustFile.fromJson,
-      );
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.type, FileOperationType.upload);
       expect(restored.file.name, 'plan.pdf');
@@ -158,10 +152,7 @@ void main() {
           createdAt: _createdAt,
         );
 
-        final restored = FileOperation.fromJson<YustFile>(
-          operation.toJson(),
-          YustFile.fromJson,
-        );
+        final restored = FileOperation.fromJson<YustFile>(operation.toJson());
 
         expect(restored.type, FileOperationType.rename);
         expect(restored.file.name, 'original.pdf');
@@ -178,15 +169,79 @@ void main() {
           createdAt: _createdAt,
         );
 
-        final restored = FileOperation.fromJson<YustFile>(
-          operation.toJson(),
-          YustFile.fromJson,
-        );
+        final restored = FileOperation.fromJson<YustFile>(operation.toJson());
 
         expect(restored.type, FileOperationType.delete);
         expect(restored.file.devicePath, isNull);
       },
     );
+
+    test('round-trips createThumbnail, which the record write reads', () {
+      // Regression: the old sidecar omitted this field.
+      final file = _file(hash: 'h1')..createThumbnail = true;
+      final operation = FileOperation<YustFile>(
+        type: FileOperationType.upload,
+        file: file,
+        createdAt: _createdAt,
+      );
+
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+
+      expect(restored.file.createThumbnail, isTrue);
+    });
+
+    test('round-trips the hash, which keys both the bytes and the entry', () {
+      final operation = FileOperation<YustFile>(
+        type: FileOperationType.upload,
+        file: _file(hash: 'content-hash'),
+        createdAt: _createdAt,
+      );
+
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+
+      expect(restored.file.hash, 'content-hash');
+      expect(restored.file.byteKey, 'content-hash');
+    });
+
+    test('round-trips a download for a file addressed only by path', () {
+      // The shape SyncManager queues for a file uploaded elsewhere.
+      final operation = FileOperation<YustFile>(
+        type: FileOperationType.download,
+        file: YustFile(
+          name: 'plan.pdf',
+          hash: 'h1',
+          path: 'records/abc/files',
+          setCreatedAtToNow: false,
+        ),
+        createdAt: _createdAt,
+      );
+
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+
+      expect(restored.file.path, 'records/abc/files');
+      expect(restored.file.storageFolderPath, isNull);
+      expect(restored.file.devicePath, isNull);
+      expect(restored.file.hasStorageLocation, isTrue);
+    });
+
+    test('round-trips an unlinked file, which has no document behind it', () {
+      final operation = FileOperation<YustFile>(
+        type: FileOperationType.upload,
+        file: YustFile(
+          name: 'logo.png',
+          hash: 'h1',
+          storageFolderPath: 'workspaces/w1/settings',
+          setCreatedAtToNow: false,
+        ),
+        createdAt: _createdAt,
+      );
+
+      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+
+      expect(restored.file.storageFolderPath, 'workspaces/w1/settings');
+      expect(restored.file.linkedDocPath, isNull);
+      expect(restored.file.linkedDocAttribute, isNull);
+    });
 
     test(
       'round-trips an image operation preserving its subtype and location',
@@ -200,12 +255,11 @@ void main() {
         );
 
         final json = operation.toJson();
-        expect(json['fileType'], YustImage.type);
+        // The subtype rides the file's own `type`, not a second key.
+        expect(json['fileType'], isNull);
+        expect((json['file'] as Map)['type'], YustImage.type);
 
-        final restored = FileOperation.fromJson<YustImage>(
-          json,
-          YustImage.fromJson,
-        );
+        final restored = FileOperation.fromJson<YustImage>(json);
 
         expect(restored.file, isA<YustImage>());
         expect(restored.file.location?.latitude, 48.1);

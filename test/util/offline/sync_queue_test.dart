@@ -17,7 +17,12 @@ FileOperation<YustFile> _operation(
   DateTime? createdAt,
 }) => FileOperation<YustFile>(
   type: type,
-  file: YustFile(name: name ?? '$hash.pdf', hash: hash, setCreatedAtToNow: false),
+  file: YustFile(
+    name: name ?? '$hash.pdf',
+    hash: hash,
+    storageFolderPath: 'records/rec1',
+    setCreatedAtToNow: false,
+  ),
   newName: newName,
   createdAt: createdAt,
 );
@@ -204,7 +209,12 @@ void main() {
       await memoryQueue.enqueue(
         FileOperation<YustFile>(
           type: FileOperationType.upload,
-          file: YustFile(name: 'a.pdf', hash: 'h1', bytes: bytes)
+          file: YustFile(
+            name: 'a.pdf',
+            hash: 'h1',
+            bytes: bytes,
+            storageFolderPath: 'records/rec1',
+          )
             ..storageFolderPath = 'folder',
         ),
       );

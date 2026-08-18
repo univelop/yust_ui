@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
-import '../../extensions/string_translate_extension.dart';
-import '../../generated/locale_keys.g.dart';
 import 'download_manager.dart';
 import 'file_operation.dart';
 import 'file_operation_handler.dart';

@@ -35,7 +35,12 @@ FileOperation<YustFile> _uploadOperation(String hash, {String? id}) =>
     FileOperation<YustFile>(
       id: id,
       type: FileOperationType.upload,
-      file: YustFile(name: '$hash.pdf', hash: hash, setCreatedAtToNow: false),
+      file: YustFile(
+        name: '$hash.pdf',
+        hash: hash,
+        storageFolderPath: 'records/rec1',
+        setCreatedAtToNow: false,
+      ),
     );
 
 /// What being offline actually throws, as opposed to a permanent failure.
@@ -55,7 +60,12 @@ FileOperation<YustFile>? _queued(
 FileOperation<YustFile> _downloadOperation(String hash) =>
     FileOperation<YustFile>(
       type: FileOperationType.download,
-      file: YustFile(name: '$hash.pdf', hash: hash, setCreatedAtToNow: false),
+      file: YustFile(
+        name: '$hash.pdf',
+        hash: hash,
+        storageFolderPath: 'records/rec1',
+        setCreatedAtToNow: false,
+      ),
     );
 
 /// Lets an unawaited drain reach its next suspension point. `Duration.zero` is
@@ -598,6 +608,75 @@ void main() {
       await handler.enqueue(operation);
 
       expect(handler.isUploading(operation.file), isFalse);
+    });
+  });
+
+  group('rejects an operation the executor could not address', () {
+    FileOperation<YustFile> operationOn(
+      FileOperationType type,
+      YustFile file,
+    ) => FileOperation<YustFile>(type: type, file: file);
+
+    test('an upload with no storage folder', () async {
+      final handler = handlerWith(_RecordingExecutor());
+      final operation = operationOn(
+        FileOperationType.upload,
+        YustFile(name: 'a.pdf', hash: 'h1', setCreatedAtToNow: false),
+      );
+
+      // Otherwise `storageFolderPath!` throws a transient TypeError forever.
+      await expectLater(
+        handler.enqueue(operation),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await handler.pending(), isEmpty);
+    });
+
+    test('a file with no name', () async {
+      final handler = handlerWith(_RecordingExecutor());
+      final operation = operationOn(
+        FileOperationType.upload,
+        YustFile(storageFolderPath: 'records/rec1', setCreatedAtToNow: false),
+      );
+
+      await expectLater(
+        handler.enqueue(operation),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await handler.pending(), isEmpty);
+    });
+
+    test('but accepts a download addressed only by path', () async {
+      final handler = handlerWith(_RecordingExecutor());
+      final operation = operationOn(
+        FileOperationType.download,
+        YustFile(
+          name: 'a.pdf',
+          hash: 'h1',
+          path: 'records/rec1',
+          setCreatedAtToNow: false,
+        ),
+      );
+
+      await handler.enqueue(operation);
+
+      expect(await handler.pending(), hasLength(1));
+    });
+
+    test('an unaddressable operation rejects the whole batch', () async {
+      final handler = handlerWith(_RecordingExecutor());
+
+      await expectLater(
+        handler.enqueueAll([
+          _uploadOperation('h1'),
+          operationOn(
+            FileOperationType.upload,
+            YustFile(name: 'a.pdf', hash: 'h2', setCreatedAtToNow: false),
+          ),
+        ]),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await handler.pending(), isEmpty);
     });
   });
 }

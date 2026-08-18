@@ -123,41 +123,32 @@ class FileOperation<T extends YustFile> {
     failedAttempts: failedAttempts,
   );
 
-  /// Serialises the operation, adding the file's addressing fields that
-  /// [YustFile.toJson] drops so the operation is replayable after a restart.
+  /// Serialises the operation, the file via [YustFile.toLocalJson].
+  ///
+  /// `type` appears at both levels — the operation's here, the file's subtype
+  /// nested. Flattening the map would collide them.
   Map<String, dynamic> toJson() => {
     'id': id,
     'type': type.name,
-    'file': file.toJson(),
-    'fileType': file is YustImage ? YustImage.type : YustFile.type,
-    'devicePath': file.devicePath,
-    'storageFolderPath': file.storageFolderPath,
-    'linkedDocPath': file.linkedDocPath,
-    'linkedDocAttribute': file.linkedDocAttribute,
-    'storesFilesAsMap': file.linkedDocStoresFilesAsMap,
     'newName': newName,
     'fileKey': fileKey,
     'failedAttempts': failedAttempts,
     'createdAt': createdAt.toIso8601String(),
+    'file': file.toLocalJson(),
   };
 
-  /// Rebuilds an operation. [fileFromJson] picks the concrete file subtype
-  /// (`YustFile.fromJson` or `YustImage.fromJson`); the queue supplies it.
-  /// Addressing is restored first, so a missing [fileKey] recomputes correctly.
+  /// Rebuilds an operation, taking the file's subtype from its own `type`.
   static FileOperation<T> fromJson<T extends YustFile>(
     Map<String, dynamic> json,
-    T Function(Map<String, dynamic>) fileFromJson,
   ) {
-    final file = fileFromJson(json['file'] as Map<String, dynamic>);
-    file.devicePath = json['devicePath'] as String?;
-    file.storageFolderPath = json['storageFolderPath'] as String?;
-    file.linkedDocPath = json['linkedDocPath'] as String?;
-    file.linkedDocAttribute = json['linkedDocAttribute'] as String?;
-    file.linkedDocStoresFilesAsMap = json['storesFilesAsMap'] as bool?;
+    final fileJson = Map<String, dynamic>.from(json['file'] as Map);
+    final file = fileJson['type'] == YustImage.type
+        ? YustImage.fromLocalJson(fileJson)
+        : YustFile.fromLocalJson(fileJson);
     return FileOperation<T>(
       id: json['id'] as String?,
       type: FileOperationType.values.byName(json['type'] as String),
-      file: file,
+      file: file as T,
       newName: json['newName'] as String?,
       fileKey: json['fileKey'] as String?,
       failedAttempts: json['failedAttempts'] as int? ?? 0,

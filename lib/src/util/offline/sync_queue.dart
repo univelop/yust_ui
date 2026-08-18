@@ -122,13 +122,6 @@ class SyncQueue {
   Future<File> _file() async =>
       File('${(await _rootProvider()).path}/$_fileName');
 
-  /// Rebuilds an operation, picking the concrete file subtype from the stored
-  /// `fileType` so a [YustImage]'s extra fields survive.
-  FileOperation<YustFile> _decode(Map<String, dynamic> json) {
-    final YustFile Function(Map<String, dynamic>) fileFromJson =
-        json['fileType'] == YustImage.type
-        ? YustImage.fromJson
-        : YustFile.fromJson;
-    return FileOperation.fromJson<YustFile>(json, fileFromJson);
-  }
+  FileOperation<YustFile> _decode(Map<String, dynamic> json) =>
+      FileOperation.fromJson<YustFile>(json);
 }

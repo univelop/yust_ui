@@ -33,6 +33,23 @@ const _target = OfflineFileTarget(
 /// the one that has to hear about them.
 const _unlinkedTarget = OfflineFileTarget(storageFolderPath: 'settings/brick1');
 
+/// A second unlinked target, as a FileBrick and an ImageBrick on one record
+/// spec produce.
+const _otherUnlinkedTarget = OfflineFileTarget(
+  storageFolderPath: 'settings/brick2',
+);
+
+/// A picked file for [target], which may carry no document.
+YustFile _pickedFileFor(OfflineFileTarget target, String name) => YustFile(
+  name: name,
+  bytes: Uint8List.fromList(name.codeUnits),
+  storageFolderPath: target.storageFolderPath,
+  linkedDocPath: target.linkedDocPath,
+  linkedDocAttribute: target.linkedDocAttribute,
+  path: target.storageFolderPath,
+  setCreatedAtToNow: false,
+);
+
 /// Stands in for the real `UploadManager`: when [succeed] it mutates the operation's
 /// file the way an upload does — stamping `path` and `url` — before reporting
 /// success, so the controller sees the same post-upload state it would in
@@ -550,5 +567,79 @@ void main() {
         expect(controller.onlineFiles.map((f) => f.name), ['plan.pdf']);
       },
     );
+  });
+
+  group('two unlinked targets do not claim each other\'s operations', () {
+    test('a pending upload shows only in the picker that made it', () async {
+      executor.succeed = false;
+      final owner = buildController(target: _unlinkedTarget);
+      final other = buildController(target: _otherUnlinkedTarget);
+      await owner.setOnlineFiles([]);
+      await other.setOnlineFiles([]);
+
+      await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
+      await handler.processPendingOperations();
+      await owner.settled;
+      await other.settled;
+
+      expect(owner.files.map((file) => file.name), ['own.pdf']);
+      expect(other.files, isEmpty);
+    });
+
+    test('an applied upload is promoted only into its own target', () async {
+      final owner = buildController(target: _unlinkedTarget);
+      final other = buildController(target: _otherUnlinkedTarget);
+      await owner.setOnlineFiles([]);
+      await other.setOnlineFiles([]);
+
+      await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
+      await handler.processPendingOperations();
+      await owner.settled;
+      await other.settled;
+
+      expect(owner.onlineFiles.map((file) => file.name), ['own.pdf']);
+      expect(other.onlineFiles, isEmpty);
+    });
+
+    test('the other host is never asked to persist a foreign file', () async {
+      final ownerEmissions = <List<String>>[];
+      final otherEmissions = <List<String>>[];
+      final owner = buildController(
+        target: _unlinkedTarget,
+        onOnlineFilesChanged: (files) =>
+            ownerEmissions.add(files.map((file) => file.name!).toList()),
+      );
+      final other = buildController(
+        target: _otherUnlinkedTarget,
+        onOnlineFilesChanged: (files) =>
+            otherEmissions.add(files.map((file) => file.name!).toList()),
+      );
+      await owner.setOnlineFiles([]);
+      await other.setOnlineFiles([]);
+
+      await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
+      await handler.processPendingOperations();
+      await owner.settled;
+      await other.settled;
+
+      // Otherwise the foreign file is written into the other brick's value.
+      expect(ownerEmissions.last, ['own.pdf']);
+      expect(otherEmissions.every((emission) => emission.isEmpty), isTrue);
+    });
+
+    test('two controllers on the same target still share', () async {
+      executor.succeed = false;
+      final first = buildController(target: _unlinkedTarget);
+      final second = buildController(target: _unlinkedTarget);
+      await first.setOnlineFiles([]);
+      await second.setOnlineFiles([]);
+
+      await first.add(_pickedFileFor(_unlinkedTarget, 'shared.pdf'));
+      await handler.processPendingOperations();
+      await first.settled;
+      await second.settled;
+
+      expect(second.files.map((file) => file.name), ['shared.pdf']);
+    });
   });
 }

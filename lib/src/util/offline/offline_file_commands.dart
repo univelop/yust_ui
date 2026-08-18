@@ -51,7 +51,7 @@ class OfflineFileCommands {
   /// [YustFile.devicePath]. Stays null on web.
   Future<void> writeBytes(YustFile file) async {
     final key = file.byteKey;
-    if (key.isEmpty || file.name == null) return;
+    if (key.isEmpty || !file.hasName) return;
     file.devicePath = await _storage.write(
       key: key,
       name: file.name!,

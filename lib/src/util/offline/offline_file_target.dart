@@ -32,8 +32,10 @@ class OfflineFileTarget {
   /// cached offline and their metadata written back.
   bool get isLinked => linkedDocPath != null && linkedDocAttribute != null;
 
-  /// Whether [file] belongs to this target (same doc + attribute).
+  /// Whether [file] belongs to this target. The Storage folder is part of the
+  /// identity because two unlinked targets share a null document address.
   bool owns(YustFile file) =>
+      file.storageFolderPath == storageFolderPath &&
       file.linkedDocPath == linkedDocPath &&
       file.linkedDocAttribute == linkedDocAttribute;
 
