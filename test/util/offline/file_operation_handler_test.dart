@@ -9,8 +9,9 @@ import 'package:yust_ui/src/util/offline/file_operation.dart';
 import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
 import 'package:yust_ui/src/util/offline/sync_queue.dart';
 
-/// Records every operation it is handed; an optional [onExecute] runs first so a test
-/// can enqueue more work mid-pass, park the pass, or force a failure.
+/// Records the name of every operation it is handed; an optional [onExecute]
+/// runs first so a test can enqueue more work mid-pass, park the pass, or force
+/// a failure.
 class _RecordingExecutor implements FileOperationExecutor {
   _RecordingExecutor({this.onExecute});
 
@@ -26,7 +27,7 @@ class _RecordingExecutor implements FileOperationExecutor {
   @override
   Future<void> execute(FileOperation<YustFile> operation) async {
     await onExecute?.call(operation);
-    executed.add(operation.fileKey);
+    executed.add(operation.file.name!);
   }
 }
 
@@ -109,7 +110,7 @@ void main() {
       ]);
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h1', 'h2']);
+      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.pending(), isEmpty);
     });
 
@@ -118,7 +119,7 @@ void main() {
       var injected = false;
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1' && !injected) {
+          if (operation.file.name == 'h1.pdf' && !injected) {
             injected = true;
             await handler.enqueue(_uploadOperation('h2'));
           }
@@ -129,7 +130,7 @@ void main() {
       await handler.enqueue(_uploadOperation('h1'));
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h1', 'h2']);
+      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.pending(), isEmpty);
     });
   });
@@ -145,13 +146,13 @@ void main() {
       await handler.enqueue(_uploadOperation('h1'));
 
       expect(executor.executed, isEmpty);
-      expect((await queue.pending()).map((operation) => operation.fileKey), [
-        'h1',
+      expect((await queue.pending()).map((operation) => operation.file.name), [
+        'h1.pdf',
       ]);
 
       gate.complete();
       await handler.processPendingOperations();
-      expect(executor.executed, ['h1']);
+      expect(executor.executed, ['h1.pdf']);
     });
 
     test('a failing executor does not surface out of enqueue', () async {
@@ -171,7 +172,7 @@ void main() {
     test('the operations behind a failing one are still applied', () async {
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1') throw _offline;
+          if (operation.file.name == 'h1.pdf') throw _offline;
         },
       );
       final handler = handlerWith(executor);
@@ -182,9 +183,9 @@ void main() {
       ]);
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h2']);
-      expect((await queue.pending()).map((operation) => operation.fileKey), [
-        'h1',
+      expect(executor.executed, ['h2.pdf']);
+      expect((await queue.pending()).map((operation) => operation.file.name), [
+        'h1.pdf',
       ]);
     });
 
@@ -204,7 +205,7 @@ void main() {
       ]);
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h2']);
+      expect(executor.executed, ['h2.pdf']);
     });
 
     test('a pass in which everything fails stops rather than spins', () async {
@@ -234,7 +235,7 @@ void main() {
       var failedAttempts = 0;
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1') return gate.future;
+          if (operation.file.name == 'h1.pdf') return gate.future;
           failedAttempts++;
           // Fails on its one try of the first pass, succeeds afterwards.
           if (failedAttempts <= 1) throw _offline;
@@ -254,7 +255,7 @@ void main() {
       await handler.processPendingOperations();
 
       // Backoff never fires here, so only a honoured reconnect can drain h2.
-      expect(executor.executed, ['h1', 'h2']);
+      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.pending(), isEmpty);
     });
 
@@ -265,7 +266,7 @@ void main() {
       var failedAttempts = 0;
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1') return gate.future;
+          if (operation.file.name == 'h1.pdf') return gate.future;
           failedAttempts++;
           throw _offline;
         },
@@ -375,7 +376,7 @@ void main() {
     test('another file passes the failing one in the same pass', () async {
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1') throw _offline;
+          if (operation.file.name == 'h1.pdf') throw _offline;
         },
       );
       final handler = handlerWith(executor);
@@ -387,7 +388,7 @@ void main() {
       ]);
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h2']);
+      expect(executor.executed, ['h2.pdf']);
     });
 
     test('the held operation runs once its head succeeds', () async {
@@ -407,7 +408,7 @@ void main() {
       failFirst = false;
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h1', 'h1']);
+      expect(executor.executed, ['h1.pdf', 'h1.pdf']);
       expect(await queue.pending(), isEmpty);
     });
   });
@@ -468,7 +469,7 @@ void main() {
     test('a timed out operation holds its own file but not another', () async {
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey == 'h1') throw _permanent;
+          if (operation.file.name == 'h1.pdf') throw _permanent;
         },
       );
       final handler = handlerWith(executor);
@@ -483,7 +484,7 @@ void main() {
       await handler.enqueue(_uploadOperation('h2', id: 'other'));
       await handler.processPendingOperations();
 
-      expect(executor.executed, ['h2']);
+      expect(executor.executed, ['h2.pdf']);
       expect((await queue.pending()).map((operation) => operation.id), [
         'timed out',
         'behind',
@@ -510,7 +511,7 @@ void main() {
         failing = false;
         await handler.retryTimedOutOperations();
 
-        expect(executor.executed, ['h1']);
+        expect(executor.executed, ['h1.pdf']);
         expect(await queue.pending(), isEmpty);
       },
     );
@@ -519,7 +520,7 @@ void main() {
       var failedAttempts = 0;
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.fileKey != 'bad') return;
+          if (operation.file.name != 'bad.pdf') return;
           failedAttempts++;
           throw _offline;
         },
@@ -539,7 +540,7 @@ void main() {
       await handler.processPendingOperations();
 
       expect(failedAttempts, 1);
-      expect(executor.executed, ['ok1', 'ok2', 'ok3']);
+      expect(executor.executed, ['ok1.pdf', 'ok2.pdf', 'ok3.pdf']);
     });
   });
 

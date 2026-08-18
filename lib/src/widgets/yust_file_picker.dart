@@ -107,7 +107,10 @@ class YustFilePickerState
       files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildFile(context, file),
       loadMoreButton: buildLoadMoreButton(context),
-      totalFileCount: widget.files.length,
+      // Counted off the tracked files, not the ones handed in: those are the
+      // record's, so a file deleted offline would still be counted and the
+      // picker would offer to load a file it is no longer showing.
+      totalFileCount: sourceFiles.length,
     );
   }
 
@@ -333,7 +336,9 @@ class YustFilePickerState
       );
     }
     final showDownload = widget.tapMode != YustFileTapMode.share;
-    final showRename = enabled && !file.cached;
+    // Waits for the upload, not for the on-device copy: that copy is durable, so
+    // gating on `cached` would hide the action for ever.
+    final showRename = enabled && !isAwaitingUpload(file);
     return PopupMenuButton<_FileMenuAction>(
       icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
       onSelected: (action) {
@@ -426,7 +431,9 @@ class YustFilePickerState
     return IconButton(
       icon: const Icon(Icons.edit),
       color: Theme.of(context).colorScheme.primary,
-      onPressed: enabled && !file.cached ? () => _renameFile(file) : null,
+      onPressed: enabled && !isAwaitingUpload(file)
+          ? () => _renameFile(file)
+          : null,
     );
   }
 
@@ -558,7 +565,7 @@ class YustFilePickerState
     );
     if (confirmed == true) {
       try {
-        await _deleteFileAndReportChange(yustFile);
+        await deleteSourceFile(yustFile);
         if (mounted) {
           setState(() {});
         }
@@ -570,13 +577,6 @@ class YustFilePickerState
           ),
         );
       }
-    }
-  }
-
-  Future<void> _deleteFileAndReportChange(YustFile yustFile) async {
-    await deleteSourceFile(yustFile);
-    if (!yustFile.cached) {
-      notifyFilesChanged(sourceOnlineFiles);
     }
   }
 
@@ -602,32 +602,10 @@ class YustFilePickerState
     final newFileNameWithExtension =
         '$newFileName.${yustFile.getFilenameExtension()}';
 
-    final viaController = renameViaController(
-      yustFile,
-      newFileNameWithExtension,
-    );
-    if (viaController != null) {
-      await viaController;
-    } else {
-      await _reuploadFileForRename(yustFile, newFileNameWithExtension);
-      await _deleteFileAndReportChange(yustFile);
-    }
+    await renameSourceFile(yustFile, newFileNameWithExtension);
 
     clearFileProcessing(yustFile);
     setState(() {});
-  }
-
-  Future<void> _reuploadFileForRename(
-    YustFile yustFile,
-    String newFileName,
-  ) async {
-    final bytes = await Yust.fileService.downloadFile(
-      path: yustFile.storageFolderPath ?? '',
-      name: yustFile.name ?? '',
-    );
-
-    final newFile = await processFile(newFileName, yustFile.file, bytes);
-    await uploadFile(file: newFile);
   }
 
   bool _isNewFileNameValid(String? filename, YustFile oldFile) {

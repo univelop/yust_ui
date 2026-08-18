@@ -13,7 +13,6 @@ import '../generated/locale_keys.g.dart';
 import '../util/offline/file_list_controller.dart';
 import '../util/offline/file_operation.dart';
 import '../util/offline/offline_file_target.dart';
-import '../util/yust_file_handler.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
@@ -203,11 +202,8 @@ abstract class YustFilePickerBaseState<
 >
     extends State<W>
     with AutomaticKeepAliveClientMixin {
-  /// Legacy path: built only when [YustFilePickerBase.documentWriter] is null.
-  YustFileHandler? _fileHandler;
-
-  /// New path: built (and owned) here when a [documentWriter] is supplied.
-  FileListController<T>? _controller;
+  /// The file list, backed by the app's shared offline queue.
+  late final FileListController<T> _controller;
 
   late bool _enabled;
   bool _selecting = false;
@@ -223,103 +219,58 @@ abstract class YustFilePickerBaseState<
     _enabled = (widget.onChanged != null && !widget.readOnly);
     currentDisplayCount = widget.previewCount;
 
-    final handler = YustUi.fileOperationHandler;
-    if (handler != null) {
-      _controller = FileListController<T>(
-        handler: handler,
-        target: OfflineFileTarget(
-          storageFolderPath: widget.storageFolderPath,
-          linkedDocPath: widget.linkedDocPath,
-          linkedDocAttribute: widget.linkedDocAttribute,
-          storesFilesAsMap: widget.linkedDocStoresFilesAsMap,
-        ),
-        newestFirst: widget.newestFirst,
-        onOnlineFilesChanged: notifyFilesChanged,
-      )..addListener(_onControllerChanged);
-      _updateFuture = _controller!.setOnlineFiles(widget.files);
-    } else {
-      _fileHandler = YustUi.fileHandlerManager.createFileHandler(
+    _controller = FileListController<T>(
+      handler: YustUi.fileOperationHandler,
+      target: OfflineFileTarget(
         storageFolderPath: widget.storageFolderPath,
-        linkedDocAttribute: widget.linkedDocAttribute,
         linkedDocPath: widget.linkedDocPath,
-        newestFirst: widget.newestFirst,
-        onFileUploaded: () {
-          if (mounted) {
-            setState(() {});
-          }
-          if (currentDisplayCount < _fileHandler!.getFiles().length) {
-            currentDisplayCount += widget.previewCount;
-          }
-          widget.onChanged!(convertFiles(_fileHandler!.getOnlineFiles()));
-        },
-      );
-      _updateFuture = _fileHandler!.updateFiles(widget.files, loadFiles: true);
-    }
+        linkedDocAttribute: widget.linkedDocAttribute,
+        storesFilesAsMap: widget.linkedDocStoresFilesAsMap,
+      ),
+      newestFirst: widget.newestFirst,
+      // Only reached for a target with no document behind it; a linked target is
+      // persisted by the queue's own writer. See [FileListController].
+      onOnlineFilesChanged: (files) => widget.onChanged?.call(files),
+    )..addListener(_onControllerChanged);
+    _updateFuture = _controller.setOnlineFiles(widget.files);
   }
 
-  /// Rebuilds when the controller's file list changes (upload completes, cache
-  /// resolves). The controller notifies its own [onOnlineFilesChanged] for
-  /// persistence; here we only refresh the UI and grow the display window.
+  /// Rebuilds when the file list changes. The controller reports to the host
+  /// itself; this only refreshes the UI and grows the display window.
   void _onControllerChanged() {
     if (!mounted) return;
-    if (currentDisplayCount < _controller!.files.length) {
+    if (currentDisplayCount < _controller.files.length) {
       currentDisplayCount += widget.previewCount;
     }
     setState(() {});
   }
 
-  /// Reports a file change to the host on the legacy path.
-  ///
-  /// A no-op once a [FileListController] is active: it reports after every
-  /// mutation itself, and it — not this widget — knows whether the host is the
-  /// one that has to persist the files (see
-  /// [FileListController.onOnlineFilesChanged]).
-  @nonVirtual
-  void notifyFilesChanged(List<T> files) {
-    if (_controller != null) return;
-    widget.onChanged?.call(files);
-  }
+  /// All tracked files, in the source's storage order.
+  List<T> get sourceFiles => _controller.files;
 
-  /// All tracked files (both paths), in the source's storage order.
-  List<T> get sourceFiles => _controller != null
-      ? _controller!.files
-      : convertFiles(_fileHandler!.getFiles());
+  /// Files already persisted online.
+  List<T> get sourceOnlineFiles => _controller.onlineFiles;
 
-  /// Files already persisted online (both paths).
-  List<T> get sourceOnlineFiles => _controller != null
-      ? _controller!.onlineFiles
-      : convertFiles(_fileHandler!.getOnlineFiles());
+  /// Adds and uploads [file].
+  Future<void> addSourceFile(T file) => _controller.add(file);
 
-  /// Adds and uploads [file] through whichever backend is active.
-  Future<void> addSourceFile(T file) => _controller != null
-      ? _controller!.add(file)
-      : _fileHandler!.addFile(file);
-
-  /// Deletes [file] through whichever backend is active.
-  Future<void> deleteSourceFile(T file) => _controller != null
-      ? _controller!.delete(file)
-      : _fileHandler!.deleteFile(file);
+  /// Deletes [file].
+  Future<void> deleteSourceFile(T file) => _controller.delete(file);
 
   /// Replaces [file]'s bytes (e.g. a re-drawn image) and re-uploads.
   Future<void> replaceSourceFileBytes(T file, Uint8List bytes) =>
-      _controller != null
-      ? _controller!.replaceBytes(file, bytes)
-      : _fileHandler!.updateFile(file, bytes: bytes);
+      _controller.replaceBytes(file, bytes);
 
-  /// Renames [file] to [newName] through the controller, or null on the legacy
-  /// path (the caller falls back to its own reupload flow). The controller
-  /// enqueues a single rename operation instead of a download + reupload + delete.
-  Future<void>? renameViaController(T file, String newName) =>
-      _controller?.rename(file, newName);
-
-  Future<void> _reconcileSourceFiles(List<T> files) => _controller != null
-      ? _controller!.setOnlineFiles(files)
-      : _fileHandler!.updateFiles(files, loadFiles: true);
+  /// Renames [file] to [newName]: one queued rename operation, rather than a
+  /// download + reupload + delete.
+  Future<void> renameSourceFile(T file, String newName) =>
+      _controller.rename(file, newName);
 
   @override
   void dispose() {
-    _controller?.removeListener(_onControllerChanged);
-    _controller?.dispose();
+    _controller
+      ..removeListener(_onControllerChanged)
+      ..dispose();
     super.dispose();
   }
 
@@ -327,18 +278,13 @@ abstract class YustFilePickerBaseState<
   Widget build(BuildContext context) {
     super.build(context);
     _enabled = widget.onChanged != null && !widget.readOnly;
-    _fileHandler?.newestFirst = widget.newestFirst;
-    _controller?.newestFirst = widget.newestFirst;
+    _controller.newestFirst = widget.newestFirst;
 
     return FutureBuilder(
       future: _updateFuture,
       builder: (context, snapshot) => _buildFilePicker(context),
     );
   }
-
-  /// Get the legacy file handler. Null on the new controller-backed path;
-  /// subclasses should prefer [sourceFiles] / [addSourceFile] / etc.
-  YustFileHandler? get fileHandler => _fileHandler;
 
   /// Whether the file picker is enabled.
   bool get enabled => _enabled;
@@ -419,17 +365,11 @@ abstract class YustFilePickerBaseState<
   /// Persists a metadata change the caller already applied to [files], then
   /// rebuilds.
   ///
-  /// On the controller path each file gets its own queued update, so the write
-  /// is field-masked to that file and cannot overwrite entries this device has
-  /// not seen. The legacy handler has no queue, so there the whole list still
-  /// goes back through [YustFilePickerBase.onChanged].
+  /// Each file gets its own queued update, so the write is field-masked to that
+  /// file and cannot overwrite entries this device has not seen.
   Future<void> _persistMetadataAndRefresh(List<T> files) async {
-    if (_controller != null) {
-      for (final file in files) {
-        await _controller!.updateMetadata(file);
-      }
-    } else {
-      widget.onChanged?.call(sourceOnlineFiles);
+    for (final file in files) {
+      await _controller.updateMetadata(file);
     }
     if (mounted) setState(() {});
   }
@@ -456,24 +396,6 @@ abstract class YustFilePickerBaseState<
     await _persistMetadataAndRefresh(_selectedFiles.toList());
   }
 
-  /// Create a database entry for the files.
-  @nonVirtual
-  Future<void> createDatabaseEntry() async {
-    // Controller path persists via its injected doc writer, so this
-    // legacy "ensure the linked doc exists" step is a no-operation there.
-    final handler = _fileHandler;
-    if (handler == null) return;
-    try {
-      if (widget.linkedDocPath != null &&
-          !handler.existsDocData(
-            await handler.getFirebaseDoc(widget.linkedDocPath!),
-          )) {
-        widget.onChanged!(convertFiles(handler.getOnlineFiles()));
-      }
-      // ignore: empty_catches
-    } catch (e) {}
-  }
-
   /// Check the connectivity.
   @nonVirtual
   Future<bool> checkConnectivity() async {
@@ -491,16 +413,13 @@ abstract class YustFilePickerBaseState<
 
   /// Whether [file] is on this device but not yet in Storage.
   ///
-  /// The controller knows this exactly — the file still has an upload operation in the
-  /// queue. On the legacy path only "has a local copy" is available.
+  /// The file still has an upload operation in the queue.
   @nonVirtual
-  bool isAwaitingUpload(T file) =>
-      _controller?.isPendingUpload(file) ?? file.cached;
+  bool isAwaitingUpload(T file) => _controller.isPendingUpload(file);
 
-  /// Whether [file]'s sync is timed out and waiting on the user. Always false on
-  /// the legacy path, which has no queue.
+  /// Whether [file]'s sync is timed out and waiting on the user.
   @nonVirtual
-  bool hasSyncTimedOut(T file) => _controller?.isTimedOut(file) ?? false;
+  bool hasSyncTimedOut(T file) => _controller.isTimedOut(file);
 
   /// Marker for a file the queue has not sent yet. Amber: waiting to upload,
   /// already usable locally. Red: timed out, tap to retry. Both non-blocking, and
@@ -535,8 +454,9 @@ abstract class YustFilePickerBaseState<
       LocaleKeys.alertFileSyncFailed.tr(),
       LocaleKeys.retry.tr(),
     );
-    if (retry == true)
-      await YustUi.fileOperationHandler?.retryTimedOutOperations();
+    if (retry == true) {
+      await YustUi.fileOperationHandler.retryTimedOutOperations();
+    }
   }
 
   @nonVirtual
@@ -583,11 +503,9 @@ abstract class YustFilePickerBaseState<
     }
 
     try {
-      await createDatabaseEntry();
       await addSourceFile(file);
 
       clearFileProcessing(file);
-      notifyFilesChanged(sourceOnlineFiles);
       if (mounted && callSetState) {
         setState(() {});
       }
@@ -610,7 +528,6 @@ abstract class YustFilePickerBaseState<
         setState(() {});
       }
     }
-    notifyFilesChanged(sourceOnlineFiles);
     if (mounted) {
       setState(() {});
     }
@@ -875,12 +792,16 @@ abstract class YustFilePickerBaseState<
     // with a freshly built list on every frame, so an identity check would
     // reconcile (and re-emit) on every unrelated rebuild.
     if (_filesSignature(oldWidget.files) != _filesSignature(widget.files)) {
-      _updateFuture = _reconcileSourceFiles(widget.files);
+      _updateFuture = _controller.setOnlineFiles(widget.files);
       setState(() {});
     }
   }
 
   String _filesSignature(List<T> files) => files
-      .map((file) => '${file.offlineKey}:${file.name}:${file.path}')
+      // The hash is part of it: a file whose content was replaced elsewhere
+      // keeps its name and location, and its on-device copy has to be dropped.
+      .map(
+        (file) => '${file.offlineKey}:${file.name}:${file.path}:${file.hash}',
+      )
       .join('|');
 }

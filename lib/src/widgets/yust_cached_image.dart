@@ -66,6 +66,8 @@ class YustCachedImage extends StatelessWidget {
       child: const Icon(Icons.question_mark),
     );
 
+    _useDeviceCopyIfPresent();
+
     if (file.file != null && file.bytes == null) {
       file.bytes = file.file!.readAsBytesSync();
     }
@@ -160,5 +162,13 @@ class YustCachedImage extends StatelessWidget {
     }
 
     return preview;
+  }
+
+  /// Reads the image from its on-device copy when there is one.
+  void _useDeviceCopyIfPresent() {
+    final devicePath = file.devicePath;
+    if (kIsWeb || file.file != null || file.bytes != null) return;
+    if (devicePath == null || !File(devicePath).existsSync()) return;
+    file.file = File(devicePath);
   }
 }

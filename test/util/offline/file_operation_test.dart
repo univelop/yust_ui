@@ -22,12 +22,13 @@ YustFile _file({
 
 void main() {
   group('FileOperation.fileKey', () {
-    test('is the content hash when present', () {
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.upload,
-        file: _file(hash: 'abc123'),
+    test('separates two entries holding the same bytes', () {
+      // Uploading the same image twice gives both entries the same content
+      // hash; they are still two files and must not collapse into one.
+      expect(
+        _file(name: 'first.jpeg', hash: 'same').offlineKey,
+        isNot(_file(name: 'second.jpeg', hash: 'same').offlineKey),
       );
-      expect(operation.fileKey, 'abc123');
     });
 
     test('is not the bare name for hashless (array-layout) files', () {
@@ -41,21 +42,43 @@ void main() {
       expect(operation.fileKey, isNotEmpty);
     });
 
-    test('separates same-named hashless files in different folders', () {
-      YustFile hashless(String folder) => YustFile(
+    test('separates same-named files in different folders', () {
+      YustFile inFolder(String folder) => YustFile(
         name: 'Plan.pdf',
-        hash: '',
+        hash: 'h1',
         storageFolderPath: folder,
         setCreatedAtToNow: false,
       );
 
       expect(
-        hashless('ws1/recordA/brick').offlineKey,
-        isNot(hashless('ws1/recordB/brick').offlineKey),
+        inFolder('ws1/recordA/brick').offlineKey,
+        isNot(inFolder('ws1/recordB/brick').offlineKey),
       );
     });
 
-    test('is stable for the same hashless file', () {
+    test('byteKey follows the content, not the location', () {
+      // Re-drawing a signature keeps its name and folder, so only the content
+      // tells the new bytes from the cached old ones.
+      final before = _file(name: 'signature.png', hash: 'old');
+      final after = _file(name: 'signature.png', hash: 'new');
+
+      expect(before.offlineKey, after.offlineKey);
+      expect(before.byteKey, isNot(after.byteKey));
+    });
+
+    test('byteKey is shared by entries holding the same bytes', () {
+      expect(
+        _file(name: 'first.jpeg', hash: 'same').byteKey,
+        _file(name: 'second.jpeg', hash: 'same').byteKey,
+      );
+    });
+
+    test('byteKey falls back to the location for a hashless file', () {
+      final hashless = _file(name: 'legacy.pdf', hash: '');
+      expect(hashless.byteKey, hashless.offlineKey);
+    });
+
+    test('is stable for the same file', () {
       expect(
         _file(hash: '', name: 'legacy.pdf').offlineKey,
         _file(hash: '', name: 'legacy.pdf').offlineKey,
@@ -114,7 +137,7 @@ void main() {
 
       expect(restored.type, FileOperationType.upload);
       expect(restored.file.name, 'plan.pdf');
-      expect(restored.fileKey, 'h1');
+      expect(restored.fileKey, _file(name: 'plan.pdf', hash: 'h1').offlineKey);
       expect(restored.file.devicePath, '/support/offline/h1/plan.pdf');
       expect(restored.createdAt, _createdAt);
       // The file's transient addressing survives so a queued operation can still

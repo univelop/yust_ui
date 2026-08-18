@@ -12,12 +12,12 @@ final _t2 = DateTime.utc(2026, 1, 1, 10, 1);
 FileOperation<YustFile> _operation(
   FileOperationType type, {
   String hash = 'h1',
-  String name = 'a.pdf',
+  String? name,
   String? newName,
   DateTime? createdAt,
 }) => FileOperation<YustFile>(
   type: type,
-  file: YustFile(name: name, hash: hash, setCreatedAtToNow: false),
+  file: YustFile(name: name ?? '$hash.pdf', hash: hash, setCreatedAtToNow: false),
   newName: newName,
   createdAt: createdAt,
 );
@@ -64,10 +64,13 @@ void main() {
           FileOperationType.delete,
         },
       );
-      expect(outbound.map((operation) => operation.fileKey), ['h1', 'h3']);
+      expect(outbound.map((operation) => operation.file.name), [
+        'h1.pdf',
+        'h3.pdf',
+      ]);
 
       final inbound = await queue.pending(types: {FileOperationType.download});
-      expect(inbound.map((operation) => operation.fileKey), ['h2']);
+      expect(inbound.map((operation) => operation.file.name), ['h2.pdf']);
     },
   );
 
@@ -77,8 +80,8 @@ void main() {
 
     final operations = await queue.pending();
     await queue.remove(operations.first);
-    expect((await queue.pending()).map((operation) => operation.fileKey), [
-      'h2',
+    expect((await queue.pending()).map((operation) => operation.file.name), [
+      'h2.pdf',
     ]);
   });
 
@@ -117,10 +120,10 @@ void main() {
     ];
     await Future.wait(futures);
 
-    final keys = (await queue.pending())
-        .map((operation) => operation.fileKey)
+    final names = (await queue.pending())
+        .map((operation) => operation.file.name)
         .toSet();
-    expect(keys, {for (var i = 0; i < 20; i++) 'h$i'});
+    expect(names, {for (var i = 0; i < 20; i++) '$i.pdf'});
   });
 
   test('interleaved enqueue and remove keep the surviving operation', () async {
@@ -137,8 +140,8 @@ void main() {
       ),
     ]);
 
-    expect((await queue.pending()).map((operation) => operation.fileKey), [
-      'h2',
+    expect((await queue.pending()).map((operation) => operation.file.name), [
+      '2.pdf',
     ]);
   });
 
@@ -170,7 +173,10 @@ void main() {
       await queue.replace(first.withFailedAttempt());
 
       final operations = await queue.pending();
-      expect(operations.map((operation) => operation.fileKey), ['h1', 'h2']);
+      expect(operations.map((operation) => operation.file.name), [
+        'h1.pdf',
+        'h2.pdf',
+      ]);
       expect(operations.first.failedAttempts, 1);
       expect(operations.first.id, first.id);
     });
@@ -219,7 +225,7 @@ void main() {
       await memoryQueue.remove((await memoryQueue.pending()).last);
 
       final operations = await memoryQueue.pending();
-      expect(operations.map((operation) => operation.fileKey), ['h1']);
+      expect(operations.map((operation) => operation.file.name), ['h1.pdf']);
       expect(operations.single.failedAttempts, 1);
     });
   });

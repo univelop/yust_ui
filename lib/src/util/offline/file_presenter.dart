@@ -13,13 +13,11 @@ import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
 import '../../yust_ui.dart';
 import '../yust_file_helpers.dart';
-import 'offline_storage.dart';
 
 /// Presents offline files to the user (open / open-in-default-app / share).
 ///
-/// Split out of the old `YustFileHandler`, which mixed this UI with the upload
-/// and cache logic. The presenter is the only offline-file piece that touches
-/// [BuildContext]; the managers stay UI-free and testable.
+/// The only offline-file component that touches a [BuildContext], so the
+/// managers stay UI-free and testable.
 class FilePresenter {
   /// Opens [file] in the built-in preview — the on-device copy if cached,
   /// otherwise downloaded from its URL — falling back to the browser.
@@ -71,11 +69,10 @@ class FilePresenter {
   /// and downloading to a temp file otherwise.
   static Future<String> _resolveLocalPath(YustFile file) async {
     file.storageFolderPath ??= file.path;
-    // Offline copies live in [OfflineStorage] (app-support, durable), the same
-    // place DownloadManager writes them — look there, not the temp staging dir.
+    // The durable app-support copy, not the temp staging dir.
     final offlinePath = file.cached
         ? file.devicePath
-        : await OfflineStorage().pathForFile(file);
+        : await YustUi.fileHelpers.getPathForFile(file);
     if (offlinePath != null) {
       file.devicePath = offlinePath;
       return offlinePath;

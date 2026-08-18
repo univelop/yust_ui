@@ -36,8 +36,8 @@ class DownloadManager implements FileOperationExecutor {
       );
       return;
     }
-    if (await _storage.exists(operation.fileKey)) {
-      file.devicePath = await _storage.resolvePath(operation.fileKey);
+    if (await _storage.exists(file.byteKey)) {
+      file.devicePath = await _storage.resolvePath(file.byteKey);
       return;
     }
     final bytes = await Yust.fileService.downloadFile(
@@ -48,17 +48,35 @@ class DownloadManager implements FileOperationExecutor {
     // bytes rather than throwing, so an empty result means the fetch failed.
     // Throw so the operation stays queued and self-heals on the next drain, instead of
     // caching a 0-byte file that would then read as "available offline".
+    //
+    // Ask Storage which failure it was: an object that is not there can never
+    // be fetched, and retrying it forever buries the queue in noise. A lookup
+    // that cannot reach the server throws, and that is the transient case.
     if (bytes == null || bytes.isEmpty) {
-      throw YustException(LocaleKeys.exceptionFileNotFound.tr());
+      throw await missingOrUnreachable(storageFolder, file.name!);
     }
     file.devicePath = await _storage.write(
-      hash: operation.fileKey,
+      key: file.byteKey,
       name: file.name!,
       bytes: bytes,
     );
     debugPrint(
       '[offline-sync] cached "${file.name}" (${bytes.length} bytes) '
-      'from $storageFolder under ${operation.fileKey}',
+      'from $storageFolder under ${file.byteKey}',
     );
   }
+}
+
+/// The error a failed transfer of [name] under [path] should be reported as:
+/// permanent when Storage holds no such object, transient otherwise.
+///
+/// Shared by every executor that has to interpret the file service's empty
+/// result, so "gone" and "unreachable" are told apart the same way everywhere.
+Future<Exception> missingOrUnreachable(String path, String name) async {
+  if (await Yust.fileService.fileExist(path: path, name: name)) {
+    return YustException(LocaleKeys.exceptionFileNotFound.tr());
+  }
+  return MissingStorageObjectException(
+    LocaleKeys.exceptionFileNotFound.tr(),
+  );
 }

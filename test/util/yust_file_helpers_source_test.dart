@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/file_operation.dart';
 import 'package:yust_ui/src/util/offline/offline_storage.dart';
+import 'package:yust_ui/src/util/yust_file_helpers.dart';
 
 YustFile _plan() => YustFile(
   name: 'Plan.pdf',
@@ -19,6 +20,7 @@ YustFile _plan() => YustFile(
 void main() {
   late Directory root;
   late OfflineStorage storage;
+  late YustFileHelpers helpers;
 
   setUp(() {
     // getOriginalUrl reads Yust.fileAccessService, which is `late` — without
@@ -27,38 +29,74 @@ void main() {
       originalCdnBaseUrl: null,
       thumbnailCdnBaseUrl: null,
     );
-    root = Directory.systemTemp.createTempSync('resolve_uri_test');
+    root = Directory.systemTemp.createTempSync('file_source_test');
     storage = OfflineStorage(directoryProvider: () async => root);
+    helpers = YustFileHelpers(offlineStorage: storage);
   });
 
   tearDown(() {
     if (root.existsSync()) root.deleteSync(recursive: true);
   });
 
-  test('falls back to the network url when nothing is cached', () async {
-    final uri = await storage.resolveUri(_plan());
+  group('getSourceUri', () {
+    test('falls back to the network url when nothing is cached', () async {
+      final uri = await helpers.getSourceUri(_plan());
 
-    expect(uri?.scheme, 'https');
+      expect(uri?.scheme, 'https');
+    });
+
+    test('prefers the on-device copy once it is cached', () async {
+      final plan = _plan();
+      await storage.write(
+        key: plan.offlineKey,
+        name: plan.name!,
+        bytes: Uint8List.fromList([1, 2, 3]),
+      );
+
+      final uri = await helpers.getSourceUri(plan);
+
+      expect(uri?.scheme, 'file');
+      expect(File(uri!.toFilePath()).existsSync(), isTrue);
+    });
+
+    test('is null when the file is neither cached nor addressable', () async {
+      final uri = await helpers.getSourceUri(
+        YustFile(name: 'Gone.pdf', setCreatedAtToNow: false),
+      );
+
+      expect(uri, isNull);
+    });
   });
 
-  test('prefers the on-device copy once it is cached', () async {
-    final plan = _plan();
-    await storage.write(
-      hash: plan.offlineKey,
-      name: plan.name!,
-      bytes: Uint8List.fromList([1, 2, 3]),
-    );
+  group('getPathForFile', () {
+    test('stamps the resolved path as the file devicePath', () async {
+      // YustFile.cached is backed by devicePath.
+      final plan = _plan();
+      await storage.write(
+        key: plan.offlineKey,
+        name: plan.name!,
+        bytes: Uint8List.fromList([1, 2, 3]),
+      );
 
-    final uri = await storage.resolveUri(plan);
+      final path = await helpers.getPathForFile(plan);
 
-    expect(uri?.scheme, 'file');
-    expect(File(uri!.toFilePath()).existsSync(), isTrue);
+      expect(path, isNotNull);
+      expect(plan.devicePath, path);
+      expect(plan.cached, isTrue);
+    });
+
+    test('leaves devicePath untouched when nothing is cached', () async {
+      final plan = _plan();
+
+      expect(await helpers.getPathForFile(plan), isNull);
+      expect(plan.devicePath, isNull);
+    });
   });
 
   group('bytes cached under the pre-migration key', () {
     /// Writes [plan]'s bytes the way an earlier build did: keyed by bare name.
     Future<void> cacheUnderLegacyKey(YustFile plan) => storage.write(
-      hash: plan.legacyOfflineKey,
+      key: plan.legacyOfflineKey,
       name: plan.name!,
       bytes: Uint8List.fromList([9]),
     );
@@ -70,7 +108,7 @@ void main() {
       final plan = _plan();
       await cacheUnderLegacyKey(plan);
 
-      final uri = await storage.resolveUri(plan);
+      final uri = await helpers.getSourceUri(plan);
 
       expect(uri?.scheme, 'file');
       expect(File(uri!.toFilePath()).existsSync(), isTrue);
@@ -96,7 +134,7 @@ void main() {
       final plan = _plan();
       await cacheUnderLegacyKey(plan);
       final current = await storage.write(
-        hash: plan.offlineKey,
+        key: plan.offlineKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
       );

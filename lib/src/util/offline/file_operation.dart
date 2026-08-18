@@ -4,26 +4,34 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
-/// The key every offline component addresses a file by.
+/// The keys every offline component addresses a file by: [offlineKey] for the
+/// entry, [byteKey] for its bytes.
 extension YustFileOfflineKey on YustFile {
-  /// This file's identity on the device: byte-cache directory, overlay entry,
-  /// download dedupe. The content hash, or a digest of the Storage location
-  /// when hashless — never the bare name, which is not unique across records.
+  /// This file's identity as one entry of a list: overlay entry, queue matching,
+  /// download dedupe. A digest of the Storage location, which is what an entry
+  /// is — never the bare name, which is not unique across records, and never the
+  /// content hash, which two entries holding the same bytes share.
   ///
   /// Not `FileHandlingHelper.fileMapKey` (uni_core): that keys the Firestore
   /// entry and must keep matching existing documents.
-  String get offlineKey => hash.isNotEmpty
-      ? hash
-      : md5
-            .convert(utf8.encode('${storageFolderPath ?? path}/$name'))
-            .toString();
+  String get offlineKey =>
+      md5.convert(utf8.encode('${storageFolderPath ?? path}/$name')).toString();
 
-  /// The key hashless files were cached under before [offlineKey] became
-  /// location-scoped. Read-only migration; nothing writes it any more.
-  String get legacyOfflineKey => hash.isNotEmpty ? hash : (name ?? '');
+  /// The key this file's bytes are cached under: the content hash, falling back
+  /// to [offlineKey] for a file that has none.
+  ///
+  /// Content-addressed on purpose. An entry keeps its location when its content
+  /// is replaced — a re-drawn signature is `signature.png` either way — so a
+  /// location-keyed copy would go on being served after the bytes changed
+  /// somewhere else.
+  String get byteKey => hash.isNotEmpty ? hash : offlineKey;
+
+  /// Cache key of a hashless file on an install predating [byteKey]. Read only:
+  /// nothing writes it.
+  String get legacyOfflineKey => name ?? '';
 
   /// Computes the md5 [YustFile.hash] from the file's content when it has none,
-  /// so its storage key and record key are stable before the upload runs.
+  /// so its record key is stable before the upload runs.
   ///
   /// Call before enqueueing: a file that stays hashless is keyed in the record
   /// by name, which cannot be addressed as a single Firestore field once it
@@ -71,7 +79,7 @@ class FileOperation<T extends YustFile> {
     DateTime? createdAt,
   }) : fileKey = fileKey ?? file.offlineKey,
        createdAt = createdAt ?? DateTime.now(),
-       id = id ?? '${DateTime.now().microsecondsSinceEpoch}_${file.hash}';
+       id = id ?? '${DateTime.now().microsecondsSinceEpoch}_${file.offlineKey}';
 
   /// Stable identity for the entry, independent of the mutable [file]. A manager
   /// removes an operation by this after applying it (the file may have been mutated,

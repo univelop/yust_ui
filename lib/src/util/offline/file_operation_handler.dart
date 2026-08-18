@@ -1,19 +1,21 @@
 import 'dart:async';
+import 'dart:io';
 
+// FirebaseException, re-exported by cloud_firestore, covers Storage errors too.
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart';
 import 'package:yust/yust.dart';
 
 import '../yust_file_helpers.dart';
 import 'file_operation.dart';
-import 'file_operation_error.dart';
 import 'sync_queue.dart';
 
 /// Carries out one kind of [FileOperation].
 ///
-/// The upload and download managers implement this. They are handed only the operation
-/// to carry out and know nothing about the queue, connectivity or retries — the
-/// same code runs whether the app is online or offline.
+/// The upload and download managers implement this. They know nothing about the
+/// queue, connectivity or retries.
 abstract interface class FileOperationExecutor {
   /// The operation kinds this executor owns.
   Set<FileOperationType> get handledTypes;
@@ -28,31 +30,27 @@ abstract interface class FileOperationExecutor {
 /// applies the queue oldest-first and routes each operation to the
 /// [FileOperationExecutor] that owns its type, removing it only on success.
 ///
-/// The flat queue is read as **one FIFO per file**: only a file's oldest queued
-/// operation is eligible per sweep, so its own operations stay in order while other files
-/// pass freely. A sweep that applied nothing ends the pass; any failure
-/// schedules a retry with capped exponential backoff (1s, 2s, 4s … 30s).
+/// The flat queue is read as one FIFO per file: only a file's oldest queued
+/// operation is eligible per sweep, so its own operations stay in order while
+/// other files pass freely. A sweep that applied nothing ends the pass; any
+/// failure schedules a retry with capped exponential backoff (1s, 2s, 4s … 30s).
 ///
-/// Ops are always attempted, never gated on a connectivity check: an interface
-/// being up does not mean the network works (captive portals, dead wifi), so a
-/// gate cannot prevent a doomed attempt while adding a signal that lies in both
-/// directions. Connectivity is only a hint to retry sooner — a regained event
-/// resets the backoff and requests another pass, coalescing if one is already
-/// running.
+/// Operations are always attempted, never gated on a connectivity check.
+/// Connectivity is a hint to retry sooner: a regained event resets the backoff
+/// and requests another pass, coalescing if one is already running.
 ///
 /// Failures are classified. Connection failures retry forever, untracked. A
 /// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
-/// operation's [FileOperation.failedAttempts]; at [maxFailedAttempts] it is timed out — kept in the
-/// queue, reported via [timedOutOperations], cleared by [retryTimedOutOperations]. Nothing is
-/// dropped, and an unrecognised error counts as transient.
+/// operation's [FileOperation.failedAttempts]; at [maxFailedAttempts] it is
+/// timed out — kept in the queue, reported via [timedOutOperations], cleared by
+/// [retryTimedOutOperations]. Nothing is dropped, and an unrecognised error
+/// counts as transient.
 ///
-/// [enqueue] only waits for the operation to be durably queued, never for the transfer:
-/// offline, a real upload retries internally for minutes before failing, and the
-/// picker awaiting it is what left a spinner on screen.
+/// [enqueue] waits only for the operation to be durably queued, never for the
+/// transfer.
 ///
-/// It is a [ChangeNotifier]: it notifies whenever the queue changes (an operation is
-/// enqueued, cancelled or applied), so a [FileListController] can rebuild its
-/// pending-operation overlay without polling.
+/// Notifies whenever the queue changes, so a [FileListController] can rebuild
+/// its pending-operation overlay without polling.
 class FileOperationHandler extends ChangeNotifier {
   FileOperationHandler({
     required List<FileOperationExecutor> executors,
@@ -74,13 +72,11 @@ class FileOperationHandler extends ChangeNotifier {
   final Future<void> Function(Duration) _delay;
   final Map<FileOperationType, FileOperationExecutor> _executors = {};
 
-  /// Emits each operation right after it has been applied and dropped from the queue.
+  /// Emits each operation right after it is applied and dropped from the queue.
   ///
   /// A listener receives the executor's own instance, so an applied upload
-  /// already carries the `path` and `url` it was given — the file can be
-  /// adopted as persisted without waiting for the record to come back around.
-  /// Synchronous, so a listener has updated its state before the
-  /// [notifyListeners] that follows.
+  /// already carries its `path` and `url`. Synchronous, so a listener has
+  /// updated its state before the [notifyListeners] that follows.
   Stream<FileOperation<YustFile>> get applied => _applied.stream;
 
   final StreamController<FileOperation<YustFile>> _applied =
@@ -105,16 +101,15 @@ class FileOperationHandler extends ChangeNotifier {
   /// loops once more instead of the request being dropped.
   bool _processAgain = false;
 
-  /// Appends [operation] and starts a drain, returning as soon as the operation is durably
-  /// queued. The transfer itself is not awaited — see the class doc.
+  /// Appends [operation] and starts a drain, returning as soon as it is durably
+  /// queued. The transfer itself is not awaited.
   Future<void> enqueue(FileOperation<YustFile> operation) async {
     await queue.enqueue(operation);
     await _notifyQueueChanged();
     unawaited(processPendingOperations());
   }
 
-  /// Appends every operation in [operations], then starts one drain — so a batch of downloads
-  /// isn't processed per file.
+  /// Appends every operation in [operations], then starts one drain.
   Future<void> enqueueAll(Iterable<FileOperation<YustFile>> operations) async {
     var enqueued = false;
     for (final operation in operations) {
@@ -126,8 +121,8 @@ class FileOperationHandler extends ChangeNotifier {
     unawaited(processPendingOperations());
   }
 
-  /// Drops a still-pending [operation] without applying it — e.g. a file deleted before
-  /// its upload ran.
+  /// Drops a still-pending [operation] without applying it, e.g. a file deleted
+  /// before its upload ran.
   Future<void> cancel(FileOperation<YustFile> operation) async {
     await queue.remove(operation);
     await _notifyQueueChanged();
@@ -136,17 +131,11 @@ class FileOperationHandler extends ChangeNotifier {
   /// This manager's pending operations, oldest-first.
   Future<List<FileOperation<YustFile>>> pending() => queue.pending();
 
-  /// Whether [file]'s bytes are still on their way to Storage.
+  /// Whether [file]'s bytes are still on their way to Storage. Synchronous, so
+  /// a widget can ask while it builds; listen to this handler to rebuild when it
+  /// changes.
   ///
-  /// Synchronous, so a widget can ask while it builds: a file enqueued for
-  /// upload has no url yet and would otherwise look like a missing file rather
-  /// than one in flight. Listen to this handler to rebuild when it changes.
-  ///
-  /// A timed out upload is **not** in flight. Nothing is ever dropped from the
-  /// queue, so a permanently failing upload stays in it forever; reporting that
-  /// as uploading turns any progress indicator built on this into one that never
-  /// goes away. Those are reported by [timedOutOperations] instead, which the
-  /// user can act on.
+  /// A timed out upload is not in flight — [timedOutOperations] reports those.
   bool isUploading(YustFile file) =>
       _uploadingFileKeys.contains(file.offlineKey);
 
@@ -343,3 +332,51 @@ class FileOperationHandler extends ChangeNotifier {
   Stream<bool> get _defaultOnlineStream => YustFileHelpers.connectivityStream
       .map((results) => results.any((r) => r != ConnectivityResult.none));
 }
+
+/// The bytes an operation needs are not in Storage at all.
+///
+/// Raised where the file service reports a failed transfer as empty bytes
+/// rather than throwing, so the queue can tell "the object is gone" — which no
+/// retry fixes — apart from "the server was unreachable", which every retry
+/// might.
+class MissingStorageObjectException implements Exception {
+  MissingStorageObjectException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// Firebase codes no retry gets past: not allowed, or the target is gone.
+/// Everything else (`unavailable`, `retry-limit-exceeded`, …) is a connection
+/// problem wearing a code.
+const _permanentFirebaseCodes = {
+  'permission-denied',
+  'unauthenticated',
+  'unauthorized',
+  'not-found',
+  'object-not-found',
+  'invalid-argument',
+  'storage/unauthorized',
+  'storage/object-not-found',
+  'storage/invalid-argument',
+};
+
+/// Whether [error] means the operation can never succeed, so it counts against
+/// the operation's attempt budget instead of retrying forever. Unrecognised
+/// errors count as transient.
+bool isPermanentOperationError(Object error) => switch (error) {
+  // Bad input this code produced; retrying replays the same arguments.
+  ArgumentError() => true,
+  StateError() => true,
+  // The object is not in Storage; no number of retries puts it there.
+  MissingStorageObjectException() => true,
+  // Listed explicitly so no subtype falls through to a permanent verdict.
+  SocketException() ||
+  TimeoutException() ||
+  HttpException() ||
+  ClientException() => false,
+  FirebaseException(:final code) => _permanentFirebaseCodes.contains(code),
+  _ => false,
+};

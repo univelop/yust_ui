@@ -1,0 +1,193 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yust/yust.dart';
+import 'package:yust_ui/src/util/offline/file_operation.dart';
+import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/legacy_cache_migration.dart';
+import 'package:yust_ui/src/util/offline/offline_storage.dart';
+import 'package:yust_ui/src/util/offline/sync_queue.dart';
+
+/// Never finishes an operation, so what the migration enqueued stays in the
+/// queue to be inspected instead of being drained away by the handler's own
+/// pass, which [FileOperationHandler.enqueueAll] starts.
+class _ParkingExecutor implements FileOperationExecutor {
+  @override
+  Set<FileOperationType> get handledTypes => FileOperationType.values.toSet();
+
+  @override
+  Future<void> execute(FileOperation<YustFile> operation) =>
+      Completer<void>().future;
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late Directory queueRoot;
+  late Directory storageRoot;
+  late Directory stagingRoot;
+  late SyncQueue queue;
+  late OfflineStorage storage;
+  late FileOperationHandler handler;
+
+  setUp(() {
+    queueRoot = Directory.systemTemp.createTempSync('legacy_migration_queue');
+    storageRoot = Directory.systemTemp.createTempSync(
+      'legacy_migration_storage',
+    );
+    stagingRoot = Directory.systemTemp.createTempSync(
+      'legacy_migration_staging',
+    );
+    queue = SyncQueue(directoryProvider: () async => queueRoot);
+    storage = OfflineStorage(directoryProvider: () async => storageRoot);
+    handler = FileOperationHandler(
+      executors: [_ParkingExecutor()],
+      queue: queue,
+      onlineStream: const Stream<bool>.empty(),
+    );
+  });
+
+  tearDown(() {
+    handler.dispose();
+    for (final root in [queueRoot, storageRoot, stagingRoot]) {
+      if (root.existsSync()) root.deleteSync(recursive: true);
+    }
+  });
+
+  Uint8List bytes(String content) => Uint8List.fromList(content.codeUnits);
+
+  YustFile legacyFile(String name) => YustFile(
+    name: name,
+    storageFolderPath: 'workspaces/w1/records/rec1',
+    linkedDocPath: 'workspaces/w1/records/rec1',
+    linkedDocAttribute: 'brickValues.brick1',
+    linkedDocStoresFilesAsMap: true,
+    setCreatedAtToNow: false,
+  );
+
+  /// Writes [content] where the old handler staged its bytes and returns the
+  /// entry as it sat in the preference.
+  Map<String, String?> stage(YustFile file, String content) {
+    final staged = File('${stagingRoot.path}/${file.name}');
+    staged.writeAsBytesSync(bytes(content));
+    file.devicePath = staged.path;
+    return file.toLocalJson();
+  }
+
+  void seedPreference(List<Map<String, dynamic>> entries) =>
+      SharedPreferences.setMockInitialValues({
+        'YustCachedFiles': jsonEncode(entries),
+      });
+
+  Future<String?> readPreference() async =>
+      (await SharedPreferences.getInstance()).getString('YustCachedFiles');
+
+  test(
+    'moves a cached upload onto the queue, bytes and address intact',
+    () async {
+      final file = legacyFile('plan.pdf');
+      seedPreference([stage(file, 'pdf-bytes')]);
+
+      await migrateLegacyFileCache(handler: handler, storage: storage);
+
+      final pending = await queue.pending();
+      expect(pending, hasLength(1));
+      final migrated = pending.single;
+      expect(migrated.type, FileOperationType.upload);
+      expect(migrated.file.name, 'plan.pdf');
+      expect(migrated.file.linkedDocPath, 'workspaces/w1/records/rec1');
+      expect(migrated.file.linkedDocAttribute, 'brickValues.brick1');
+      expect(migrated.file.linkedDocStoresFilesAsMap, isTrue);
+      expect(migrated.file.storageFolderPath, 'workspaces/w1/records/rec1');
+      // Hashed on migration: the local JSON carried none, and the map layout keys
+      // the record entry by it.
+      expect(migrated.file.hash, isNotEmpty);
+
+      final cachedPath = await storage.resolvePath(migrated.file.byteKey);
+      expect(cachedPath, isNotNull);
+      expect(File(cachedPath!).readAsBytesSync(), bytes('pdf-bytes'));
+    },
+  );
+
+  test(
+    'drops the staged copy and its devicePath once the bytes are cached',
+    () async {
+      final file = legacyFile('plan.pdf');
+      final entry = stage(file, 'pdf-bytes');
+      final stagedPath = entry['devicePath']!;
+      seedPreference([entry]);
+
+      await migrateLegacyFileCache(handler: handler, storage: storage);
+
+      // A devicePath is taken as a readable on-device copy wherever a file is
+      // presented, so it must not outlive the staged file.
+      expect((await queue.pending()).single.file.devicePath, isNull);
+      expect(File(stagedPath).existsSync(), isFalse);
+      expect(await readPreference(), isNull);
+    },
+  );
+
+  test('keeps an image entry an image through the queue', () async {
+    final image = YustImage(
+      name: 'photo.jpg',
+      storageFolderPath: 'workspaces/w1/records/rec1',
+      linkedDocPath: 'workspaces/w1/records/rec1',
+      linkedDocAttribute: 'brickValues.brick1',
+    );
+    seedPreference([stage(image, 'jpg-bytes')]);
+
+    await migrateLegacyFileCache(handler: handler, storage: storage);
+
+    expect((await queue.pending()).single.file, isA<YustImage>());
+  });
+
+  test(
+    'skips an entry whose staged bytes are gone, migrating the rest',
+    () async {
+      final purged = legacyFile('purged.pdf');
+      final entry = stage(purged, 'gone');
+      File(entry['devicePath']!).deleteSync();
+      final kept = legacyFile('kept.pdf');
+      seedPreference([entry, stage(kept, 'kept-bytes')]);
+
+      await migrateLegacyFileCache(handler: handler, storage: storage);
+
+      final pending = await queue.pending();
+      expect(pending.map((operation) => operation.file.name), ['kept.pdf']);
+    },
+  );
+
+  test('skips an unreadable entry, migrating the rest', () async {
+    final kept = legacyFile('kept.pdf');
+    seedPreference([
+      {'name': 'broken.pdf'},
+      stage(kept, 'kept-bytes'),
+    ]);
+
+    await migrateLegacyFileCache(handler: handler, storage: storage);
+
+    final pending = await queue.pending();
+    expect(pending.map((operation) => operation.file.name), ['kept.pdf']);
+  });
+
+  test('is a no-op without a legacy cache', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    await migrateLegacyFileCache(handler: handler, storage: storage);
+
+    expect(await queue.pending(), isEmpty);
+  });
+
+  test('enqueues nothing on a second run', () async {
+    seedPreference([stage(legacyFile('plan.pdf'), 'pdf-bytes')]);
+
+    await migrateLegacyFileCache(handler: handler, storage: storage);
+    await migrateLegacyFileCache(handler: handler, storage: storage);
+
+    expect(await queue.pending(), hasLength(1));
+  });
+}

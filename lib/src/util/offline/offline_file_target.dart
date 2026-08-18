@@ -3,10 +3,8 @@ import 'package:yust/yust.dart';
 
 /// Identifies where a set of offline files lives.
 ///
-/// A target binds a Storage folder (where the bytes live) to the Firestore
-/// document attribute that holds the file metadata. It replaces the loose
-/// `storageFolderPath` / `linkedDocPath` / `linkedDocAttribute` triple that the
-/// old `YustFileHandler` threaded through every method.
+/// Binds a Storage folder (where the bytes live) to the Firestore document
+/// attribute holding the file metadata, so the two travel together.
 @immutable
 class OfflineFileTarget {
   const OfflineFileTarget({
@@ -38,6 +36,24 @@ class OfflineFileTarget {
   bool owns(YustFile file) =>
       file.linkedDocPath == linkedDocPath &&
       file.linkedDocAttribute == linkedDocAttribute;
+
+  /// A value, so a target can key a provider family: two targets built from the
+  /// same brick address the same files and must compare equal.
+  @override
+  bool operator ==(Object other) =>
+      other is OfflineFileTarget &&
+      other.storageFolderPath == storageFolderPath &&
+      other.linkedDocPath == linkedDocPath &&
+      other.linkedDocAttribute == linkedDocAttribute &&
+      other.storesFilesAsMap == storesFilesAsMap;
+
+  @override
+  int get hashCode => Object.hash(
+    storageFolderPath,
+    linkedDocPath,
+    linkedDocAttribute,
+    storesFilesAsMap,
+  );
 
   /// Stamps [file] with this target's location.
   void apply(YustFile file) {

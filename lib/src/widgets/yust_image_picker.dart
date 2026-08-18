@@ -226,7 +226,6 @@ class YustImagePickerState
                 for (final yustFile in pictureFiles) {
                   await deleteSourceFile(yustFile);
                 }
-                notifyFilesChanged(sourceOnlineFiles);
                 if (mounted) {
                   setState(() {});
                 }
@@ -265,7 +264,10 @@ class YustImagePickerState
       files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildSingleImage(context, file),
       loadMoreButton: buildLoadMoreButton(context),
-      totalFileCount: widget.files.length,
+      // Counted off the tracked files, not the ones handed in: those are the
+      // record's, so an image deleted offline would still be counted and the
+      // picker would offer to load an image it is no longer showing.
+      totalFileCount: sourceFiles.length,
     );
   }
 
@@ -522,9 +524,6 @@ class YustImagePickerState
     if (confirmed != true) return false;
     try {
       await deleteSourceFile(yustFile);
-      if (!yustFile.cached) {
-        notifyFilesChanged(sourceOnlineFiles);
-      }
       if (mounted) {
         setState(() {});
       }

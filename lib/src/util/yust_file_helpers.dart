@@ -18,12 +18,32 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
 class YustFileHelpers {
-  YustFileHelpers();
+  YustFileHelpers({OfflineStorage? offlineStorage})
+    : _offlineStorage = offlineStorage ?? OfflineStorage();
+
+  final OfflineStorage _offlineStorage;
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
   static final connectivityStream = Connectivity().onConnectivityChanged
       .asBroadcastStream();
+
+  /// The path to [file]'s on-device copy, also set as [YustFile.devicePath].
+  /// Null when it is not cached.
+  Future<String?> getPathForFile(YustFile file) async {
+    final path = await _offlineStorage.pathForFile(file);
+    if (path != null) file.devicePath = path;
+    return path;
+  }
+
+  /// Where [file]'s bytes should be read from: the on-device copy when cached,
+  /// else the signed network URL, else null.
+  Future<Uri?> getSourceUri(YustFile file) async {
+    final path = await getPathForFile(file);
+    if (path != null) return Uri.file(path);
+    final url = file.getOriginalUrl();
+    return url == null ? null : Uri.parse(url);
+  }
 
   /// Shares or downloads a file.
   /// On iOS and Android shows Share-Popup afterwards.

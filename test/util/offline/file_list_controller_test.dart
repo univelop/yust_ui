@@ -211,6 +211,22 @@ void main() {
 
       expect(controller.onlineFiles.map((file) => file.name), ['old.pdf']);
     });
+
+    test('two persisted entries holding the same bytes both show', () async {
+      // The same image uploaded twice: one content hash, two record entries.
+      final controller = buildController();
+
+      await controller.setOnlineFiles([
+        _persistedFile('first.jpeg', 'same-hash'),
+        _persistedFile('second.jpeg', 'same-hash'),
+      ]);
+      await controller.settled;
+
+      expect(controller.files.map((file) => file.name), [
+        'first.jpeg',
+        'second.jpeg',
+      ]);
+    });
   });
 
   group('promotion of an applied upload', () {
