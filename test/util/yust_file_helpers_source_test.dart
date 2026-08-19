@@ -48,7 +48,7 @@ void main() {
     test('prefers the on-device copy once it is cached', () async {
       final plan = _plan();
       await storage.write(
-        key: plan.offlineKey,
+        byteKey: plan.offlineKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
       );
@@ -73,7 +73,7 @@ void main() {
       // YustFile.cached is backed by devicePath.
       final plan = _plan();
       await storage.write(
-        key: plan.offlineKey,
+        byteKey: plan.offlineKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
       );
@@ -90,56 +90,6 @@ void main() {
 
       expect(await helpers.getPathForFile(plan), isNull);
       expect(plan.devicePath, isNull);
-    });
-  });
-
-  group('bytes cached under the pre-migration key', () {
-    /// Writes [plan]'s bytes the way an earlier build did: keyed by bare name.
-    Future<void> cacheUnderLegacyKey(YustFile plan) => storage.write(
-      key: plan.legacyOfflineKey,
-      name: plan.name!,
-      bytes: Uint8List.fromList([9]),
-    );
-
-    test('still resolve to the on-device copy', () async {
-      // The regression this guards: hashless files (every drawing-annotation
-      // plan) were cached under the bare name. A lookup that only tried the new
-      // key missed them, silently falling back to the network.
-      final plan = _plan();
-      await cacheUnderLegacyKey(plan);
-
-      final uri = await helpers.getSourceUri(plan);
-
-      expect(uri?.scheme, 'file');
-      expect(File(uri!.toFilePath()).existsSync(), isTrue);
-    });
-
-    test('are reported as present', () async {
-      final plan = _plan();
-      await cacheUnderLegacyKey(plan);
-
-      expect(await storage.hasFile(plan), isTrue);
-    });
-
-    test('are removed along with the current key', () async {
-      final plan = _plan();
-      await cacheUnderLegacyKey(plan);
-
-      await storage.removeFile(plan);
-
-      expect(await storage.hasFile(plan), isFalse);
-    });
-
-    test('lose to the current key when both exist', () async {
-      final plan = _plan();
-      await cacheUnderLegacyKey(plan);
-      final current = await storage.write(
-        key: plan.offlineKey,
-        name: plan.name!,
-        bytes: Uint8List.fromList([1, 2, 3]),
-      );
-
-      expect(await storage.pathForFile(plan), current);
     });
   });
 }

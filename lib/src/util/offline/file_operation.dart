@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 /// The keys every offline component addresses a file by: [offlineKey] for the
@@ -26,30 +25,21 @@ extension YustFileOfflineKey on YustFile {
   /// somewhere else.
   String get byteKey => hash.isNotEmpty ? hash : offlineKey;
 
-  /// Cache key of a hashless file on an install predating [byteKey]. Read only:
-  /// nothing writes it.
-  String get legacyOfflineKey => name ?? '';
-
   /// Computes the md5 [YustFile.hash] from the file's content when it has none,
   /// so its record key is stable before the upload runs.
   ///
   /// Call before enqueueing: a file that stays hashless is keyed in the record
   /// by name, which cannot be addressed as a single Firestore field once it
   /// contains a dot.
+  /// Runs on the UI isolate and scales with the file: on web there is no
+  /// isolate to move it to.
   Future<void> ensureHash() async {
     if (hash.isNotEmpty) return;
-    final stopwatch = Stopwatch()..start();
     if (bytes != null) {
       hash = md5.convert(bytes!).toString();
     } else if (file != null) {
       hash = (await file!.openRead().transform(md5).first).toString();
     }
-    // Runs on the UI isolate and scales with the file, so its cost is worth
-    // seeing: on web there is no isolate to move it to.
-    debugPrint(
-      '[offline-sync] hashed "$name" '
-      '(${bytes?.lengthInBytes ?? 0} bytes) in ${stopwatch.elapsedMilliseconds}ms',
-    );
   }
 }
 

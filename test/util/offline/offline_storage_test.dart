@@ -23,7 +23,7 @@ void main() {
 
   test('write stores bytes and resolvePath finds them', () async {
     final path = await storage.write(
-      key: 'h1',
+      byteKey: 'h1',
       name: 'plan.pdf',
       bytes: bytes('pdf-bytes'),
     );
@@ -40,7 +40,7 @@ void main() {
   });
 
   test('remove deletes the entry and is safe when already gone', () async {
-    await storage.write(key: 'h1', name: 'plan.pdf', bytes: bytes('x'));
+    await storage.write(byteKey: 'h1', name: 'plan.pdf', bytes: bytes('x'));
     await storage.remove('h1');
 
     expect(await storage.exists('h1'), isFalse);
@@ -57,7 +57,7 @@ void main() {
       setCreatedAtToNow: false,
     );
     await storage.write(
-      key: signature('old').byteKey,
+      byteKey: signature('old').byteKey,
       name: 'signature.png',
       bytes: bytes('old-drawing'),
     );
@@ -67,8 +67,8 @@ void main() {
   });
 
   test('entries are independent — writing one never drops another', () async {
-    await storage.write(key: 'h1', name: 'a.pdf', bytes: bytes('a'));
-    await storage.write(key: 'h2', name: 'b.pdf', bytes: bytes('b'));
+    await storage.write(byteKey: 'h1', name: 'a.pdf', bytes: bytes('a'));
+    await storage.write(byteKey: 'h2', name: 'b.pdf', bytes: bytes('b'));
 
     expect(await storage.exists('h1'), isTrue);
     expect(await storage.exists('h2'), isTrue);

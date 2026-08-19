@@ -24,18 +24,18 @@ class OfflineStorage {
 
   static const _folder = 'offline_files';
 
-  /// Writes [bytes] (or copies [file]) for the entry [key] under [name] and
+  /// Writes [bytes] (or copies [file]) for the entry [byteKey] under [name] and
   /// returns the path to them. Null on web, where nothing is cached, and null
   /// when there was nothing to write — a path to bytes that do not exist reads
   /// as [YustFile.cached] everywhere and sends readers to a missing file.
   Future<String?> write({
-    required String key,
+    required String byteKey,
     required String name,
     Uint8List? bytes,
     File? file,
   }) async {
     if (kIsWeb || (bytes == null && file == null)) return null;
-    final directory = await _entryDirectory(key);
+    final directory = await _entryDirectory(byteKey);
     final path = '${directory.path}/$name';
     if (bytes != null) {
       await File(path).writeAsBytes(bytes);
@@ -58,22 +58,14 @@ class OfflineStorage {
   Future<bool> exists(String key) async => (await resolvePath(key)) != null;
 
   /// The path to [file]'s on-device copy, or null when absent.
-  ///
-  /// Also resolves [YustFileOfflineKey.legacyOfflineKey], which is where an
-  /// install carrying pre-migration entries keeps their bytes.
-  Future<String?> pathForFile(YustFile file) async =>
-      await resolvePath(file.byteKey) ??
-      await resolvePath(file.legacyOfflineKey);
+  Future<String?> pathForFile(YustFile file) => resolvePath(file.byteKey);
 
   /// Whether an on-device copy of [file] is present.
   Future<bool> hasFile(YustFile file) async =>
       (await pathForFile(file)) != null;
 
-  /// Removes [file]'s on-device copy, under either key.
-  Future<void> removeFile(YustFile file) async {
-    await remove(file.byteKey);
-    await remove(file.legacyOfflineKey);
-  }
+  /// Removes [file]'s on-device copy.
+  Future<void> removeFile(YustFile file) => remove(file.byteKey);
 
   /// Removes the entry's bytes. Safe if already gone.
   Future<void> remove(String key) async {

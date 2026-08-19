@@ -60,7 +60,7 @@ Future<void> migrateLegacyFileCache({
       // The local JSON carried no hash, and the record entry is keyed by it.
       await file.ensureHash();
       await offlineStorage.write(
-        key: file.byteKey,
+        byteKey: file.byteKey,
         name: file.name!,
         file: stagedFile,
       );
@@ -72,8 +72,8 @@ Future<void> migrateLegacyFileCache({
         FileOperation<YustFile>(type: FileOperationType.upload, file: file),
       );
       stagedFiles.add(stagedFile);
-    } catch (error) {
-      debugPrint('[offline-sync] skipped an unreadable legacy entry: $error');
+    } catch (_) {
+      // An unreadable entry is skipped; the rest still migrate.
     }
   }
 
@@ -82,7 +82,6 @@ Future<void> migrateLegacyFileCache({
   for (final stagedFile in stagedFiles) {
     await stagedFile.delete();
   }
-  debugPrint('[offline-sync] migrated ${operations.length} legacy uploads');
 }
 
 /// The cached entries, or none when the preference is absent or unreadable.
@@ -90,8 +89,7 @@ List<Map<String, dynamic>> _decodeEntries(String? json) {
   if (json == null || json.isEmpty) return [];
   try {
     return (jsonDecode(json) as List).cast<Map<String, dynamic>>();
-  } catch (error) {
-    debugPrint('[offline-sync] legacy file cache is unreadable: $error');
+  } catch (_) {
     return [];
   }
 }

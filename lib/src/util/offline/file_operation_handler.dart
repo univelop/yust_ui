@@ -291,32 +291,16 @@ class FileOperationHandler extends ChangeNotifier {
     return heads.values.where((operation) => !_hasTimedOut(operation));
   }
 
-  /// Logs why [operation] failed and, for a permanent failure, spends one of its
-  /// failedAttempts. The operation stays queued either way.
+  /// For a permanent failure, spends one of [operation]'s failedAttempts. A
+  /// connection failure spends none. The operation stays queued either way.
   Future<void> _recordFailedAttempt(
     FileOperation<YustFile> operation,
     Object error,
   ) async {
-    if (!isPermanentOperationError(error)) {
-      debugPrint(
-        '[offline-sync] ${operation.type.name} of "${operation.file.name}" could not '
-        'reach the server, staying queued: $error',
-      );
-      return;
-    }
+    if (!isPermanentOperationError(error)) return;
     final failed = operation.withFailedAttempt();
     await queue.replace(failed);
-    debugPrint(
-      '[offline-sync] ${operation.type.name} of "${operation.file.name}" failed '
-      '(${failed.failedAttempts}/$maxFailedAttempts, not retryable): $error',
-    );
-    if (_hasTimedOut(failed)) {
-      debugPrint(
-        '[offline-sync] "${operation.file.name}" timed out — it will not be retried '
-        'until the user asks for it',
-      );
-      await _notifyQueueChanged();
-    }
+    if (_hasTimedOut(failed)) await _notifyQueueChanged();
   }
 
   FileOperationExecutor _executorFor(FileOperation<YustFile> operation) {

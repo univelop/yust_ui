@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 import 'download_manager.dart';
@@ -92,10 +91,7 @@ class UploadManager implements FileOperationExecutor {
     file.path = file.storageFolderPath;
     // ignore: deprecated_member_use
     file.url = url;
-    await _awaitDocumentWrite(
-      documentWriter?.writeFile(file),
-      'entry for "${file.name}"',
-    );
+    await _awaitDocumentWrite(documentWriter?.writeFile(file));
   }
 
   /// Detaches the file's record entry, then deletes its bytes.
@@ -108,10 +104,7 @@ class UploadManager implements FileOperationExecutor {
   /// is a no-op.
   Future<void> _delete(FileOperation<YustFile> operation) async {
     final file = operation.file;
-    await _awaitDocumentWrite(
-      _documentWriterFor(operation)?.removeFile(file),
-      'detaching "${file.name}"',
-    );
+    await _awaitDocumentWrite(_documentWriterFor(operation)?.removeFile(file));
     await Yust.fileService.deleteFile(
       path: file.storageFolderPath!,
       name: file.name,
@@ -126,7 +119,6 @@ class UploadManager implements FileOperationExecutor {
   Future<void> _updateMetadata(FileOperation<YustFile> operation) =>
       _awaitDocumentWrite(
         _documentWriterFor(operation)?.writeFile(operation.file),
-        'metadata for "${operation.file.name}"',
       );
 
   Future<void> _rename(FileOperation<YustFile> operation) async {
@@ -156,18 +148,12 @@ class UploadManager implements FileOperationExecutor {
       linkedDocAttribute: file.linkedDocAttribute,
     );
     // The map layout keys both on the same hash, so the old entry goes first.
-    await _awaitDocumentWrite(
-      documentWriter?.removeFile(file),
-      'old entry for "$oldName"',
-    );
+    await _awaitDocumentWrite(documentWriter?.removeFile(file));
     file.name = newName;
     file.path = file.storageFolderPath;
     // ignore: deprecated_member_use
     file.url = url;
-    await _awaitDocumentWrite(
-      documentWriter?.writeFile(file),
-      'entry for "$newName"',
-    );
+    await _awaitDocumentWrite(documentWriter?.writeFile(file));
     await Yust.fileService.deleteFile(
       path: file.storageFolderPath!,
       name: oldName,
@@ -175,19 +161,14 @@ class UploadManager implements FileOperationExecutor {
   }
 
   /// Awaits a document write, but never longer than [_documentWriteTimeout].
-  /// Failures propagate; only a missing acknowledgement is absorbed.
-  Future<void> _awaitDocumentWrite(
-    Future<void>? write,
-    String description,
-  ) async {
+  /// Failures propagate; a missing acknowledgement is absorbed and left to
+  /// Firestore to sync.
+  Future<void> _awaitDocumentWrite(Future<void>? write) async {
     if (write == null) return;
     try {
       await write.timeout(_documentWriteTimeout);
     } on TimeoutException {
-      debugPrint(
-        '[offline-sync] $description not acknowledged within '
-        '${_documentWriteTimeout.inSeconds}s — left to Firestore to sync',
-      );
+      // Offline, a write never acks; Firestore's cache carries it.
     }
   }
 }
