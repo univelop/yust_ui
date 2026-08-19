@@ -41,7 +41,7 @@ class OfflineFileCommands {
   /// Enqueues [file]'s deletion (Storage bytes and its record entry) and drops
   /// the on-device copy at once, so it stops opening from disk.
   Future<void> delete(YustFile file) async {
-    await _storage.removeFile(file);
+    await _storage.removeFile(file.byteKey);
     await handler.enqueue(
       FileOperation<YustFile>(type: FileOperationType.delete, file: file),
     );

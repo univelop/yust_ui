@@ -55,30 +55,6 @@ void main() {
     ]);
   });
 
-  test(
-    'pending filters by type — each manager sees only its own operations',
-    () async {
-      await queue.enqueue(_operation(FileOperationType.upload, hash: 'h1'));
-      await queue.enqueue(_operation(FileOperationType.download, hash: 'h2'));
-      await queue.enqueue(_operation(FileOperationType.delete, hash: 'h3'));
-
-      final outbound = await queue.pending(
-        types: {
-          FileOperationType.upload,
-          FileOperationType.rename,
-          FileOperationType.delete,
-        },
-      );
-      expect(outbound.map((operation) => operation.file.name), [
-        'h1.pdf',
-        'h3.pdf',
-      ]);
-
-      final inbound = await queue.pending(types: {FileOperationType.download});
-      expect(inbound.map((operation) => operation.file.name), ['h2.pdf']);
-    },
-  );
-
   test('remove drops the operation by id, leaving the rest', () async {
     await queue.enqueue(_operation(FileOperationType.upload, hash: 'h1'));
     await queue.enqueue(_operation(FileOperationType.upload, hash: 'h2'));
@@ -214,8 +190,7 @@ void main() {
             hash: 'h1',
             bytes: bytes,
             storageFolderPath: 'records/rec1',
-          )
-            ..storageFolderPath = 'folder',
+          )..storageFolderPath = 'folder',
         ),
       );
 

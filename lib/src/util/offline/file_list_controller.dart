@@ -80,11 +80,6 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   List<T> get onlineFiles =>
       _currentFilesIncludingPendingChanges().where(_isOnline).toList();
 
-  /// Files with an on-device copy (pending upload or downloaded for offline).
-  List<T> get cachedFiles => _currentFilesIncludingPendingChanges()
-      .where((file) => file.cached)
-      .toList();
-
   /// Whether [file] is still queued for upload, i.e. it exists on this device
   /// but not yet in Storage. Drives the "not yet uploaded" marker.
   bool isPendingUpload(T file) => _pendingUploadFor(file) != null;
@@ -146,7 +141,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
       ..addAll(carried);
     for (final file in _online) {
       target.apply(file);
-      final path = await _storage.pathForFile(file);
+      final path = await _storage.pathForFile(file.byteKey);
       if (path != null) file.devicePath = path;
     }
     await _refreshPending();
@@ -178,7 +173,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     final pendingUploadOperation = _pendingUploadFor(file);
     if (pendingUploadOperation != null) {
       await handler.cancel(pendingUploadOperation);
-      await _storage.removeFile(file);
+      await _storage.removeFile(file.byteKey);
       await _scheduleRefresh();
       return;
     }
@@ -217,9 +212,6 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     }
     await _scheduleRefresh();
   }
-
-  /// Retries any queued operations (e.g. on reconnect / app start).
-  Future<void> flushUploads() => handler.processPendingOperations();
 
   /// Completes once every refresh requested so far has been applied.
   @visibleForTesting

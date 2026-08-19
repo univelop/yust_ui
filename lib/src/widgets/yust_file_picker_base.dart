@@ -248,9 +248,6 @@ abstract class YustFilePickerBaseState<
   /// All tracked files, in the source's storage order.
   List<T> get sourceFiles => _controller.files;
 
-  /// Files already persisted online.
-  List<T> get sourceOnlineFiles => _controller.onlineFiles;
-
   /// Adds and uploads [file].
   Future<void> addSourceFile(T file) => _controller.add(file);
 

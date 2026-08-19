@@ -32,8 +32,8 @@ class DownloadManager implements FileOperationExecutor {
     if (file.name == null || storageFolder == null || storageFolder.isEmpty) {
       return;
     }
-    if (await _storage.exists(file.byteKey)) {
-      file.devicePath = await _storage.resolvePath(file.byteKey);
+    if (await _storage.hasFile(file.byteKey)) {
+      file.devicePath = await _storage.pathForFile(file.byteKey);
       return;
     }
     final bytes = await Yust.fileService.downloadFile(

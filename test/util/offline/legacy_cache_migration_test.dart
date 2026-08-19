@@ -107,7 +107,7 @@ void main() {
       // the record entry by it.
       expect(migrated.file.hash, isNotEmpty);
 
-      final cachedPath = await storage.resolvePath(migrated.file.byteKey);
+      final cachedPath = await storage.pathForFile(migrated.file.byteKey);
       expect(cachedPath, isNotNull);
       expect(File(cachedPath!).readAsBytesSync(), bytes('pdf-bytes'));
     },

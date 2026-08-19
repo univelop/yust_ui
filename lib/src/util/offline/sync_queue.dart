@@ -12,8 +12,7 @@ import 'file_operation.dart';
 /// (download).
 ///
 /// It is just a persistent list: [enqueue] appends, [pending] reads oldest-first
-/// (optionally filtered by type so each manager sees only its own operations), and
-/// [remove] drops one applied operation by id. Two managers share the one queue, so
+/// and [remove] drops one applied operation by id. Two managers share the one queue, so
 /// removal is by identity — not a head-pop. The list is saved to a single file
 /// under [getApplicationSupportDirectory] so pending operations survive an app restart.
 ///
@@ -60,19 +59,9 @@ class SyncQueue {
         await _save(operations);
       });
 
-  /// The pending operations, oldest first, without removing them. When [types] is
-  /// given, only operations of those kinds are returned — the queue's one entry point
-  /// for both the upload and download managers.
-  Future<List<FileOperation<YustFile>>> pending({
-    Set<FileOperationType>? types,
-  }) => _serialized(() async {
-    final operations = await _load();
-    return types == null
-        ? operations
-        : operations
-              .where((operation) => types.contains(operation.type))
-              .toList();
-  });
+  /// The pending operations, oldest first, without removing them.
+  Future<List<FileOperation<YustFile>>> pending() =>
+      _serialized(() async => _load());
 
   /// Removes the operation with [operation]'s id. No-operation when it is already gone (a manager
   /// removes each operation only after it has applied it).

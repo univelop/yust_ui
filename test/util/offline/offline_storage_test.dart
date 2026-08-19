@@ -21,7 +21,7 @@ void main() {
 
   Uint8List bytes(String content) => Uint8List.fromList(content.codeUnits);
 
-  test('write stores bytes and resolvePath finds them', () async {
+  test('write stores bytes and pathForFile finds them', () async {
     final path = await storage.write(
       byteKey: 'h1',
       name: 'plan.pdf',
@@ -29,22 +29,22 @@ void main() {
     );
 
     expect(path, endsWith('/h1/plan.pdf'));
-    expect(await storage.resolvePath('h1'), path);
-    expect(await storage.exists('h1'), isTrue);
+    expect(await storage.pathForFile('h1'), path);
+    expect(await storage.hasFile('h1'), isTrue);
     expect(File(path!).readAsBytesSync(), bytes('pdf-bytes'));
   });
 
-  test('resolvePath / exists are null / false for an unknown entry', () async {
-    expect(await storage.resolvePath('missing'), isNull);
-    expect(await storage.exists('missing'), isFalse);
+  test('pathForFile / hasFile are null / false for an unknown entry', () async {
+    expect(await storage.pathForFile('missing'), isNull);
+    expect(await storage.hasFile('missing'), isFalse);
   });
 
   test('remove deletes the entry and is safe when already gone', () async {
     await storage.write(byteKey: 'h1', name: 'plan.pdf', bytes: bytes('x'));
-    await storage.remove('h1');
+    await storage.removeFile('h1');
 
-    expect(await storage.exists('h1'), isFalse);
-    await storage.remove('h1'); // no throw on a second remove
+    expect(await storage.hasFile('h1'), isFalse);
+    await storage.removeFile('h1'); // no throw on a second remove
   });
 
   test('a copy cached for other content is not served', () async {
@@ -62,19 +62,19 @@ void main() {
       bytes: bytes('old-drawing'),
     );
 
-    expect(await storage.pathForFile(signature('new')), isNull);
-    expect(await storage.hasFile(signature('old')), isTrue);
+    expect(await storage.pathForFile(signature('new').byteKey), isNull);
+    expect(await storage.hasFile(signature('old').byteKey), isTrue);
   });
 
   test('entries are independent — writing one never drops another', () async {
     await storage.write(byteKey: 'h1', name: 'a.pdf', bytes: bytes('a'));
     await storage.write(byteKey: 'h2', name: 'b.pdf', bytes: bytes('b'));
 
-    expect(await storage.exists('h1'), isTrue);
-    expect(await storage.exists('h2'), isTrue);
+    expect(await storage.hasFile('h1'), isTrue);
+    expect(await storage.hasFile('h2'), isTrue);
 
-    await storage.remove('h1');
-    expect(await storage.exists('h1'), isFalse);
-    expect(await storage.exists('h2'), isTrue);
+    await storage.removeFile('h1');
+    expect(await storage.hasFile('h1'), isFalse);
+    expect(await storage.hasFile('h2'), isTrue);
   });
 }

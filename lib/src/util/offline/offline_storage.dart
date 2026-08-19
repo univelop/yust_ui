@@ -45,32 +45,25 @@ class OfflineStorage {
     return path;
   }
 
-  /// The path to the entry's bytes, or null when absent.
-  Future<String?> resolvePath(String key) async {
+  /// The path to the on-device copy of the file stored under [byteKey], or null
+  /// when absent.
+  Future<String?> pathForFile(String byteKey) async {
     if (kIsWeb) return null;
-    final directory = Directory('${await _root()}/$_folder/$key');
+    final directory = Directory('${await _root()}/$_folder/$byteKey');
     if (!directory.existsSync()) return null;
     final files = directory.listSync().whereType<File>();
     return files.isEmpty ? null : files.first.path;
   }
 
-  /// Whether the entry's bytes are present.
-  Future<bool> exists(String key) async => (await resolvePath(key)) != null;
+  /// Whether an on-device copy of the file stored under [byteKey] is present.
+  Future<bool> hasFile(String byteKey) async =>
+      (await pathForFile(byteKey)) != null;
 
-  /// The path to [file]'s on-device copy, or null when absent.
-  Future<String?> pathForFile(YustFile file) => resolvePath(file.byteKey);
-
-  /// Whether an on-device copy of [file] is present.
-  Future<bool> hasFile(YustFile file) async =>
-      (await pathForFile(file)) != null;
-
-  /// Removes [file]'s on-device copy.
-  Future<void> removeFile(YustFile file) => remove(file.byteKey);
-
-  /// Removes the entry's bytes. Safe if already gone.
-  Future<void> remove(String key) async {
+  /// Removes the on-device copy of the file stored under [byteKey] — its whole
+  /// entry directory. Safe if already gone.
+  Future<void> removeFile(String byteKey) async {
     if (kIsWeb) return;
-    final directory = Directory('${await _root()}/$_folder/$key');
+    final directory = Directory('${await _root()}/$_folder/$byteKey');
     if (directory.existsSync()) await directory.delete(recursive: true);
   }
 
