@@ -59,8 +59,7 @@ class OfflineStorage {
   Future<bool> hasFile(String byteKey) async =>
       (await pathForFile(byteKey)) != null;
 
-  /// Removes the on-device copy of the file stored under [byteKey] — its whole
-  /// entry directory. Safe if already gone.
+  /// Removes the on-device copy of the file stored under [byteKey] and its whole entry directory.
   Future<void> removeFile(String byteKey) async {
     if (kIsWeb) return;
     final directory = Directory('${await _root()}/$_folder/$byteKey');
