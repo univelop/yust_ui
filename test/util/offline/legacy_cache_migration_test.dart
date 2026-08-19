@@ -42,7 +42,9 @@ void main() {
     stagingRoot = Directory.systemTemp.createTempSync(
       'legacy_migration_staging',
     );
-    queue = SyncQueue(directoryProvider: () async => queueRoot);
+    queue = SyncQueue(
+      storage: OfflineStorage(directoryProvider: () async => queueRoot),
+    );
     storage = OfflineStorage(directoryProvider: () async => storageRoot);
     handler = FileOperationHandler(
       executors: [_ParkingExecutor()],

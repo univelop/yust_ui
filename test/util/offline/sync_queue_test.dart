@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/file_operation.dart';
+import 'package:yust_ui/src/util/offline/offline_storage.dart';
 import 'package:yust_ui/src/util/offline/sync_queue.dart';
 
 final _t1 = DateTime.utc(2026, 1, 1, 10, 0);
@@ -33,7 +34,9 @@ void main() {
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('sync_queue_test');
-    queue = SyncQueue(directoryProvider: () async => root);
+    queue = SyncQueue(
+      storage: OfflineStorage(directoryProvider: () async => root),
+    );
   });
 
   tearDown(() {
@@ -84,7 +87,9 @@ void main() {
       ),
     );
 
-    final reopened = SyncQueue(directoryProvider: () async => root);
+    final reopened = SyncQueue(
+      storage: OfflineStorage(directoryProvider: () async => root),
+    );
     final operations = await reopened.pending();
     expect(operations.single.type, FileOperationType.rename);
     expect(operations.single.newName, 'b.pdf');

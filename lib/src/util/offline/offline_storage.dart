@@ -4,19 +4,28 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yust/yust.dart';
 
-import 'file_operation.dart';
-
-/// Durable on-device storage for offline file bytes.
+/// Durable on-device storage for everything the offline file handling keeps.
 ///
-/// Each file's bytes live under [getApplicationSupportDirectory] (durable, never
-/// OS-purged), in a directory named after its
-/// [YustFileOfflineKey.byteKey]: `<app-support>/offline_files/<key>/<name>`.
+/// It owns the on-disk layout, so nothing else in the offline code builds a
+/// path. A file's bytes live under [getApplicationSupportDirectory] (durable,
+/// never OS-purged), in a directory named after its
+/// `YustFileOfflineKey.byteKey`: `<app-support>/offline_files/<key>/<name>`.
+/// [readText] and [writeText] keep a plain text file next to those entries, for
+/// the state the offline handling persists besides bytes.
 ///
-/// Native only, but safe to call from anywhere: on web every method answers as
-/// though nothing were stored, so callers never branch on `kIsWeb` themselves.
+/// Native only. The byte methods are safe to call from anywhere — on web there
+/// is no on-device copy of anything, which is the same answer a caller already
+/// handles for a file it has not cached yet, so none of them branch on the
+/// platform. [readText] and [writeText] are not: they have no truthful web
+/// answer, and a caller that needs them must gate on [isAvailable] first.
 class OfflineStorage {
   OfflineStorage({Future<Directory> Function()? directoryProvider})
     : _rootProvider = directoryProvider ?? getApplicationSupportDirectory;
+
+  /// Whether the device has durable storage at all. False on web, where
+  /// [readText] and [writeText] are unsupported — callers that need a different
+  /// strategy there gate on this rather than on `kIsWeb`.
+  static bool get isAvailable => !kIsWeb;
 
   /// The base directory. Defaults to the application support directory; tests
   /// inject a temporary directory so no real IO leaks.
@@ -66,8 +75,26 @@ class OfflineStorage {
     if (directory.existsSync()) await directory.delete(recursive: true);
   }
 
-  Future<Directory> _entryDirectory(String key) async {
-    final directory = Directory('${await _root()}/$_folder/$key');
+  /// The contents of the text file [name] held next to the byte entries.
+  Future<String?> readText(String name) async {
+    final file = File('${await _root()}/$_folder/$name');
+    return file.existsSync() ? file.readAsString() : null;
+  }
+
+  /// Writes [text] to the text file [name] next to the byte entries.
+  Future<void> writeText(String name, String text) async {
+    await File('${(await _folderDirectory()).path}/$name').writeAsString(text);
+  }
+
+  Future<Directory> _entryDirectory(String key) async =>
+      _ensureDirectoryIsCreated(
+        Directory('${(await _folderDirectory()).path}/$key'),
+      );
+
+  Future<Directory> _folderDirectory() async =>
+      _ensureDirectoryIsCreated(Directory('${await _root()}/$_folder'));
+
+  Future<Directory> _ensureDirectoryIsCreated(Directory directory) async {
     if (!directory.existsSync()) await directory.create(recursive: true);
     return directory;
   }

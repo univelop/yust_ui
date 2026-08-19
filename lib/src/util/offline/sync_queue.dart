@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:yust/yust.dart';
 
 import 'file_operation.dart';
+import 'offline_storage.dart';
 
 /// A durable list of [FileOperation]s — the single route for every file change,
 /// online or offline, both outbound (upload/rename/delete) and inbound
@@ -13,22 +11,24 @@ import 'file_operation.dart';
 ///
 /// It is just a persistent list: [enqueue] appends, [pending] reads oldest-first
 /// and [remove] drops one applied operation by id. Two managers share the one queue, so
-/// removal is by identity — not a head-pop. The list is saved to a single file
-/// under [getApplicationSupportDirectory] so pending operations survive an app restart.
+/// removal is by identity — not a head-pop. The list is saved as one JSON blob
+/// through [OfflineStorage], next to the bytes it queues work for, so pending
+/// operations survive an app restart.
 ///
-/// On web the operations are held in memory instead — [getApplicationSupportDirectory]
-/// has no web implementation. They are kept as objects, not as their JSON: a
-/// round-trip drops [YustFile.bytes], and on web those are the file's only copy
-/// (nothing is cached on the device), so the upload would find nothing to send.
+/// On web the operations are held in memory instead — nothing is stored on the
+/// device there. They are kept as objects, not as their JSON: a round-trip
+/// drops [YustFile.bytes], and on web those are the file's only copy, so the
+/// upload would find nothing to send.
 class SyncQueue {
-  SyncQueue({Future<Directory> Function()? directoryProvider, bool? persistent})
-    : _rootProvider = directoryProvider ?? getApplicationSupportDirectory,
-      isPersistent = persistent ?? !kIsWeb;
+  SyncQueue({OfflineStorage? storage, bool? persistent})
+    : _storage = storage ?? OfflineStorage(),
+      isPersistent = persistent ?? OfflineStorage.isAvailable;
 
-  final Future<Directory> Function() _rootProvider;
+  final OfflineStorage _storage;
 
-  /// Whether operations survive a restart. False on web, and settable so a test
-  /// can exercise the in-memory path the VM never takes on its own.
+  /// Whether operations survive a restart, i.e. whether the device has durable
+  /// storage. Settable so a test can exercise the in-memory path the VM never
+  /// takes on its own.
   final bool isPersistent;
 
   static const _fileName = 'sync_queue.json';
@@ -88,9 +88,9 @@ class SyncQueue {
 
   Future<List<FileOperation<YustFile>>> _load() async {
     if (!isPersistent) return List<FileOperation<YustFile>>.of(_memory);
-    final file = await _file();
-    if (!file.existsSync()) return [];
-    return (jsonDecode(await file.readAsString()) as List)
+    final json = await _storage.readText(_fileName);
+    if (json == null) return [];
+    return (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
         .map(_decode)
         .toList();
@@ -103,13 +103,11 @@ class SyncQueue {
         ..addAll(operations);
       return;
     }
-    await (await _file()).writeAsString(
+    await _storage.writeText(
+      _fileName,
       jsonEncode(operations.map((operation) => operation.toJson()).toList()),
     );
   }
-
-  Future<File> _file() async =>
-      File('${(await _rootProvider()).path}/$_fileName');
 
   FileOperation<YustFile> _decode(Map<String, dynamic> json) =>
       FileOperation.fromJson<YustFile>(json);

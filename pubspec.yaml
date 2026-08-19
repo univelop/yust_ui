@@ -26,10 +26,10 @@ dependencies:
     image: ^4.5.2
     intl: ^0.20.2
     mask_text_input_formatter: ^2.9.0
-    open_filex:
-        git:
-            url: https://github.com/univelop/open_filex.git
-            ref: master
+    # The univelop/open_filex fork, published under its own name: it and
+    # open_filex both ship the com.crazecoder.openfile Android package, which
+    # broke dex merging when both were resolved side by side.
+    yust_open_file_x: ^4.7.1
     path_provider: ^2.1.5
     photo_view: ^0.15.0
     share_plus: ^11.1.0

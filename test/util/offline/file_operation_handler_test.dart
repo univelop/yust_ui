@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/file_operation.dart';
 import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/offline_storage.dart';
 import 'package:yust_ui/src/util/offline/sync_queue.dart';
 
 /// Records the name of every operation it is handed; an optional [onExecute]
@@ -82,7 +83,9 @@ void main() {
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('file_op_handler_test');
-    queue = SyncQueue(directoryProvider: () async => root);
+    queue = SyncQueue(
+      storage: OfflineStorage(directoryProvider: () async => root),
+    );
   });
 
   tearDown(() {
@@ -450,7 +453,9 @@ void main() {
       expect(_queued(await queue.pending(), 'operation')?.failedAttempts, 1);
 
       // Survives a restart: a fresh queue over the same directory sees it.
-      final reopened = SyncQueue(directoryProvider: () async => root);
+      final reopened = SyncQueue(
+        storage: OfflineStorage(directoryProvider: () async => root),
+      );
       expect(_queued(await reopened.pending(), 'operation')?.failedAttempts, 1);
     });
 

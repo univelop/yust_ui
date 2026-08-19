@@ -128,8 +128,8 @@ void main() {
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('file_list_controller_test');
-    queue = SyncQueue(directoryProvider: () async => root);
     storage = OfflineStorage(directoryProvider: () async => root);
+    queue = SyncQueue(storage: storage);
     executor = _FakeExecutor();
     handler = buildHandler();
   });
@@ -204,7 +204,7 @@ void main() {
 
       // Simulate a restart: a fresh queue, handler and controller over the same
       // directory, so the operation is read back from disk.
-      final restartedQueue = SyncQueue(directoryProvider: () async => root);
+      final restartedQueue = SyncQueue(storage: storage);
       final restartedHandler = FileOperationHandler(
         executors: [_FakeExecutor(succeed: false)],
         queue: restartedQueue,
