@@ -70,15 +70,20 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// The files to display: the record snapshot overlaid with pending operations,
   /// honouring [newestFirst].
   List<T> get files {
-    final overlaid = _overlay();
-    return newestFirst ? overlaid.reversed.toList(growable: false) : overlaid;
+    final currentFiles = _currentFilesIncludingPendingChanges();
+    return newestFirst
+        ? currentFiles.reversed.toList(growable: false)
+        : currentFiles;
   }
 
   /// Files already persisted in the record.
-  List<T> get onlineFiles => _overlay().where(_isOnline).toList();
+  List<T> get onlineFiles =>
+      _currentFilesIncludingPendingChanges().where(_isOnline).toList();
 
   /// Files with an on-device copy (pending upload or downloaded for offline).
-  List<T> get cachedFiles => _overlay().where((file) => file.cached).toList();
+  List<T> get cachedFiles => _currentFilesIncludingPendingChanges()
+      .where((file) => file.cached)
+      .toList();
 
   /// Whether [file] is still queued for upload, i.e. it exists on this device
   /// but not yet in Storage. Drives the "not yet uploaded" marker.
@@ -101,11 +106,11 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
       // ignore: deprecated_member_use
       (file.path != null || file.url != null);
 
-  /// Overlays the pending operations onto the record snapshot, keyed by
-  /// [YustFileOfflineKey.offlineKey]. A pending add or replace shows its local
-  /// bytes; a pending delete is hidden. A rename or metadata update is already
-  /// on the online instance, so neither needs an entry.
-  List<T> _overlay() {
+  /// The record snapshot with the pending operations applied, keyed by
+  /// [YustFileOfflineKey.offlineKey]. A pending add or replace contributes its
+  /// local bytes; a pending delete drops its entry. A rename or metadata update
+  /// is already on the online instance, so neither needs an entry.
+  List<T> _currentFilesIncludingPendingChanges() {
     final byKey = <String, T>{
       for (final file in _online) file.offlineKey: file,
     };
