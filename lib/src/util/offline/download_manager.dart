@@ -14,9 +14,9 @@ import 'offline_storage.dart';
 /// fetch runs whether triggered by a pin or a remote change.
 class DownloadManager implements FileOperationExecutor {
   DownloadManager({OfflineStorage? storage})
-    : _storage = storage ?? OfflineStorage();
+    : _storage = storage ?? OfflineStorage.forDevice();
 
-  final OfflineStorage _storage;
+  final OfflineStorage? _storage;
 
   @override
   Set<FileOperationType> get handledTypes => {FileOperationType.download};
@@ -32,8 +32,11 @@ class DownloadManager implements FileOperationExecutor {
     if (file.name == null || storageFolder == null || storageFolder.isEmpty) {
       return;
     }
-    if (await _storage.hasFile(file.byteKey)) {
-      file.devicePath = await _storage.pathForFile(file.byteKey);
+    final storage = _storage;
+    // Nowhere to keep the bytes, so fetching them would only discard them.
+    if (storage == null) return;
+    if (await storage.hasFile(file.byteKey)) {
+      file.devicePath = await storage.pathForFile(file.byteKey);
       return;
     }
     final bytes = await Yust.fileService.downloadFile(
@@ -51,7 +54,7 @@ class DownloadManager implements FileOperationExecutor {
     if (bytes == null || bytes.isEmpty) {
       throw await missingOrUnreachable(storageFolder, file.name!);
     }
-    file.devicePath = await _storage.write(
+    file.devicePath = await storage.write(
       byteKey: file.byteKey,
       name: file.name!,
       bytes: bytes,

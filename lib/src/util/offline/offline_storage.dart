@@ -13,19 +13,18 @@ import 'package:yust/yust.dart';
 /// [readText] and [writeText] keep a plain text file next to those entries, for
 /// the state the offline handling persists besides bytes.
 ///
-/// Native only. The byte methods are safe to call from anywhere — on web there
-/// is no on-device copy of anything, which is the same answer a caller already
-/// handles for a file it has not cached yet, so none of them branch on the
-/// platform. [readText] and [writeText] are not: they have no truthful web
-/// answer, and a caller that needs them must gate on [isAvailable] first.
+/// Native only, and it never pretends otherwise: every method here does real
+/// IO. A device without durable storage has no instance at all — see
+/// [forDevice] — so "there is nowhere to keep this" is the absence of the
+/// object rather than a guard inside it.
 class OfflineStorage {
   OfflineStorage({Future<Directory> Function()? directoryProvider})
     : _rootProvider = directoryProvider ?? getApplicationSupportDirectory;
 
-  /// Whether the device has durable storage at all. False on web, where
-  /// [readText] and [writeText] are unsupported — callers that need a different
-  /// strategy there gate on this rather than on `kIsWeb`.
-  static bool get isAvailable => !kIsWeb;
+  /// The device's store, or null where the device keeps nothing — web, which
+  /// has no durable directory. The one place the platform is asked; everything
+  /// downstream holds the nullable result and reads null as "nothing is kept".
+  static OfflineStorage? forDevice() => kIsWeb ? null : OfflineStorage();
 
   /// The base directory. Defaults to the application support directory; tests
   /// inject a temporary directory so no real IO leaks.
@@ -43,7 +42,7 @@ class OfflineStorage {
     Uint8List? bytes,
     File? file,
   }) async {
-    if (kIsWeb || (bytes == null && file == null)) return null;
+    if (bytes == null && file == null) return null;
     final directory = await _entryDirectory(byteKey);
     final path = '${directory.path}/$name';
     if (bytes != null) {
@@ -57,7 +56,6 @@ class OfflineStorage {
   /// The path to the on-device copy of the file stored under [byteKey], or null
   /// when absent.
   Future<String?> pathForFile(String byteKey) async {
-    if (kIsWeb) return null;
     final directory = Directory('${await _root()}/$_folder/$byteKey');
     if (!directory.existsSync()) return null;
     final files = directory.listSync().whereType<File>();
@@ -70,7 +68,6 @@ class OfflineStorage {
 
   /// Removes the on-device copy of the file stored under [byteKey] and its whole entry directory.
   Future<void> removeFile(String byteKey) async {
-    if (kIsWeb) return;
     final directory = Directory('${await _root()}/$_folder/$byteKey');
     if (directory.existsSync()) await directory.delete(recursive: true);
   }

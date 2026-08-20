@@ -190,7 +190,7 @@ void main() {
         await controller.settled;
 
         expect(controller.onlineFiles.map((file) => file.name), ['plan.pdf']);
-        expect(await queue.pending(), isEmpty);
+        expect(await queue.getPendingOperations(), isEmpty);
       },
     );
 
@@ -257,7 +257,7 @@ void main() {
 
       // The operation has left the queue, so the pending overlay no longer carries it;
       // it must have been promoted into the online set instead of vanishing.
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
       expect(controller.files.map((file) => file.name), ['plan.pdf']);
     });
 
@@ -299,7 +299,7 @@ void main() {
       await controller.settled;
 
       expect(controller.onlineFiles, isEmpty);
-      expect(await queue.pending(), hasLength(1));
+      expect(await queue.getPendingOperations(), hasLength(1));
     });
 
     test('a cancelled upload is not promoted', () async {

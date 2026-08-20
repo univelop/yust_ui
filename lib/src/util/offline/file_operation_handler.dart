@@ -54,11 +54,10 @@ abstract interface class FileOperationExecutor {
 class FileOperationHandler extends ChangeNotifier {
   FileOperationHandler({
     required List<FileOperationExecutor> executors,
-    SyncQueue? queue,
+    required this.queue,
     Stream<bool>? onlineStream,
     Future<void> Function(Duration)? delay,
-  }) : queue = queue ?? SyncQueue(),
-       _delay = delay ?? ((duration) => Future<void>.delayed(duration)) {
+  }) : _delay = delay ?? ((duration) => Future<void>.delayed(duration)) {
     for (final executor in executors) {
       for (final type in executor.handledTypes) {
         _executors[type] = executor;
@@ -107,7 +106,7 @@ class FileOperationHandler extends ChangeNotifier {
   /// Throws [ArgumentError] for a file the executor could not address.
   Future<void> enqueue(FileOperation<YustFile> operation) async {
     _assertAddressable(operation);
-    await queue.enqueue(operation);
+    await queue.enqueueOperation(operation);
     await _notifyQueueChanged();
     unawaited(processPendingOperations());
   }
@@ -118,7 +117,7 @@ class FileOperationHandler extends ChangeNotifier {
     final batch = operations.toList();
     batch.forEach(_assertAddressable);
     for (final operation in batch) {
-      await queue.enqueue(operation);
+      await queue.enqueueOperation(operation);
     }
     if (batch.isEmpty) return;
     await _notifyQueueChanged();
@@ -149,12 +148,13 @@ class FileOperationHandler extends ChangeNotifier {
   /// Drops a still-pending [operation] without applying it, e.g. a file deleted
   /// before its upload ran.
   Future<void> cancel(FileOperation<YustFile> operation) async {
-    await queue.remove(operation);
+    await queue.removeOperation(operation);
     await _notifyQueueChanged();
   }
 
   /// This manager's pending operations, oldest-first.
-  Future<List<FileOperation<YustFile>>> pending() => queue.pending();
+  Future<List<FileOperation<YustFile>>> pending() =>
+      queue.getPendingOperations();
 
   /// Whether [file]'s bytes are still on their way to Storage. Synchronous, so
   /// a widget can ask while it builds; listen to this handler to rebuild when it
@@ -171,7 +171,7 @@ class FileOperationHandler extends ChangeNotifier {
   /// Re-reads the queue, then notifies. The one way this handler announces a
   /// change, so [isUploading] can never disagree with the listeners it wakes.
   Future<void> _notifyQueueChanged() async {
-    _uploadingFileKeys = (await queue.pending())
+    _uploadingFileKeys = (await queue.getPendingOperations())
         .where(
           (operation) =>
               operation.type == FileOperationType.upload &&
@@ -185,12 +185,12 @@ class FileOperationHandler extends ChangeNotifier {
   /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
   /// user made that has not reached the server.
   Future<List<FileOperation<YustFile>>> timedOutOperations() async =>
-      (await queue.pending()).where(_hasTimedOut).toList();
+      (await queue.getPendingOperations()).where(_hasTimedOut).toList();
 
   /// Clears the failure count on every timed out operation and drains again.
   Future<void> retryTimedOutOperations() async {
     for (final operation in await timedOutOperations()) {
-      await queue.replace(operation.withResetFailedAttempts());
+      await queue.replaceOperation(operation.withResetFailedAttempts());
     }
     _attempt = 0;
     await _notifyQueueChanged();
@@ -240,9 +240,9 @@ class FileOperationHandler extends ChangeNotifier {
     var failed = false;
     final failedOperationIdsThisPass = <String>{};
     for (
-      var pending = await queue.pending();
+      var pending = await queue.getPendingOperations();
       pending.isNotEmpty;
-      pending = await queue.pending()
+      pending = await queue.getPendingOperations()
     ) {
       var applied = 0;
       for (final operation in _nextOperationPerFile(pending)) {
@@ -251,7 +251,7 @@ class FileOperationHandler extends ChangeNotifier {
         if (failedOperationIdsThisPass.contains(operation.id)) continue;
         try {
           await _executorFor(operation).execute(operation);
-          await queue.remove(operation);
+          await queue.removeOperation(operation);
           _applied.add(operation);
           await _notifyQueueChanged();
           applied++;
@@ -299,7 +299,7 @@ class FileOperationHandler extends ChangeNotifier {
   ) async {
     if (!isPermanentOperationError(error)) return;
     final failed = operation.withFailedAttempt();
-    await queue.replace(failed);
+    await queue.replaceOperation(failed);
     if (_hasTimedOut(failed)) await _notifyQueueChanged();
   }
 

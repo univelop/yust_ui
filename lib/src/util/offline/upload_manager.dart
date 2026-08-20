@@ -42,7 +42,7 @@ class UploadManager implements FileOperationExecutor {
     OfflineStorage? storage,
     Duration? documentWriteTimeout,
   }) : _documentWriterFor = documentWriterFor,
-       _storage = storage ?? OfflineStorage(),
+       _storage = storage ?? OfflineStorage.forDevice(),
        _documentWriteTimeout =
            documentWriteTimeout ?? defaultDocumentWriteTimeout;
 
@@ -53,7 +53,7 @@ class UploadManager implements FileOperationExecutor {
   final OfflineFileDocumentWriter? Function(FileOperation<YustFile>)
   _documentWriterFor;
   final Duration _documentWriteTimeout;
-  final OfflineStorage _storage;
+  final OfflineStorage? _storage;
 
   @override
   Set<FileOperationType> get handledTypes => {
@@ -78,7 +78,7 @@ class UploadManager implements FileOperationExecutor {
   Future<void> _upload(FileOperation<YustFile> operation) async {
     final file = operation.file;
     final documentWriter = _documentWriterFor(operation);
-    final localPath = await _storage.pathForFile(file.byteKey);
+    final localPath = await _storage?.pathForFile(file.byteKey);
     final url = await Yust.fileService.uploadFile(
       path: file.storageFolderPath!,
       name: file.name!,
@@ -109,7 +109,7 @@ class UploadManager implements FileOperationExecutor {
       path: file.storageFolderPath!,
       name: file.name,
     );
-    await _storage.removeFile(file.byteKey);
+    await _storage?.removeFile(file.byteKey);
   }
 
   /// Re-writes the file's document entry with no byte transfer, e.g. after its
@@ -126,7 +126,7 @@ class UploadManager implements FileOperationExecutor {
     final documentWriter = _documentWriterFor(operation);
     final oldName = file.name!;
     final newName = operation.newName!;
-    final localPath = await _storage.pathForFile(file.byteKey);
+    final localPath = await _storage?.pathForFile(file.byteKey);
     // Reupload the same bytes under the new name (bytes unchanged → same hash).
     final bytes = localPath == null
         ? await Yust.fileService.downloadFile(

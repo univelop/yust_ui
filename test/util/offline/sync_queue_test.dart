@@ -44,14 +44,14 @@ void main() {
   });
 
   test('enqueue then pending lists the operations, oldest first', () async {
-    await queue.enqueue(
+    await queue.enqueueOperation(
       _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
     );
-    await queue.enqueue(
+    await queue.enqueueOperation(
       _operation(FileOperationType.delete, hash: 'h2', createdAt: _t2),
     );
 
-    final operations = await queue.pending();
+    final operations = await queue.getPendingOperations();
     expect(operations.map((operation) => operation.type), [
       FileOperationType.upload,
       FileOperationType.delete,
@@ -59,26 +59,37 @@ void main() {
   });
 
   test('remove drops the operation by id, leaving the rest', () async {
-    await queue.enqueue(_operation(FileOperationType.upload, hash: 'h1'));
-    await queue.enqueue(_operation(FileOperationType.upload, hash: 'h2'));
+    await queue.enqueueOperation(
+      _operation(FileOperationType.upload, hash: 'h1'),
+    );
+    await queue.enqueueOperation(
+      _operation(FileOperationType.upload, hash: 'h2'),
+    );
 
-    final operations = await queue.pending();
-    await queue.remove(operations.first);
-    expect((await queue.pending()).map((operation) => operation.file.name), [
-      'h2.pdf',
-    ]);
+    final operations = await queue.getPendingOperations();
+    await queue.removeOperation(operations.first);
+    expect(
+      (await queue.getPendingOperations()).map(
+        (operation) => operation.file.name,
+      ),
+      [
+        'h2.pdf',
+      ],
+    );
   });
 
   test('remove is a no-op when the operation is already gone', () async {
-    await queue.enqueue(_operation(FileOperationType.upload, hash: 'h1'));
-    final operations = await queue.pending();
-    await queue.remove(operations.first);
-    await queue.remove(operations.first);
-    expect(await queue.pending(), isEmpty);
+    await queue.enqueueOperation(
+      _operation(FileOperationType.upload, hash: 'h1'),
+    );
+    final operations = await queue.getPendingOperations();
+    await queue.removeOperation(operations.first);
+    await queue.removeOperation(operations.first);
+    expect(await queue.getPendingOperations(), isEmpty);
   });
 
   test('the queue survives a restart (new instance, same directory)', () async {
-    await queue.enqueue(
+    await queue.enqueueOperation(
       _operation(
         FileOperationType.rename,
         name: 'a.pdf',
@@ -90,7 +101,7 @@ void main() {
     final reopened = SyncQueue(
       storage: OfflineStorage(directoryProvider: () async => root),
     );
-    final operations = await reopened.pending();
+    final operations = await reopened.getPendingOperations();
     expect(operations.single.type, FileOperationType.rename);
     expect(operations.single.newName, 'b.pdf');
   });
@@ -100,39 +111,44 @@ void main() {
     // cycles overlap. Without the mutex, later saves drop earlier operations.
     final futures = [
       for (var i = 0; i < 20; i++)
-        queue.enqueue(
+        queue.enqueueOperation(
           _operation(FileOperationType.upload, hash: 'h$i', name: '$i.pdf'),
         ),
     ];
     await Future.wait(futures);
 
-    final names = (await queue.pending())
+    final names = (await queue.getPendingOperations())
         .map((operation) => operation.file.name)
         .toSet();
     expect(names, {for (var i = 0; i < 20; i++) '$i.pdf'});
   });
 
   test('interleaved enqueue and remove keep the surviving operation', () async {
-    await queue.enqueue(
+    await queue.enqueueOperation(
       _operation(FileOperationType.upload, hash: 'h1', name: '1.pdf'),
     );
-    final existing = (await queue.pending()).single;
+    final existing = (await queue.getPendingOperations()).single;
 
     // Overlap a remove of the existing operation with an enqueue of a new one.
     await Future.wait([
-      queue.remove(existing),
-      queue.enqueue(
+      queue.removeOperation(existing),
+      queue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h2', name: '2.pdf'),
       ),
     ]);
 
-    expect((await queue.pending()).map((operation) => operation.file.name), [
-      '2.pdf',
-    ]);
+    expect(
+      (await queue.getPendingOperations()).map(
+        (operation) => operation.file.name,
+      ),
+      [
+        '2.pdf',
+      ],
+    );
   });
 
   test('a queued image operation keeps its YustImage subtype', () async {
-    await queue.enqueue(
+    await queue.enqueueOperation(
       FileOperation<YustImage>(
         type: FileOperationType.upload,
         file: YustImage(name: 'photo.jpg', hash: 'img1')
@@ -141,24 +157,24 @@ void main() {
       ),
     );
 
-    final operations = await queue.pending();
+    final operations = await queue.getPendingOperations();
     expect(operations.single.file, isA<YustImage>());
     expect((operations.single.file as YustImage).location?.latitude, 48.1);
   });
 
   group('replace', () {
     test('rewrites the operation in place, keeping its position', () async {
-      await queue.enqueue(
+      await queue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
-      await queue.enqueue(
+      await queue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
-      final first = (await queue.pending()).first;
+      final first = (await queue.getPendingOperations()).first;
 
-      await queue.replace(first.withFailedAttempt());
+      await queue.replaceOperation(first.withFailedAttempt());
 
-      final operations = await queue.pending();
+      final operations = await queue.getPendingOperations();
       expect(operations.map((operation) => operation.file.name), [
         'h1.pdf',
         'h2.pdf',
@@ -168,26 +184,26 @@ void main() {
     });
 
     test('is a no-op when the operation is already gone', () async {
-      await queue.enqueue(
+      await queue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
-      final only = (await queue.pending()).single;
-      await queue.remove(only);
+      final only = (await queue.getPendingOperations()).single;
+      await queue.removeOperation(only);
 
-      await queue.replace(only.withFailedAttempt());
+      await queue.replaceOperation(only.withFailedAttempt());
 
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
     });
   });
 
   group('in memory (web)', () {
     late SyncQueue memoryQueue;
 
-    setUp(() => memoryQueue = SyncQueue(persistent: false));
+    setUp(() => memoryQueue = SyncQueue.inMemory());
 
     test('keeps the bytes, the only copy when nothing is cached', () async {
       final bytes = Uint8List.fromList([1, 2, 3]);
-      await memoryQueue.enqueue(
+      await memoryQueue.enqueueOperation(
         FileOperation<YustFile>(
           type: FileOperationType.upload,
           file: YustFile(
@@ -199,22 +215,27 @@ void main() {
         ),
       );
 
-      expect((await memoryQueue.pending()).single.file.bytes, bytes);
+      expect(
+        (await memoryQueue.getPendingOperations()).single.file.bytes,
+        bytes,
+      );
     });
 
     test('remove and replace address the same entries', () async {
-      await memoryQueue.enqueue(
+      await memoryQueue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
-      await memoryQueue.enqueue(
+      await memoryQueue.enqueueOperation(
         _operation(FileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
 
-      final first = (await memoryQueue.pending()).first;
-      await memoryQueue.replace(first.withFailedAttempt());
-      await memoryQueue.remove((await memoryQueue.pending()).last);
+      final first = (await memoryQueue.getPendingOperations()).first;
+      await memoryQueue.replaceOperation(first.withFailedAttempt());
+      await memoryQueue.removeOperation(
+        (await memoryQueue.getPendingOperations()).last,
+      );
 
-      final operations = await memoryQueue.pending();
+      final operations = await memoryQueue.getPendingOperations();
       expect(operations.map((operation) => operation.file.name), ['h1.pdf']);
       expect(operations.single.failedAttempts, 1);
     });

@@ -5,7 +5,6 @@ import 'package:yust/yust.dart';
 
 import 'file_operation.dart';
 import 'file_operation_handler.dart';
-import 'offline_file_commands.dart';
 import 'offline_file_target.dart';
 import 'offline_storage.dart';
 
@@ -23,14 +22,10 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     OfflineStorage? storage,
     this.newestFirst = false,
     this.onOnlineFilesChanged,
-  }) : _storage = storage ?? OfflineStorage() {
-    _commands = OfflineFileCommands(handler: handler, storage: _storage);
+  }) : _storage = storage ?? OfflineStorage.forDevice() {
     handler.addListener(_onQueueChanged);
     _appliedSub = handler.applied.listen(_onOperationApplied);
   }
-
-  /// The byte-store and queue steps, shared with hosts that keep no list.
-  late final OfflineFileCommands _commands;
 
   /// The one app-scoped handler every file change flows through.
   final FileOperationHandler handler;
@@ -38,7 +33,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Where this brick's files live (stamps files, filters pending operations).
   final OfflineFileTarget target;
 
-  final OfflineStorage _storage;
+  final OfflineStorage? _storage;
 
   /// Whether the newest file is shown first.
   bool newestFirst;
@@ -49,6 +44,12 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Persisted files from the record snapshot (last [setOnlineFiles]).
   final List<T> _online = [];
+
+  /// Signature of the last [setOnlineFilesIfChanged] call, so a host that seeds
+  /// from its build (a brick, whose object is rebuilt each frame) skips
+  /// reconciling to a value it already holds — and cannot loop through the
+  /// notifyListeners that [setOnlineFiles] ends with.
+  String? _lastOnlineFilesSignature;
 
   /// This target's pending operations, oldest-first (mirrors the queue).
   List<FileOperation<YustFile>> _pending = [];
@@ -124,24 +125,37 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     return List<T>.unmodifiable(byKey.values);
   }
 
-  /// Reconciles the list with the [incoming] online files from the record.
+  /// Like [setOnlineFiles], but reconciles — and notifies — only when
+  /// [incomingFiles] differs from the previous call. For a host that seeds on
+  /// every rebuild (a brick); [setOnlineFiles] always reconciles.
+  Future<void> setOnlineFilesIfChanged(List<T> incomingFiles) {
+    final signature = incomingFiles
+        // ignore: deprecated_member_use
+        .map((file) => '${file.offlineKey}|${file.name}|${file.hash}|${file.url}')
+        .join(',,');
+    if (signature == _lastOnlineFilesSignature) return Future<void>.value();
+    _lastOnlineFilesSignature = signature;
+    return setOnlineFiles(incomingFiles);
+  }
+
+  /// Reconciles the list with the [incomingFiles] online files from the record.
   /// Call on init and whenever the brick value changes.
   ///
   /// A file uploaded here since the last reconciliation is carried over when
-  /// [incoming] does not have it yet — see [_justUploaded].
-  Future<void> setOnlineFiles(List<T> incoming) async {
-    final incomingKeys = incoming.map((file) => file.offlineKey).toSet();
+  /// [incomingFiles] does not have it yet — see [_justUploaded].
+  Future<void> setOnlineFiles(List<T> incomingFiles) async {
+    final incomingKeys = incomingFiles.map((file) => file.offlineKey).toSet();
     final carried = _justUploaded.values
         .where((file) => !incomingKeys.contains(file.offlineKey))
         .toList();
     _justUploaded.clear();
     _online
       ..clear()
-      ..addAll(incoming)
+      ..addAll(incomingFiles)
       ..addAll(carried);
     for (final file in _online) {
       target.apply(file);
-      final path = await _storage.pathForFile(file.byteKey);
+      final path = await _storage?.pathForFile(file.byteKey);
       if (path != null) file.devicePath = path;
     }
     await _refreshPending();
@@ -152,35 +166,67 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// the caller reads [onlineFiles] against.
   Future<void> add(T file) async {
     target.apply(file);
-    await _commands.add(file);
+    await file.ensureHash();
+    await _writeBytes(file);
+    await handler.enqueue(_uploadOperation(FileOperationType.upload, file));
     await _scheduleRefresh();
   }
 
   /// Replaces [file]'s bytes (e.g. a re-drawn signature/image) and re-uploads.
-  Future<void> replaceBytes(T file, Uint8List bytes) async {
-    target.apply(file);
-    await _commands.replaceBytes(file, bytes);
-    await _scheduleRefresh();
+  /// Clearing the hash makes [add] recompute it for the new content.
+  Future<void> replaceBytes(T file, Uint8List bytes) {
+    file
+      ..bytes = bytes
+      ..hash = '';
+    return add(file);
   }
 
   /// Deletes [file]: a file still queued for upload is dropped from the queue
-  /// (and its bytes removed); an already-persisted file is removed via a delete
-  /// operation.
+  /// (and its bytes removed) rather than uploaded and then deleted; an
+  /// already-persisted file is removed via a delete operation, which frees its
+  /// bytes once it runs.
   Future<void> delete(T file) async {
     target.apply(file);
     // Deleted here, so it must not be carried across the next reconciliation.
     _justUploaded.remove(file.offlineKey);
-    final pendingUploadOperation = _pendingUploadFor(file);
-    if (pendingUploadOperation != null) {
-      await handler.cancel(pendingUploadOperation);
-      await _storage.removeFile(file.byteKey);
+    final pendingUpload = await _queuedUploadFor(file);
+    if (pendingUpload != null) {
+      await handler.cancel(pendingUpload);
+      await _storage?.removeFile(file.byteKey);
       await _scheduleRefresh();
       return;
     }
-    if (_isOnline(file)) {
+    // ignore: deprecated_member_use
+    if (file.path != null || file.url != null) {
       await handler.enqueue(_uploadOperation(FileOperationType.delete, file));
     }
     await _scheduleRefresh();
+  }
+
+  /// Writes [file]'s bytes (or source file) to the byte store and records the
+  /// resulting [YustFile.devicePath]. Stays null on web, where there is no store.
+  Future<void> _writeBytes(T file) async {
+    final byteKey = file.byteKey;
+    if (byteKey.isEmpty || !file.hasName) return;
+    file.devicePath = await _storage?.write(
+      byteKey: byteKey,
+      name: file.name!,
+      bytes: file.bytes,
+      file: file.file,
+    );
+  }
+
+  /// The upload of [file] still in the queue, read live rather than from the
+  /// cached overlay so a host that only issues commands (no online list) can
+  /// still cancel a not-yet-applied upload.
+  Future<FileOperation<YustFile>?> _queuedUploadFor(T file) async {
+    for (final operation in await handler.pending()) {
+      if (operation.type == FileOperationType.upload &&
+          operation.fileKey == file.offlineKey) {
+        return operation;
+      }
+    }
+    return null;
   }
 
   /// Renames [file] to [newName]. The displayed instance updates at once; the

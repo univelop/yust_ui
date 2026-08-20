@@ -124,7 +124,7 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, ['h1.pdf', 'h2.pdf']);
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
     });
 
     test('an operation enqueued mid-pass is applied in the same run', () async {
@@ -144,7 +144,7 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, ['h1.pdf', 'h2.pdf']);
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
     });
   });
 
@@ -159,9 +159,14 @@ void main() {
       await handler.enqueue(_uploadOperation('h1'));
 
       expect(executor.executed, isEmpty);
-      expect((await queue.pending()).map((operation) => operation.file.name), [
-        'h1.pdf',
-      ]);
+      expect(
+        (await queue.getPendingOperations()).map(
+          (operation) => operation.file.name,
+        ),
+        [
+          'h1.pdf',
+        ],
+      );
 
       gate.complete();
       await handler.processPendingOperations();
@@ -177,7 +182,7 @@ void main() {
       await handler.enqueue(_uploadOperation('h1'));
       await handler.processPendingOperations();
 
-      expect(await queue.pending(), hasLength(1));
+      expect(await queue.getPendingOperations(), hasLength(1));
     });
   });
 
@@ -197,9 +202,14 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, ['h2.pdf']);
-      expect((await queue.pending()).map((operation) => operation.file.name), [
-        'h1.pdf',
-      ]);
+      expect(
+        (await queue.getPendingOperations()).map(
+          (operation) => operation.file.name,
+        ),
+        [
+          'h1.pdf',
+        ],
+      );
     });
 
     test('a failing upload does not block a queued download', () async {
@@ -236,7 +246,7 @@ void main() {
       );
 
       expect(executor.executed, isEmpty);
-      expect(await queue.pending(), hasLength(2));
+      expect(await queue.getPendingOperations(), hasLength(2));
     });
   });
 
@@ -269,7 +279,7 @@ void main() {
 
       // Backoff never fires here, so only a honoured reconnect can drain h2.
       expect(executor.executed, ['h1.pdf', 'h2.pdf']);
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
     });
 
     test('several reconnects during one pass collapse into one', () async {
@@ -380,10 +390,13 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, isEmpty);
-      expect((await queue.pending()).map((operation) => operation.id), [
-        'first',
-        'second',
-      ]);
+      expect(
+        (await queue.getPendingOperations()).map((operation) => operation.id),
+        [
+          'first',
+          'second',
+        ],
+      );
     });
 
     test('another file passes the failing one in the same pass', () async {
@@ -422,7 +435,7 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, ['h1.pdf', 'h1.pdf']);
-      expect(await queue.pending(), isEmpty);
+      expect(await queue.getPendingOperations(), isEmpty);
     });
   });
 
@@ -437,7 +450,13 @@ void main() {
       await handler.processPendingOperations();
       await handler.processPendingOperations();
 
-      expect(_queued(await queue.pending(), 'operation')?.failedAttempts, 0);
+      expect(
+        _queued(
+          await queue.getPendingOperations(),
+          'operation',
+        )?.failedAttempts,
+        0,
+      );
     });
 
     test('a permanent failure spends one and persists it', () async {
@@ -448,15 +467,27 @@ void main() {
 
       // Seeded directly so exactly one pass runs; enqueue would start its own
       // and spend a second attempt.
-      await queue.enqueue(_uploadOperation('h1', id: 'operation'));
+      await queue.enqueueOperation(_uploadOperation('h1', id: 'operation'));
       await handler.processPendingOperations();
-      expect(_queued(await queue.pending(), 'operation')?.failedAttempts, 1);
+      expect(
+        _queued(
+          await queue.getPendingOperations(),
+          'operation',
+        )?.failedAttempts,
+        1,
+      );
 
       // Survives a restart: a fresh queue over the same directory sees it.
       final reopened = SyncQueue(
         storage: OfflineStorage(directoryProvider: () async => root),
       );
-      expect(_queued(await reopened.pending(), 'operation')?.failedAttempts, 1);
+      expect(
+        _queued(
+          await reopened.getPendingOperations(),
+          'operation',
+        )?.failedAttempts,
+        1,
+      );
     });
 
     test('an operation parks at maxFailedAttempts and stays queued', () async {
@@ -471,7 +502,10 @@ void main() {
       }
 
       expect(
-        _queued(await queue.pending(), 'operation')?.failedAttempts,
+        _queued(
+          await queue.getPendingOperations(),
+          'operation',
+        )?.failedAttempts,
         FileOperationHandler.maxFailedAttempts,
       );
       expect(executor.executed, isEmpty);
@@ -500,10 +534,13 @@ void main() {
       await handler.processPendingOperations();
 
       expect(executor.executed, ['h2.pdf']);
-      expect((await queue.pending()).map((operation) => operation.id), [
-        'timed out',
-        'behind',
-      ]);
+      expect(
+        (await queue.getPendingOperations()).map((operation) => operation.id),
+        [
+          'timed out',
+          'behind',
+        ],
+      );
     });
 
     test(
@@ -527,7 +564,7 @@ void main() {
         await handler.retryTimedOutOperations();
 
         expect(executor.executed, ['h1.pdf']);
-        expect(await queue.pending(), isEmpty);
+        expect(await queue.getPendingOperations(), isEmpty);
       },
     );
 
@@ -550,7 +587,7 @@ void main() {
         _uploadOperation('ok2'),
         _uploadOperation('ok3'),
       ]) {
-        await queue.enqueue(operation);
+        await queue.enqueueOperation(operation);
       }
       await handler.processPendingOperations();
 

@@ -96,7 +96,7 @@ void main() {
 
       await migrateLegacyFileCache(handler: handler, storage: storage);
 
-      final pending = await queue.pending();
+      final pending = await queue.getPendingOperations();
       expect(pending, hasLength(1));
       final migrated = pending.single;
       expect(migrated.type, FileOperationType.upload);
@@ -127,7 +127,10 @@ void main() {
 
       // A devicePath is taken as a readable on-device copy wherever a file is
       // presented, so it must not outlive the staged file.
-      expect((await queue.pending()).single.file.devicePath, isNull);
+      expect(
+        (await queue.getPendingOperations()).single.file.devicePath,
+        isNull,
+      );
       expect(File(stagedPath).existsSync(), isFalse);
       expect(await readPreference(), isNull);
     },
@@ -144,7 +147,7 @@ void main() {
 
     await migrateLegacyFileCache(handler: handler, storage: storage);
 
-    expect((await queue.pending()).single.file, isA<YustImage>());
+    expect((await queue.getPendingOperations()).single.file, isA<YustImage>());
   });
 
   test(
@@ -158,7 +161,7 @@ void main() {
 
       await migrateLegacyFileCache(handler: handler, storage: storage);
 
-      final pending = await queue.pending();
+      final pending = await queue.getPendingOperations();
       expect(pending.map((operation) => operation.file.name), ['kept.pdf']);
     },
   );
@@ -172,7 +175,7 @@ void main() {
 
     await migrateLegacyFileCache(handler: handler, storage: storage);
 
-    final pending = await queue.pending();
+    final pending = await queue.getPendingOperations();
     expect(pending.map((operation) => operation.file.name), ['kept.pdf']);
   });
 
@@ -181,7 +184,7 @@ void main() {
 
     await migrateLegacyFileCache(handler: handler, storage: storage);
 
-    expect(await queue.pending(), isEmpty);
+    expect(await queue.getPendingOperations(), isEmpty);
   });
 
   test('enqueues nothing on a second run', () async {
@@ -190,6 +193,6 @@ void main() {
     await migrateLegacyFileCache(handler: handler, storage: storage);
     await migrateLegacyFileCache(handler: handler, storage: storage);
 
-    expect(await queue.pending(), hasLength(1));
+    expect(await queue.getPendingOperations(), hasLength(1));
   });
 }

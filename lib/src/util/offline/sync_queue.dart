@@ -9,39 +9,36 @@ import 'offline_storage.dart';
 /// online or offline, both outbound (upload/rename/delete) and inbound
 /// (download).
 ///
-/// It is just a persistent list: [enqueue] appends, [pending] reads oldest-first
-/// and [remove] drops one applied operation by id. Two managers share the one queue, so
-/// removal is by identity — not a head-pop. The list is saved as one JSON blob
-/// through [OfflineStorage], next to the bytes it queues work for, so pending
+/// It is just a persistent list: [enqueueOperation] appends,
+/// [getPendingOperations] reads oldest-first and [removeOperation] drops one
+/// applied operation by id. Two managers share the one queue, so removal is by
+/// identity — not a head-pop. The list is saved as one JSON blob through
+/// [OfflineStorage], next to the bytes it queues work for, so pending
 /// operations survive an app restart.
 ///
-/// On web the operations are held in memory instead — nothing is stored on the
-/// device there. They are kept as objects, not as their JSON: a round-trip
+/// Without a store — web, where the device keeps nothing — the operations are
+/// held in memory instead, as objects rather than as their JSON: a round-trip
 /// drops [YustFile.bytes], and on web those are the file's only copy, so the
 /// upload would find nothing to send.
 class SyncQueue {
-  SyncQueue({OfflineStorage? storage, bool? persistent})
-    : _storage = storage ?? OfflineStorage(),
-      isPersistent = persistent ?? OfflineStorage.isAvailable;
+  /// Persists the queue through [storage].
+  SyncQueue({required OfflineStorage storage}) : _storage = storage;
 
-  final OfflineStorage _storage;
+  /// A queue that never reaches a store, for a device that has none. The
+  /// caller decides which of the two it wants — see [OfflineStorage.isAvailable].
+  SyncQueue.inMemory() : _storage = null;
 
-  /// Whether operations survive a restart, i.e. whether the device has durable
-  /// storage. Settable so a test can exercise the in-memory path the VM never
-  /// takes on its own.
-  final bool isPersistent;
+  /// Where the queue is persisted, or null when it is held in memory. Null is
+  /// the whole of the in-memory mode — with no store there is nothing to read
+  /// or write, so the fallback cannot be reached by mistake.
+  final OfflineStorage? _storage;
 
   static const _fileName = 'sync_queue.json';
 
-  /// Backs the queue when it is not [isPersistent].
+  /// Backs the queue when there is no store.
   final List<FileOperation<YustFile>> _memory = [];
 
-  /// Serialises every queue access. The backing file is a single blob shared by
-  /// all producers (pickers, the sync manager) and the draining consumer, each a
-  /// separate async call chain on the one isolate; without this, two overlapping
-  /// load→mutate→save cycles interleave at their `await`s and the later save
-  /// clobbers the earlier operation. Every public method runs its whole cycle inside
-  /// this chain so the file is only ever touched by one operation at a time.
+  /// Ensures each operation is fully written before the next one starts
   Future<void> _lock = Future<void>.value();
 
   Future<T> _serialized<T>(Future<T> Function() action) {
@@ -52,20 +49,21 @@ class SyncQueue {
   }
 
   /// Appends [operation] to the end of the queue.
-  Future<void> enqueue<T extends YustFile>(FileOperation<T> operation) =>
-      _serialized(() async {
-        final operations = await _load();
-        operations.add(operation);
-        await _save(operations);
-      });
+  Future<void> enqueueOperation<T extends YustFile>(
+    FileOperation<T> operation,
+  ) => _serialized(() async {
+    final operations = await _load();
+    operations.add(operation);
+    await _save(operations);
+  });
 
   /// The pending operations, oldest first, without removing them.
-  Future<List<FileOperation<YustFile>>> pending() =>
+  Future<List<FileOperation<YustFile>>> getPendingOperations() =>
       _serialized(() async => _load());
 
   /// Removes the operation with [operation]'s id. No-operation when it is already gone (a manager
   /// removes each operation only after it has applied it).
-  Future<void> remove(FileOperation<YustFile> operation) =>
+  Future<void> removeOperation(FileOperation<YustFile> operation) =>
       _serialized(() async {
         final operations = await _load();
         operations.removeWhere((entry) => entry.id == operation.id);
@@ -74,20 +72,21 @@ class SyncQueue {
 
   /// Overwrites the entry with [operation]'s id, keeping its position — the order is
   /// what holds a file's own operations in sequence. No-operation when the entry is gone.
-  Future<void> replace(FileOperation<YustFile> operation) => _serialized(
-    () async {
-      final operations = await _load();
-      final index = operations.indexWhere(
-        (entry) => entry.id == operation.id,
+  Future<void> replaceOperation(FileOperation<YustFile> operation) =>
+      _serialized(
+        () async {
+          final operations = await _load();
+          final index = operations.indexWhere(
+            (entry) => entry.id == operation.id,
+          );
+          if (index == -1) return;
+          operations[index] = operation;
+          await _save(operations);
+        },
       );
-      if (index == -1) return;
-      operations[index] = operation;
-      await _save(operations);
-    },
-  );
 
   Future<List<FileOperation<YustFile>>> _load() async {
-    if (!isPersistent) return List<FileOperation<YustFile>>.of(_memory);
+    if (_storage == null) return List<FileOperation<YustFile>>.of(_memory);
     final json = await _storage.readText(_fileName);
     if (json == null) return [];
     return (jsonDecode(json) as List)
@@ -97,7 +96,7 @@ class SyncQueue {
   }
 
   Future<void> _save(List<FileOperation<YustFile>> operations) async {
-    if (!isPersistent) {
+    if (_storage == null) {
       _memory
         ..clear()
         ..addAll(operations);

@@ -14,7 +14,6 @@ export 'src/util/offline/file_operation.dart';
 export 'src/util/offline/file_operation_handler.dart';
 export 'src/util/offline/file_presenter.dart';
 export 'src/util/offline/legacy_cache_migration.dart';
-export 'src/util/offline/offline_file_commands.dart';
 export 'src/util/offline/offline_file_target.dart';
 export 'src/util/offline/offline_storage.dart';
 export 'src/util/offline/sync_queue.dart';

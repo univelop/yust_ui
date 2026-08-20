@@ -19,9 +19,9 @@ import '../generated/locale_keys.g.dart';
 
 class YustFileHelpers {
   YustFileHelpers({OfflineStorage? offlineStorage})
-    : _offlineStorage = offlineStorage ?? OfflineStorage();
+    : _offlineStorage = offlineStorage ?? OfflineStorage.forDevice();
 
-  final OfflineStorage _offlineStorage;
+  final OfflineStorage? _offlineStorage;
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
@@ -31,7 +31,7 @@ class YustFileHelpers {
   /// The path to [file]'s on-device copy, also set as [YustFile.devicePath].
   /// Null when it is not cached.
   Future<String?> getPathForFile(YustFile file) async {
-    final path = await _offlineStorage.pathForFile(file.byteKey);
+    final path = await _offlineStorage?.pathForFile(file.byteKey);
     if (path != null) file.devicePath = path;
     return path;
   }
@@ -155,7 +155,7 @@ class YustFileHelpers {
     // A file needs a hash for its cached copy to be known current.
     final devicePath = file.hash.isEmpty
         ? null
-        : await _offlineStorage.pathForFile(file.byteKey);
+        : await _offlineStorage?.pathForFile(file.byteKey);
     if (devicePath != null) {
       file.devicePath = devicePath;
       if (!context.mounted) return;
