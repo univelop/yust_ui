@@ -8,7 +8,7 @@ import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/file_list_controller.dart';
 import 'package:yust_ui/src/util/offline/file_operation.dart';
 import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
-import 'package:yust_ui/src/util/offline/offline_file_target.dart';
+import 'package:yust_ui/src/util/offline/firebase_file_location.dart';
 import 'package:yust_ui/src/util/offline/offline_storage.dart';
 import 'package:yust_ui/src/util/offline/sync_queue.dart';
 
@@ -21,7 +21,7 @@ final _permanent = FirebaseException(
   code: 'permission-denied',
 );
 
-const _target = OfflineFileTarget(
+const _target = FirebaseFileLocation(
   storageFolderPath: 'records/rec1',
   linkedDocPath: 'records/rec1',
   linkedDocAttribute: 'brickValues.brick1',
@@ -31,16 +31,16 @@ const _target = OfflineFileTarget(
 /// A target with no document behind it — a picker bound to a brick's settings,
 /// an email attachment list. Nothing else persists these files, so the host is
 /// the one that has to hear about them.
-const _unlinkedTarget = OfflineFileTarget(storageFolderPath: 'settings/brick1');
+const _unlinkedTarget = FirebaseFileLocation(storageFolderPath: 'settings/brick1');
 
 /// A second unlinked target, as a FileBrick and an ImageBrick on one record
 /// spec produce.
-const _otherUnlinkedTarget = OfflineFileTarget(
+const _otherUnlinkedTarget = FirebaseFileLocation(
   storageFolderPath: 'settings/brick2',
 );
 
 /// A picked file for [target], which may carry no document.
-YustFile _pickedFileFor(OfflineFileTarget target, String name) => YustFile(
+YustFile _pickedFileFor(FirebaseFileLocation target, String name) => YustFile(
   name: name,
   bytes: Uint8List.fromList(name.codeUnits),
   storageFolderPath: target.storageFolderPath,
@@ -140,12 +140,12 @@ void main() {
 
   FileListController<YustFile> buildController({
     FileOperationHandler? on,
-    OfflineFileTarget target = _target,
+    FirebaseFileLocation target = _target,
     void Function(List<YustFile>)? onOnlineFilesChanged,
   }) {
     final controller = FileListController<YustFile>(
       handler: on ?? handler,
-      target: target,
+      firebaseLocation: target,
       storage: storage,
       onOnlineFilesChanged: onOnlineFilesChanged,
     );

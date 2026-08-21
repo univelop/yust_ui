@@ -5,7 +5,7 @@ import 'package:yust/yust.dart';
 
 import 'file_operation.dart';
 import 'file_operation_handler.dart';
-import 'offline_file_target.dart';
+import 'firebase_file_location.dart';
 import 'offline_storage.dart';
 
 /// Widget-facing model for a brick's file list.
@@ -18,7 +18,7 @@ import 'offline_storage.dart';
 class FileListController<T extends YustFile> extends ChangeNotifier {
   FileListController({
     required this.handler,
-    required this.target,
+    required this.firebaseLocation,
     OfflineStorage? storage,
     this.newestFirst = false,
     this.onOnlineFilesChanged,
@@ -31,7 +31,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   final FileOperationHandler handler;
 
   /// Where this brick's files live (stamps files, filters pending operations).
-  final OfflineFileTarget target;
+  final FirebaseFileLocation firebaseLocation;
 
   final OfflineStorage? _storage;
 
@@ -51,7 +51,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// notifyListeners that [setOnlineFiles] ends with.
   String? _lastOnlineFilesSignature;
 
-  /// This target's pending operations, oldest-first (mirrors the queue).
+  /// This location's pending operations, oldest-first (mirrors the queue).
   List<FileOperation<YustFile>> _pending = [];
 
   /// Files this device has just uploaded, carried across one reconciliation.
@@ -131,7 +131,9 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   Future<void> setOnlineFilesIfChanged(List<T> incomingFiles) {
     final signature = incomingFiles
         // ignore: deprecated_member_use
-        .map((file) => '${file.offlineKey}|${file.name}|${file.hash}|${file.url}')
+        .map(
+          (file) => '${file.offlineKey}|${file.name}|${file.hash}|${file.url}',
+        )
         .join(',,');
     if (signature == _lastOnlineFilesSignature) return Future<void>.value();
     _lastOnlineFilesSignature = signature;
@@ -154,7 +156,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
       ..addAll(incomingFiles)
       ..addAll(carried);
     for (final file in _online) {
-      target.apply(file);
+      firebaseLocation.apply(file);
       final path = await _storage?.pathForFile(file.byteKey);
       if (path != null) file.devicePath = path;
     }
@@ -165,7 +167,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Returns once the pending overlay reflects the new operation, which is what
   /// the caller reads [onlineFiles] against.
   Future<void> add(T file) async {
-    target.apply(file);
+    firebaseLocation.apply(file);
     await file.ensureHash();
     await _writeBytes(file);
     await handler.enqueue(_uploadOperation(FileOperationType.upload, file));
@@ -186,7 +188,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// already-persisted file is removed via a delete operation, which frees its
   /// bytes once it runs.
   Future<void> delete(T file) async {
-    target.apply(file);
+    firebaseLocation.apply(file);
     // Deleted here, so it must not be carried across the next reconciliation.
     _justUploaded.remove(file.offlineKey);
     final pendingUpload = await _queuedUploadFor(file);
@@ -250,7 +252,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// the caller has already applied to the instance. A file queued for upload
   /// needs no operation — that upload carries the same instance.
   Future<void> updateMetadata(T file) async {
-    target.apply(file);
+    firebaseLocation.apply(file);
     if (_pendingUploadFor(file) == null) {
       await handler.enqueue(
         _uploadOperation(FileOperationType.updateMetadata, file),
@@ -289,7 +291,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   void _onOperationApplied(FileOperation<YustFile> operation) {
     if (_disposed) return;
     if (operation.type != FileOperationType.upload ||
-        !target.owns(operation.file)) {
+        !firebaseLocation.owns(operation.file)) {
       return;
     }
     final file = operation.file as T;
@@ -303,13 +305,15 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     _justUploaded[key] = file;
   }
 
-  /// Re-reads this target's operations from the queue. Checked for disposal on
+  /// Re-reads this location's operations from the queue. Checked for disposal on
   /// both sides of the await, since the host can be torn down mid-read.
   Future<void> _refreshPending() async {
     if (_disposed) return;
     final all = await handler.pending();
     if (_disposed) return;
-    _pending = all.where((operation) => target.owns(operation.file)).toList();
+    _pending = all
+        .where((operation) => firebaseLocation.owns(operation.file))
+        .toList();
     _emitOnlineFiles();
     notifyListeners();
   }
@@ -329,14 +333,14 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     YustFile file,
   ) => FileOperation<YustFile>(type: type, file: file);
 
-  /// Reports the persisted set to the host, for an unlinked target only.
+  /// Reports the persisted set to the host, for an unlinked location only.
   ///
-  /// A linked target ([OfflineFileTarget.isLinked]) is persisted by the queue's
-  /// own writer and reaches the host through the document stream. Without a
-  /// document there is no writer, so the host — a picker bound to a brick's
-  /// settings, an email attachment list — has to be told.
+  /// A linked location ([FirebaseFileLocation.isLinked]) is persisted by the
+  /// queue's own writer and reaches the host through the document stream.
+  /// Without a document there is no writer, so the host — a picker bound to a
+  /// brick's settings, an email attachment list — has to be told.
   void _emitOnlineFiles() {
-    if (target.isLinked) return;
+    if (firebaseLocation.isLinked) return;
     onOnlineFilesChanged?.call(onlineFiles);
   }
 }

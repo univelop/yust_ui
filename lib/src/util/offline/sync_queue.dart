@@ -25,7 +25,8 @@ class SyncQueue {
   SyncQueue({required OfflineStorage storage}) : _storage = storage;
 
   /// A queue that never reaches a store, for a device that has none. The
-  /// caller decides which of the two it wants — see [OfflineStorage.isAvailable].
+  /// caller decides which of the two it wants from whether
+  /// [OfflineStorage.forDevice] returned an instance.
   SyncQueue.inMemory() : _storage = null;
 
   /// Where the queue is persisted, or null when it is held in memory. Null is

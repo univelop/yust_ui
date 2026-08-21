@@ -103,6 +103,12 @@ class FileOperationHandler extends ChangeNotifier {
   /// Appends [operation] and starts a drain, returning as soon as it is durably
   /// queued. The transfer itself is not awaited.
   ///
+  /// Low-level. An upload/rename/updateMetadata operation must already have its
+  /// bytes written to `OfflineStorage` and its hash set — for record-file
+  /// mutations use `FileListController`, which does that bookkeeping first. A
+  /// `FileOperationType.download` may be enqueued directly to fetch bytes (e.g.
+  /// a sync reconcile).
+  ///
   /// Throws [ArgumentError] for a file the executor could not address.
   Future<void> enqueue(FileOperation<YustFile> operation) async {
     _assertAddressable(operation);

@@ -1,97 +1,103 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:yust_open_file_x/yust_open_file_x.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_open_file_x/yust_open_file_x.dart';
 
 import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
 import '../../yust_ui.dart';
-import '../yust_file_helpers.dart';
 
-/// Presents offline files to the user (open / open-in-default-app / share).
+/// Presents a [YustFile] to the user — the single entry point for opening,
+/// opening in the default app, and sharing.
 ///
-/// The only offline-file component that touches a [BuildContext], so the
-/// managers stay UI-free and testable.
+/// The only file component that touches a [BuildContext], so the offline
+/// managers stay UI-free and testable. Every verb resolves the file through
+/// [YustFileHelpers.resolveToLocalFile] (native) or
+/// [YustFileHelpers.resolveDownloadUrl] (web), so one cache-and-URL policy sits
+/// behind all of them.
 class FilePresenter {
   /// Opens [file] in the built-in preview — the on-device copy if cached,
-  /// otherwise downloaded from its URL — falling back to the browser.
-  static Future<void> open(BuildContext context, YustFile file) =>
-      _open(context, file, useDefaultApp: false);
-
-  /// Opens [file] in the user's default app (iOS 26+), else the built-in
-  /// preview. On web, downloads the file.
-  static Future<void> openInDefaultApp(BuildContext context, YustFile file) {
-    if (kIsWeb) return share(context, file);
-    return _open(context, file, useDefaultApp: true);
+  /// otherwise downloaded — falling back to the browser. Opens the browser
+  /// directly on web.
+  static Future<void> open(BuildContext context, YustFile file) {
+    if (kIsWeb) return _launchBrowser(file);
+    return _openLocal(file, useDefaultApp: false);
   }
 
-  /// Opens the share sheet (mobile) or triggers a download (web).
-  static Future<void> share(BuildContext context, YustFile file) => YustUi
-      .fileHelpers
-      .downloadAndLaunchYustFile(context: context, file: file);
+  /// Opens [file] in the user's default app (iOS 26+), else the built-in
+  /// preview. On web, shares (downloads) the file.
+  static Future<void> openInDefaultApp(BuildContext context, YustFile file) {
+    if (kIsWeb) return share(context, file);
+    return _openLocal(file, useDefaultApp: true);
+  }
 
-  static Future<void> _open(
+  /// Opens the share sheet (mobile) or triggers a download (web), using the
+  /// on-device copy when cached. [fileName] overrides the shared name, else the
+  /// file's own name is used.
+  static Future<void> share(
     BuildContext context,
     YustFile file, {
-    required bool useDefaultApp,
+    String? fileName,
   }) async {
+    final name = fileName ?? file.name!;
     if (kIsWeb) {
-      await _launchBrowser(file);
+      final url = await YustUi.fileHelpers.resolveDownloadUrl(file);
+      if (url == null) {
+        await _showError(LocaleKeys.alertCannotOpenFile.tr());
+        return;
+      }
+      if (!context.mounted) return;
+      await YustUi.fileHelpers.downloadAndLaunchFile(
+        context: context,
+        url: url,
+        name: name,
+      );
       return;
     }
+    await _withLocalFile(file, (localFile) async {
+      if (!context.mounted) return;
+      await YustUi.fileHelpers.launchFile(
+        context: context,
+        name: name,
+        file: localFile,
+      );
+    });
+  }
+
+  static Future<void> _openLocal(
+    YustFile file, {
+    required bool useDefaultApp,
+  }) => _withLocalFile(file, (localFile) async {
+    final result = await OpenFilex.open(
+      localFile.path,
+      useIosDefaultApp: useDefaultApp,
+    );
+    if (result.type != ResultType.done) await _launchBrowser(file);
+  });
+
+  /// Resolves [file] to an on-device file behind a loading indicator, runs
+  /// [action] on it, and surfaces any failure as an alert.
+  static Future<void> _withLocalFile(
+    YustFile file,
+    Future<void> Function(File localFile) action,
+  ) async {
     await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
     try {
-      final filePath = await _resolveLocalPath(file);
+      final localFile = await YustUi.fileHelpers.resolveToLocalFile(file);
       await EasyLoading.dismiss();
-      final result = await OpenFilex.open(
-        filePath,
-        useIosDefaultApp: useDefaultApp,
-      );
-      if (result.type != ResultType.done) await _launchBrowser(file);
+      await action(localFile);
     } catch (error) {
       await EasyLoading.dismiss();
-      await YustUi.alertService.showAlert(
-        LocaleKeys.oops.tr(),
+      await _showError(
         LocaleKeys.alertCannotOpenFileWithError.tr(
           namedArgs: {'error': error.toString()},
         ),
       );
     }
-  }
-
-  /// Returns a local file path for [file], using the on-device copy when present
-  /// and downloading to a temp file otherwise.
-  static Future<String> _resolveLocalPath(YustFile file) async {
-    file.storageFolderPath ??= file.path;
-    // The durable app-support copy, not the temp staging dir.
-    final offlinePath = file.cached
-        ? file.devicePath
-        : await YustUi.fileHelpers.getPathForFile(file);
-    if (offlinePath != null) {
-      file.devicePath = offlinePath;
-      return offlinePath;
-    }
-
-    final url = file.getOriginalUrl();
-    if (url == null) throw YustException(LocaleKeys.exceptionFileNotFound.tr());
-
-    // iOS mishandles special characters in file names, so sanitize them.
-    final fileName = Platform.isIOS
-        ? YustFileHelpers.sanitizeFileName(file.name!)
-        : file.name!;
-    final tempDir = await getTemporaryDirectory();
-    final downloadPath = '${tempDir.path}/${file.storageFolderPath}/$fileName';
-    await Directory(
-      '${tempDir.path}/${file.storageFolderPath}',
-    ).create(recursive: true);
-    await Dio().download(url, downloadPath);
-    return downloadPath;
   }
 
   static Future<void> _launchBrowser(YustFile file) async {
@@ -103,4 +109,7 @@ class FilePresenter {
       throw YustException(LocaleKeys.alertCannotOpenFile.tr());
     }
   }
+
+  static Future<void> _showError(String message) =>
+      YustUi.alertService.showAlert(LocaleKeys.oops.tr(), message);
 }

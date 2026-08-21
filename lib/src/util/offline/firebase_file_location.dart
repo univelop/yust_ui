@@ -1,13 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
-/// Identifies where a set of offline files lives.
+/// Where a set of files lives in Firebase, and the identity of that set.
 ///
-/// Binds a Storage folder (where the bytes live) to the Firestore document
-/// attribute holding the file metadata, so the two travel together.
+/// Binds the Storage folder (where the bytes live) to the Firestore document
+/// attribute holding the file metadata, so the two travel together. This is the
+/// remote location only — the on-device copy is addressed separately, via
+/// `YustFileOfflineKey` and `OfflineStorage`.
+///
+/// These three fields used to live directly on the per-brick file handler. Once
+/// the handler became a single app-scoped [FileOperationHandler] whose queue
+/// carries every brick's files, the address had to become its own value: each
+/// [FileListController] holds one to stamp its files ([apply]) and to pick its
+/// own operations back out of the shared queue ([owns]).
 @immutable
-class OfflineFileTarget {
-  const OfflineFileTarget({
+class FirebaseFileLocation {
+  const FirebaseFileLocation({
     required this.storageFolderPath,
     this.linkedDocPath,
     this.linkedDocAttribute,
@@ -28,22 +36,22 @@ class OfflineFileTarget {
   /// read-modify-write. When false the legacy array layout is used.
   final bool storesFilesAsMap;
 
-  /// True when the target is backed by a Firestore document, so files can be
+  /// True when the location is backed by a Firestore document, so files can be
   /// cached offline and their metadata written back.
   bool get isLinked => linkedDocPath != null && linkedDocAttribute != null;
 
-  /// Whether [file] belongs to this target. The Storage folder is part of the
-  /// identity because two unlinked targets share a null document address.
+  /// Whether [file] belongs to this location. The Storage folder is part of the
+  /// identity because two unlinked locations share a null document address.
   bool owns(YustFile file) =>
       file.storageFolderPath == storageFolderPath &&
       file.linkedDocPath == linkedDocPath &&
       file.linkedDocAttribute == linkedDocAttribute;
 
-  /// A value, so a target can key a provider family: two targets built from the
-  /// same brick address the same files and must compare equal.
+  /// A value, so a location can key a provider family: two locations built from
+  /// the same brick address the same files and must compare equal.
   @override
   bool operator ==(Object other) =>
-      other is OfflineFileTarget &&
+      other is FirebaseFileLocation &&
       other.storageFolderPath == storageFolderPath &&
       other.linkedDocPath == linkedDocPath &&
       other.linkedDocAttribute == linkedDocAttribute &&
@@ -57,7 +65,7 @@ class OfflineFileTarget {
     storesFilesAsMap,
   );
 
-  /// Stamps [file] with this target's location.
+  /// Stamps [file] with this location.
   void apply(YustFile file) {
     file.storageFolderPath = storageFolderPath;
     file.linkedDocPath = linkedDocPath;

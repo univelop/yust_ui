@@ -45,6 +45,49 @@ class YustFileHelpers {
     return url == null ? null : Uri.parse(url);
   }
 
+  /// A synchronous [ImageProvider] for [file]: its on-device copy when cached
+  /// (requires [YustFile.devicePath] to already be populated), else the network
+  /// URL. For async cache resolution to a [Uri], use [getSourceUri].
+  ImageProvider imageProviderFor(YustFile file) => file.cached
+      ? MemoryImage(File(file.devicePath!).readAsBytesSync())
+      : NetworkImage(file.getOriginalUrl() ?? '');
+
+  /// The URL to fetch [file] from: the configured download-url hook if any,
+  /// else its signed original URL. Null when the file is not addressable.
+  Future<String?> resolveDownloadUrl(YustFile file) async {
+    final generateDownloadUrl = Yust.fileAccessService.generateDownloadUrl;
+    return (generateDownloadUrl != null
+            ? await generateDownloadUrl(file)
+            : null) ??
+        file.getOriginalUrl();
+  }
+
+  /// A local [File] for [file]: the on-device copy when cached, otherwise the
+  /// file downloaded to a namespaced temp path. Native only — web has no local
+  /// file. Throws [YustException] when the file is neither cached nor
+  /// addressable.
+  Future<File> resolveToLocalFile(YustFile file) async {
+    file.storageFolderPath ??= file.path;
+    // The durable copy short-circuits the byte-store lookup; an uploaded file
+    // is found through its content key.
+    final cachedPath = file.cached
+        ? file.devicePath
+        : await getPathForFile(file);
+    if (cachedPath != null) return File(cachedPath);
+
+    final url = await resolveDownloadUrl(file);
+    if (url == null) throw YustException(LocaleKeys.exceptionFileNotFound.tr());
+
+    // iOS mishandles special characters in file names, so sanitize them.
+    final fileName = Platform.isIOS ? sanitizeFileName(file.name!) : file.name!;
+    final tempDir = await getTemporaryDirectory();
+    final folder = '${tempDir.path}/${file.storageFolderPath}';
+    await Directory(folder).create(recursive: true);
+    final downloadPath = '$folder/$fileName';
+    await Dio().download(url, downloadPath);
+    return File(downloadPath);
+  }
+
   /// Shares or downloads a file.
   /// On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
@@ -126,6 +169,10 @@ class YustFileHelpers {
   /// On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
   /// Use either [file] or [data].
+  ///
+  /// Generic launcher for arbitrary bytes or files (generated exports, scripts,
+  /// logs). For a `YustFile`, use `FilePresenter` instead — it resolves the
+  /// on-device cache and signed URL, which this does not.
   Future<void> launchFile({
     required BuildContext context,
     required String name,
@@ -144,49 +191,12 @@ class YustFileHelpers {
     );
   }
 
-  /// Hands [file] to the platform, downloading it unless the device already
-  /// holds its current content.
-  Future<void> downloadAndLaunchYustFile({
-    required BuildContext context,
-    required YustFile file,
-  }) async {
-    if (!file.isValid()) return;
-
-    // A file needs a hash for its cached copy to be known current.
-    final devicePath = file.hash.isEmpty
-        ? null
-        : await _offlineStorage?.pathForFile(file.byteKey);
-    if (devicePath != null) {
-      file.devicePath = devicePath;
-      if (!context.mounted) return;
-      try {
-        await launchFile(
-          context: context,
-          name: file.name!,
-          file: File(devicePath),
-        );
-      } catch (e) {
-        await _showFileError(e);
-      }
-      return;
-    }
-
-    final generateDownloadUrl = Yust.fileAccessService.generateDownloadUrl;
-    final url = generateDownloadUrl != null
-        ? await generateDownloadUrl(file)
-        // ignore: deprecated_member_use
-        : file.url;
-    if (url == null || !context.mounted) return;
-
-    await downloadAndLaunchFile(
-      context: context,
-      url: url,
-      name: file.name!,
-    );
-  }
-
   /// Downloads a file. On iOS and Android shows Share-Popup afterwards.
   /// For the browser starts the file download.
+  ///
+  /// Generic launcher for an arbitrary URL. For a `YustFile`, use
+  /// `FilePresenter` instead — it resolves the on-device cache and signed URL,
+  /// which this does not.
   Future<void> downloadAndLaunchFile({
     required BuildContext context,
     required String url,

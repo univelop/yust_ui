@@ -92,4 +92,45 @@ void main() {
       expect(plan.devicePath, isNull);
     });
   });
+
+  group('resolveToLocalFile', () {
+    test('returns the on-device copy when the file is cached', () async {
+      final plan = _plan();
+      await storage.write(
+        byteKey: plan.offlineKey,
+        name: plan.name!,
+        bytes: Uint8List.fromList([1, 2, 3]),
+      );
+
+      final file = await helpers.resolveToLocalFile(plan);
+
+      expect(file.existsSync(), isTrue);
+      expect(file.path, plan.devicePath);
+    });
+
+    test(
+      'returns the durable copy without a storage lookup when devicePath is set',
+      () async {
+        // A picked file not yet uploaded: its only copy is the durable
+        // devicePath, which is not addressable through the byte store.
+        final durable = File('${root.path}/durable.pdf')
+          ..writeAsBytesSync([1, 2, 3]);
+        final plan = _plan()..devicePath = durable.path;
+        expect(plan.cached, isTrue);
+
+        final file = await helpers.resolveToLocalFile(plan);
+
+        expect(file.path, durable.path);
+      },
+    );
+
+    test('throws when the file is neither cached nor addressable', () async {
+      final gone = YustFile(name: 'Gone.pdf', setCreatedAtToNow: false);
+
+      expect(
+        () => helpers.resolveToLocalFile(gone),
+        throwsA(isA<YustException>()),
+      );
+    });
+  });
 }

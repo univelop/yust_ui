@@ -344,12 +344,7 @@ class YustFilePickerState
       onSelected: (action) {
         switch (action) {
           case _FileMenuAction.download:
-            unawaited(
-              YustUi.fileHelpers.downloadAndLaunchYustFile(
-                context: context,
-                file: file,
-              ),
-            );
+            unawaited(FilePresenter.share(context, file));
           case _FileMenuAction.rename:
             unawaited(_renameFile(file));
           case _FileMenuAction.delete:
@@ -410,12 +405,7 @@ class YustFilePickerState
         return IconButton(
           icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
           color: Theme.of(buttonContext).primaryColor,
-          onPressed: () => unawaited(
-            YustUi.fileHelpers.downloadAndLaunchYustFile(
-              context: buttonContext,
-              file: file,
-            ),
-          ),
+          onPressed: () => unawaited(FilePresenter.share(buttonContext, file)),
         );
       },
     );

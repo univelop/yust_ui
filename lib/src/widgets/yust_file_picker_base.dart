@@ -12,7 +12,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/offline/file_list_controller.dart';
 import '../util/offline/file_operation.dart';
-import '../util/offline/offline_file_target.dart';
+import '../util/offline/firebase_file_location.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
@@ -221,7 +221,7 @@ abstract class YustFilePickerBaseState<
 
     _controller = FileListController<T>(
       handler: YustUi.fileOperationHandler,
-      target: OfflineFileTarget(
+      firebaseLocation: FirebaseFileLocation(
         storageFolderPath: widget.storageFolderPath,
         linkedDocPath: widget.linkedDocPath,
         linkedDocAttribute: widget.linkedDocAttribute,
