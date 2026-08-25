@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 
-// FirebaseException, re-exported by cloud_firestore, covers Storage errors too.
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart';
 import 'package:yust/yust.dart';
 
 import '../yust_file_helpers.dart';
 import 'yust_file_operation.dart';
+import 'yust_file_operation_error.dart';
 import 'yust_sync_queue.dart';
 
 /// Carries out one kind of [YustFileOperation].
@@ -197,7 +194,9 @@ class YustFileOperationHandler extends ChangeNotifier {
   /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
   /// user made that has not reached the server.
   Future<List<YustFileOperation<YustFile>>> failedOperations() async =>
-      (await queue.getPendingOperations()).where(_hasReachedRetryLimit).toList();
+      (await queue.getPendingOperations())
+          .where(_hasReachedRetryLimit)
+          .toList();
 
   /// Clears the failure count on every operation at its retry limit and drains again.
   Future<void> retryFailedOperations() async {
@@ -360,51 +359,3 @@ class YustFileOperationHandler extends ChangeNotifier {
       .connectivityStream
       .map((results) => results.any((r) => r != ConnectivityResult.none));
 }
-
-/// The bytes an operation needs are not in Storage at all.
-///
-/// Raised where the file service reports a failed transfer as empty bytes
-/// rather than throwing, so the queue can tell "the object is gone" — which no
-/// retry fixes — apart from "the server was unreachable", which every retry
-/// might.
-class YustMissingStorageObjectException implements Exception {
-  YustMissingStorageObjectException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
-/// Firebase codes no retry gets past: not allowed, or the target is gone.
-/// Everything else (`unavailable`, `retry-limit-exceeded`, …) is a connection
-/// problem wearing a code.
-const _permanentFirebaseCodes = {
-  'permission-denied',
-  'unauthenticated',
-  'unauthorized',
-  'not-found',
-  'object-not-found',
-  'invalid-argument',
-  'storage/unauthorized',
-  'storage/object-not-found',
-  'storage/invalid-argument',
-};
-
-/// Whether [error] means the operation can never succeed, so it counts against
-/// the operation's attempt budget instead of retrying forever. Unrecognised
-/// errors count as transient.
-bool isPermanentOperationError(Object error) => switch (error) {
-  // Bad input this code produced; retrying replays the same arguments.
-  ArgumentError() => true,
-  StateError() => true,
-  // The object is not in Storage; no number of retries puts it there.
-  YustMissingStorageObjectException() => true,
-  // Listed explicitly so no subtype falls through to a permanent verdict.
-  SocketException() ||
-  TimeoutException() ||
-  HttpException() ||
-  ClientException() => false,
-  FirebaseException(:final code) => _permanentFirebaseCodes.contains(code),
-  _ => false,
-};

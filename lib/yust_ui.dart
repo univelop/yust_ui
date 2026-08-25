@@ -11,6 +11,7 @@ export 'src/services/yust_alert_service.dart';
 export 'src/util/offline/yust_download_manager.dart';
 export 'src/util/offline/yust_file_list_controller.dart';
 export 'src/util/offline/yust_file_operation.dart';
+export 'src/util/offline/yust_file_operation_error.dart';
 export 'src/util/offline/yust_file_operation_handler.dart';
 export 'src/util/offline/yust_file_presenter.dart';
 export 'src/util/offline/yust_legacy_cache_migration.dart';

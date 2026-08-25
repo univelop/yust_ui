@@ -3,6 +3,7 @@ import 'package:yust/yust.dart';
 import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
 import 'yust_file_operation.dart';
+import 'yust_file_operation_error.dart';
 import 'yust_file_operation_handler.dart';
 import 'yust_offline_storage.dart';
 
@@ -19,7 +20,9 @@ class YustDownloadManager implements YustFileOperationExecutor {
   final YustOfflineStorage? _storage;
 
   @override
-  Set<YustFileOperationType> get handledTypes => {YustFileOperationType.download};
+  Set<YustFileOperationType> get handledTypes => {
+    YustFileOperationType.download,
+  };
 
   /// Downloads [operation]'s file and keeps its bytes on the device, setting the
   /// [YustFile.devicePath]. Skips the fetch when a copy already exists; a no-op
