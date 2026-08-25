@@ -92,7 +92,7 @@ class YustSyncQueue {
     if (json == null) return [];
     return (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
-        .map(_decode)
+        .map(YustFileOperation.fromJson<YustFile>)
         .toList();
   }
 
@@ -108,7 +108,4 @@ class YustSyncQueue {
       jsonEncode(operations.map((operation) => operation.toJson()).toList()),
     );
   }
-
-  YustFileOperation<YustFile> _decode(Map<String, dynamic> json) =>
-      YustFileOperation.fromJson<YustFile>(json);
 }

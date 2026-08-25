@@ -8,9 +8,9 @@ import 'package:yust/yust.dart';
 /// remote location only — the on-device copy is addressed separately, via
 /// `YustFileOfflineKey` and `YustOfflineStorage`.
 ///
-/// These three fields used to live directly on the per-brick file handler. Once
+/// These three fields used to live directly on the per-host file handler. Once
 /// the handler became a single app-scoped [YustFileOperationHandler] whose queue
-/// carries every brick's files, the address had to become its own value: each
+/// carries every host's files, the address had to become its own value: each
 /// [YustFileListController] holds one to stamp its files ([apply]) and to pick its
 /// own operations back out of the shared queue ([owns]).
 @immutable
@@ -25,10 +25,10 @@ class YustFirebaseFileLocation {
   /// Storage folder the file bytes live under.
   final String storageFolderPath;
 
-  /// Firestore document holding the file metadata (e.g. `records/abc`).
+  /// Firestore document holding the file metadata (e.g. `documents/abc`).
   final String? linkedDocPath;
 
-  /// Attribute on [linkedDocPath] holding the files (e.g. `brickValues.xyz`).
+  /// Attribute on [linkedDocPath] holding the files (e.g. `attributes.xyz`).
   final String? linkedDocAttribute;
 
   /// When true the attribute is a `{hash: file}` map, so a single file can be
@@ -48,7 +48,7 @@ class YustFirebaseFileLocation {
       file.linkedDocAttribute == linkedDocAttribute;
 
   /// A value, so a location can key a provider family: two locations built from
-  /// the same brick address the same files and must compare equal.
+  /// the same host address the same files and must compare equal.
   @override
   bool operator ==(Object other) =>
       other is YustFirebaseFileLocation &&

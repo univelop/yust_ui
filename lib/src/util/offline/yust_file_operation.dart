@@ -8,7 +8,7 @@ import 'package:yust/yust.dart';
 extension YustFileOfflineKey on YustFile {
   /// This file's identity as one entry of a list: overlay entry, queue matching,
   /// download dedupe. A digest of the Storage location, which is what an entry
-  /// is — never the bare name, which is not unique across records, and never the
+  /// is — never the bare name, which is not unique across documents, and never the
   /// content hash, which two entries holding the same bytes share.
   ///
   /// Not `FileHandlingHelper.fileMapKey` (uni_core): that keys the Firestore
@@ -26,9 +26,9 @@ extension YustFileOfflineKey on YustFile {
   String get byteKey => hash.isNotEmpty ? hash : offlineKey;
 
   /// Computes the md5 [YustFile.hash] from the file's content when it has none,
-  /// so its record key is stable before the upload runs.
+  /// so its document key is stable before the upload runs.
   ///
-  /// Call before enqueueing: a file that stays hashless is keyed in the record
+  /// Call before enqueueing: a file that stays hashless is keyed in the document
   /// by name, which cannot be addressed as a single Firestore field once it
   /// contains a dot.
   /// Runs on the UI isolate and scales with the file: on web there is no
@@ -50,7 +50,7 @@ extension YustFileOfflineKey on YustFile {
 /// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
 /// linked document (e.g. after its favorite flag changed). It exists so that a
 /// metadata-only change is queued and field-masked like every other change,
-/// instead of the picker saving its whole file list back over the record.
+/// instead of the picker saving its whole file list back over the document.
 enum YustFileOperationType { upload, rename, delete, updateMetadata, download }
 
 /// A single file change queued for sync — the queue's entry type.
@@ -93,7 +93,7 @@ class YustFileOperation<T extends YustFile> {
   final DateTime createdAt;
 
   /// How often this operation failed for a reason retrying cannot fix. Connection
-  /// failures never count; at the handler's limit the operation is timed out.
+  /// failures never count; at the handler's limit the operation reaches its retry limit.
   final int failedAttempts;
 
   /// A copy with one more permanent failure recorded.

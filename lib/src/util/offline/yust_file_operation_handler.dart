@@ -20,7 +20,7 @@ abstract interface class YustFileOperationExecutor {
   /// The operation kinds this executor owns.
   Set<YustFileOperationType> get handledTypes;
 
-  /// Carries out [operation]: its byte work and record write.
+  /// Carries out [operation]: its byte work and document write.
   Future<void> execute(YustFileOperation<YustFile> operation);
 }
 
@@ -42,8 +42,8 @@ abstract interface class YustFileOperationExecutor {
 /// Failures are classified. Connection failures retry forever, untracked. A
 /// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
 /// operation's [YustFileOperation.failedAttempts]; at [maxFailedAttempts] it is
-/// timed out — kept in the queue, reported via [timedOutOperations], cleared by
-/// [retryTimedOutOperations]. Nothing is dropped, and an unrecognised error
+/// at its retry limit — kept in the queue, reported via [failedOperations], cleared by
+/// [retryFailedOperations]. Nothing is dropped, and an unrecognised error
 /// counts as transient.
 ///
 /// [enqueue] waits only for the operation to be durably queued, never for the
@@ -87,7 +87,7 @@ class YustFileOperationHandler extends ChangeNotifier {
   static const _base = Duration(seconds: 1);
   static const _cap = Duration(seconds: 30);
 
-  /// Permanent failures an operation may collect before it is timed out.
+  /// Permanent failures an operation may collect before it reaches the retry limit.
   static const maxFailedAttempts = 5;
 
   late final StreamSubscription<bool> _connectivitySub;
@@ -108,7 +108,7 @@ class YustFileOperationHandler extends ChangeNotifier {
   /// queued. The transfer itself is not awaited.
   ///
   /// Low-level. An upload/rename/updateMetadata operation must already have its
-  /// bytes written to `YustOfflineStorage` and its hash set — for record-file
+  /// bytes written to `YustOfflineStorage` and its hash set — for document-file
   /// mutations use `YustFileListController`, which does that bookkeeping first. A
   /// `YustFileOperationType.download` may be enqueued directly to fetch bytes (e.g.
   /// a sync reconcile).
@@ -172,7 +172,7 @@ class YustFileOperationHandler extends ChangeNotifier {
   /// a widget can ask while it builds; listen to this handler to rebuild when it
   /// changes.
   ///
-  /// A timed out upload is not in flight — [timedOutOperations] reports those.
+  /// An upload at its retry limit is not in flight — [failedOperations] reports those.
   bool isUploading(YustFile file) =>
       _uploadingFileKeys.contains(file.offlineKey);
 
@@ -187,7 +187,7 @@ class YustFileOperationHandler extends ChangeNotifier {
         .where(
           (operation) =>
               operation.type == YustFileOperationType.upload &&
-              !_hasTimedOut(operation),
+              !_hasReachedRetryLimit(operation),
         )
         .map((operation) => operation.fileKey)
         .toSet();
@@ -196,12 +196,12 @@ class YustFileOperationHandler extends ChangeNotifier {
 
   /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
   /// user made that has not reached the server.
-  Future<List<YustFileOperation<YustFile>>> timedOutOperations() async =>
-      (await queue.getPendingOperations()).where(_hasTimedOut).toList();
+  Future<List<YustFileOperation<YustFile>>> failedOperations() async =>
+      (await queue.getPendingOperations()).where(_hasReachedRetryLimit).toList();
 
-  /// Clears the failure count on every timed out operation and drains again.
-  Future<void> retryTimedOutOperations() async {
-    for (final operation in await timedOutOperations()) {
+  /// Clears the failure count on every operation at its retry limit and drains again.
+  Future<void> retryFailedOperations() async {
+    for (final operation in await failedOperations()) {
       await queue.replaceOperation(operation.withResetFailedAttempts());
     }
     _attempt = 0;
@@ -209,8 +209,8 @@ class YustFileOperationHandler extends ChangeNotifier {
     await processPendingOperations();
   }
 
-  /// Whether [operation] has exhausted its failedAttempts; see [timedOutOperations].
-  bool _hasTimedOut(YustFileOperation<YustFile> operation) =>
+  /// Whether [operation] has exhausted its failedAttempts; see [failedOperations].
+  bool _hasReachedRetryLimit(YustFileOperation<YustFile> operation) =>
       operation.failedAttempts >= maxFailedAttempts;
 
   /// Drains the queue, and completes when the drain in flight does.
@@ -291,7 +291,7 @@ class YustFileOperationHandler extends ChangeNotifier {
   }
 
   /// The oldest queued operation of each file, in the order the files first appear —
-  /// the flat queue read as one FIFO per file. A timed out file yields nothing,
+  /// the flat queue read as one FIFO per file. A file at its retry limit yields nothing,
   /// holding its whole chain until the user retries.
   Iterable<YustFileOperation<YustFile>> _nextOperationPerFile(
     List<YustFileOperation<YustFile>> pending,
@@ -301,7 +301,7 @@ class YustFileOperationHandler extends ChangeNotifier {
       firstOperationForFile.putIfAbsent(operation.fileKey, () => operation);
     }
     return firstOperationForFile.values.where(
-      (operation) => !_hasTimedOut(operation),
+      (operation) => !_hasReachedRetryLimit(operation),
     );
   }
 
@@ -314,7 +314,7 @@ class YustFileOperationHandler extends ChangeNotifier {
     if (!isPermanentOperationError(error)) return;
     final failed = operation.withFailedAttempt();
     await queue.replaceOperation(failed);
-    if (_hasTimedOut(failed)) await _notifyQueueChanged();
+    if (_hasReachedRetryLimit(failed)) await _notifyQueueChanged();
   }
 
   YustFileOperationExecutor _executorFor(

@@ -27,7 +27,7 @@ const _preferenceKey = 'YustCachedFiles';
 ///
 /// Idempotent by way of clearing the preference last: a crash before that
 /// re-runs the migration and enqueues the same uploads again, which write the
-/// same bytes under the same name, storage path and hash-keyed record entry.
+/// same bytes under the same name, storage path and hash-keyed document entry.
 ///
 /// Delete this once every active install has launched a release containing it.
 Future<void> migrateLegacyFileCache({
@@ -57,7 +57,7 @@ Future<void> migrateLegacyFileCache({
       if (!stagedFile.existsSync()) continue;
 
       file.file = stagedFile;
-      // The local JSON carried no hash, and the record entry is keyed by it.
+      // The local JSON carried no hash, and the document entry is keyed by it.
       await file.ensureHash();
       await offlineStorage.write(
         byteKey: file.byteKey,

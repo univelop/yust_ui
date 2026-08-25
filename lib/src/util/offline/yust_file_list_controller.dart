@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
@@ -8,9 +9,9 @@ import 'yust_file_operation_handler.dart';
 import 'yust_firebase_file_location.dart';
 import 'yust_offline_storage.dart';
 
-/// Widget-facing model for a brick's file list.
+/// Widget-facing model for a host's file list.
 ///
-/// Shows the record's persisted files overlaid with the pending operations in
+/// Shows the document's persisted files overlaid with the pending operations in
 /// the shared [YustFileOperationHandler]'s queue: a pending add shows from its
 /// on-device bytes, a pending delete is hidden, a pending rename shows the new
 /// name. Every change is a command (write local bytes, enqueue an operation);
@@ -30,7 +31,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// The one app-scoped handler every file change flows through.
   final YustFileOperationHandler handler;
 
-  /// Where this brick's files live (stamps files, filters pending operations).
+  /// Where this host's files live (stamps files, filters pending operations).
   final YustFirebaseFileLocation firebaseLocation;
 
   final YustOfflineStorage? _storage;
@@ -42,11 +43,11 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// to persist them — see [_emitOnlineFiles].
   final void Function(List<T>)? onOnlineFilesChanged;
 
-  /// Persisted files from the record snapshot (last [setOnlineFiles]).
+  /// Persisted files from the document snapshot (last [setOnlineFiles]).
   final List<T> _online = [];
 
   /// Signature of the last [setOnlineFilesIfChanged] call, so a host that seeds
-  /// from its build (a brick, whose object is rebuilt each frame) skips
+  /// from its build (a widget that is rebuilt each frame) skips
   /// reconciling to a value it already holds — and cannot loop through the
   /// notifyListeners that [setOnlineFiles] ends with.
   String? _lastOnlineFilesSignature;
@@ -56,10 +57,10 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Files this device has just uploaded, carried across one reconciliation.
   ///
-  /// The document write and the record stream race, so a snapshot in flight
+  /// The document write and the document stream race, so a snapshot in flight
   /// when the write landed still lacks the file. Held for a single
   /// [setOnlineFiles] only, so a file another device deleted stays deleted.
-  final Map<String, T> _justUploaded = {};
+  final Map<String, T> _recentlyUploaded = {};
 
   late final StreamSubscription<YustFileOperation<YustFile>> _appliedSub;
 
@@ -68,7 +69,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   bool _disposed = false;
 
-  /// The files to display: the record snapshot overlaid with pending operations,
+  /// The files to display: the document snapshot overlaid with pending operations,
   /// honouring [newestFirst].
   List<T> get files {
     final currentFiles = _currentFilesIncludingPendingChanges();
@@ -77,7 +78,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
         : currentFiles;
   }
 
-  /// Files already persisted in the record.
+  /// Files already persisted in the document.
   List<T> get onlineFiles =>
       _currentFilesIncludingPendingChanges().where(_isOnline).toList();
 
@@ -87,13 +88,13 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Whether one of [file]'s queued operations is out of attempts and waiting
   /// on the user. Drives the "could not be synced" marker.
-  bool isTimedOut(T file) => _pending.any(
+  bool hasReachedRetryLimit(T file) => _pending.any(
     (operation) =>
         operation.fileKey == file.offlineKey &&
         operation.failedAttempts >= YustFileOperationHandler.maxFailedAttempts,
   );
 
-  /// Whether [file] is persisted in the record.
+  /// Whether [file] is persisted in the document.
   ///
   /// A queued upload disqualifies it: the pickers set `path` at pick time, so a
   /// storage location alone cannot tell a picked file from an uploaded one.
@@ -102,7 +103,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
       // ignore: deprecated_member_use
       (file.path != null || file.url != null);
 
-  /// The record snapshot with the pending operations applied, keyed by
+  /// The document snapshot with the pending operations applied, keyed by
   /// [YustFileOfflineKey.offlineKey]. A pending add or replace contributes its
   /// local bytes; a pending delete drops its entry. A rename or metadata update
   /// is already on the online instance, so neither needs an entry.
@@ -127,12 +128,12 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Like [setOnlineFiles], but reconciles — and notifies — only when
   /// [incomingFiles] differs from the previous call. For a host that seeds on
-  /// every rebuild (a brick); [setOnlineFiles] always reconciles.
+  /// every rebuild (a widget); [setOnlineFiles] always reconciles.
   Future<void> setOnlineFilesIfChanged(List<T> incomingFiles) {
     final signature = incomingFiles
-        // ignore: deprecated_member_use
         .map(
-          (file) => '${file.offlineKey}|${file.name}|${file.hash}|${file.url}',
+          (file) =>
+              '${file.offlineKey}|${file.name}|${file.hash}|${file.getOriginalUrl()}',
         )
         .join(',,');
     if (signature == _lastOnlineFilesSignature) return Future<void>.value();
@@ -140,17 +141,17 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     return setOnlineFiles(incomingFiles);
   }
 
-  /// Reconciles the list with the [incomingFiles] online files from the record.
-  /// Call on init and whenever the brick value changes.
+  /// Reconciles the list with the [incomingFiles] online files from the document.
+  /// Call on init and whenever the host value changes.
   ///
   /// A file uploaded here since the last reconciliation is carried over when
-  /// [incomingFiles] does not have it yet — see [_justUploaded].
+  /// [incomingFiles] does not have it yet — see [_recentlyUploaded].
   Future<void> setOnlineFiles(List<T> incomingFiles) async {
     final incomingKeys = incomingFiles.map((file) => file.offlineKey).toSet();
-    final carried = _justUploaded.values
+    final carried = _recentlyUploaded.values
         .where((file) => !incomingKeys.contains(file.offlineKey))
         .toList();
-    _justUploaded.clear();
+    _recentlyUploaded.clear();
     _online
       ..clear()
       ..addAll(incomingFiles)
@@ -170,7 +171,12 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     firebaseLocation.apply(file);
     await file.ensureHash();
     await _writeBytes(file);
-    await handler.enqueue(_uploadOperation(YustFileOperationType.upload, file));
+    await handler.enqueue(
+      YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
+        file: file,
+      ),
+    );
     await _scheduleRefresh();
   }
 
@@ -190,7 +196,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   Future<void> delete(T file) async {
     firebaseLocation.apply(file);
     // Deleted here, so it must not be carried across the next reconciliation.
-    _justUploaded.remove(file.offlineKey);
+    _recentlyUploaded.remove(file.offlineKey);
     final pendingUpload = await _queuedUploadFor(file);
     if (pendingUpload != null) {
       await handler.cancel(pendingUpload);
@@ -200,7 +206,12 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     }
     // ignore: deprecated_member_use
     if (file.path != null || file.url != null) {
-      await handler.enqueue(_uploadOperation(YustFileOperationType.delete, file));
+      await handler.enqueue(
+        YustFileOperation<YustFile>(
+          type: YustFileOperationType.delete,
+          file: file,
+        ),
+      );
     }
     await _scheduleRefresh();
   }
@@ -255,7 +266,10 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     firebaseLocation.apply(file);
     if (_pendingUploadFor(file) == null) {
       await handler.enqueue(
-        _uploadOperation(YustFileOperationType.updateMetadata, file),
+        YustFileOperation<YustFile>(
+          type: YustFileOperationType.updateMetadata,
+          file: file,
+        ),
       );
     }
     await _scheduleRefresh();
@@ -286,7 +300,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   }
 
   /// Adopts a file whose upload has just been applied into the persisted set,
-  /// covering the gap between it leaving the queue and the record snapshot
+  /// covering the gap between it leaving the queue and the document snapshot
   /// carrying it. The operation's file already has the `path` and `url`.
   void _onOperationApplied(YustFileOperation<YustFile> operation) {
     if (_disposed) return;
@@ -302,7 +316,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     } else {
       _online[index] = file;
     }
-    _justUploaded[key] = file;
+    _recentlyUploaded[key] = file;
   }
 
   /// Re-reads this location's operations from the queue. Checked for disposal on
@@ -318,27 +332,19 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     notifyListeners();
   }
 
-  YustFileOperation<YustFile>? _pendingUploadFor(T file) {
-    for (final operation in _pending) {
-      if (operation.type == YustFileOperationType.upload &&
-          operation.fileKey == file.offlineKey) {
-        return operation;
-      }
-    }
-    return null;
-  }
-
-  YustFileOperation<YustFile> _uploadOperation(
-    YustFileOperationType type,
-    YustFile file,
-  ) => YustFileOperation<YustFile>(type: type, file: file);
+  YustFileOperation<YustFile>? _pendingUploadFor(T file) =>
+      _pending.firstWhereOrNull(
+        (operation) =>
+            operation.type == YustFileOperationType.upload &&
+            operation.fileKey == file.offlineKey,
+      );
 
   /// Reports the persisted set to the host, for an unlinked location only.
   ///
   /// A linked location ([YustFirebaseFileLocation.isLinked]) is persisted by the
   /// queue's own writer and reaches the host through the document stream.
-  /// Without a document there is no writer, so the host — a picker bound to a
-  /// brick's settings, an email attachment list — has to be told.
+  /// Without a document there is no writer, so the host — a standalone picker,
+  /// an email attachment list — has to be told.
   void _emitOnlineFiles() {
     if (firebaseLocation.isLinked) return;
     onOnlineFilesChanged?.call(onlineFiles);

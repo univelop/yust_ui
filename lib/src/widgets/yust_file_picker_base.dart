@@ -414,17 +414,17 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   bool isAwaitingUpload(T file) => _controller.isPendingUpload(file);
 
-  /// Whether [file]'s sync is timed out and waiting on the user.
+  /// Whether [file]'s sync reached the retry limit and is waiting on the user.
   @nonVirtual
-  bool hasSyncTimedOut(T file) => _controller.isTimedOut(file);
+  bool hasSyncReachedRetryLimit(T file) => _controller.hasReachedRetryLimit(file);
 
   /// Marker for a file the queue has not sent yet. Amber: waiting to upload,
-  /// already usable locally. Red: timed out, tap to retry. Both non-blocking, and
+  /// already usable locally. Red: retry limit reached, tap to retry. Both non-blocking, and
   /// tappable because a tooltip alone is unreachable by touch.
   @nonVirtual
   Widget buildCachedIndicator(T file) {
     if (!_enabled) return const SizedBox.shrink();
-    if (hasSyncTimedOut(file)) return _buildSyncFailedIndicator();
+    if (hasSyncReachedRetryLimit(file)) return _buildSyncFailedIndicator();
     if (!isAwaitingUpload(file)) return const SizedBox.shrink();
     return IconButton(
       icon: const Icon(Icons.warning_amber_rounded),
@@ -452,7 +452,7 @@ abstract class YustFilePickerBaseState<
       LocaleKeys.retry.tr(),
     );
     if (retry == true) {
-      await YustUi.fileOperationHandler.retryTimedOutOperations();
+      await YustUi.fileOperationHandler.retryFailedOperations();
     }
   }
 

@@ -512,14 +512,14 @@ void main() {
         final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
         await controller.add(file);
-        expect(controller.isTimedOut(file), isFalse);
+        expect(controller.hasReachedRetryLimit(file), isFalse);
 
         for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         await controller.settled;
 
-        expect(controller.isTimedOut(file), isTrue);
+        expect(controller.hasReachedRetryLimit(file), isTrue);
         // Still listed and still pending — timed out is not lost.
         expect(controller.isPendingUpload(file), isTrue);
         expect(controller.files.map((f) => f.name), ['plan.pdf']);
@@ -539,11 +539,11 @@ void main() {
       }
       await controller.settled;
 
-      expect(controller.isTimedOut(file), isFalse);
+      expect(controller.hasReachedRetryLimit(file), isFalse);
     });
 
     test(
-      'retryTimedOutOperations clears the marker once the operation succeeds',
+      'retryFailedOperations clears the marker once the operation succeeds',
       () async {
         executor
           ..succeed = false
@@ -557,13 +557,13 @@ void main() {
           await handler.processPendingOperations();
         }
         await controller.settled;
-        expect(controller.isTimedOut(file), isTrue);
+        expect(controller.hasReachedRetryLimit(file), isTrue);
 
         executor.succeed = true;
-        await handler.retryTimedOutOperations();
+        await handler.retryFailedOperations();
         await controller.settled;
 
-        expect(controller.isTimedOut(file), isFalse);
+        expect(controller.hasReachedRetryLimit(file), isFalse);
         expect(controller.onlineFiles.map((f) => f.name), ['plan.pdf']);
       },
     );

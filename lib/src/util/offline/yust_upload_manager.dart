@@ -10,10 +10,10 @@ import 'yust_offline_storage.dart';
 
 /// Persists a single file's metadata to its linked document.
 ///
-/// The offline managers are generic and never write records directly — a raw
-/// Firestore write would bypass the app's permission, workspace-lock and
-/// trigger pipeline. The app layer implements this so every file write funnels
-/// through one sanctioned path.
+/// The offline managers are generic and never write documents directly — a raw
+/// Firestore write would bypass the host app's own write pipeline. The app
+/// layer implements this so every file write funnels through one sanctioned
+/// path.
 abstract interface class YustOfflineFileDocumentWriter {
   /// Writes [file]'s metadata to its linked document, scoped to its own key.
   Future<void> writeFile(YustFile file);
@@ -27,17 +27,19 @@ abstract interface class YustOfflineFileDocumentWriter {
 /// [YustOfflineFileDocumentWriter]. Queueing, retries and connectivity are the
 /// [YustFileOperationHandler]'s job.
 ///
-/// One shared manager drains operations for every record and brick, so the
+/// One shared manager drains operations for every document and host, so the
 /// document writer is resolved per operation via [documentWriterFor] from the
 /// file's own `linkedDocPath` / `linkedDocAttribute`. It may return null: a
-/// picker bound to a brick's settings has a storage folder but no record.
+/// picker bound to a host's settings has a storage folder but no document.
 ///
 /// No document write is awaited unbounded. A Firestore write resolves only on
 /// server acknowledgement, which never comes offline, and the drain is serial.
 /// Firestore's cache is itself a durable queue.
 class YustUploadManager implements YustFileOperationExecutor {
   YustUploadManager({
-    required YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
+    required YustOfflineFileDocumentWriter? Function(
+      YustFileOperation<YustFile>,
+    )
     documentWriterFor,
     YustOfflineStorage? storage,
     Duration? documentWriteTimeout,
@@ -47,7 +49,7 @@ class YustUploadManager implements YustFileOperationExecutor {
            documentWriteTimeout ?? defaultDocumentWriteTimeout;
 
   /// How long a document write may take before the operation counts as done.
-  /// Bounds only the record write; byte transfers keep Firebase's own window.
+  /// Bounds only the document write; byte transfers keep Firebase's own window.
   static const defaultDocumentWriteTimeout = Duration(seconds: 30);
 
   final YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
@@ -94,10 +96,10 @@ class YustUploadManager implements YustFileOperationExecutor {
     await _awaitDocumentWrite(documentWriter?.writeFile(file));
   }
 
-  /// Detaches the file's record entry, then deletes its bytes.
+  /// Detaches the file's document entry, then deletes its bytes.
   ///
   /// The detach is awaited, not handed off: an array-layout attribute is
-  /// rewritten from a read of the record, so the next operation's write would
+  /// rewritten from a read of the document, so the next operation's write would
   /// read the entry back in and resurrect it — pointing at bytes this operation
   /// has already deleted. Awaiting also means a failed detach retries the whole
   /// operation instead of being logged and lost; re-detaching a detached entry
@@ -114,7 +116,7 @@ class YustUploadManager implements YustFileOperationExecutor {
 
   /// Re-writes the file's document entry with no byte transfer, e.g. after its
   /// favorite flag changed. Queued behind any upload of the same file, so it
-  /// lands on an entry that exists, and awaited like every other record write
+  /// lands on an entry that exists, and awaited like every other document write
   /// so the operation after it reads the result rather than the state before.
   Future<void> _updateMetadata(YustFileOperation<YustFile> operation) =>
       _awaitDocumentWrite(

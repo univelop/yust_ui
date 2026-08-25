@@ -510,7 +510,7 @@ void main() {
       );
       expect(executor.executed, isEmpty);
       expect(
-        (await handler.timedOutOperations()).map((operation) => operation.id),
+        (await handler.failedOperations()).map((operation) => operation.id),
         ['operation'],
       );
     });
@@ -544,7 +544,7 @@ void main() {
     });
 
     test(
-      'retryTimedOutOperations clears the count and runs the operation again',
+      'retryFailedOperations clears the count and runs the operation again',
       () async {
         var failing = true;
         final executor = _RecordingExecutor(
@@ -558,10 +558,10 @@ void main() {
         for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
-        expect(await handler.timedOutOperations(), hasLength(1));
+        expect(await handler.failedOperations(), hasLength(1));
 
         failing = false;
-        await handler.retryTimedOutOperations();
+        await handler.retryFailedOperations();
 
         expect(executor.executed, ['h1.pdf']);
         expect(await queue.getPendingOperations(), isEmpty);
@@ -638,7 +638,7 @@ void main() {
 
       // A timed out operation stays queued forever, waiting for the user. Any
       // progress indicator asking this would otherwise never stop spinning.
-      expect(await handler.timedOutOperations(), hasLength(1));
+      expect(await handler.failedOperations(), hasLength(1));
       expect(handler.isUploading(operation.file), isFalse);
     });
 
