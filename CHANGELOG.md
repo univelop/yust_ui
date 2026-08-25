@@ -1,3 +1,7 @@
+## 3.32.9 - 2026-08-25
+
+- Bump `yust` to 3.33.5
+
 ## 3.32.8 - 2026-07-28
 
 - Add favorite support to `YustFilePicker`, `YustImagePicker` and the image screen (mark files/images as favorites, incl. read-only display)
