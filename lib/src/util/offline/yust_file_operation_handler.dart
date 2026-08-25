@@ -7,25 +7,14 @@ import 'package:yust/yust.dart';
 import '../yust_file_helpers.dart';
 import 'yust_file_operation.dart';
 import 'yust_file_operation_error.dart';
+import 'yust_file_operation_manager.dart';
 import 'yust_sync_queue.dart';
-
-/// Carries out one kind of [YustFileOperation].
-///
-/// The upload and download managers implement this. They know nothing about the
-/// queue, connectivity or retries.
-abstract interface class YustFileOperationExecutor {
-  /// The operation kinds this executor owns.
-  Set<YustFileOperationType> get handledTypes;
-
-  /// Carries out [operation]: its byte work and document write.
-  Future<void> execute(YustFileOperation<YustFile> operation);
-}
 
 /// Drives every file change through the one [YustSyncQueue].
 ///
 /// This is the single offline-aware component. [processPendingOperations]
-/// applies the queue oldest-first and routes each operation to the
-/// [YustFileOperationExecutor] that owns its type, removing it only on success.
+/// applies the queue oldest-first and hands each operation to the
+/// [YustFileOperationManager], removing it only on success.
 ///
 /// The flat queue is read as one FIFO per file: only a file's oldest queued
 /// operation is eligible per sweep, so its own operations stay in order while
@@ -50,26 +39,23 @@ abstract interface class YustFileOperationExecutor {
 /// its pending-operation overlay without polling.
 class YustFileOperationHandler extends ChangeNotifier {
   YustFileOperationHandler({
-    required List<YustFileOperationExecutor> executors,
+    required this.manager,
     required this.queue,
     // Emits true when the device regains connectivity; a new pass drains the
     // queue on reconnect. Defaults to [_defaultConnectivityStream].
     Stream<bool>? connectivityStream,
     Future<void> Function(Duration)? delay,
   }) : _delay = delay ?? ((duration) => Future<void>.delayed(duration)) {
-    for (final executor in executors) {
-      for (final type in executor.handledTypes) {
-        _executors[type] = executor;
-      }
-    }
     _connectivitySub = (connectivityStream ?? _defaultConnectivityStream)
         .listen(_onConnectivity);
   }
 
+  /// Carries out each operation's byte work and document write.
+  final YustFileOperationManager manager;
+
   /// The queue every operation — inbound and outbound — flows through.
   final YustSyncQueue queue;
   final Future<void> Function(Duration) _delay;
-  final Map<YustFileOperationType, YustFileOperationExecutor> _executors = {};
 
   /// Emits each operation right after it is applied and dropped from the queue.
   ///
@@ -261,7 +247,7 @@ class YustFileOperationHandler extends ChangeNotifier {
         // One attempt per operation per pass; the backoff owns the next one.
         if (failedOperationIdsThisPass.contains(operation.id)) continue;
         try {
-          await _executorFor(operation).execute(operation);
+          await manager.execute(operation);
           await queue.removeOperation(operation);
           _applied.add(operation);
           await _notifyQueueChanged();
@@ -314,16 +300,6 @@ class YustFileOperationHandler extends ChangeNotifier {
     final failed = operation.withFailedAttempt();
     await queue.replaceOperation(failed);
     if (_hasReachedRetryLimit(failed)) await _notifyQueueChanged();
-  }
-
-  YustFileOperationExecutor _executorFor(
-    YustFileOperation<YustFile> operation,
-  ) {
-    final executor = _executors[operation.type];
-    if (executor == null) {
-      throw StateError('No executor registered for ${operation.type}');
-    }
-    return executor;
   }
 
   void _onConnectivity(bool online) {

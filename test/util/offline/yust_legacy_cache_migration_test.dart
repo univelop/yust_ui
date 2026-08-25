@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_legacy_cache_migration.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
@@ -15,10 +16,7 @@ import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 /// Never finishes an operation, so what the migration enqueued stays in the
 /// queue to be inspected instead of being drained away by the handler's own
 /// pass, which [YustFileOperationHandler.enqueueAll] starts.
-class _ParkingExecutor implements YustFileOperationExecutor {
-  @override
-  Set<YustFileOperationType> get handledTypes => YustFileOperationType.values.toSet();
-
+class _ParkingManager implements YustFileOperationManager {
   @override
   Future<void> execute(YustFileOperation<YustFile> operation) =>
       Completer<void>().future;
@@ -47,7 +45,7 @@ void main() {
     );
     storage = YustOfflineStorage(directoryProvider: () async => storageRoot);
     handler = YustFileOperationHandler(
-      executors: [_ParkingExecutor()],
+      manager: _ParkingManager(),
       queue: queue,
       connectivityStream: const Stream<bool>.empty(),
     );

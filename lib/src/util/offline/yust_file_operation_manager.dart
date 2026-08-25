@@ -3,9 +3,10 @@ import 'dart:io';
 
 import 'package:yust/yust.dart';
 
-import 'yust_download_manager.dart';
+import '../../extensions/string_translate_extension.dart';
+import '../../generated/locale_keys.g.dart';
 import 'yust_file_operation.dart';
-import 'yust_file_operation_handler.dart';
+import 'yust_file_operation_error.dart';
 import 'yust_offline_storage.dart';
 
 /// Persists a single file's metadata to its linked document.
@@ -22,21 +23,21 @@ abstract interface class YustOfflineFileDocumentWriter {
   Future<void> removeFile(YustFile file);
 }
 
-/// The outbound executor: pushes an upload, rename, delete or metadata update
-/// to Storage and writes its metadata back through an
-/// [YustOfflineFileDocumentWriter]. Queueing, retries and connectivity are the
-/// [YustFileOperationHandler]'s job.
+/// Carries out every kind of file operation: the outbound work (upload, rename,
+/// delete, metadata update) that pushes to Storage and writes metadata back
+/// through a [YustOfflineFileDocumentWriter], and the inbound work (download)
+/// that fetches bytes into [YustOfflineStorage]. Queueing, retries and
+/// connectivity are the [YustFileOperationHandler]'s job.
 ///
-/// One shared manager drains operations for every document and host, so the
-/// document writer is resolved per operation via [documentWriterFor] from the
-/// file's own `linkedDocPath` / `linkedDocAttribute`. It may return null: a
+/// The document writer is resolved per operation via [documentWriterFor] from
+/// the file's own `linkedDocPath` / `linkedDocAttribute`. It may return null: a
 /// picker bound to a host's settings has a storage folder but no document.
 ///
 /// No document write is awaited unbounded. A Firestore write resolves only on
 /// server acknowledgement, which never comes offline, and the drain is serial.
 /// Firestore's cache is itself a durable queue.
-class YustUploadManager implements YustFileOperationExecutor {
-  YustUploadManager({
+class YustFileOperationManager {
+  YustFileOperationManager({
     required YustOfflineFileDocumentWriter? Function(
       YustFileOperation<YustFile>,
     )
@@ -52,30 +53,20 @@ class YustUploadManager implements YustFileOperationExecutor {
   /// Bounds only the document write; byte transfers keep Firebase's own window.
   static const defaultDocumentWriteTimeout = Duration(seconds: 30);
 
-  final YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
-  _documentWriterFor;
-  final Duration _documentWriteTimeout;
-  final YustOfflineStorage? _storage;
-
-  @override
-  Set<YustFileOperationType> get handledTypes => {
-    YustFileOperationType.upload,
-    YustFileOperationType.rename,
-    YustFileOperationType.delete,
-    YustFileOperationType.updateMetadata,
-  };
-
-  @override
+  /// Carries out [operation]: its byte work and document write.
   Future<void> execute(YustFileOperation<YustFile> operation) =>
       switch (operation.type) {
         YustFileOperationType.upload => _upload(operation),
         YustFileOperationType.rename => _rename(operation),
         YustFileOperationType.delete => _delete(operation),
         YustFileOperationType.updateMetadata => _updateMetadata(operation),
-        YustFileOperationType.download => throw StateError(
-          'download is not an upload operation',
-        ),
+        YustFileOperationType.download => _download(operation),
       };
+
+  final YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
+  _documentWriterFor;
+  final Duration _documentWriteTimeout;
+  final YustOfflineStorage? _storage;
 
   Future<void> _upload(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
@@ -162,6 +153,45 @@ class YustUploadManager implements YustFileOperationExecutor {
     );
   }
 
+  /// Downloads [operation]'s file and keeps its bytes on the device, setting the
+  /// [YustFile.devicePath]. Skips the fetch when a copy already exists; a no-op
+  /// when the file has no location.
+  Future<void> _download(YustFileOperation<YustFile> operation) async {
+    final file = operation.file;
+    final storageFolder = file.storageFolderPath ?? file.path;
+    // Nothing to fetch: storageFolderPath and path are both empty.
+    if (file.name == null || storageFolder == null || storageFolder.isEmpty) {
+      return;
+    }
+    final storage = _storage;
+    // Nowhere to keep the bytes, so fetching them would only discard them.
+    if (storage == null) return;
+    if (await storage.hasFile(file.byteKey)) {
+      file.devicePath = await storage.pathForFile(file.byteKey);
+      return;
+    }
+    final bytes = await Yust.fileService.downloadFile(
+      path: storageFolder,
+      name: file.name!,
+    );
+    // The Flutter file service swallows every download error and returns empty
+    // bytes rather than throwing, so an empty result means the fetch failed.
+    // Throw so the operation stays queued and self-heals on the next drain, instead of
+    // caching a 0-byte file that would then read as "available offline".
+    //
+    // Ask Storage which failure it was: an object that is not there can never
+    // be fetched, and retrying it forever buries the queue in noise. A lookup
+    // that cannot reach the server throws, and that is the transient case.
+    if (bytes == null || bytes.isEmpty) {
+      throw await missingOrUnreachable(storageFolder, file.name!);
+    }
+    file.devicePath = await storage.write(
+      byteKey: file.byteKey,
+      name: file.name!,
+      bytes: bytes,
+    );
+  }
+
   /// Awaits a document write, but never longer than [_documentWriteTimeout].
   /// Failures propagate; a missing acknowledgement is absorbed and left to
   /// Firestore to sync.
@@ -173,4 +203,18 @@ class YustUploadManager implements YustFileOperationExecutor {
       // Offline, a write never acks; Firestore's cache carries it.
     }
   }
+}
+
+/// The error a failed transfer of [name] under [path] should be reported as:
+/// permanent when Storage holds no such object, transient otherwise.
+///
+/// Shared by every operation that has to interpret the file service's empty
+/// result, so "gone" and "unreachable" are told apart the same way everywhere.
+Future<Exception> missingOrUnreachable(String path, String name) async {
+  if (await Yust.fileService.fileExist(path: path, name: name)) {
+    return YustException(LocaleKeys.exceptionFileNotFound.tr());
+  }
+  return YustMissingStorageObjectException(
+    LocaleKeys.exceptionFileNotFound.tr(),
+  );
 }

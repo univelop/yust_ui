@@ -8,6 +8,7 @@ import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_list_controller.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_firebase_file_location.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
@@ -31,7 +32,9 @@ const _target = YustFirebaseFileLocation(
 /// A target with no document behind it — a picker bound to a brick's settings,
 /// an email attachment list. Nothing else persists these files, so the host is
 /// the one that has to hear about them.
-const _unlinkedTarget = YustFirebaseFileLocation(storageFolderPath: 'settings/brick1');
+const _unlinkedTarget = YustFirebaseFileLocation(
+  storageFolderPath: 'settings/brick1',
+);
 
 /// A second unlinked target, as a FileBrick and an ImageBrick on one record
 /// spec produce.
@@ -40,22 +43,23 @@ const _otherUnlinkedTarget = YustFirebaseFileLocation(
 );
 
 /// A picked file for [target], which may carry no document.
-YustFile _pickedFileFor(YustFirebaseFileLocation target, String name) => YustFile(
-  name: name,
-  bytes: Uint8List.fromList(name.codeUnits),
-  storageFolderPath: target.storageFolderPath,
-  linkedDocPath: target.linkedDocPath,
-  linkedDocAttribute: target.linkedDocAttribute,
-  path: target.storageFolderPath,
-  setCreatedAtToNow: false,
-);
+YustFile _pickedFileFor(YustFirebaseFileLocation target, String name) =>
+    YustFile(
+      name: name,
+      bytes: Uint8List.fromList(name.codeUnits),
+      storageFolderPath: target.storageFolderPath,
+      linkedDocPath: target.linkedDocPath,
+      linkedDocAttribute: target.linkedDocAttribute,
+      path: target.storageFolderPath,
+      setCreatedAtToNow: false,
+    );
 
-/// Stands in for the real `YustUploadManager`: when [succeed] it mutates the operation's
-/// file the way an upload does — stamping `path` and `url` — before reporting
-/// success, so the controller sees the same post-upload state it would in
-/// production.
-class _FakeExecutor implements YustFileOperationExecutor {
-  _FakeExecutor({this.succeed = true});
+/// Stands in for the real `YustFileOperationManager`: when [succeed] it mutates
+/// the operation's file the way an upload does — stamping `path` and `url` —
+/// before reporting success, so the controller sees the same post-upload state
+/// it would in production.
+class _FakeManager implements YustFileOperationManager {
+  _FakeManager({this.succeed = true});
 
   bool succeed;
 
@@ -63,14 +67,6 @@ class _FakeExecutor implements YustFileOperationExecutor {
   /// spends the operation's failedAttempts when it means to.
   Object failure = _offline;
   final List<String> executed = [];
-
-  @override
-  Set<YustFileOperationType> get handledTypes => {
-    YustFileOperationType.upload,
-    YustFileOperationType.rename,
-    YustFileOperationType.delete,
-    YustFileOperationType.download,
-  };
 
   @override
   Future<void> execute(YustFileOperation<YustFile> operation) async {
@@ -110,14 +106,14 @@ void main() {
   late Directory root;
   late YustSyncQueue queue;
   late YustOfflineStorage storage;
-  late _FakeExecutor executor;
+  late _FakeManager executor;
   late YustFileOperationHandler handler;
 
   /// A handler whose retry never fires, so a failed operation stays pending for the
   /// duration of a test instead of churning in the background.
-  YustFileOperationHandler buildHandler([YustFileOperationExecutor? which]) {
+  YustFileOperationHandler buildHandler([YustFileOperationManager? which]) {
     final built = YustFileOperationHandler(
-      executors: [which ?? executor],
+      manager: which ?? executor,
       queue: queue,
       connectivityStream: const Stream<bool>.empty(),
       delay: (_) => Completer<void>().future,
@@ -130,7 +126,7 @@ void main() {
     root = Directory.systemTemp.createTempSync('file_list_controller_test');
     storage = YustOfflineStorage(directoryProvider: () async => root);
     queue = YustSyncQueue(storage: storage);
-    executor = _FakeExecutor();
+    executor = _FakeManager();
     handler = buildHandler();
   });
 
@@ -206,7 +202,7 @@ void main() {
       // directory, so the operation is read back from disk.
       final restartedQueue = YustSyncQueue(storage: storage);
       final restartedHandler = YustFileOperationHandler(
-        executors: [_FakeExecutor(succeed: false)],
+        manager: _FakeManager(succeed: false),
         queue: restartedQueue,
         connectivityStream: const Stream<bool>.empty(),
         delay: (_) => Completer<void>().future,

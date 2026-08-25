@@ -44,8 +44,9 @@ extension YustFileOfflineKey on YustFile {
 }
 
 /// What a [YustFileOperation] does. The first four are outbound (local change →
-/// server, handled by the YustUploadManager); [download] is inbound (server → local
-/// cache, handled by the YustDownloadManager). All flow through the one queue.
+/// server); [download] is inbound (server → local cache). The
+/// YustFileOperationManager carries out all of them, and all flow through the
+/// one queue.
 ///
 /// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
 /// linked document (e.g. after its favorite flag changed). It exists so that a
@@ -101,17 +102,19 @@ class YustFileOperation<T extends YustFile> {
       _copyWith(failedAttempts: failedAttempts + 1);
 
   /// A copy with its failures forgotten, for a user-triggered retry.
-  YustFileOperation<T> withResetFailedAttempts() => _copyWith(failedAttempts: 0);
+  YustFileOperation<T> withResetFailedAttempts() =>
+      _copyWith(failedAttempts: 0);
 
-  YustFileOperation<T> _copyWith({required int failedAttempts}) => YustFileOperation<T>(
-    type: type,
-    file: file,
-    newName: newName,
-    id: id,
-    fileKey: fileKey,
-    createdAt: createdAt,
-    failedAttempts: failedAttempts,
-  );
+  YustFileOperation<T> _copyWith({required int failedAttempts}) =>
+      YustFileOperation<T>(
+        type: type,
+        file: file,
+        newName: newName,
+        id: id,
+        fileKey: fileKey,
+        createdAt: createdAt,
+        failedAttempts: failedAttempts,
+      );
 
   /// Serialises the operation, the file via [YustFile.toLocalJson].
   ///

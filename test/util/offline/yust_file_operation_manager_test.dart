@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
-import 'package:yust_ui/src/util/offline/yust_upload_manager.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 
 YustFileOperation<YustFile> _metadataOp() => YustFileOperation<YustFile>(
   type: YustFileOperationType.updateMetadata,
@@ -60,7 +60,7 @@ void main() {
         // document to write back to. Before the document writer could be null the app
         // built one from an empty path, which threw on every attempt and kept the
         // operation queued forever.
-        final manager = YustUploadManager(documentWriterFor: (operation) => null);
+        final manager = YustFileOperationManager(documentWriterFor: (operation) => null);
 
         expect(manager.execute(_metadataOp()), completes);
       },
@@ -73,7 +73,7 @@ void main() {
     // deleted file back in — and it then points at bytes that are gone.
     final steps = <String>[];
     final detached = Completer<void>();
-    final manager = YustUploadManager(
+    final manager = YustFileOperationManager(
       documentWriterFor: (_) => _RecordingWriter(steps, detached),
     );
 

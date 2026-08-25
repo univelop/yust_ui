@@ -7,23 +7,18 @@ import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 /// Records the name of every operation it is handed; an optional [onExecute]
 /// runs first so a test can enqueue more work mid-pass, park the pass, or force
 /// a failure.
-class _RecordingExecutor implements YustFileOperationExecutor {
-  _RecordingExecutor({this.onExecute});
+class _RecordingManager implements YustFileOperationManager {
+  _RecordingManager({this.onExecute});
 
   final Future<void> Function(YustFileOperation<YustFile> operation)? onExecute;
   final List<String> executed = [];
-
-  @override
-  Set<YustFileOperationType> get handledTypes => {
-    YustFileOperationType.upload,
-    YustFileOperationType.download,
-  };
 
   @override
   Future<void> execute(YustFileOperation<YustFile> operation) async {
@@ -95,12 +90,12 @@ void main() {
   /// A handler whose backoff never fires, so a test observes exactly the passes
   /// it triggers itself. [delays] collects what the backoff asked for.
   YustFileOperationHandler handlerWith(
-    YustFileOperationExecutor executor, {
+    YustFileOperationManager executor, {
     Stream<bool>? connectivityStream,
     List<Duration>? delays,
   }) {
     final handler = YustFileOperationHandler(
-      executors: [executor],
+      manager: executor,
       queue: queue,
       connectivityStream: connectivityStream ?? const Stream<bool>.empty(),
       delay: (duration) {
@@ -114,7 +109,7 @@ void main() {
 
   group('draining', () {
     test('applies every pending operation and empties the queue', () async {
-      final executor = _RecordingExecutor();
+      final executor = _RecordingManager();
       final handler = handlerWith(executor);
 
       await handler.enqueueAll([
@@ -130,7 +125,7 @@ void main() {
     test('an operation enqueued mid-pass is applied in the same run', () async {
       late YustFileOperationHandler handler;
       var injected = false;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf' && !injected) {
             injected = true;
@@ -151,7 +146,7 @@ void main() {
   group('enqueue does not wait on the network', () {
     test('enqueue returns while the executor is still in flight', () async {
       final gate = Completer<void>();
-      final executor = _RecordingExecutor(onExecute: (_) => gate.future);
+      final executor = _RecordingManager(onExecute: (_) => gate.future);
       final handler = handlerWith(executor);
 
       // Offline this is the real upload retrying for minutes. The picker awaits
@@ -174,7 +169,7 @@ void main() {
     });
 
     test('a failing executor does not surface out of enqueue', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async => throw _offline,
       );
       final handler = handlerWith(executor);
@@ -188,7 +183,7 @@ void main() {
 
   group('a failing operation does not strand the operations behind it', () {
     test('the operations behind a failing one are still applied', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf') throw _offline;
         },
@@ -215,7 +210,7 @@ void main() {
     test('a failing upload does not block a queued download', () async {
       // The reported bug: a stuck upload sat at the head of the queue and the
       // pinned record's downloads behind it never ran.
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.type == YustFileOperationType.upload) throw _offline;
         },
@@ -232,7 +227,7 @@ void main() {
     });
 
     test('a pass in which everything fails stops rather than spins', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async => throw _offline,
       );
       final handler = handlerWith(executor);
@@ -256,7 +251,7 @@ void main() {
       addTearDown(online.close);
       final gate = Completer<void>();
       var failedAttempts = 0;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf') return gate.future;
           failedAttempts++;
@@ -287,7 +282,7 @@ void main() {
       addTearDown(online.close);
       final gate = Completer<void>();
       var failedAttempts = 0;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf') return gate.future;
           failedAttempts++;
@@ -317,7 +312,7 @@ void main() {
     test('a reconnect with an empty queue is a no-op', () async {
       final online = StreamController<bool>.broadcast();
       addTearDown(online.close);
-      final executor = _RecordingExecutor();
+      final executor = _RecordingManager();
       handlerWith(executor, connectivityStream: online.stream);
 
       online.add(true);
@@ -331,7 +326,7 @@ void main() {
     test('a retry is scheduled only when an operation failed', () async {
       final delays = <Duration>[];
       var shouldFail = false;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async {
           if (shouldFail) throw StateError('offline');
         },
@@ -351,7 +346,7 @@ void main() {
     test('backoff resets once the queue fully drains', () async {
       final delays = <Duration>[];
       var shouldFail = true;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async {
           if (shouldFail) throw StateError('offline');
         },
@@ -376,7 +371,7 @@ void main() {
 
   group('one FIFO per file', () {
     test('a file\'s later operation waits behind its failing head', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.id == 'first') throw _offline;
         },
@@ -400,7 +395,7 @@ void main() {
     });
 
     test('another file passes the failing one in the same pass', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf') throw _offline;
         },
@@ -419,7 +414,7 @@ void main() {
 
     test('the held operation runs once its head succeeds', () async {
       var failFirst = true;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.id == 'first' && failFirst) throw _offline;
         },
@@ -441,7 +436,7 @@ void main() {
 
   group('failedAttempts and parking', () {
     test('a connection failure never spends an attempt', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async => throw _offline,
       );
       final handler = handlerWith(executor);
@@ -460,7 +455,7 @@ void main() {
     });
 
     test('a permanent failure spends one and persists it', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async => throw _permanent,
       );
       final handler = handlerWith(executor);
@@ -491,7 +486,7 @@ void main() {
     });
 
     test('an operation parks at maxFailedAttempts and stays queued', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) async => throw _permanent,
       );
       final handler = handlerWith(executor);
@@ -516,7 +511,7 @@ void main() {
     });
 
     test('a timed out operation holds its own file but not another', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name == 'h1.pdf') throw _permanent;
         },
@@ -547,7 +542,7 @@ void main() {
       'retryFailedOperations clears the count and runs the operation again',
       () async {
         var failing = true;
-        final executor = _RecordingExecutor(
+        final executor = _RecordingManager(
           onExecute: (_) async {
             if (failing) throw _permanent;
           },
@@ -570,7 +565,7 @@ void main() {
 
     test('an operation is attempted once per pass, not once per sweep', () async {
       var failedAttempts = 0;
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (operation) async {
           if (operation.file.name != 'bad.pdf') return;
           failedAttempts++;
@@ -598,7 +593,7 @@ void main() {
 
   group('isUploading', () {
     test('is true while the upload is queued, false once applied', () async {
-      final executor = _RecordingExecutor();
+      final executor = _RecordingManager();
       final handler = handlerWith(executor);
       final operation = _uploadOperation('h1');
 
@@ -610,7 +605,7 @@ void main() {
     });
 
     test('stays true while the upload keeps failing', () async {
-      final executor = _RecordingExecutor(
+      final executor = _RecordingManager(
         onExecute: (_) => throw _offline,
       );
       final handler = handlerWith(executor);
@@ -623,7 +618,7 @@ void main() {
     });
 
     test('is false once the upload has timed out', () async {
-      final executor = _RecordingExecutor(onExecute: (_) => throw _permanent);
+      final executor = _RecordingManager(onExecute: (_) => throw _permanent);
       final handler = handlerWith(executor);
       final operation = _uploadOperation('h1');
 
@@ -643,7 +638,7 @@ void main() {
     });
 
     test('ignores operations that are not uploads', () async {
-      final executor = _RecordingExecutor();
+      final executor = _RecordingManager();
       final handler = handlerWith(executor);
       final operation = _downloadOperation('h1');
 
@@ -660,7 +655,7 @@ void main() {
     ) => YustFileOperation<YustFile>(type: type, file: file);
 
     test('an upload with no storage folder', () async {
-      final handler = handlerWith(_RecordingExecutor());
+      final handler = handlerWith(_RecordingManager());
       final operation = operationOn(
         YustFileOperationType.upload,
         YustFile(name: 'a.pdf', hash: 'h1', setCreatedAtToNow: false),
@@ -675,7 +670,7 @@ void main() {
     });
 
     test('a file with no name', () async {
-      final handler = handlerWith(_RecordingExecutor());
+      final handler = handlerWith(_RecordingManager());
       final operation = operationOn(
         YustFileOperationType.upload,
         YustFile(storageFolderPath: 'records/rec1', setCreatedAtToNow: false),
@@ -689,7 +684,7 @@ void main() {
     });
 
     test('but accepts a download addressed only by path', () async {
-      final handler = handlerWith(_RecordingExecutor());
+      final handler = handlerWith(_RecordingManager());
       final operation = operationOn(
         YustFileOperationType.download,
         YustFile(
@@ -706,7 +701,7 @@ void main() {
     });
 
     test('an unaddressable operation rejects the whole batch', () async {
-      final handler = handlerWith(_RecordingExecutor());
+      final handler = handlerWith(_RecordingManager());
 
       await expectLater(
         handler.enqueueAll([
