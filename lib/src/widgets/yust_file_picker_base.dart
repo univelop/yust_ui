@@ -43,14 +43,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   final String? linkedDocAttribute;
 
   /// Callback when files change, for a host that has to persist the list itself.
-  ///
-  /// Not called for file changes of a picker bound to a document
-  /// ([linkedDocPath]): there the offline queue writes each file to that
-  /// document under its own field mask, and the host sees the result through the
-  /// document's stream. Persisting the whole attribute from this picker's
-  /// snapshot as well would drop files another device added while this one was
-  /// offline. It also still drives the non-file callbacks (enabled/disabled
-  /// state, selection) as before.
   final void Function(List<T> files)? onChanged;
 
   /// Prefix icon.
@@ -416,7 +408,8 @@ abstract class YustFilePickerBaseState<
 
   /// Whether [file]'s sync reached the retry limit and is waiting on the user.
   @nonVirtual
-  bool hasSyncReachedRetryLimit(T file) => _controller.hasReachedRetryLimit(file);
+  bool hasSyncReachedRetryLimit(T file) =>
+      _controller.hasReachedRetryLimit(file);
 
   /// Marker for a file the queue has not sent yet. Amber: waiting to upload,
   /// already usable locally. Red: retry limit reached, tap to retry. Both non-blocking, and

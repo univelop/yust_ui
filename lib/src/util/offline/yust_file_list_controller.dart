@@ -53,7 +53,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   String? _lastOnlineFilesSignature;
 
   /// This location's pending operations, oldest-first (mirrors the queue).
-  List<YustFileOperation<YustFile>> _pending = [];
+  List<YustFileOperation<YustFile>> _pendingOperations = [];
 
   /// Files this device has just uploaded, carried across one reconciliation.
   ///
@@ -88,7 +88,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Whether one of [file]'s queued operations is out of attempts and waiting
   /// on the user. Drives the "could not be synced" marker.
-  bool hasReachedRetryLimit(T file) => _pending.any(
+  bool hasReachedRetryLimit(T file) => _pendingOperations.any(
     (operation) =>
         operation.fileKey == file.offlineKey &&
         operation.failedAttempts >= YustFileOperationHandler.maxFailedAttempts,
@@ -111,7 +111,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     final byKey = <String, T>{
       for (final file in _online) file.offlineKey: file,
     };
-    for (final operation in _pending) {
+    for (final operation in _pendingOperations) {
       switch (operation.type) {
         case YustFileOperationType.upload:
           byKey[operation.fileKey] = operation.file as T;
@@ -290,7 +290,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   void _onQueueChanged() => unawaited(_scheduleRefresh());
 
   /// Queues a refresh behind the one before it, so two overlapping
-  /// notifications cannot leave [_pending] on the older read.
+  /// notifications cannot leave [_pendingOperations] on the older read.
   Future<void> _scheduleRefresh() {
     _refresh = _refresh
         .then((_) => _refreshPending())
@@ -323,9 +323,9 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// both sides of the await, since the host can be torn down mid-read.
   Future<void> _refreshPending() async {
     if (_disposed) return;
-    final all = await handler.pending();
+    final allOperations = await handler.pending();
     if (_disposed) return;
-    _pending = all
+    _pendingOperations = allOperations
         .where((operation) => firebaseLocation.owns(operation.file))
         .toList();
     _emitOnlineFiles();
@@ -333,7 +333,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   }
 
   YustFileOperation<YustFile>? _pendingUploadFor(T file) =>
-      _pending.firstWhereOrNull(
+      _pendingOperations.firstWhereOrNull(
         (operation) =>
             operation.type == YustFileOperationType.upload &&
             operation.fileKey == file.offlineKey,

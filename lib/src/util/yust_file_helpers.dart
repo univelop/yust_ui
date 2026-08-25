@@ -246,16 +246,6 @@ class YustFileHelpers {
     ),
   );
 
-  void _validateFileResponse(http.Response response) {
-    if (response.statusCode >= 300) {
-      throw YustException(
-        LocaleKeys.errorOnFileDownload.tr(
-          namedArgs: {'statusCode': response.statusCode.toString()},
-        ),
-      );
-    }
-  }
-
   /// Whether [file] cannot be opened from anywhere.
   static bool isFileBroken(YustFile file) {
     final name = file.name;
@@ -282,6 +272,16 @@ class YustFileHelpers {
       return '${(sizeInKiB / 1024).toStringAsFixed(2)} MiB';
     } else {
       return '$sizeInKiB KiB';
+    }
+  }
+
+  void _validateFileResponse(http.Response response) {
+    if (response.statusCode >= 300) {
+      throw YustException(
+        LocaleKeys.errorOnFileDownload.tr(
+          namedArgs: {'statusCode': response.statusCode.toString()},
+        ),
+      );
     }
   }
 }
