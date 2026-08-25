@@ -10,9 +10,9 @@ import 'package:yust/yust.dart';
 import 'package:meta/meta.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-import '../util/offline/file_list_controller.dart';
-import '../util/offline/file_operation.dart';
-import '../util/offline/firebase_file_location.dart';
+import '../util/offline/yust_file_list_controller.dart';
+import '../util/offline/yust_file_operation.dart';
+import '../util/offline/yust_firebase_file_location.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
 import 'yust_list_tile.dart';
@@ -203,7 +203,7 @@ abstract class YustFilePickerBaseState<
     extends State<W>
     with AutomaticKeepAliveClientMixin {
   /// The file list, backed by the app's shared offline queue.
-  late final FileListController<T> _controller;
+  late final YustFileListController<T> _controller;
 
   late bool _enabled;
   bool _selecting = false;
@@ -219,9 +219,9 @@ abstract class YustFilePickerBaseState<
     _enabled = (widget.onChanged != null && !widget.readOnly);
     currentDisplayCount = widget.previewCount;
 
-    _controller = FileListController<T>(
+    _controller = YustFileListController<T>(
       handler: YustUi.fileOperationHandler,
-      firebaseLocation: FirebaseFileLocation(
+      firebaseLocation: YustFirebaseFileLocation(
         storageFolderPath: widget.storageFolderPath,
         linkedDocPath: widget.linkedDocPath,
         linkedDocAttribute: widget.linkedDocAttribute,
@@ -229,7 +229,7 @@ abstract class YustFilePickerBaseState<
       ),
       newestFirst: widget.newestFirst,
       // Only reached for a target with no document behind it; a linked target is
-      // persisted by the queue's own writer. See [FileListController].
+      // persisted by the queue's own writer. See [YustFileListController].
       onOnlineFilesChanged: (files) => widget.onChanged?.call(files),
     )..addListener(_onControllerChanged);
     _updateFuture = _controller.setOnlineFiles(widget.files);

@@ -18,10 +18,10 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
 class YustFileHelpers {
-  YustFileHelpers({OfflineStorage? offlineStorage})
-    : _offlineStorage = offlineStorage ?? OfflineStorage.forDevice();
+  YustFileHelpers({YustOfflineStorage? offlineStorage})
+    : _offlineStorage = offlineStorage ?? YustOfflineStorage.forDevice();
 
-  final OfflineStorage? _offlineStorage;
+  final YustOfflineStorage? _offlineStorage;
 
   /// Under Firefox only one BroadcastStream can be used for the
   /// connectivity result. Therefore, use this stream instance
@@ -171,7 +171,7 @@ class YustFileHelpers {
   /// Use either [file] or [data].
   ///
   /// Generic launcher for arbitrary bytes or files (generated exports, scripts,
-  /// logs). For a `YustFile`, use `FilePresenter` instead — it resolves the
+  /// logs). For a `YustFile`, use `YustFilePresenter` instead — it resolves the
   /// on-device cache and signed URL, which this does not.
   Future<void> launchFile({
     required BuildContext context,
@@ -195,7 +195,7 @@ class YustFileHelpers {
   /// For the browser starts the file download.
   ///
   /// Generic launcher for an arbitrary URL. For a `YustFile`, use
-  /// `FilePresenter` instead — it resolves the on-device cache and signed URL,
+  /// `YustFilePresenter` instead — it resolves the on-device cache and signed URL,
   /// which this does not.
   Future<void> downloadAndLaunchFile({
     required BuildContext context,

@@ -3,20 +3,20 @@ import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
-import 'package:yust_ui/src/util/offline/sync_queue.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 final _t1 = DateTime.utc(2026, 1, 1, 10, 0);
 final _t2 = DateTime.utc(2026, 1, 1, 10, 1);
 
-FileOperation<YustFile> _operation(
-  FileOperationType type, {
+YustFileOperation<YustFile> _operation(
+  YustFileOperationType type, {
   String hash = 'h1',
   String? name,
   String? newName,
   DateTime? createdAt,
-}) => FileOperation<YustFile>(
+}) => YustFileOperation<YustFile>(
   type: type,
   file: YustFile(
     name: name ?? '$hash.pdf',
@@ -30,12 +30,12 @@ FileOperation<YustFile> _operation(
 
 void main() {
   late Directory root;
-  late SyncQueue queue;
+  late YustSyncQueue queue;
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('sync_queue_test');
-    queue = SyncQueue(
-      storage: OfflineStorage(directoryProvider: () async => root),
+    queue = YustSyncQueue(
+      storage: YustOfflineStorage(directoryProvider: () async => root),
     );
   });
 
@@ -45,25 +45,25 @@ void main() {
 
   test('enqueue then pending lists the operations, oldest first', () async {
     await queue.enqueueOperation(
-      _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
+      _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
     );
     await queue.enqueueOperation(
-      _operation(FileOperationType.delete, hash: 'h2', createdAt: _t2),
+      _operation(YustFileOperationType.delete, hash: 'h2', createdAt: _t2),
     );
 
     final operations = await queue.getPendingOperations();
     expect(operations.map((operation) => operation.type), [
-      FileOperationType.upload,
-      FileOperationType.delete,
+      YustFileOperationType.upload,
+      YustFileOperationType.delete,
     ]);
   });
 
   test('remove drops the operation by id, leaving the rest', () async {
     await queue.enqueueOperation(
-      _operation(FileOperationType.upload, hash: 'h1'),
+      _operation(YustFileOperationType.upload, hash: 'h1'),
     );
     await queue.enqueueOperation(
-      _operation(FileOperationType.upload, hash: 'h2'),
+      _operation(YustFileOperationType.upload, hash: 'h2'),
     );
 
     final operations = await queue.getPendingOperations();
@@ -80,7 +80,7 @@ void main() {
 
   test('remove is a no-op when the operation is already gone', () async {
     await queue.enqueueOperation(
-      _operation(FileOperationType.upload, hash: 'h1'),
+      _operation(YustFileOperationType.upload, hash: 'h1'),
     );
     final operations = await queue.getPendingOperations();
     await queue.removeOperation(operations.first);
@@ -91,18 +91,18 @@ void main() {
   test('the queue survives a restart (new instance, same directory)', () async {
     await queue.enqueueOperation(
       _operation(
-        FileOperationType.rename,
+        YustFileOperationType.rename,
         name: 'a.pdf',
         newName: 'b.pdf',
         createdAt: _t1,
       ),
     );
 
-    final reopened = SyncQueue(
-      storage: OfflineStorage(directoryProvider: () async => root),
+    final reopened = YustSyncQueue(
+      storage: YustOfflineStorage(directoryProvider: () async => root),
     );
     final operations = await reopened.getPendingOperations();
-    expect(operations.single.type, FileOperationType.rename);
+    expect(operations.single.type, YustFileOperationType.rename);
     expect(operations.single.newName, 'b.pdf');
   });
 
@@ -112,7 +112,7 @@ void main() {
     final futures = [
       for (var i = 0; i < 20; i++)
         queue.enqueueOperation(
-          _operation(FileOperationType.upload, hash: 'h$i', name: '$i.pdf'),
+          _operation(YustFileOperationType.upload, hash: 'h$i', name: '$i.pdf'),
         ),
     ];
     await Future.wait(futures);
@@ -125,7 +125,7 @@ void main() {
 
   test('interleaved enqueue and remove keep the surviving operation', () async {
     await queue.enqueueOperation(
-      _operation(FileOperationType.upload, hash: 'h1', name: '1.pdf'),
+      _operation(YustFileOperationType.upload, hash: 'h1', name: '1.pdf'),
     );
     final existing = (await queue.getPendingOperations()).single;
 
@@ -133,7 +133,7 @@ void main() {
     await Future.wait([
       queue.removeOperation(existing),
       queue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h2', name: '2.pdf'),
+        _operation(YustFileOperationType.upload, hash: 'h2', name: '2.pdf'),
       ),
     ]);
 
@@ -149,8 +149,8 @@ void main() {
 
   test('a queued image operation keeps its YustImage subtype', () async {
     await queue.enqueueOperation(
-      FileOperation<YustImage>(
-        type: FileOperationType.upload,
+      YustFileOperation<YustImage>(
+        type: YustFileOperationType.upload,
         file: YustImage(name: 'photo.jpg', hash: 'img1')
           ..location = YustGeoLocation(latitude: 48.1, longitude: 11.5),
         createdAt: _t1,
@@ -165,10 +165,10 @@ void main() {
   group('replace', () {
     test('rewrites the operation in place, keeping its position', () async {
       await queue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
+        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
       await queue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h2', createdAt: _t2),
+        _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
       final first = (await queue.getPendingOperations()).first;
 
@@ -185,7 +185,7 @@ void main() {
 
     test('is a no-op when the operation is already gone', () async {
       await queue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
+        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
       final only = (await queue.getPendingOperations()).single;
       await queue.removeOperation(only);
@@ -197,15 +197,15 @@ void main() {
   });
 
   group('in memory (web)', () {
-    late SyncQueue memoryQueue;
+    late YustSyncQueue memoryQueue;
 
-    setUp(() => memoryQueue = SyncQueue.inMemory());
+    setUp(() => memoryQueue = YustSyncQueue.inMemory());
 
     test('keeps the bytes, the only copy when nothing is cached', () async {
       final bytes = Uint8List.fromList([1, 2, 3]);
       await memoryQueue.enqueueOperation(
-        FileOperation<YustFile>(
-          type: FileOperationType.upload,
+        YustFileOperation<YustFile>(
+          type: YustFileOperationType.upload,
           file: YustFile(
             name: 'a.pdf',
             hash: 'h1',
@@ -223,10 +223,10 @@ void main() {
 
     test('remove and replace address the same entries', () async {
       await memoryQueue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h1', createdAt: _t1),
+        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
       await memoryQueue.enqueueOperation(
-        _operation(FileOperationType.upload, hash: 'h2', createdAt: _t2),
+        _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
 
       final first = (await memoryQueue.getPendingOperations()).first;

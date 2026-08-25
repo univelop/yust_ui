@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/yust_file_helpers.dart';
 
 YustFile _plan() => YustFile(
@@ -19,7 +19,7 @@ YustFile _plan() => YustFile(
 
 void main() {
   late Directory root;
-  late OfflineStorage storage;
+  late YustOfflineStorage storage;
   late YustFileHelpers helpers;
 
   setUp(() {
@@ -30,7 +30,7 @@ void main() {
       thumbnailCdnBaseUrl: null,
     );
     root = Directory.systemTemp.createTempSync('file_source_test');
-    storage = OfflineStorage(directoryProvider: () async => root);
+    storage = YustOfflineStorage(directoryProvider: () async => root);
     helpers = YustFileHelpers(offlineStorage: storage);
   });
 

@@ -11,7 +11,7 @@ import 'package:yust_ui/src/widgets/yust_file_picker_base.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-import '../util/offline/file_presenter.dart';
+import '../util/offline/yust_file_presenter.dart';
 import '../yust_ui.dart';
 
 class YustImageScreen extends StatefulWidget {
@@ -472,7 +472,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   Widget _buildShareButton(BuildContext context, YustImage image) {
     return _actionButton(
       icon: kIsWeb ? Icons.download : Icons.share,
-      onPressed: () => unawaited(FilePresenter.share(context, image)),
+      onPressed: () => unawaited(YustFilePresenter.share(context, image)),
     );
   }
 }

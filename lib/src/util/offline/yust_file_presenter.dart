@@ -19,7 +19,7 @@ import '../../yust_ui.dart';
 /// [YustFileHelpers.resolveToLocalFile] (native) or
 /// [YustFileHelpers.resolveDownloadUrl] (web), so one cache-and-URL policy sits
 /// behind all of them.
-class FilePresenter {
+class YustFilePresenter {
   /// Opens [file] in the built-in preview — the on-device copy if cached,
   /// otherwise downloaded — falling back to the browser. Opens the browser
   /// directly on web.

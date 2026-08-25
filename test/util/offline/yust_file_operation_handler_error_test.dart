@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart';
 import 'package:test/test.dart';
-import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
 
 FirebaseException _firebase(String code) =>
     FirebaseException(plugin: 'firebase_storage', code: code);
@@ -31,7 +31,7 @@ void main() {
       // A download that comes back empty because the object is gone can never
       // succeed; without this it retried forever and never timed out.
       expect(
-        isPermanentOperationError(MissingStorageObjectException('gone')),
+        isPermanentOperationError(YustMissingStorageObjectException('gone')),
         isTrue,
       );
     });

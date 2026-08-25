@@ -9,26 +9,26 @@ import 'package:http/http.dart';
 import 'package:yust/yust.dart';
 
 import '../yust_file_helpers.dart';
-import 'file_operation.dart';
-import 'sync_queue.dart';
+import 'yust_file_operation.dart';
+import 'yust_sync_queue.dart';
 
-/// Carries out one kind of [FileOperation].
+/// Carries out one kind of [YustFileOperation].
 ///
 /// The upload and download managers implement this. They know nothing about the
 /// queue, connectivity or retries.
-abstract interface class FileOperationExecutor {
+abstract interface class YustFileOperationExecutor {
   /// The operation kinds this executor owns.
-  Set<FileOperationType> get handledTypes;
+  Set<YustFileOperationType> get handledTypes;
 
   /// Carries out [operation]: its byte work and record write.
-  Future<void> execute(FileOperation<YustFile> operation);
+  Future<void> execute(YustFileOperation<YustFile> operation);
 }
 
-/// Drives every file change through the one [SyncQueue].
+/// Drives every file change through the one [YustSyncQueue].
 ///
 /// This is the single offline-aware component. [processPendingOperations]
 /// applies the queue oldest-first and routes each operation to the
-/// [FileOperationExecutor] that owns its type, removing it only on success.
+/// [YustFileOperationExecutor] that owns its type, removing it only on success.
 ///
 /// The flat queue is read as one FIFO per file: only a file's oldest queued
 /// operation is eligible per sweep, so its own operations stay in order while
@@ -41,7 +41,7 @@ abstract interface class FileOperationExecutor {
 ///
 /// Failures are classified. Connection failures retry forever, untracked. A
 /// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
-/// operation's [FileOperation.failedAttempts]; at [maxFailedAttempts] it is
+/// operation's [YustFileOperation.failedAttempts]; at [maxFailedAttempts] it is
 /// timed out — kept in the queue, reported via [timedOutOperations], cleared by
 /// [retryTimedOutOperations]. Nothing is dropped, and an unrecognised error
 /// counts as transient.
@@ -49,13 +49,15 @@ abstract interface class FileOperationExecutor {
 /// [enqueue] waits only for the operation to be durably queued, never for the
 /// transfer.
 ///
-/// Notifies whenever the queue changes, so a [FileListController] can rebuild
+/// Notifies whenever the queue changes, so a [YustFileListController] can rebuild
 /// its pending-operation overlay without polling.
-class FileOperationHandler extends ChangeNotifier {
-  FileOperationHandler({
-    required List<FileOperationExecutor> executors,
+class YustFileOperationHandler extends ChangeNotifier {
+  YustFileOperationHandler({
+    required List<YustFileOperationExecutor> executors,
     required this.queue,
-    Stream<bool>? onlineStream,
+    // Emits true when the device regains connectivity; a new pass drains the
+    // queue on reconnect. Defaults to [_defaultConnectivityStream].
+    Stream<bool>? connectivityStream,
     Future<void> Function(Duration)? delay,
   }) : _delay = delay ?? ((duration) => Future<void>.delayed(duration)) {
     for (final executor in executors) {
@@ -63,23 +65,24 @@ class FileOperationHandler extends ChangeNotifier {
         _executors[type] = executor;
       }
     }
-    _onlineSub = (onlineStream ?? _defaultOnlineStream).listen(_onConnectivity);
+    _connectivitySub = (connectivityStream ?? _defaultConnectivityStream)
+        .listen(_onConnectivity);
   }
 
   /// The queue every operation — inbound and outbound — flows through.
-  final SyncQueue queue;
+  final YustSyncQueue queue;
   final Future<void> Function(Duration) _delay;
-  final Map<FileOperationType, FileOperationExecutor> _executors = {};
+  final Map<YustFileOperationType, YustFileOperationExecutor> _executors = {};
 
   /// Emits each operation right after it is applied and dropped from the queue.
   ///
   /// A listener receives the executor's own instance, so an applied upload
   /// already carries its `path` and `url`. Synchronous, so a listener has
   /// updated its state before the [notifyListeners] that follows.
-  Stream<FileOperation<YustFile>> get applied => _applied.stream;
+  Stream<YustFileOperation<YustFile>> get applied => _applied.stream;
 
-  final StreamController<FileOperation<YustFile>> _applied =
-      StreamController<FileOperation<YustFile>>.broadcast(sync: true);
+  final StreamController<YustFileOperation<YustFile>> _applied =
+      StreamController<YustFileOperation<YustFile>>.broadcast(sync: true);
 
   static const _base = Duration(seconds: 1);
   static const _cap = Duration(seconds: 30);
@@ -87,30 +90,31 @@ class FileOperationHandler extends ChangeNotifier {
   /// Permanent failures an operation may collect before it is timed out.
   static const maxFailedAttempts = 5;
 
-  late final StreamSubscription<bool> _onlineSub;
+  late final StreamSubscription<bool> _connectivitySub;
   int _attempt = 0;
-  bool _isProcessing = false;
+  bool _isDraining = false;
   bool _retryScheduled = false;
   bool _disposed = false;
 
-  /// The pass in flight, so overlapping callers can await the one drain.
-  Future<void>? _pass;
+  /// The drain in flight, so overlapping callers can await it instead of
+  /// starting a second one.
+  Future<void>? _activeDrain;
 
-  /// Set when a pass is requested while one is already running, so the drain
-  /// loops once more instead of the request being dropped.
-  bool _processAgain = false;
+  /// Set when a drain is requested while one is already running, so it loops
+  /// once more instead of the request being dropped.
+  bool _drainAgain = false;
 
   /// Appends [operation] and starts a drain, returning as soon as it is durably
   /// queued. The transfer itself is not awaited.
   ///
   /// Low-level. An upload/rename/updateMetadata operation must already have its
-  /// bytes written to `OfflineStorage` and its hash set — for record-file
-  /// mutations use `FileListController`, which does that bookkeeping first. A
-  /// `FileOperationType.download` may be enqueued directly to fetch bytes (e.g.
+  /// bytes written to `YustOfflineStorage` and its hash set — for record-file
+  /// mutations use `YustFileListController`, which does that bookkeeping first. A
+  /// `YustFileOperationType.download` may be enqueued directly to fetch bytes (e.g.
   /// a sync reconcile).
   ///
   /// Throws [ArgumentError] for a file the executor could not address.
-  Future<void> enqueue(FileOperation<YustFile> operation) async {
+  Future<void> enqueue(YustFileOperation<YustFile> operation) async {
     _assertAddressable(operation);
     await queue.enqueueOperation(operation);
     await _notifyQueueChanged();
@@ -119,7 +123,9 @@ class FileOperationHandler extends ChangeNotifier {
 
   /// Appends every operation in [operations], then starts one drain. Rejects
   /// the whole batch if any operation is unaddressable.
-  Future<void> enqueueAll(Iterable<FileOperation<YustFile>> operations) async {
+  Future<void> enqueueAll(
+    Iterable<YustFileOperation<YustFile>> operations,
+  ) async {
     final batch = operations.toList();
     batch.forEach(_assertAddressable);
     for (final operation in batch) {
@@ -134,13 +140,13 @@ class FileOperationHandler extends ChangeNotifier {
   ///
   /// [ArgumentError] because [isPermanentOperationError] counts it as permanent;
   /// a `TypeError` from a null `!` counts as transient and retries forever.
-  void _assertAddressable(FileOperation<YustFile> operation) {
+  void _assertAddressable(YustFileOperation<YustFile> operation) {
     final file = operation.file;
     if (!file.hasName) {
       throw ArgumentError('Cannot queue a file without a name.');
     }
     // Writes need the Storage folder; a download can read from `path`.
-    final addressable = operation.type == FileOperationType.download
+    final addressable = operation.type == YustFileOperationType.download
         ? file.hasStorageLocation
         : file.storageFolderPath?.isNotEmpty == true;
     if (!addressable) {
@@ -153,13 +159,13 @@ class FileOperationHandler extends ChangeNotifier {
 
   /// Drops a still-pending [operation] without applying it, e.g. a file deleted
   /// before its upload ran.
-  Future<void> cancel(FileOperation<YustFile> operation) async {
+  Future<void> cancel(YustFileOperation<YustFile> operation) async {
     await queue.removeOperation(operation);
     await _notifyQueueChanged();
   }
 
   /// This manager's pending operations, oldest-first.
-  Future<List<FileOperation<YustFile>>> pending() =>
+  Future<List<YustFileOperation<YustFile>>> pending() =>
       queue.getPendingOperations();
 
   /// Whether [file]'s bytes are still on their way to Storage. Synchronous, so
@@ -180,7 +186,7 @@ class FileOperationHandler extends ChangeNotifier {
     _uploadingFileKeys = (await queue.getPendingOperations())
         .where(
           (operation) =>
-              operation.type == FileOperationType.upload &&
+              operation.type == YustFileOperationType.upload &&
               !_hasTimedOut(operation),
         )
         .map((operation) => operation.fileKey)
@@ -190,7 +196,7 @@ class FileOperationHandler extends ChangeNotifier {
 
   /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
   /// user made that has not reached the server.
-  Future<List<FileOperation<YustFile>>> timedOutOperations() async =>
+  Future<List<YustFileOperation<YustFile>>> timedOutOperations() async =>
       (await queue.getPendingOperations()).where(_hasTimedOut).toList();
 
   /// Clears the failure count on every timed out operation and drains again.
@@ -204,7 +210,7 @@ class FileOperationHandler extends ChangeNotifier {
   }
 
   /// Whether [operation] has exhausted its failedAttempts; see [timedOutOperations].
-  bool _hasTimedOut(FileOperation<YustFile> operation) =>
+  bool _hasTimedOut(YustFileOperation<YustFile> operation) =>
       operation.failedAttempts >= maxFailedAttempts;
 
   /// Drains the queue, and completes when the drain in flight does.
@@ -216,25 +222,25 @@ class FileOperationHandler extends ChangeNotifier {
   /// never missed.
   Future<void> processPendingOperations() {
     if (_disposed) return Future<void>.value();
-    if (_isProcessing) {
-      _processAgain = true;
-      return _pass ?? Future<void>.value();
+    if (_isDraining) {
+      _drainAgain = true;
+      return _activeDrain ?? Future<void>.value();
     }
-    _isProcessing = true;
-    final pass = _drainUntilSettled().whenComplete(() {
-      _isProcessing = false;
-      _pass = null;
+    _isDraining = true;
+    final drain = _drainUntilSettled().whenComplete(() {
+      _isDraining = false;
+      _activeDrain = null;
     });
-    _pass = pass;
-    return pass;
+    _activeDrain = drain;
+    return drain;
   }
 
   /// Runs passes until no further one was requested while the last was running.
   Future<void> _drainUntilSettled() async {
     do {
-      _processAgain = false;
+      _drainAgain = false;
       await _drain();
-    } while (_processAgain && !_disposed);
+    } while (_drainAgain && !_disposed);
   }
 
   /// One pass: applies what it can, oldest-first, skipping what fails.
@@ -279,7 +285,7 @@ class FileOperationHandler extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    unawaited(_onlineSub.cancel());
+    unawaited(_connectivitySub.cancel());
     unawaited(_applied.close());
     super.dispose();
   }
@@ -287,20 +293,22 @@ class FileOperationHandler extends ChangeNotifier {
   /// The oldest queued operation of each file, in the order the files first appear —
   /// the flat queue read as one FIFO per file. A timed out file yields nothing,
   /// holding its whole chain until the user retries.
-  Iterable<FileOperation<YustFile>> _nextOperationPerFile(
-    List<FileOperation<YustFile>> pending,
+  Iterable<YustFileOperation<YustFile>> _nextOperationPerFile(
+    List<YustFileOperation<YustFile>> pending,
   ) {
-    final heads = <String, FileOperation<YustFile>>{};
+    final firstOperationForFile = <String, YustFileOperation<YustFile>>{};
     for (final operation in pending) {
-      heads.putIfAbsent(operation.fileKey, () => operation);
+      firstOperationForFile.putIfAbsent(operation.fileKey, () => operation);
     }
-    return heads.values.where((operation) => !_hasTimedOut(operation));
+    return firstOperationForFile.values.where(
+      (operation) => !_hasTimedOut(operation),
+    );
   }
 
   /// For a permanent failure, spends one of [operation]'s failedAttempts. A
   /// connection failure spends none. The operation stays queued either way.
   Future<void> _recordFailedAttempt(
-    FileOperation<YustFile> operation,
+    YustFileOperation<YustFile> operation,
     Object error,
   ) async {
     if (!isPermanentOperationError(error)) return;
@@ -309,7 +317,9 @@ class FileOperationHandler extends ChangeNotifier {
     if (_hasTimedOut(failed)) await _notifyQueueChanged();
   }
 
-  FileOperationExecutor _executorFor(FileOperation<YustFile> operation) {
+  YustFileOperationExecutor _executorFor(
+    YustFileOperation<YustFile> operation,
+  ) {
     final executor = _executors[operation.type];
     if (executor == null) {
       throw StateError('No executor registered for ${operation.type}');
@@ -338,13 +348,16 @@ class FileOperationHandler extends ChangeNotifier {
   }
 
   Duration _nextDelay() {
+    // 1 << _attempt = 2^_attempt: doubles the base delay each retry
+    // (1s, 2s, 4s…), capped at _cap.
     final raw = _base.inMilliseconds * (1 << _attempt);
     return Duration(
       milliseconds: raw < _cap.inMilliseconds ? raw : _cap.inMilliseconds,
     );
   }
 
-  Stream<bool> get _defaultOnlineStream => YustFileHelpers.connectivityStream
+  Stream<bool> get _defaultConnectivityStream => YustFileHelpers
+      .connectivityStream
       .map((results) => results.any((r) => r != ConnectivityResult.none));
 }
 
@@ -354,8 +367,8 @@ class FileOperationHandler extends ChangeNotifier {
 /// rather than throwing, so the queue can tell "the object is gone" — which no
 /// retry fixes — apart from "the server was unreachable", which every retry
 /// might.
-class MissingStorageObjectException implements Exception {
-  MissingStorageObjectException(this.message);
+class YustMissingStorageObjectException implements Exception {
+  YustMissingStorageObjectException(this.message);
 
   final String message;
 
@@ -386,7 +399,7 @@ bool isPermanentOperationError(Object error) => switch (error) {
   ArgumentError() => true,
   StateError() => true,
   // The object is not in Storage; no number of retries puts it there.
-  MissingStorageObjectException() => true,
+  YustMissingStorageObjectException() => true,
   // Listed explicitly so no subtype falls through to a permanent verdict.
   SocketException() ||
   TimeoutException() ||

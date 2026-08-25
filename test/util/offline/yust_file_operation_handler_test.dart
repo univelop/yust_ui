@@ -5,37 +5,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
-import 'package:yust_ui/src/util/offline/sync_queue.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 /// Records the name of every operation it is handed; an optional [onExecute]
 /// runs first so a test can enqueue more work mid-pass, park the pass, or force
 /// a failure.
-class _RecordingExecutor implements FileOperationExecutor {
+class _RecordingExecutor implements YustFileOperationExecutor {
   _RecordingExecutor({this.onExecute});
 
-  final Future<void> Function(FileOperation<YustFile> operation)? onExecute;
+  final Future<void> Function(YustFileOperation<YustFile> operation)? onExecute;
   final List<String> executed = [];
 
   @override
-  Set<FileOperationType> get handledTypes => {
-    FileOperationType.upload,
-    FileOperationType.download,
+  Set<YustFileOperationType> get handledTypes => {
+    YustFileOperationType.upload,
+    YustFileOperationType.download,
   };
 
   @override
-  Future<void> execute(FileOperation<YustFile> operation) async {
+  Future<void> execute(YustFileOperation<YustFile> operation) async {
     await onExecute?.call(operation);
     executed.add(operation.file.name!);
   }
 }
 
-FileOperation<YustFile> _uploadOperation(String hash, {String? id}) =>
-    FileOperation<YustFile>(
+YustFileOperation<YustFile> _uploadOperation(String hash, {String? id}) =>
+    YustFileOperation<YustFile>(
       id: id,
-      type: FileOperationType.upload,
+      type: YustFileOperationType.upload,
       file: YustFile(
         name: '$hash.pdf',
         hash: hash,
@@ -53,14 +53,14 @@ final _permanent = FirebaseException(
   code: 'permission-denied',
 );
 
-FileOperation<YustFile>? _queued(
-  List<FileOperation<YustFile>> operations,
+YustFileOperation<YustFile>? _queued(
+  List<YustFileOperation<YustFile>> operations,
   String id,
 ) => operations.where((operation) => operation.id == id).firstOrNull;
 
-FileOperation<YustFile> _downloadOperation(String hash) =>
-    FileOperation<YustFile>(
-      type: FileOperationType.download,
+YustFileOperation<YustFile> _downloadOperation(String hash) =>
+    YustFileOperation<YustFile>(
+      type: YustFileOperationType.download,
       file: YustFile(
         name: '$hash.pdf',
         hash: hash,
@@ -79,12 +79,12 @@ Future<void> _settle() async {
 
 void main() {
   late Directory root;
-  late SyncQueue queue;
+  late YustSyncQueue queue;
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('file_op_handler_test');
-    queue = SyncQueue(
-      storage: OfflineStorage(directoryProvider: () async => root),
+    queue = YustSyncQueue(
+      storage: YustOfflineStorage(directoryProvider: () async => root),
     );
   });
 
@@ -94,15 +94,15 @@ void main() {
 
   /// A handler whose backoff never fires, so a test observes exactly the passes
   /// it triggers itself. [delays] collects what the backoff asked for.
-  FileOperationHandler handlerWith(
-    FileOperationExecutor executor, {
-    Stream<bool>? onlineStream,
+  YustFileOperationHandler handlerWith(
+    YustFileOperationExecutor executor, {
+    Stream<bool>? connectivityStream,
     List<Duration>? delays,
   }) {
-    final handler = FileOperationHandler(
+    final handler = YustFileOperationHandler(
       executors: [executor],
       queue: queue,
-      onlineStream: onlineStream ?? const Stream<bool>.empty(),
+      connectivityStream: connectivityStream ?? const Stream<bool>.empty(),
       delay: (duration) {
         delays?.add(duration);
         return Completer<void>().future;
@@ -128,7 +128,7 @@ void main() {
     });
 
     test('an operation enqueued mid-pass is applied in the same run', () async {
-      late FileOperationHandler handler;
+      late YustFileOperationHandler handler;
       var injected = false;
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
@@ -217,7 +217,7 @@ void main() {
       // pinned record's downloads behind it never ran.
       final executor = _RecordingExecutor(
         onExecute: (operation) async {
-          if (operation.type == FileOperationType.upload) throw _offline;
+          if (operation.type == YustFileOperationType.upload) throw _offline;
         },
       );
       final handler = handlerWith(executor);
@@ -264,7 +264,7 @@ void main() {
           if (failedAttempts <= 1) throw _offline;
         },
       );
-      final handler = handlerWith(executor, onlineStream: online.stream);
+      final handler = handlerWith(executor, connectivityStream: online.stream);
 
       await handler.enqueueAll([
         _uploadOperation('h1'),
@@ -294,7 +294,7 @@ void main() {
           throw _offline;
         },
       );
-      final handler = handlerWith(executor, onlineStream: online.stream);
+      final handler = handlerWith(executor, connectivityStream: online.stream);
 
       await handler.enqueueAll([
         _uploadOperation('h1'),
@@ -318,7 +318,7 @@ void main() {
       final online = StreamController<bool>.broadcast();
       addTearDown(online.close);
       final executor = _RecordingExecutor();
-      handlerWith(executor, onlineStream: online.stream);
+      handlerWith(executor, connectivityStream: online.stream);
 
       online.add(true);
       await _settle();
@@ -478,8 +478,8 @@ void main() {
       );
 
       // Survives a restart: a fresh queue over the same directory sees it.
-      final reopened = SyncQueue(
-        storage: OfflineStorage(directoryProvider: () async => root),
+      final reopened = YustSyncQueue(
+        storage: YustOfflineStorage(directoryProvider: () async => root),
       );
       expect(
         _queued(
@@ -497,7 +497,7 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueue(_uploadOperation('h1', id: 'operation'));
-      for (var i = 0; i < FileOperationHandler.maxFailedAttempts + 2; i++) {
+      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts + 2; i++) {
         await handler.processPendingOperations();
       }
 
@@ -506,7 +506,7 @@ void main() {
           await queue.getPendingOperations(),
           'operation',
         )?.failedAttempts,
-        FileOperationHandler.maxFailedAttempts,
+        YustFileOperationHandler.maxFailedAttempts,
       );
       expect(executor.executed, isEmpty);
       expect(
@@ -527,7 +527,7 @@ void main() {
         _uploadOperation('h1', id: 'timed out'),
         _uploadOperation('h1', id: 'behind'),
       ]);
-      for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
         await handler.processPendingOperations();
       }
       await handler.enqueue(_uploadOperation('h2', id: 'other'));
@@ -555,7 +555,7 @@ void main() {
         final handler = handlerWith(executor);
 
         await handler.enqueue(_uploadOperation('h1', id: 'operation'));
-        for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         expect(await handler.timedOutOperations(), hasLength(1));
@@ -630,7 +630,7 @@ void main() {
       await handler.enqueue(operation);
       for (
         var attempt = 0;
-        attempt < FileOperationHandler.maxFailedAttempts;
+        attempt < YustFileOperationHandler.maxFailedAttempts;
         attempt++
       ) {
         await handler.processPendingOperations();
@@ -654,15 +654,15 @@ void main() {
   });
 
   group('rejects an operation the executor could not address', () {
-    FileOperation<YustFile> operationOn(
-      FileOperationType type,
+    YustFileOperation<YustFile> operationOn(
+      YustFileOperationType type,
       YustFile file,
-    ) => FileOperation<YustFile>(type: type, file: file);
+    ) => YustFileOperation<YustFile>(type: type, file: file);
 
     test('an upload with no storage folder', () async {
       final handler = handlerWith(_RecordingExecutor());
       final operation = operationOn(
-        FileOperationType.upload,
+        YustFileOperationType.upload,
         YustFile(name: 'a.pdf', hash: 'h1', setCreatedAtToNow: false),
       );
 
@@ -677,7 +677,7 @@ void main() {
     test('a file with no name', () async {
       final handler = handlerWith(_RecordingExecutor());
       final operation = operationOn(
-        FileOperationType.upload,
+        YustFileOperationType.upload,
         YustFile(storageFolderPath: 'records/rec1', setCreatedAtToNow: false),
       );
 
@@ -691,7 +691,7 @@ void main() {
     test('but accepts a download addressed only by path', () async {
       final handler = handlerWith(_RecordingExecutor());
       final operation = operationOn(
-        FileOperationType.download,
+        YustFileOperationType.download,
         YustFile(
           name: 'a.pdf',
           hash: 'h1',
@@ -712,7 +712,7 @@ void main() {
         handler.enqueueAll([
           _uploadOperation('h1'),
           operationOn(
-            FileOperationType.upload,
+            YustFileOperationType.upload,
             YustFile(name: 'a.pdf', hash: 'h2', setCreatedAtToNow: false),
           ),
         ]),

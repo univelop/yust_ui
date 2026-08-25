@@ -2,30 +2,30 @@ import 'package:yust/yust.dart';
 
 import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
-import 'file_operation.dart';
-import 'file_operation_handler.dart';
-import 'offline_storage.dart';
+import 'yust_file_operation.dart';
+import 'yust_file_operation_handler.dart';
+import 'yust_offline_storage.dart';
 
 /// Fetches a file's bytes and keeps them on the device — the inbound executor.
 ///
-/// The [FileOperationHandler] hands it a [FileOperationType.download] operation; it
-/// downloads the bytes and stores them in [OfflineStorage] (keyed by content
+/// The [YustFileOperationHandler] hands it a [YustFileOperationType.download] operation; it
+/// downloads the bytes and stores them in [YustOfflineStorage] (keyed by content
 /// hash). It knows nothing about queueing, retries or connectivity, so the same
 /// fetch runs whether triggered by a pin or a remote change.
-class DownloadManager implements FileOperationExecutor {
-  DownloadManager({OfflineStorage? storage})
-    : _storage = storage ?? OfflineStorage.forDevice();
+class YustDownloadManager implements YustFileOperationExecutor {
+  YustDownloadManager({YustOfflineStorage? storage})
+    : _storage = storage ?? YustOfflineStorage.forDevice();
 
-  final OfflineStorage? _storage;
+  final YustOfflineStorage? _storage;
 
   @override
-  Set<FileOperationType> get handledTypes => {FileOperationType.download};
+  Set<YustFileOperationType> get handledTypes => {YustFileOperationType.download};
 
   /// Downloads [operation]'s file and keeps its bytes on the device, setting the
   /// [YustFile.devicePath]. Skips the fetch when a copy already exists; a no-op
   /// when the file has no location.
   @override
-  Future<void> execute(FileOperation<YustFile> operation) async {
+  Future<void> execute(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     final storageFolder = file.storageFolderPath ?? file.path;
     // Nothing to fetch: storageFolderPath and path are both empty.
@@ -71,7 +71,7 @@ Future<Exception> missingOrUnreachable(String path, String name) async {
   if (await Yust.fileService.fileExist(path: path, name: name)) {
     return YustException(LocaleKeys.exceptionFileNotFound.tr());
   }
-  return MissingStorageObjectException(
+  return YustMissingStorageObjectException(
     LocaleKeys.exceptionFileNotFound.tr(),
   );
 }

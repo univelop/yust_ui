@@ -6,21 +6,21 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
-import 'package:yust_ui/src/util/offline/legacy_cache_migration.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
-import 'package:yust_ui/src/util/offline/sync_queue.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_legacy_cache_migration.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 /// Never finishes an operation, so what the migration enqueued stays in the
 /// queue to be inspected instead of being drained away by the handler's own
-/// pass, which [FileOperationHandler.enqueueAll] starts.
-class _ParkingExecutor implements FileOperationExecutor {
+/// pass, which [YustFileOperationHandler.enqueueAll] starts.
+class _ParkingExecutor implements YustFileOperationExecutor {
   @override
-  Set<FileOperationType> get handledTypes => FileOperationType.values.toSet();
+  Set<YustFileOperationType> get handledTypes => YustFileOperationType.values.toSet();
 
   @override
-  Future<void> execute(FileOperation<YustFile> operation) =>
+  Future<void> execute(YustFileOperation<YustFile> operation) =>
       Completer<void>().future;
 }
 
@@ -30,9 +30,9 @@ void main() {
   late Directory queueRoot;
   late Directory storageRoot;
   late Directory stagingRoot;
-  late SyncQueue queue;
-  late OfflineStorage storage;
-  late FileOperationHandler handler;
+  late YustSyncQueue queue;
+  late YustOfflineStorage storage;
+  late YustFileOperationHandler handler;
 
   setUp(() {
     queueRoot = Directory.systemTemp.createTempSync('legacy_migration_queue');
@@ -42,14 +42,14 @@ void main() {
     stagingRoot = Directory.systemTemp.createTempSync(
       'legacy_migration_staging',
     );
-    queue = SyncQueue(
-      storage: OfflineStorage(directoryProvider: () async => queueRoot),
+    queue = YustSyncQueue(
+      storage: YustOfflineStorage(directoryProvider: () async => queueRoot),
     );
-    storage = OfflineStorage(directoryProvider: () async => storageRoot);
-    handler = FileOperationHandler(
+    storage = YustOfflineStorage(directoryProvider: () async => storageRoot);
+    handler = YustFileOperationHandler(
       executors: [_ParkingExecutor()],
       queue: queue,
-      onlineStream: const Stream<bool>.empty(),
+      connectivityStream: const Stream<bool>.empty(),
     );
   });
 
@@ -99,7 +99,7 @@ void main() {
       final pending = await queue.getPendingOperations();
       expect(pending, hasLength(1));
       final migrated = pending.single;
-      expect(migrated.type, FileOperationType.upload);
+      expect(migrated.type, YustFileOperationType.upload);
       expect(migrated.file.name, 'plan.pdf');
       expect(migrated.file.linkedDocPath, 'workspaces/w1/records/rec1');
       expect(migrated.file.linkedDocAttribute, 'brickValues.brick1');

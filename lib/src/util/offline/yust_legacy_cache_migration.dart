@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yust/yust.dart';
 
-import 'file_operation.dart';
-import 'file_operation_handler.dart';
-import 'offline_storage.dart';
+import 'yust_file_operation.dart';
+import 'yust_file_operation_handler.dart';
+import 'yust_offline_storage.dart';
 
 /// Where the pre-queue file handler kept its pending uploads.
 const _preferenceKey = 'YustCachedFiles';
@@ -20,7 +20,7 @@ const _preferenceKey = 'YustCachedFiles';
 /// offline on the old build and updated before reconnecting would lose those
 /// files; this drains it once, on the launch after the update.
 ///
-/// Bytes are copied into [OfflineStorage] rather than left where they are: the
+/// Bytes are copied into [YustOfflineStorage] rather than left where they are: the
 /// queue does not serialise a file's [YustFile.file], so an operation that
 /// relied on the temp copy would find nothing after a restart — and the
 /// temporary directory is OS-purgeable besides.
@@ -31,8 +31,8 @@ const _preferenceKey = 'YustCachedFiles';
 ///
 /// Delete this once every active install has launched a release containing it.
 Future<void> migrateLegacyFileCache({
-  required FileOperationHandler handler,
-  OfflineStorage? storage,
+  required YustFileOperationHandler handler,
+  YustOfflineStorage? storage,
 }) async {
   // The old cache was mobile-only — it staged bytes in the temporary directory,
   // which has no web implementation.
@@ -42,8 +42,8 @@ Future<void> migrateLegacyFileCache({
   final entries = _decodeEntries(preferences.getString(_preferenceKey));
   if (entries.isEmpty) return;
 
-  final offlineStorage = storage ?? OfflineStorage();
-  final operations = <FileOperation<YustFile>>[];
+  final offlineStorage = storage ?? YustOfflineStorage();
+  final operations = <YustFileOperation<YustFile>>[];
   final stagedFiles = <File>[];
 
   for (final entry in entries) {
@@ -69,7 +69,7 @@ Future<void> migrateLegacyFileCache({
       file.devicePath = null;
 
       operations.add(
-        FileOperation<YustFile>(type: FileOperationType.upload, file: file),
+        YustFileOperation<YustFile>(type: YustFileOperationType.upload, file: file),
       );
       stagedFiles.add(stagedFile);
     } catch (_) {

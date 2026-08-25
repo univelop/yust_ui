@@ -43,23 +43,23 @@ extension YustFileOfflineKey on YustFile {
   }
 }
 
-/// What a [FileOperation] does. The first four are outbound (local change →
-/// server, handled by the UploadManager); [download] is inbound (server → local
-/// cache, handled by the DownloadManager). All flow through the one queue.
+/// What a [YustFileOperation] does. The first four are outbound (local change →
+/// server, handled by the YustUploadManager); [download] is inbound (server → local
+/// cache, handled by the YustDownloadManager). All flow through the one queue.
 ///
 /// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
 /// linked document (e.g. after its favorite flag changed). It exists so that a
 /// metadata-only change is queued and field-masked like every other change,
 /// instead of the picker saving its whole file list back over the record.
-enum FileOperationType { upload, rename, delete, updateMetadata, download }
+enum YustFileOperationType { upload, rename, delete, updateMetadata, download }
 
 /// A single file change queued for sync — the queue's entry type.
 ///
 /// Generic over [T] so [YustFile] and [YustImage] share the queue; the image's
 /// extra fields round-trip via the polymorphic [YustFile.toJson] and the factory
 /// in [fromJson].
-class FileOperation<T extends YustFile> {
-  FileOperation({
+class YustFileOperation<T extends YustFile> {
+  YustFileOperation({
     required this.type,
     required this.file,
     this.newName,
@@ -77,12 +77,12 @@ class FileOperation<T extends YustFile> {
   final String id;
 
   /// What this operation does.
-  final FileOperationType type;
+  final YustFileOperationType type;
 
   /// The file the operation acts on, in its current state.
   final T file;
 
-  /// The new name for a [FileOperationType.rename]; null otherwise.
+  /// The new name for a [YustFileOperationType.rename]; null otherwise.
   final String? newName;
 
   /// The [YustFileOfflineKey.offlineKey] of [file], frozen at enqueue time so a
@@ -97,13 +97,13 @@ class FileOperation<T extends YustFile> {
   final int failedAttempts;
 
   /// A copy with one more permanent failure recorded.
-  FileOperation<T> withFailedAttempt() =>
+  YustFileOperation<T> withFailedAttempt() =>
       _copyWith(failedAttempts: failedAttempts + 1);
 
   /// A copy with its failures forgotten, for a user-triggered retry.
-  FileOperation<T> withResetFailedAttempts() => _copyWith(failedAttempts: 0);
+  YustFileOperation<T> withResetFailedAttempts() => _copyWith(failedAttempts: 0);
 
-  FileOperation<T> _copyWith({required int failedAttempts}) => FileOperation<T>(
+  YustFileOperation<T> _copyWith({required int failedAttempts}) => YustFileOperation<T>(
     type: type,
     file: file,
     newName: newName,
@@ -128,16 +128,16 @@ class FileOperation<T extends YustFile> {
   };
 
   /// Rebuilds an operation, taking the file's subtype from its own `type`.
-  static FileOperation<T> fromJson<T extends YustFile>(
+  static YustFileOperation<T> fromJson<T extends YustFile>(
     Map<String, dynamic> json,
   ) {
     final fileJson = Map<String, dynamic>.from(json['file'] as Map);
     final file = fileJson['type'] == YustImage.type
         ? YustImage.fromLocalJson(fileJson)
         : YustFile.fromLocalJson(fileJson);
-    return FileOperation<T>(
+    return YustFileOperation<T>(
       id: json['id'] as String?,
-      type: FileOperationType.values.byName(json['type'] as String),
+      type: YustFileOperationType.values.byName(json['type'] as String),
       file: file as T,
       newName: json['newName'] as String?,
       fileKey: json['fileKey'] as String?,

@@ -3,37 +3,37 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
-import 'file_operation.dart';
-import 'file_operation_handler.dart';
-import 'firebase_file_location.dart';
-import 'offline_storage.dart';
+import 'yust_file_operation.dart';
+import 'yust_file_operation_handler.dart';
+import 'yust_firebase_file_location.dart';
+import 'yust_offline_storage.dart';
 
 /// Widget-facing model for a brick's file list.
 ///
 /// Shows the record's persisted files overlaid with the pending operations in
-/// the shared [FileOperationHandler]'s queue: a pending add shows from its
+/// the shared [YustFileOperationHandler]'s queue: a pending add shows from its
 /// on-device bytes, a pending delete is hidden, a pending rename shows the new
 /// name. Every change is a command (write local bytes, enqueue an operation);
 /// the display is derived from the queue.
-class FileListController<T extends YustFile> extends ChangeNotifier {
-  FileListController({
+class YustFileListController<T extends YustFile> extends ChangeNotifier {
+  YustFileListController({
     required this.handler,
     required this.firebaseLocation,
-    OfflineStorage? storage,
+    YustOfflineStorage? storage,
     this.newestFirst = false,
     this.onOnlineFilesChanged,
-  }) : _storage = storage ?? OfflineStorage.forDevice() {
+  }) : _storage = storage ?? YustOfflineStorage.forDevice() {
     handler.addListener(_onQueueChanged);
     _appliedSub = handler.applied.listen(_onOperationApplied);
   }
 
   /// The one app-scoped handler every file change flows through.
-  final FileOperationHandler handler;
+  final YustFileOperationHandler handler;
 
   /// Where this brick's files live (stamps files, filters pending operations).
-  final FirebaseFileLocation firebaseLocation;
+  final YustFirebaseFileLocation firebaseLocation;
 
-  final OfflineStorage? _storage;
+  final YustOfflineStorage? _storage;
 
   /// Whether the newest file is shown first.
   bool newestFirst;
@@ -52,7 +52,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   String? _lastOnlineFilesSignature;
 
   /// This location's pending operations, oldest-first (mirrors the queue).
-  List<FileOperation<YustFile>> _pending = [];
+  List<YustFileOperation<YustFile>> _pending = [];
 
   /// Files this device has just uploaded, carried across one reconciliation.
   ///
@@ -61,7 +61,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// [setOnlineFiles] only, so a file another device deleted stays deleted.
   final Map<String, T> _justUploaded = {};
 
-  late final StreamSubscription<FileOperation<YustFile>> _appliedSub;
+  late final StreamSubscription<YustFileOperation<YustFile>> _appliedSub;
 
   /// The chain of refreshes requested so far; see [settled].
   Future<void> _refresh = Future<void>.value();
@@ -90,7 +90,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   bool isTimedOut(T file) => _pending.any(
     (operation) =>
         operation.fileKey == file.offlineKey &&
-        operation.failedAttempts >= FileOperationHandler.maxFailedAttempts,
+        operation.failedAttempts >= YustFileOperationHandler.maxFailedAttempts,
   );
 
   /// Whether [file] is persisted in the record.
@@ -112,13 +112,13 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     };
     for (final operation in _pending) {
       switch (operation.type) {
-        case FileOperationType.upload:
+        case YustFileOperationType.upload:
           byKey[operation.fileKey] = operation.file as T;
-        case FileOperationType.delete:
+        case YustFileOperationType.delete:
           byKey.remove(operation.fileKey);
-        case FileOperationType.rename:
-        case FileOperationType.updateMetadata:
-        case FileOperationType.download:
+        case YustFileOperationType.rename:
+        case YustFileOperationType.updateMetadata:
+        case YustFileOperationType.download:
           break;
       }
     }
@@ -170,7 +170,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     firebaseLocation.apply(file);
     await file.ensureHash();
     await _writeBytes(file);
-    await handler.enqueue(_uploadOperation(FileOperationType.upload, file));
+    await handler.enqueue(_uploadOperation(YustFileOperationType.upload, file));
     await _scheduleRefresh();
   }
 
@@ -200,7 +200,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     }
     // ignore: deprecated_member_use
     if (file.path != null || file.url != null) {
-      await handler.enqueue(_uploadOperation(FileOperationType.delete, file));
+      await handler.enqueue(_uploadOperation(YustFileOperationType.delete, file));
     }
     await _scheduleRefresh();
   }
@@ -221,9 +221,9 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// The upload of [file] still in the queue, read live rather than from the
   /// cached overlay so a host that only issues commands (no online list) can
   /// still cancel a not-yet-applied upload.
-  Future<FileOperation<YustFile>?> _queuedUploadFor(T file) async {
+  Future<YustFileOperation<YustFile>?> _queuedUploadFor(T file) async {
     for (final operation in await handler.pending()) {
-      if (operation.type == FileOperationType.upload &&
+      if (operation.type == YustFileOperationType.upload &&
           operation.fileKey == file.offlineKey) {
         return operation;
       }
@@ -239,8 +239,8 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
       ..linkedDocStoresFilesAsMap = file.linkedDocStoresFilesAsMap;
     file.name = newName;
     await handler.enqueue(
-      FileOperation<YustFile>(
-        type: FileOperationType.rename,
+      YustFileOperation<YustFile>(
+        type: YustFileOperationType.rename,
         file: snapshot,
         newName: newName,
       ),
@@ -255,7 +255,7 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     firebaseLocation.apply(file);
     if (_pendingUploadFor(file) == null) {
       await handler.enqueue(
-        _uploadOperation(FileOperationType.updateMetadata, file),
+        _uploadOperation(YustFileOperationType.updateMetadata, file),
       );
     }
     await _scheduleRefresh();
@@ -288,9 +288,9 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
   /// Adopts a file whose upload has just been applied into the persisted set,
   /// covering the gap between it leaving the queue and the record snapshot
   /// carrying it. The operation's file already has the `path` and `url`.
-  void _onOperationApplied(FileOperation<YustFile> operation) {
+  void _onOperationApplied(YustFileOperation<YustFile> operation) {
     if (_disposed) return;
-    if (operation.type != FileOperationType.upload ||
+    if (operation.type != YustFileOperationType.upload ||
         !firebaseLocation.owns(operation.file)) {
       return;
     }
@@ -318,9 +318,9 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     notifyListeners();
   }
 
-  FileOperation<YustFile>? _pendingUploadFor(T file) {
+  YustFileOperation<YustFile>? _pendingUploadFor(T file) {
     for (final operation in _pending) {
-      if (operation.type == FileOperationType.upload &&
+      if (operation.type == YustFileOperationType.upload &&
           operation.fileKey == file.offlineKey) {
         return operation;
       }
@@ -328,14 +328,14 @@ class FileListController<T extends YustFile> extends ChangeNotifier {
     return null;
   }
 
-  FileOperation<YustFile> _uploadOperation(
-    FileOperationType type,
+  YustFileOperation<YustFile> _uploadOperation(
+    YustFileOperationType type,
     YustFile file,
-  ) => FileOperation<YustFile>(type: type, file: file);
+  ) => YustFileOperation<YustFile>(type: type, file: file);
 
   /// Reports the persisted set to the host, for an unlinked location only.
   ///
-  /// A linked location ([FirebaseFileLocation.isLinked]) is persisted by the
+  /// A linked location ([YustFirebaseFileLocation.isLinked]) is persisted by the
   /// queue's own writer and reaches the host through the document stream.
   /// Without a document there is no writer, so the host — a picker bound to a
   /// brick's settings, an email attachment list — has to be told.

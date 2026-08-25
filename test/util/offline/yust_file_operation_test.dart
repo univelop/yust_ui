@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 
 final _createdAt = DateTime.utc(2026, 7, 29, 10, 30);
 
@@ -21,7 +21,7 @@ YustFile _file({
 );
 
 void main() {
-  group('FileOperation.fileKey', () {
+  group('YustFileOperation.fileKey', () {
     test('separates two entries holding the same bytes', () {
       // Uploading the same image twice gives both entries the same content
       // hash; they are still two files and must not collapse into one.
@@ -34,8 +34,8 @@ void main() {
     test('is not the bare name for hashless (array-layout) files', () {
       // The bare name is not unique across records, so two pinned records each
       // holding a `Plan.pdf` would share one cache directory.
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.delete,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.delete,
         file: _file(hash: '', name: 'legacy.pdf'),
       );
       expect(operation.fileKey, isNot('legacy.pdf'));
@@ -87,8 +87,8 @@ void main() {
 
     test('stays frozen when the file is renamed after enqueueing', () {
       final file = _file(hash: '', name: 'old.pdf');
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.rename,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.rename,
         file: file,
         newName: 'new.pdf',
       );
@@ -106,30 +106,30 @@ void main() {
   test(
     'id round-trips so a queue can remove the operation after a restart',
     () {
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.download,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.download,
         file: _file(hash: 'h1'),
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.id, operation.id);
-      expect(restored.type, FileOperationType.download);
+      expect(restored.type, YustFileOperationType.download);
     },
   );
 
   group('toJson / fromJson', () {
     test('round-trips an upload operation, addressing included', () {
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.upload,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
         file: _file(name: 'plan.pdf', hash: 'h1'),
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
-      expect(restored.type, FileOperationType.upload);
+      expect(restored.type, YustFileOperationType.upload);
       expect(restored.file.name, 'plan.pdf');
       expect(restored.fileKey, _file(name: 'plan.pdf', hash: 'h1').offlineKey);
       expect(restored.file.devicePath, '/support/offline/h1/plan.pdf');
@@ -145,16 +145,16 @@ void main() {
     test(
       'rename operation keeps the current name on the file and the new name apart',
       () {
-        final operation = FileOperation<YustFile>(
-          type: FileOperationType.rename,
+        final operation = YustFileOperation<YustFile>(
+          type: YustFileOperationType.rename,
           file: _file(name: 'original.pdf', hash: 'h1'),
           newName: 'renamed.pdf',
           createdAt: _createdAt,
         );
 
-        final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+        final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
-        expect(restored.type, FileOperationType.rename);
+        expect(restored.type, YustFileOperationType.rename);
         expect(restored.file.name, 'original.pdf');
         expect(restored.newName, 'renamed.pdf');
       },
@@ -163,15 +163,15 @@ void main() {
     test(
       'delete operation with no local bytes serialises without throwing',
       () {
-        final operation = FileOperation<YustFile>(
-          type: FileOperationType.delete,
+        final operation = YustFileOperation<YustFile>(
+          type: YustFileOperationType.delete,
           file: _file(hash: 'h1', devicePath: null),
           createdAt: _createdAt,
         );
 
-        final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+        final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
-        expect(restored.type, FileOperationType.delete);
+        expect(restored.type, YustFileOperationType.delete);
         expect(restored.file.devicePath, isNull);
       },
     );
@@ -179,25 +179,25 @@ void main() {
     test('round-trips createThumbnail, which the record write reads', () {
       // Regression: the old sidecar omitted this field.
       final file = _file(hash: 'h1')..createThumbnail = true;
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.upload,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
         file: file,
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.file.createThumbnail, isTrue);
     });
 
     test('round-trips the hash, which keys both the bytes and the entry', () {
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.upload,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
         file: _file(hash: 'content-hash'),
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.file.hash, 'content-hash');
       expect(restored.file.byteKey, 'content-hash');
@@ -205,8 +205,8 @@ void main() {
 
     test('round-trips a download for a file addressed only by path', () {
       // The shape SyncManager queues for a file uploaded elsewhere.
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.download,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.download,
         file: YustFile(
           name: 'plan.pdf',
           hash: 'h1',
@@ -216,7 +216,7 @@ void main() {
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.file.path, 'records/abc/files');
       expect(restored.file.storageFolderPath, isNull);
@@ -225,8 +225,8 @@ void main() {
     });
 
     test('round-trips an unlinked file, which has no document behind it', () {
-      final operation = FileOperation<YustFile>(
-        type: FileOperationType.upload,
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
         file: YustFile(
           name: 'logo.png',
           hash: 'h1',
@@ -236,7 +236,7 @@ void main() {
         createdAt: _createdAt,
       );
 
-      final restored = FileOperation.fromJson<YustFile>(operation.toJson());
+      final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
 
       expect(restored.file.storageFolderPath, 'workspaces/w1/settings');
       expect(restored.file.linkedDocPath, isNull);
@@ -248,8 +248,8 @@ void main() {
       () {
         final image = YustImage.fromYustFile(_file(hash: 'img1'))
           ..location = YustGeoLocation(latitude: 48.1, longitude: 11.5);
-        final operation = FileOperation<YustImage>(
-          type: FileOperationType.upload,
+        final operation = YustFileOperation<YustImage>(
+          type: YustFileOperationType.upload,
           file: image,
           createdAt: _createdAt,
         );
@@ -259,7 +259,7 @@ void main() {
         expect(json['fileType'], isNull);
         expect((json['file'] as Map)['type'], YustImage.type);
 
-        final restored = FileOperation.fromJson<YustImage>(json);
+        final restored = YustFileOperation.fromJson<YustImage>(json);
 
         expect(restored.file, isA<YustImage>());
         expect(restored.file.location?.latitude, 48.1);

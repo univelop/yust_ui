@@ -8,7 +8,7 @@ import 'package:yust/yust.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
-import '../util/offline/file_presenter.dart';
+import '../util/offline/yust_file_presenter.dart';
 import '../util/yust_file_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
@@ -272,11 +272,11 @@ class YustFilePickerState
         if (!isBroken) {
           switch (widget.tapMode) {
             case YustFileTapMode.preview:
-              unawaited(FilePresenter.open(context, file));
+              unawaited(YustFilePresenter.open(context, file));
             case YustFileTapMode.defaultApp:
-              unawaited(FilePresenter.openInDefaultApp(context, file));
+              unawaited(YustFilePresenter.openInDefaultApp(context, file));
             case YustFileTapMode.share:
-              unawaited(FilePresenter.share(context, file));
+              unawaited(YustFilePresenter.share(context, file));
           }
         }
       },
@@ -344,7 +344,7 @@ class YustFilePickerState
       onSelected: (action) {
         switch (action) {
           case _FileMenuAction.download:
-            unawaited(FilePresenter.share(context, file));
+            unawaited(YustFilePresenter.share(context, file));
           case _FileMenuAction.rename:
             unawaited(_renameFile(file));
           case _FileMenuAction.delete:
@@ -405,7 +405,7 @@ class YustFilePickerState
         return IconButton(
           icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
           color: Theme.of(buttonContext).primaryColor,
-          onPressed: () => unawaited(FilePresenter.share(buttonContext, file)),
+          onPressed: () => unawaited(YustFilePresenter.share(buttonContext, file)),
         );
       },
     );

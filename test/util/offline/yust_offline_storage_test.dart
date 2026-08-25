@@ -3,16 +3,16 @@ import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 
 void main() {
   late Directory root;
-  late OfflineStorage storage;
+  late YustOfflineStorage storage;
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('offline_storage_test');
-    storage = OfflineStorage(directoryProvider: () async => root);
+    storage = YustOfflineStorage(directoryProvider: () async => root);
   });
 
   tearDown(() {

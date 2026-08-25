@@ -6,16 +6,16 @@ import 'package:yust/yust.dart';
 /// Binds the Storage folder (where the bytes live) to the Firestore document
 /// attribute holding the file metadata, so the two travel together. This is the
 /// remote location only — the on-device copy is addressed separately, via
-/// `YustFileOfflineKey` and `OfflineStorage`.
+/// `YustFileOfflineKey` and `YustOfflineStorage`.
 ///
 /// These three fields used to live directly on the per-brick file handler. Once
-/// the handler became a single app-scoped [FileOperationHandler] whose queue
+/// the handler became a single app-scoped [YustFileOperationHandler] whose queue
 /// carries every brick's files, the address had to become its own value: each
-/// [FileListController] holds one to stamp its files ([apply]) and to pick its
+/// [YustFileListController] holds one to stamp its files ([apply]) and to pick its
 /// own operations back out of the shared queue ([owns]).
 @immutable
-class FirebaseFileLocation {
-  const FirebaseFileLocation({
+class YustFirebaseFileLocation {
+  const YustFirebaseFileLocation({
     required this.storageFolderPath,
     this.linkedDocPath,
     this.linkedDocAttribute,
@@ -51,7 +51,7 @@ class FirebaseFileLocation {
   /// the same brick address the same files and must compare equal.
   @override
   bool operator ==(Object other) =>
-      other is FirebaseFileLocation &&
+      other is YustFirebaseFileLocation &&
       other.storageFolderPath == storageFolderPath &&
       other.linkedDocPath == linkedDocPath &&
       other.linkedDocAttribute == linkedDocAttribute &&

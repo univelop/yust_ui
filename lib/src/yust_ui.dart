@@ -7,7 +7,7 @@ import 'package:yust_ui/src/util/yust_ui_helpers.dart';
 import 'package:yust_ui/src/util/yust_web_helpers/yust_web_helpers.dart';
 
 import 'services/yust_alert_service.dart';
-import 'util/offline/file_operation_handler.dart';
+import 'util/offline/yust_file_operation_handler.dart';
 import 'util/yust_file_helpers.dart';
 
 enum YustInputStyle {
@@ -27,7 +27,7 @@ class YustUi {
   /// App-scoped handler every file change flows through — uploads, renames,
   /// deletes and offline downloads. Set once at app start, before the first
   /// file picker builds.
-  static late FileOperationHandler fileOperationHandler;
+  static late YustFileOperationHandler fileOperationHandler;
   static late YustUiHelpers helpers;
   static YustFileHelpers fileHelpers = YustFileHelpers();
   static YustWebHelpers webHelpers = YustWebHelpers();

@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:yust/yust.dart';
 
-import 'download_manager.dart';
-import 'file_operation.dart';
-import 'file_operation_handler.dart';
-import 'offline_storage.dart';
+import 'yust_download_manager.dart';
+import 'yust_file_operation.dart';
+import 'yust_file_operation_handler.dart';
+import 'yust_offline_storage.dart';
 
 /// Persists a single file's metadata to its linked document.
 ///
@@ -14,7 +14,7 @@ import 'offline_storage.dart';
 /// Firestore write would bypass the app's permission, workspace-lock and
 /// trigger pipeline. The app layer implements this so every file write funnels
 /// through one sanctioned path.
-abstract interface class OfflineFileDocumentWriter {
+abstract interface class YustOfflineFileDocumentWriter {
   /// Writes [file]'s metadata to its linked document, scoped to its own key.
   Future<void> writeFile(YustFile file);
 
@@ -24,8 +24,8 @@ abstract interface class OfflineFileDocumentWriter {
 
 /// The outbound executor: pushes an upload, rename, delete or metadata update
 /// to Storage and writes its metadata back through an
-/// [OfflineFileDocumentWriter]. Queueing, retries and connectivity are the
-/// [FileOperationHandler]'s job.
+/// [YustOfflineFileDocumentWriter]. Queueing, retries and connectivity are the
+/// [YustFileOperationHandler]'s job.
 ///
 /// One shared manager drains operations for every record and brick, so the
 /// document writer is resolved per operation via [documentWriterFor] from the
@@ -35,14 +35,14 @@ abstract interface class OfflineFileDocumentWriter {
 /// No document write is awaited unbounded. A Firestore write resolves only on
 /// server acknowledgement, which never comes offline, and the drain is serial.
 /// Firestore's cache is itself a durable queue.
-class UploadManager implements FileOperationExecutor {
-  UploadManager({
-    required OfflineFileDocumentWriter? Function(FileOperation<YustFile>)
+class YustUploadManager implements YustFileOperationExecutor {
+  YustUploadManager({
+    required YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
     documentWriterFor,
-    OfflineStorage? storage,
+    YustOfflineStorage? storage,
     Duration? documentWriteTimeout,
   }) : _documentWriterFor = documentWriterFor,
-       _storage = storage ?? OfflineStorage.forDevice(),
+       _storage = storage ?? YustOfflineStorage.forDevice(),
        _documentWriteTimeout =
            documentWriteTimeout ?? defaultDocumentWriteTimeout;
 
@@ -50,32 +50,32 @@ class UploadManager implements FileOperationExecutor {
   /// Bounds only the record write; byte transfers keep Firebase's own window.
   static const defaultDocumentWriteTimeout = Duration(seconds: 30);
 
-  final OfflineFileDocumentWriter? Function(FileOperation<YustFile>)
+  final YustOfflineFileDocumentWriter? Function(YustFileOperation<YustFile>)
   _documentWriterFor;
   final Duration _documentWriteTimeout;
-  final OfflineStorage? _storage;
+  final YustOfflineStorage? _storage;
 
   @override
-  Set<FileOperationType> get handledTypes => {
-    FileOperationType.upload,
-    FileOperationType.rename,
-    FileOperationType.delete,
-    FileOperationType.updateMetadata,
+  Set<YustFileOperationType> get handledTypes => {
+    YustFileOperationType.upload,
+    YustFileOperationType.rename,
+    YustFileOperationType.delete,
+    YustFileOperationType.updateMetadata,
   };
 
   @override
-  Future<void> execute(FileOperation<YustFile> operation) =>
+  Future<void> execute(YustFileOperation<YustFile> operation) =>
       switch (operation.type) {
-        FileOperationType.upload => _upload(operation),
-        FileOperationType.rename => _rename(operation),
-        FileOperationType.delete => _delete(operation),
-        FileOperationType.updateMetadata => _updateMetadata(operation),
-        FileOperationType.download => throw StateError(
+        YustFileOperationType.upload => _upload(operation),
+        YustFileOperationType.rename => _rename(operation),
+        YustFileOperationType.delete => _delete(operation),
+        YustFileOperationType.updateMetadata => _updateMetadata(operation),
+        YustFileOperationType.download => throw StateError(
           'download is not an upload operation',
         ),
       };
 
-  Future<void> _upload(FileOperation<YustFile> operation) async {
+  Future<void> _upload(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     final documentWriter = _documentWriterFor(operation);
     final localPath = await _storage?.pathForFile(file.byteKey);
@@ -102,7 +102,7 @@ class UploadManager implements FileOperationExecutor {
   /// has already deleted. Awaiting also means a failed detach retries the whole
   /// operation instead of being logged and lost; re-detaching a detached entry
   /// is a no-op.
-  Future<void> _delete(FileOperation<YustFile> operation) async {
+  Future<void> _delete(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     await _awaitDocumentWrite(_documentWriterFor(operation)?.removeFile(file));
     await Yust.fileService.deleteFile(
@@ -116,12 +116,12 @@ class UploadManager implements FileOperationExecutor {
   /// favorite flag changed. Queued behind any upload of the same file, so it
   /// lands on an entry that exists, and awaited like every other record write
   /// so the operation after it reads the result rather than the state before.
-  Future<void> _updateMetadata(FileOperation<YustFile> operation) =>
+  Future<void> _updateMetadata(YustFileOperation<YustFile> operation) =>
       _awaitDocumentWrite(
         _documentWriterFor(operation)?.writeFile(operation.file),
       );
 
-  Future<void> _rename(FileOperation<YustFile> operation) async {
+  Future<void> _rename(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     final documentWriter = _documentWriterFor(operation);
     final oldName = file.name!;

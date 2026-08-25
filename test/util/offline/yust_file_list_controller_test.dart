@@ -5,12 +5,12 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
-import 'package:yust_ui/src/util/offline/file_list_controller.dart';
-import 'package:yust_ui/src/util/offline/file_operation.dart';
-import 'package:yust_ui/src/util/offline/file_operation_handler.dart';
-import 'package:yust_ui/src/util/offline/firebase_file_location.dart';
-import 'package:yust_ui/src/util/offline/offline_storage.dart';
-import 'package:yust_ui/src/util/offline/sync_queue.dart';
+import 'package:yust_ui/src/util/offline/yust_file_list_controller.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
+import 'package:yust_ui/src/util/offline/yust_firebase_file_location.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 /// What being offline throws, as opposed to a failure that counts as permanent.
 const _offline = SocketException('no route to host');
@@ -21,7 +21,7 @@ final _permanent = FirebaseException(
   code: 'permission-denied',
 );
 
-const _target = FirebaseFileLocation(
+const _target = YustFirebaseFileLocation(
   storageFolderPath: 'records/rec1',
   linkedDocPath: 'records/rec1',
   linkedDocAttribute: 'brickValues.brick1',
@@ -31,16 +31,16 @@ const _target = FirebaseFileLocation(
 /// A target with no document behind it — a picker bound to a brick's settings,
 /// an email attachment list. Nothing else persists these files, so the host is
 /// the one that has to hear about them.
-const _unlinkedTarget = FirebaseFileLocation(storageFolderPath: 'settings/brick1');
+const _unlinkedTarget = YustFirebaseFileLocation(storageFolderPath: 'settings/brick1');
 
 /// A second unlinked target, as a FileBrick and an ImageBrick on one record
 /// spec produce.
-const _otherUnlinkedTarget = FirebaseFileLocation(
+const _otherUnlinkedTarget = YustFirebaseFileLocation(
   storageFolderPath: 'settings/brick2',
 );
 
 /// A picked file for [target], which may carry no document.
-YustFile _pickedFileFor(FirebaseFileLocation target, String name) => YustFile(
+YustFile _pickedFileFor(YustFirebaseFileLocation target, String name) => YustFile(
   name: name,
   bytes: Uint8List.fromList(name.codeUnits),
   storageFolderPath: target.storageFolderPath,
@@ -50,11 +50,11 @@ YustFile _pickedFileFor(FirebaseFileLocation target, String name) => YustFile(
   setCreatedAtToNow: false,
 );
 
-/// Stands in for the real `UploadManager`: when [succeed] it mutates the operation's
+/// Stands in for the real `YustUploadManager`: when [succeed] it mutates the operation's
 /// file the way an upload does — stamping `path` and `url` — before reporting
 /// success, so the controller sees the same post-upload state it would in
 /// production.
-class _FakeExecutor implements FileOperationExecutor {
+class _FakeExecutor implements YustFileOperationExecutor {
   _FakeExecutor({this.succeed = true});
 
   bool succeed;
@@ -65,15 +65,15 @@ class _FakeExecutor implements FileOperationExecutor {
   final List<String> executed = [];
 
   @override
-  Set<FileOperationType> get handledTypes => {
-    FileOperationType.upload,
-    FileOperationType.rename,
-    FileOperationType.delete,
-    FileOperationType.download,
+  Set<YustFileOperationType> get handledTypes => {
+    YustFileOperationType.upload,
+    YustFileOperationType.rename,
+    YustFileOperationType.delete,
+    YustFileOperationType.download,
   };
 
   @override
-  Future<void> execute(FileOperation<YustFile> operation) async {
+  Future<void> execute(YustFileOperation<YustFile> operation) async {
     if (!succeed) throw failure;
     operation.file
       ..path = operation.file.storageFolderPath
@@ -108,18 +108,18 @@ YustFile _persistedFile(String name, String hash) => YustFile(
 
 void main() {
   late Directory root;
-  late SyncQueue queue;
-  late OfflineStorage storage;
+  late YustSyncQueue queue;
+  late YustOfflineStorage storage;
   late _FakeExecutor executor;
-  late FileOperationHandler handler;
+  late YustFileOperationHandler handler;
 
   /// A handler whose retry never fires, so a failed operation stays pending for the
   /// duration of a test instead of churning in the background.
-  FileOperationHandler buildHandler([FileOperationExecutor? which]) {
-    final built = FileOperationHandler(
+  YustFileOperationHandler buildHandler([YustFileOperationExecutor? which]) {
+    final built = YustFileOperationHandler(
       executors: [which ?? executor],
       queue: queue,
-      onlineStream: const Stream<bool>.empty(),
+      connectivityStream: const Stream<bool>.empty(),
       delay: (_) => Completer<void>().future,
     );
     addTearDown(built.dispose);
@@ -128,8 +128,8 @@ void main() {
 
   setUp(() {
     root = Directory.systemTemp.createTempSync('file_list_controller_test');
-    storage = OfflineStorage(directoryProvider: () async => root);
-    queue = SyncQueue(storage: storage);
+    storage = YustOfflineStorage(directoryProvider: () async => root);
+    queue = YustSyncQueue(storage: storage);
     executor = _FakeExecutor();
     handler = buildHandler();
   });
@@ -138,12 +138,12 @@ void main() {
     if (root.existsSync()) root.deleteSync(recursive: true);
   });
 
-  FileListController<YustFile> buildController({
-    FileOperationHandler? on,
-    FirebaseFileLocation target = _target,
+  YustFileListController<YustFile> buildController({
+    YustFileOperationHandler? on,
+    YustFirebaseFileLocation target = _target,
     void Function(List<YustFile>)? onOnlineFilesChanged,
   }) {
-    final controller = FileListController<YustFile>(
+    final controller = YustFileListController<YustFile>(
       handler: on ?? handler,
       firebaseLocation: target,
       storage: storage,
@@ -204,11 +204,11 @@ void main() {
 
       // Simulate a restart: a fresh queue, handler and controller over the same
       // directory, so the operation is read back from disk.
-      final restartedQueue = SyncQueue(storage: storage);
-      final restartedHandler = FileOperationHandler(
+      final restartedQueue = YustSyncQueue(storage: storage);
+      final restartedHandler = YustFileOperationHandler(
         executors: [_FakeExecutor(succeed: false)],
         queue: restartedQueue,
-        onlineStream: const Stream<bool>.empty(),
+        connectivityStream: const Stream<bool>.empty(),
         delay: (_) => Completer<void>().future,
       );
       addTearDown(restartedHandler.dispose);
@@ -514,7 +514,7 @@ void main() {
         await controller.add(file);
         expect(controller.isTimedOut(file), isFalse);
 
-        for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         await controller.settled;
@@ -534,7 +534,7 @@ void main() {
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      for (var i = 0; i < FileOperationHandler.maxFailedAttempts + 2; i++) {
+      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts + 2; i++) {
         await handler.processPendingOperations();
       }
       await controller.settled;
@@ -553,7 +553,7 @@ void main() {
         final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
         await controller.add(file);
-        for (var i = 0; i < FileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         await controller.settled;

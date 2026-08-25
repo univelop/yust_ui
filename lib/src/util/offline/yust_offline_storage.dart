@@ -17,14 +17,14 @@ import 'package:yust/yust.dart';
 /// IO. A device without durable storage has no instance at all — see
 /// [forDevice] — so "there is nowhere to keep this" is the absence of the
 /// object rather than a guard inside it.
-class OfflineStorage {
-  OfflineStorage({Future<Directory> Function()? directoryProvider})
+class YustOfflineStorage {
+  YustOfflineStorage({Future<Directory> Function()? directoryProvider})
     : _rootProvider = directoryProvider ?? getApplicationSupportDirectory;
 
   /// The device's store, or null where the device keeps nothing — web, which
   /// has no durable directory. The one place the platform is asked; everything
   /// downstream holds the nullable result and reads null as "nothing is kept".
-  static OfflineStorage? forDevice() => kIsWeb ? null : OfflineStorage();
+  static YustOfflineStorage? forDevice() => kIsWeb ? null : YustOfflineStorage();
 
   /// The base directory. Defaults to the application support directory; tests
   /// inject a temporary directory so no real IO leaks.
