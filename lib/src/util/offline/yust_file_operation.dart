@@ -105,6 +105,20 @@ class YustFileOperation<T extends YustFile> {
   /// the user rather than retrying.
   bool get hasReachedRetryLimit => failedAttempts >= maxFailedAttempts;
 
+  /// The work this operation does, for deduping — see [YustSyncQueue.enqueueOperation].
+  ({
+    YustFileOperationType type,
+    String fileKey,
+    String? newName,
+    String byteKey,
+  })
+  get identity => (
+    type: type,
+    fileKey: fileKey,
+    newName: newName,
+    byteKey: file.byteKey,
+  );
+
   /// A copy with one more permanent failure recorded.
   YustFileOperation<T> withFailedAttempt() =>
       _copyWith(failedAttempts: failedAttempts + 1);

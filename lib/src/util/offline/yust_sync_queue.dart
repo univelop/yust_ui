@@ -49,11 +49,15 @@ class YustSyncQueue {
     return run;
   }
 
-  /// Appends [operation] to the end of the queue.
+  /// Appends [operation] to the end of the queue, unless one already pending
+  /// has the same [YustFileOperation.identity].
   Future<void> enqueueOperation<T extends YustFile>(
     YustFileOperation<T> operation,
   ) => _serialized(() async {
     final operations = await _load();
+    if (operations.any((existing) => existing.identity == operation.identity)) {
+      return;
+    }
     operations.add(operation);
     await _save(operations);
   });

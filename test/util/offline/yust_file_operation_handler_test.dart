@@ -27,17 +27,24 @@ class _RecordingManager implements YustFileOperationManager {
   }
 }
 
-YustFileOperation<YustFile> _uploadOperation(String hash, {String? id}) =>
-    YustFileOperation<YustFile>(
-      id: id,
-      type: YustFileOperationType.upload,
-      file: YustFile(
-        name: '$hash.pdf',
-        hash: hash,
-        storageFolderPath: 'records/rec1',
-        setCreatedAtToNow: false,
-      ),
-    );
+/// [fileName] fixes the file's identity (its `fileKey`); [contentHash] fixes
+/// its bytes (its `byteKey`) and defaults to [fileName]. Pass a distinct
+/// [contentHash] to queue two non-duplicate uploads of the *same* file entry —
+/// a re-upload of new bytes — which the queue keeps rather than dedupes.
+YustFileOperation<YustFile> _uploadOperation(
+  String fileName, {
+  String? id,
+  String? contentHash,
+}) => YustFileOperation<YustFile>(
+  id: id,
+  type: YustFileOperationType.upload,
+  file: YustFile(
+    name: '$fileName.pdf',
+    hash: contentHash ?? fileName,
+    storageFolderPath: 'records/rec1',
+    setCreatedAtToNow: false,
+  ),
+);
 
 /// What being offline actually throws, as opposed to a permanent failure.
 const _offline = SocketException('no route to host');
@@ -379,8 +386,8 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueueAll([
-        _uploadOperation('h1', id: 'first'),
-        _uploadOperation('h1', id: 'second'),
+        _uploadOperation('h1', id: 'first', contentHash: 'v1'),
+        _uploadOperation('h1', id: 'second', contentHash: 'v2'),
       ]);
       await handler.processPendingOperations();
 
@@ -403,8 +410,8 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueueAll([
-        _uploadOperation('h1', id: 'blocked'),
-        _uploadOperation('h1', id: 'behind'),
+        _uploadOperation('h1', id: 'blocked', contentHash: 'v1'),
+        _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
         _uploadOperation('h2', id: 'other'),
       ]);
       await handler.processPendingOperations();
@@ -422,8 +429,8 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueueAll([
-        _uploadOperation('h1', id: 'first'),
-        _uploadOperation('h1', id: 'second'),
+        _uploadOperation('h1', id: 'first', contentHash: 'v1'),
+        _uploadOperation('h1', id: 'second', contentHash: 'v2'),
       ]);
       await handler.processPendingOperations();
       failFirst = false;
@@ -519,8 +526,8 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueueAll([
-        _uploadOperation('h1', id: 'timed out'),
-        _uploadOperation('h1', id: 'behind'),
+        _uploadOperation('h1', id: 'timed out', contentHash: 'v1'),
+        _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
       ]);
       for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
         await handler.processPendingOperations();

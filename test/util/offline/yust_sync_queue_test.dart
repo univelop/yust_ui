@@ -78,6 +78,63 @@ void main() {
     );
   });
 
+  group('dedupes work already queued', () {
+    test('an exact duplicate is enqueued only once', () async {
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, name: 'a.pdf', hash: 'v1'),
+      );
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, name: 'a.pdf', hash: 'v1'),
+      );
+
+      expect((await queue.getPendingOperations()).length, 1);
+    });
+
+    test('a re-upload with new bytes of the same file is kept', () async {
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, name: 'a.pdf', hash: 'v1'),
+      );
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, name: 'a.pdf', hash: 'v2'),
+      );
+
+      expect((await queue.getPendingOperations()).length, 2);
+    });
+
+    test('a different operation kind on the same file is kept', () async {
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, name: 'a.pdf', hash: 'v1'),
+      );
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.delete, name: 'a.pdf', hash: 'v1'),
+      );
+
+      expect((await queue.getPendingOperations()).map((op) => op.type), [
+        YustFileOperationType.upload,
+        YustFileOperationType.delete,
+      ]);
+    });
+
+    test('a rename to a different name is kept', () async {
+      await queue.enqueueOperation(
+        _operation(
+          YustFileOperationType.rename,
+          name: 'a.pdf',
+          newName: 'b.pdf',
+        ),
+      );
+      await queue.enqueueOperation(
+        _operation(
+          YustFileOperationType.rename,
+          name: 'a.pdf',
+          newName: 'c.pdf',
+        ),
+      );
+
+      expect((await queue.getPendingOperations()).length, 2);
+    });
+  });
+
   test('remove is a no-op when the operation is already gone', () async {
     await queue.enqueueOperation(
       _operation(YustFileOperationType.upload, hash: 'h1'),
