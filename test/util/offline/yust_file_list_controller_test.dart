@@ -510,7 +510,7 @@ void main() {
         await controller.add(file);
         expect(controller.hasReachedRetryLimit(file), isFalse);
 
-        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         await controller.settled;
@@ -530,7 +530,7 @@ void main() {
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts + 2; i++) {
+      for (var i = 0; i < YustFileOperation.maxFailedAttempts + 2; i++) {
         await handler.processPendingOperations();
       }
       await controller.settled;
@@ -549,7 +549,7 @@ void main() {
         final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
         await controller.add(file);
-        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         await controller.settled;

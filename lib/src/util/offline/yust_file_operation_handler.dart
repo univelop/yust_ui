@@ -27,8 +27,9 @@ import 'yust_sync_queue.dart';
 ///
 /// Failures are classified. Connection failures retry forever, untracked. A
 /// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
-/// operation's [YustFileOperation.failedAttempts]; at [maxFailedAttempts] it is
-/// at its retry limit — kept in the queue, reported via [failedOperations], cleared by
+/// operation's [YustFileOperation.failedAttempts]; at
+/// [YustFileOperation.maxFailedAttempts] it is at its retry limit — kept in the
+/// queue, reported via [failedOperations], cleared by
 /// [retryFailedOperations]. Nothing is dropped, and an unrecognised error
 /// counts as transient.
 ///
@@ -69,9 +70,6 @@ class YustFileOperationHandler extends ChangeNotifier {
 
   static const _base = Duration(seconds: 1);
   static const _cap = Duration(seconds: 30);
-
-  /// Permanent failures an operation may collect before it reaches the retry limit.
-  static const maxFailedAttempts = 5;
 
   late final StreamSubscription<bool> _connectivitySub;
   int _attempt = 0;
@@ -170,18 +168,18 @@ class YustFileOperationHandler extends ChangeNotifier {
         .where(
           (operation) =>
               operation.type == YustFileOperationType.upload &&
-              !_hasReachedRetryLimit(operation),
+              !operation.hasReachedRetryLimit,
         )
         .map((operation) => operation.fileKey)
         .toSet();
     if (!_disposed) notifyListeners();
   }
 
-  /// Ops that hit [maxFailedAttempts] and sit in the queue untouched — a change the
-  /// user made that has not reached the server.
+  /// Ops that hit [YustFileOperation.maxFailedAttempts] and sit in the queue
+  /// untouched — a change the user made that has not reached the server.
   Future<List<YustFileOperation<YustFile>>> failedOperations() async =>
       (await queue.getPendingOperations())
-          .where(_hasReachedRetryLimit)
+          .where((operation) => operation.hasReachedRetryLimit)
           .toList();
 
   /// Clears the failure count on every operation at its retry limit and drains again.
@@ -193,10 +191,6 @@ class YustFileOperationHandler extends ChangeNotifier {
     await _notifyQueueChanged();
     await processPendingOperations();
   }
-
-  /// Whether [operation] has exhausted its failedAttempts; see [failedOperations].
-  bool _hasReachedRetryLimit(YustFileOperation<YustFile> operation) =>
-      operation.failedAttempts >= maxFailedAttempts;
 
   /// Drains the queue, and completes when the drain in flight does.
   ///
@@ -286,7 +280,7 @@ class YustFileOperationHandler extends ChangeNotifier {
       firstOperationForFile.putIfAbsent(operation.fileKey, () => operation);
     }
     return firstOperationForFile.values.where(
-      (operation) => !_hasReachedRetryLimit(operation),
+      (operation) => !operation.hasReachedRetryLimit,
     );
   }
 
@@ -299,7 +293,7 @@ class YustFileOperationHandler extends ChangeNotifier {
     if (!isPermanentOperationError(error)) return;
     final failed = operation.withFailedAttempt();
     await queue.replaceOperation(failed);
-    if (_hasReachedRetryLimit(failed)) await _notifyQueueChanged();
+    if (failed.hasReachedRetryLimit) await _notifyQueueChanged();
   }
 
   void _onConnectivity(bool online) {

@@ -492,7 +492,7 @@ void main() {
       final handler = handlerWith(executor);
 
       await handler.enqueue(_uploadOperation('h1', id: 'operation'));
-      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts + 2; i++) {
+      for (var i = 0; i < YustFileOperation.maxFailedAttempts + 2; i++) {
         await handler.processPendingOperations();
       }
 
@@ -501,7 +501,7 @@ void main() {
           await queue.getPendingOperations(),
           'operation',
         )?.failedAttempts,
-        YustFileOperationHandler.maxFailedAttempts,
+        YustFileOperation.maxFailedAttempts,
       );
       expect(executor.executed, isEmpty);
       expect(
@@ -522,7 +522,7 @@ void main() {
         _uploadOperation('h1', id: 'timed out'),
         _uploadOperation('h1', id: 'behind'),
       ]);
-      for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
+      for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
         await handler.processPendingOperations();
       }
       await handler.enqueue(_uploadOperation('h2', id: 'other'));
@@ -550,7 +550,7 @@ void main() {
         final handler = handlerWith(executor);
 
         await handler.enqueue(_uploadOperation('h1', id: 'operation'));
-        for (var i = 0; i < YustFileOperationHandler.maxFailedAttempts; i++) {
+        for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
           await handler.processPendingOperations();
         }
         expect(await handler.failedOperations(), hasLength(1));
@@ -625,7 +625,7 @@ void main() {
       await handler.enqueue(operation);
       for (
         var attempt = 0;
-        attempt < YustFileOperationHandler.maxFailedAttempts;
+        attempt < YustFileOperation.maxFailedAttempts;
         attempt++
       ) {
         await handler.processPendingOperations();

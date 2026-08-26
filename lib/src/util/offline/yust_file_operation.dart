@@ -72,6 +72,10 @@ class YustFileOperation<T extends YustFile> {
        createdAt = createdAt ?? DateTime.now(),
        id = id ?? '${DateTime.now().microsecondsSinceEpoch}_${file.offlineKey}';
 
+  /// The permanent failures an operation may collect before it stops retrying
+  /// and waits for the user.
+  static const maxFailedAttempts = 5;
+
   /// Stable identity for the entry, independent of the mutable [file]. A manager
   /// removes an operation by this after applying it (the file may have been mutated,
   /// e.g. renamed, by then).
@@ -94,8 +98,12 @@ class YustFileOperation<T extends YustFile> {
   final DateTime createdAt;
 
   /// How often this operation failed for a reason retrying cannot fix. Connection
-  /// failures never count; at the handler's limit the operation reaches its retry limit.
+  /// failures never count.
   final int failedAttempts;
+
+  /// Whether this operation has spent its [maxFailedAttempts] and now waits on
+  /// the user rather than retrying.
+  bool get hasReachedRetryLimit => failedAttempts >= maxFailedAttempts;
 
   /// A copy with one more permanent failure recorded.
   YustFileOperation<T> withFailedAttempt() =>

@@ -90,8 +90,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// on the user. Drives the "could not be synced" marker.
   bool hasReachedRetryLimit(T file) => _pendingOperations.any(
     (operation) =>
-        operation.fileKey == file.offlineKey &&
-        operation.failedAttempts >= YustFileOperationHandler.maxFailedAttempts,
+        operation.fileKey == file.offlineKey && operation.hasReachedRetryLimit,
   );
 
   /// Whether [file] is persisted in the document.
