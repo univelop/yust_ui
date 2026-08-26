@@ -65,7 +65,8 @@ class YustFirebaseFileLocation {
     storesFilesAsMap,
   );
 
-  /// Stamps [file] with this location.
+  /// Re-attaches this location's addressing to [file]. The document does not
+  /// persist these fields, so a file read back from it needs them stamped on.
   void apply(YustFile file) {
     file.storageFolderPath = storageFolderPath;
     file.linkedDocPath = linkedDocPath;

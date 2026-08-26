@@ -98,8 +98,9 @@ class YustFileOperation<T extends YustFile> {
   final DateTime createdAt;
 
   /// How often this operation failed for a reason retrying cannot fix. Connection
-  /// failures never count.
-  final int failedAttempts;
+  /// failures never count. Mutated in place by the handler, then persisted via
+  /// [YustSyncQueue.persist].
+  int failedAttempts;
 
   /// Whether this operation has spent its [maxFailedAttempts] and now waits on
   /// the user rather than retrying.
@@ -118,25 +119,6 @@ class YustFileOperation<T extends YustFile> {
     newName: newName,
     byteKey: file.byteKey,
   );
-
-  /// A copy with one more permanent failure recorded.
-  YustFileOperation<T> withFailedAttempt() =>
-      _copyWith(failedAttempts: failedAttempts + 1);
-
-  /// A copy with its failures forgotten, for a user-triggered retry.
-  YustFileOperation<T> withResetFailedAttempts() =>
-      _copyWith(failedAttempts: 0);
-
-  YustFileOperation<T> _copyWith({required int failedAttempts}) =>
-      YustFileOperation<T>(
-        type: type,
-        file: file,
-        newName: newName,
-        id: id,
-        fileKey: fileKey,
-        createdAt: createdAt,
-        failedAttempts: failedAttempts,
-      );
 
   /// Serialises the operation, the file via [YustFile.toLocalJson].
   ///

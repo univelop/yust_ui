@@ -107,22 +107,22 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// local bytes; a pending delete drops its entry. A rename or metadata update
   /// is already on the online instance, so neither needs an entry.
   List<T> _currentFilesIncludingPendingChanges() {
-    final byKey = <String, T>{
+    final fileByOfflineKey = <String, T>{
       for (final file in _online) file.offlineKey: file,
     };
     for (final operation in _pendingOperations) {
       switch (operation.type) {
         case YustFileOperationType.upload:
-          byKey[operation.fileKey] = operation.file as T;
+          fileByOfflineKey[operation.fileKey] = operation.file as T;
         case YustFileOperationType.delete:
-          byKey.remove(operation.fileKey);
+          fileByOfflineKey.remove(operation.fileKey);
         case YustFileOperationType.rename:
         case YustFileOperationType.updateMetadata:
         case YustFileOperationType.download:
           break;
       }
     }
-    return List<T>.unmodifiable(byKey.values);
+    return List<T>.unmodifiable(fileByOfflineKey.values);
   }
 
   /// Like [setOnlineFiles], but reconciles — and notifies — only when
@@ -220,7 +220,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   Future<void> _writeBytes(T file) async {
     final byteKey = file.byteKey;
     if (byteKey.isEmpty || !file.hasName) return;
-    file.devicePath = await _storage?.write(
+    file.devicePath = await _storage?.writeBytes(
       byteKey: byteKey,
       name: file.name!,
       bytes: file.bytes,
@@ -241,13 +241,11 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     return null;
   }
 
-  /// Renames [file] to [newName]. The displayed instance updates at once; the
-  /// operation carries an old-name snapshot so the executor can still fetch the
-  /// original bytes.
+  /// Renames [file] to [newName]. The operation carries an old-name snapshot so
+  /// the executor can still fetch the original bytes; the display picks up the
+  /// new name from the queued rename on the next refresh.
   Future<void> rename(T file, String newName) async {
-    final snapshot = file.copyWithUrl(null)
-      ..linkedDocStoresFilesAsMap = file.linkedDocStoresFilesAsMap;
-    file.name = newName;
+    final snapshot = file.copyWithUrl(null);
     await handler.enqueue(
       YustFileOperation<YustFile>(
         type: YustFileOperationType.rename,
@@ -327,6 +325,16 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     _pendingOperations = allOperations
         .where((operation) => firebaseLocation.owns(operation.file))
         .toList();
+    // A rename shows by renaming the live online entry; the operation keeps the
+    // old-name snapshot for the executor.
+    for (final operation in _pendingOperations) {
+      if (operation.type == YustFileOperationType.rename) {
+        _online
+            .firstWhereOrNull((file) => file.offlineKey == operation.fileKey)
+            ?.name = operation
+            .newName;
+      }
+    }
     _emitOnlineFiles();
     notifyListeners();
   }

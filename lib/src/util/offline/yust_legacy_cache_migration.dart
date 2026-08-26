@@ -59,7 +59,7 @@ Future<void> migrateLegacyFileCache({
       file.file = stagedFile;
       // The local JSON carried no hash, and the document entry is keyed by it.
       await file.ensureHash();
-      await offlineStorage.write(
+      await offlineStorage.writeBytes(
         byteKey: file.byteKey,
         name: file.name!,
         file: stagedFile,
@@ -69,7 +69,10 @@ Future<void> migrateLegacyFileCache({
       file.devicePath = null;
 
       operations.add(
-        YustFileOperation<YustFile>(type: YustFileOperationType.upload, file: file),
+        YustFileOperation<YustFile>(
+          type: YustFileOperationType.upload,
+          file: file,
+        ),
       );
       stagedFiles.add(stagedFile);
     } catch (_) {

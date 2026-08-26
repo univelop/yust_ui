@@ -24,7 +24,8 @@ class YustOfflineStorage {
   /// The device's store, or null where the device keeps nothing — web, which
   /// has no durable directory. The one place the platform is asked; everything
   /// downstream holds the nullable result and reads null as "nothing is kept".
-  static YustOfflineStorage? forDevice() => kIsWeb ? null : YustOfflineStorage();
+  static YustOfflineStorage? forDevice() =>
+      kIsWeb ? null : YustOfflineStorage();
 
   /// The base directory. Defaults to the application support directory; tests
   /// inject a temporary directory so no real IO leaks.
@@ -36,7 +37,7 @@ class YustOfflineStorage {
   /// returns the path to them. Null on web, where nothing is cached, and null
   /// when there was nothing to write — a path to bytes that do not exist reads
   /// as [YustFile.cached] everywhere and sends readers to a missing file.
-  Future<String?> write({
+  Future<String?> writeBytes({
     required String byteKey,
     required String name,
     Uint8List? bytes,

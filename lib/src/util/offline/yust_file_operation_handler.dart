@@ -185,8 +185,9 @@ class YustFileOperationHandler extends ChangeNotifier {
   /// Clears the failure count on every operation at its retry limit and drains again.
   Future<void> retryFailedOperations() async {
     for (final operation in await failedOperations()) {
-      await queue.replaceOperation(operation.withResetFailedAttempts());
+      operation.failedAttempts = 0;
     }
+    await queue.persist();
     _attempt = 0;
     await _notifyQueueChanged();
     await processPendingOperations();
@@ -291,9 +292,9 @@ class YustFileOperationHandler extends ChangeNotifier {
     Object error,
   ) async {
     if (!isPermanentOperationError(error)) return;
-    final failed = operation.withFailedAttempt();
-    await queue.replaceOperation(failed);
-    if (failed.hasReachedRetryLimit) await _notifyQueueChanged();
+    operation.failedAttempts++;
+    await queue.persist();
+    if (operation.hasReachedRetryLimit) await _notifyQueueChanged();
   }
 
   void _onConnectivity(bool online) {

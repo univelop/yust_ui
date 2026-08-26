@@ -28,18 +28,10 @@ class YustFileHelpers {
   static final connectivityStream = Connectivity().onConnectivityChanged
       .asBroadcastStream();
 
-  /// The path to [file]'s on-device copy, also set as [YustFile.devicePath].
-  /// Null when it is not cached.
-  Future<String?> getPathForFile(YustFile file) async {
-    final path = await _offlineStorage?.pathForFile(file.byteKey);
-    if (path != null) file.devicePath = path;
-    return path;
-  }
-
   /// Where [file]'s bytes should be read from: the on-device copy when cached,
   /// else the signed network URL, else null.
   Future<Uri?> getSourceUri(YustFile file) async {
-    final path = await getPathForFile(file);
+    final path = await _offlineStorage?.pathForFile(file.byteKey);
     if (path != null) return Uri.file(path);
     final url = file.getOriginalUrl();
     return url == null ? null : Uri.parse(url);
@@ -72,7 +64,7 @@ class YustFileHelpers {
     // is found through its content key.
     final cachedPath = file.cached
         ? file.devicePath
-        : await getPathForFile(file);
+        : await _offlineStorage?.pathForFile(file.byteKey);
     if (cachedPath != null) return File(cachedPath);
 
     final url = await resolveDownloadUrl(file);

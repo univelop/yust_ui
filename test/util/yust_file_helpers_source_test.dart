@@ -47,7 +47,7 @@ void main() {
 
     test('prefers the on-device copy once it is cached', () async {
       final plan = _plan();
-      await storage.write(
+      await storage.writeBytes(
         byteKey: plan.offlineKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
@@ -68,35 +68,10 @@ void main() {
     });
   });
 
-  group('getPathForFile', () {
-    test('stamps the resolved path as the file devicePath', () async {
-      // YustFile.cached is backed by devicePath.
-      final plan = _plan();
-      await storage.write(
-        byteKey: plan.offlineKey,
-        name: plan.name!,
-        bytes: Uint8List.fromList([1, 2, 3]),
-      );
-
-      final path = await helpers.getPathForFile(plan);
-
-      expect(path, isNotNull);
-      expect(plan.devicePath, path);
-      expect(plan.cached, isTrue);
-    });
-
-    test('leaves devicePath untouched when nothing is cached', () async {
-      final plan = _plan();
-
-      expect(await helpers.getPathForFile(plan), isNull);
-      expect(plan.devicePath, isNull);
-    });
-  });
-
   group('resolveToLocalFile', () {
     test('returns the on-device copy when the file is cached', () async {
       final plan = _plan();
-      await storage.write(
+      final devicePath = await storage.writeBytes(
         byteKey: plan.offlineKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
@@ -105,7 +80,7 @@ void main() {
       final file = await helpers.resolveToLocalFile(plan);
 
       expect(file.existsSync(), isTrue);
-      expect(file.path, plan.devicePath);
+      expect(file.path, devicePath);
     });
 
     test(

@@ -21,8 +21,8 @@ void main() {
 
   Uint8List bytes(String content) => Uint8List.fromList(content.codeUnits);
 
-  test('write stores bytes and pathForFile finds them', () async {
-    final path = await storage.write(
+  test('writeBytes stores bytes and pathForFile finds them', () async {
+    final path = await storage.writeBytes(
       byteKey: 'h1',
       name: 'plan.pdf',
       bytes: bytes('pdf-bytes'),
@@ -40,7 +40,11 @@ void main() {
   });
 
   test('remove deletes the entry and is safe when already gone', () async {
-    await storage.write(byteKey: 'h1', name: 'plan.pdf', bytes: bytes('x'));
+    await storage.writeBytes(
+      byteKey: 'h1',
+      name: 'plan.pdf',
+      bytes: bytes('x'),
+    );
     await storage.removeFile('h1');
 
     expect(await storage.hasFile('h1'), isFalse);
@@ -56,7 +60,7 @@ void main() {
       storageFolderPath: 'records/rec1',
       setCreatedAtToNow: false,
     );
-    await storage.write(
+    await storage.writeBytes(
       byteKey: signature('old').byteKey,
       name: 'signature.png',
       bytes: bytes('old-drawing'),
@@ -67,8 +71,8 @@ void main() {
   });
 
   test('entries are independent — writing one never drops another', () async {
-    await storage.write(byteKey: 'h1', name: 'a.pdf', bytes: bytes('a'));
-    await storage.write(byteKey: 'h2', name: 'b.pdf', bytes: bytes('b'));
+    await storage.writeBytes(byteKey: 'h1', name: 'a.pdf', bytes: bytes('a'));
+    await storage.writeBytes(byteKey: 'h2', name: 'b.pdf', bytes: bytes('b'));
 
     expect(await storage.hasFile('h1'), isTrue);
     expect(await storage.hasFile('h2'), isTrue);

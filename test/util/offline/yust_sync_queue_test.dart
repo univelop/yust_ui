@@ -219,38 +219,31 @@ void main() {
     expect((operations.single.file as YustImage).location?.latitude, 48.1);
   });
 
-  group('replace', () {
-    test('rewrites the operation in place, keeping its position', () async {
-      await queue.enqueueOperation(
-        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
-      );
-      await queue.enqueueOperation(
-        _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
-      );
-      final first = (await queue.getPendingOperations()).first;
+  group('persist', () {
+    test(
+      'writes an in-place failedAttempts change, surviving a restart',
+      () async {
+        await queue.enqueueOperation(
+          _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
+        );
+        await queue.enqueueOperation(
+          _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
+        );
 
-      await queue.replaceOperation(first.withFailedAttempt());
+        (await queue.getPendingOperations()).first.failedAttempts++;
+        await queue.persist();
 
-      final operations = await queue.getPendingOperations();
-      expect(operations.map((operation) => operation.file.name), [
-        'h1.pdf',
-        'h2.pdf',
-      ]);
-      expect(operations.first.failedAttempts, 1);
-      expect(operations.first.id, first.id);
-    });
-
-    test('is a no-op when the operation is already gone', () async {
-      await queue.enqueueOperation(
-        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
-      );
-      final only = (await queue.getPendingOperations()).single;
-      await queue.removeOperation(only);
-
-      await queue.replaceOperation(only.withFailedAttempt());
-
-      expect(await queue.getPendingOperations(), isEmpty);
-    });
+        final reloaded = YustSyncQueue(
+          storage: YustOfflineStorage(directoryProvider: () async => root),
+        );
+        final operations = await reloaded.getPendingOperations();
+        expect(operations.map((operation) => operation.file.name), [
+          'h1.pdf',
+          'h2.pdf',
+        ]);
+        expect(operations.first.failedAttempts, 1);
+      },
+    );
   });
 
   group('in memory (web)', () {
@@ -278,7 +271,7 @@ void main() {
       );
     });
 
-    test('remove and replace address the same entries', () async {
+    test('an in-place change and remove address the same entries', () async {
       await memoryQueue.enqueueOperation(
         _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
       );
@@ -286,8 +279,7 @@ void main() {
         _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
 
-      final first = (await memoryQueue.getPendingOperations()).first;
-      await memoryQueue.replaceOperation(first.withFailedAttempt());
+      (await memoryQueue.getPendingOperations()).first.failedAttempts++;
       await memoryQueue.removeOperation(
         (await memoryQueue.getPendingOperations()).last,
       );

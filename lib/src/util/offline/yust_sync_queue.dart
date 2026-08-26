@@ -36,8 +36,10 @@ class YustSyncQueue {
 
   static const _fileName = 'sync_queue.json';
 
-  /// Backs the queue when there is no store.
-  final List<YustFileOperation<YustFile>> _memory = [];
+  /// The working copy: loaded from storage once, then mutated in place. Storage,
+  /// when present, is written through on each change; without it this is the
+  /// operations' only copy.
+  List<YustFileOperation<YustFile>>? _operations;
 
   /// Ensures each operation is fully written before the next one starts
   Future<void> _lock = Future<void>.value();
@@ -59,12 +61,14 @@ class YustSyncQueue {
       return;
     }
     operations.add(operation);
-    await _save(operations);
+    await _persist(operations);
   });
 
-  /// The pending operations, oldest first, without removing them.
+  /// The pending operations, oldest first, without removing them. The entries
+  /// are the live objects: mutating one (its [YustFileOperation.failedAttempts])
+  /// and calling [persist] writes the change back.
   Future<List<YustFileOperation<YustFile>>> getPendingOperations() =>
-      _serialized(() async => _load());
+      _serialized(() async => List.of(await _load()));
 
   /// Removes the operation with [operation]'s id. No-operation when it is already gone (a manager
   /// removes each operation only after it has applied it).
@@ -72,27 +76,18 @@ class YustSyncQueue {
       _serialized(() async {
         final operations = await _load();
         operations.removeWhere((entry) => entry.id == operation.id);
-        await _save(operations);
+        await _persist(operations);
       });
 
-  /// Overwrites the entry with [operation]'s id, keeping its position — the order is
-  /// what holds a file's own operations in sequence. No-operation when the entry is gone.
-  Future<void> replaceOperation(YustFileOperation<YustFile> operation) =>
-      _serialized(
-        () async {
-          final operations = await _load();
-          final index = operations.indexWhere(
-            (entry) => entry.id == operation.id,
-          );
-          if (index == -1) return;
-          operations[index] = operation;
-          await _save(operations);
-        },
-      );
+  /// Writes the current operations to storage, after one was mutated in place.
+  /// A no-op without a store, where the working copy is already the only one.
+  Future<void> persist() => _serialized(() async => _persist(await _load()));
 
-  Future<List<YustFileOperation<YustFile>>> _load() async {
-    if (_storage == null) return List<YustFileOperation<YustFile>>.of(_memory);
-    final json = await _storage.readText(_fileName);
+  Future<List<YustFileOperation<YustFile>>> _load() async =>
+      _operations ??= await _readInitial();
+
+  Future<List<YustFileOperation<YustFile>>> _readInitial() async {
+    final json = await _storage?.readText(_fileName);
     if (json == null) return [];
     return (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
@@ -100,13 +95,8 @@ class YustSyncQueue {
         .toList();
   }
 
-  Future<void> _save(List<YustFileOperation<YustFile>> operations) async {
-    if (_storage == null) {
-      _memory
-        ..clear()
-        ..addAll(operations);
-      return;
-    }
+  Future<void> _persist(List<YustFileOperation<YustFile>> operations) async {
+    if (_storage == null) return;
     await _storage.writeText(
       _fileName,
       jsonEncode(operations.map((operation) => operation.toJson()).toList()),

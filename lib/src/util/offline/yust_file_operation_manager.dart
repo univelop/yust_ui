@@ -175,18 +175,13 @@ class YustFileOperationManager {
       path: storageFolder,
       name: file.name!,
     );
-    // The Flutter file service swallows every download error and returns empty
-    // bytes rather than throwing, so an empty result means the fetch failed.
-    // Throw so the operation stays queued and self-heals on the next drain, instead of
-    // caching a 0-byte file that would then read as "available offline".
-    //
-    // Ask Storage which failure it was: an object that is not there can never
-    // be fetched, and retrying it forever buries the queue in noise. A lookup
-    // that cannot reach the server throws, and that is the transient case.
+    // downloadFile returns empty on any failure (never null), so an empty result
+    // is a failed fetch, not a 0-byte file — throw to keep the operation queued
+    // rather than cache a broken "available offline" file.
     if (bytes == null || bytes.isEmpty) {
       throw await missingOrUnreachable(storageFolder, file.name!);
     }
-    file.devicePath = await storage.write(
+    file.devicePath = await storage.writeBytes(
       byteKey: file.byteKey,
       name: file.name!,
       bytes: bytes,
