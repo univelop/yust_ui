@@ -788,10 +788,9 @@ abstract class YustFilePickerBaseState<
   }
 
   String _filesSignature(List<T> files) => files
-      // The hash is part of it: a file whose content was replaced elsewhere
-      // keeps its name and location, and its on-device copy has to be dropped.
-      .map(
-        (file) => '${file.offlineKey}:${file.name}:${file.path}:${file.hash}',
-      )
+      // offlineKey already encodes name and location; the hash is added on top
+      // so a file whose content was replaced elsewhere — same name and
+      // location — is still seen as changed and its on-device copy dropped.
+      .map((file) => '${file.offlineKey}:${file.hash}')
       .join('|');
 }

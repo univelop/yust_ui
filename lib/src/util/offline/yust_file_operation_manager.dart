@@ -139,6 +139,7 @@ class YustFileOperationManager {
       bytes: bytes,
       linkedDocPath: file.linkedDocPath,
       linkedDocAttribute: file.linkedDocAttribute,
+      createThumbnail: file.createThumbnail,
     );
     // The map layout keys both on the same hash, so the old entry goes first.
     await _awaitDocumentWrite(documentWriter?.removeFile(file));

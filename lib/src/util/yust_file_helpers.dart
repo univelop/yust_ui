@@ -239,13 +239,6 @@ class YustFileHelpers {
     }
   }
 
-  Future<void> _showFileError(Object error) => YustUi.alertService.showAlert(
-    LocaleKeys.oops.tr(),
-    LocaleKeys.alertCannotOpenFileWithError.tr(
-      namedArgs: {'error': error.toString()},
-    ),
-  );
-
   /// Whether [file] cannot be opened from anywhere.
   static bool isFileBroken(YustFile file) {
     final name = file.name;
@@ -274,6 +267,13 @@ class YustFileHelpers {
       return '$sizeInKiB KiB';
     }
   }
+
+  Future<void> _showFileError(Object error) => YustUi.alertService.showAlert(
+    LocaleKeys.oops.tr(),
+    LocaleKeys.alertCannotOpenFileWithError.tr(
+      namedArgs: {'error': error.toString()},
+    ),
+  );
 
   void _validateFileResponse(http.Response response) {
     if (response.statusCode >= 300) {
