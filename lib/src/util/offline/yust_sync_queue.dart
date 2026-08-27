@@ -91,8 +91,19 @@ class YustSyncQueue {
     if (json == null) return [];
     return (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
-        .map(YustFileOperation.fromJson<YustFile>)
+        .map(_tryParseOperation)
+        .whereType<YustFileOperation<YustFile>>()
         .toList();
+  }
+
+  /// Parses one stored entry, or drops it when it cannot be read
+  YustFileOperation<YustFile>? _tryParseOperation(Map<String, dynamic> json) {
+    try {
+      return YustFileOperation.fromJson<YustFile>(json);
+    } catch (_) {
+      // TODO: a dropped entry is currently invisible: find a solution
+      return null;
+    }
   }
 
   Future<void> _persist(List<YustFileOperation<YustFile>> operations) async {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -243,6 +244,35 @@ void main() {
         ]);
         expect(operations.first.failedAttempts, 1);
       },
+    );
+  });
+
+  test('drops an entry with an unknown type, keeping the rest', () async {
+    // A queue file with one valid upload and one entry whose type this build
+    // does not know (e.g. written by a newer app, then downgraded).
+    final unknownTypeEntry = _operation(
+      YustFileOperationType.upload,
+      hash: 'h2',
+    ).toJson()..['type'] = 'teleport';
+    await YustOfflineStorage(
+      directoryProvider: () async => root,
+    ).writeText(
+      'sync_queue.json',
+      jsonEncode([
+        _operation(YustFileOperationType.upload, hash: 'h1').toJson(),
+        unknownTypeEntry,
+      ]),
+    );
+
+    final loaded = YustSyncQueue(
+      storage: YustOfflineStorage(directoryProvider: () async => root),
+    );
+
+    expect(
+      (await loaded.getPendingOperations()).map(
+        (operation) => operation.file.name,
+      ),
+      ['h1.pdf'],
     );
   });
 
