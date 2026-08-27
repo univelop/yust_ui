@@ -26,7 +26,7 @@ import 'yust_sync_queue.dart';
 /// and requests another pass, coalescing if one is already running.
 ///
 /// Failures are classified. Connection failures retry forever, untracked. A
-/// failure retrying cannot fix ([isPermanentOperationError]) spends one of the
+/// failure retrying cannot fix ([YustFileOperationError.isPermanent]) spends one of the
 /// operation's [YustFileOperation.failedAttempts]; at
 /// [YustFileOperation.maxFailedAttempts] it is at its retry limit — kept in the
 /// queue, reported via [failedOperations], cleared by
@@ -119,8 +119,9 @@ class YustFileOperationHandler extends ChangeNotifier {
 
   /// Rejects an operation whose file the executor could not act on.
   ///
-  /// [ArgumentError] because [isPermanentOperationError] counts it as permanent;
-  /// a `TypeError` from a null `!` counts as transient and retries forever.
+  /// [ArgumentError] because [YustFileOperationError.isPermanent] counts it as
+  /// permanent; a `TypeError` from a null `!` counts as transient and retries
+  /// forever.
   void _assertAddressable(YustFileOperation<YustFile> operation) {
     final file = operation.file;
     if (!file.hasName) {
@@ -291,7 +292,7 @@ class YustFileOperationHandler extends ChangeNotifier {
     YustFileOperation<YustFile> operation,
     Object error,
   ) async {
-    if (!isPermanentOperationError(error)) return;
+    if (!YustFileOperationError.isPermanent(error)) return;
     operation.failedAttempts++;
     await queue.persist();
     if (operation.hasReachedRetryLimit) await _notifyQueueChanged();

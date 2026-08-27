@@ -20,7 +20,7 @@ void main() {
         'invalid-argument',
       ]) {
         expect(
-          isPermanentOperationError(_firebase(code)),
+          YustFileOperationError.isPermanent(_firebase(code)),
           isTrue,
           reason: code,
         );
@@ -31,29 +31,43 @@ void main() {
       // A download that comes back empty because the object is gone can never
       // succeed; without this it retried forever and never timed out.
       expect(
-        isPermanentOperationError(YustMissingStorageObjectException('gone')),
+        YustFileOperationError.isPermanent(
+          YustMissingStorageObjectException('gone'),
+        ),
         isTrue,
       );
     });
 
     test('bad arguments this code produced', () {
-      expect(isPermanentOperationError(ArgumentError('empty path')), isTrue);
-      expect(isPermanentOperationError(StateError('no executor')), isTrue);
+      expect(
+        YustFileOperationError.isPermanent(ArgumentError('empty path')),
+        isTrue,
+      );
+      expect(
+        YustFileOperationError.isPermanent(StateError('no executor')),
+        isTrue,
+      );
     });
   });
 
   group('transient', () {
     test('connection failures', () {
       expect(
-        isPermanentOperationError(const SocketException('no route')),
+        YustFileOperationError.isPermanent(const SocketException('no route')),
         isFalse,
       );
-      expect(isPermanentOperationError(TimeoutException('slow')), isFalse);
       expect(
-        isPermanentOperationError(const HttpException('bad gateway')),
+        YustFileOperationError.isPermanent(TimeoutException('slow')),
         isFalse,
       );
-      expect(isPermanentOperationError(ClientException('reset')), isFalse);
+      expect(
+        YustFileOperationError.isPermanent(const HttpException('bad gateway')),
+        isFalse,
+      );
+      expect(
+        YustFileOperationError.isPermanent(ClientException('reset')),
+        isFalse,
+      );
     });
 
     test('a Firebase code that is a connection problem wearing a code', () {
@@ -64,7 +78,7 @@ void main() {
         'canceled',
       ]) {
         expect(
-          isPermanentOperationError(_firebase(code)),
+          YustFileOperationError.isPermanent(_firebase(code)),
           isFalse,
           reason: code,
         );
@@ -74,8 +88,11 @@ void main() {
     test(
       'an unrecognised error, so a long offline spell cannot park a file',
       () {
-        expect(isPermanentOperationError(Exception('something new')), isFalse);
-        expect(isPermanentOperationError('a bare string'), isFalse);
+        expect(
+          YustFileOperationError.isPermanent(Exception('something new')),
+          isFalse,
+        );
+        expect(YustFileOperationError.isPermanent('a bare string'), isFalse);
       },
     );
   });

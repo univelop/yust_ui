@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'package:yust/yust.dart';
 
-import '../../extensions/string_translate_extension.dart';
-import '../../generated/locale_keys.g.dart';
 import 'yust_file_operation.dart';
 import 'yust_file_operation_error.dart';
 import 'yust_offline_storage.dart';
@@ -130,7 +128,10 @@ class YustFileOperationManager {
     // A failed download comes back as empty bytes, not an error. Uploading them
     // would write a 0-byte object and detach the old entry — losing the file.
     if (localPath == null && (bytes == null || bytes.isEmpty)) {
-      throw await missingOrUnreachable(file.storageFolderPath!, oldName);
+      throw await YustFileOperationError.missingOrUnreachable(
+        file.storageFolderPath!,
+        oldName,
+      );
     }
     final url = await Yust.fileService.uploadFile(
       path: file.storageFolderPath!,
@@ -179,7 +180,10 @@ class YustFileOperationManager {
     // is a failed fetch, not a 0-byte file — throw to keep the operation queued
     // rather than cache a broken "available offline" file.
     if (bytes == null || bytes.isEmpty) {
-      throw await missingOrUnreachable(storageFolder, file.name!);
+      throw await YustFileOperationError.missingOrUnreachable(
+        storageFolder,
+        file.name!,
+      );
     }
     file.devicePath = await storage.writeBytes(
       byteKey: file.byteKey,
@@ -199,18 +203,4 @@ class YustFileOperationManager {
       // Offline, a write never acks; Firestore's cache carries it.
     }
   }
-}
-
-/// The error a failed transfer of [name] under [path] should be reported as:
-/// permanent when Storage holds no such object, transient otherwise.
-///
-/// Shared by every operation that has to interpret the file service's empty
-/// result, so "gone" and "unreachable" are told apart the same way everywhere.
-Future<Exception> missingOrUnreachable(String path, String name) async {
-  if (await Yust.fileService.fileExist(path: path, name: name)) {
-    return YustException(LocaleKeys.exceptionFileNotFound.tr());
-  }
-  return YustMissingStorageObjectException(
-    LocaleKeys.exceptionFileNotFound.tr(),
-  );
 }
