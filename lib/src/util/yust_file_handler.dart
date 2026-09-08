@@ -179,8 +179,34 @@ class YustFileHandler {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
       throw (LocaleKeys.exceptionMissingNameOrStorageFolderPath.tr());
     }
+    // The hash has to be known before the upload: files are stored in a map
+    // keyed by hash, so uploading the same content under a second name would
+    // overwrite the entry of the first one.
+    await _addFileHash(yustFile);
+    _validateNoDuplicateContent(yustFile);
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
+  }
+
+  /// Throws when a file with the same content but a different name is already
+  /// present.
+  ///
+  /// Re-uploading the exact same file (same name and content) is allowed and
+  /// simply replaces the existing entry.
+  void _validateNoDuplicateContent(YustFile newFile) {
+    if (newFile.hash.isEmpty) return;
+
+    final duplicate = _yustFiles.firstWhereOrNull(
+      (file) => file.hash == newFile.hash && file.name != newFile.name,
+    );
+    if (duplicate == null) return;
+
+    final localeKey = newFile is YustImage
+        ? LocaleKeys.exceptionDuplicateImageContent
+        : LocaleKeys.exceptionDuplicateFileContent;
+    throw YustException(
+      localeKey.tr(namedArgs: {'fileName': duplicate.name ?? ''}),
+    );
   }
 
   Future<void> updateFile(
@@ -452,7 +478,7 @@ class YustFileHandler {
     if (yustFile.file != null) {
       yustFile.hash = (await yustFile.file?.openRead().transform(md5).first)
           .toString();
-    } else {
+    } else if (yustFile.bytes != null) {
       yustFile.hash = md5.convert(yustFile.bytes!.toList()).toString();
     }
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -488,8 +489,12 @@ class YustFilePickerState
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
-    final maxSizeKiB = widget.maximumFileSizeInKiB;
-    if (maxSizeKiB == null) return true;
+    // The brick's own limit is optional, the yust ceiling always applies.
+    final brickMaxSizeKiB = widget.maximumFileSizeInKiB;
+    const ceilingKiB = yustMaxFileSizeInBytes ~/ 1024;
+    final maxSizeKiB = brickMaxSizeKiB == null
+        ? ceilingKiB
+        : min(brickMaxSizeKiB, ceilingKiB);
 
     final int fileSizeInKiB = file != null
         ? await file.length() ~/ 1024
@@ -608,23 +613,37 @@ class YustFilePickerState
         '$newFileName.${yustFile.getFilenameExtension()}';
 
     await _reuploadFileForRename(yustFile, newFileNameWithExtension);
-    await _deleteFileAndCallOnChanged(yustFile);
 
     clearFileProcessing(yustFile);
     setState(() {});
   }
 
+  /// Renames [yustFile] by storing its content under [newFileName].
+  ///
+  /// The old entry is removed before the new one is uploaded: files are keyed
+  /// by their hash, so the identical content cannot be stored twice. A failed
+  /// upload restores the original instead of losing the file.
   Future<void> _reuploadFileForRename(
     YustFile yustFile,
     String newFileName,
   ) async {
+    final oldFileName = yustFile.name ?? '';
     final bytes = await Yust.fileService.downloadFile(
       path: yustFile.storageFolderPath ?? '',
-      name: yustFile.name ?? '',
+      name: oldFileName,
     );
 
     final newFile = await processFile(newFileName, yustFile.file, bytes);
-    await uploadFile(file: newFile);
+    await _deleteFileAndCallOnChanged(yustFile);
+
+    try {
+      await uploadFile(file: newFile);
+    } catch (_) {
+      await uploadFile(
+        file: await processFile(oldFileName, yustFile.file, bytes),
+      );
+      rethrow;
+    }
   }
 
   bool _isNewFileNameValid(String? filename, YustFile oldFile) {

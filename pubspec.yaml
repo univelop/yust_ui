@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.32.9
+version: 3.33.0
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.33.5
+    yust: ^3.35.0
     cached_network_image: ^3.4.1
     cloud_firestore: ^6.0.0
     collection: ^1.19.1
@@ -57,3 +57,8 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
+    # Remove this, when yust 3.35.0 is released
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 7923-reject-same-content-uploads
