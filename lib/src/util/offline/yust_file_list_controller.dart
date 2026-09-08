@@ -86,12 +86,24 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// but not yet in Storage. Drives the "not yet uploaded" marker.
   bool isPendingUpload(T file) => _pendingUploadFor(file) != null;
 
-  /// Whether one of [file]'s queued operations is out of attempts and waiting
-  /// on the user. Drives the "could not be synced" marker.
-  bool hasReachedRetryLimit(T file) => _pendingOperations.any(
-    (operation) =>
-        operation.fileKey == file.offlineKey && operation.hasReachedRetryLimit,
-  );
+  /// [file]'s upload that failed for good, or null while none has. Drives the
+  /// "could not be uploaded" marker and the alert behind it.
+  ///
+  /// Only an upload is ever kept for the user — see
+  /// [YustFileOperationHandler.discardOperationsForFile].
+  YustFileOperation<YustFile>? failedUploadFor(T file) =>
+      _pendingOperations.firstWhereOrNull(
+        (operation) =>
+            operation.fileKey == file.offlineKey && operation.hasFailed,
+      );
+
+  /// Drops every queued operation for [file], once the user has acknowledged
+  /// the failure. The display falls back to the document snapshot, which is the
+  /// server's state.
+  Future<void> discardFailedUploadFor(T file) async {
+    await handler.discardOperationsForFile(file.offlineKey);
+    await _scheduleRefresh();
+  }
 
   /// Whether [file] is persisted in the document.
   ///
@@ -189,9 +201,14 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   }
 
   /// Deletes [file]: a file still queued for upload is dropped from the queue
-  /// (and its bytes removed) rather than uploaded and then deleted; an
-  /// already-persisted file is removed via a delete operation, which frees its
-  /// bytes once it runs.
+  /// rather than uploaded and then deleted; an already-persisted file is removed
+  /// via a delete operation.
+  ///
+  /// Neither path frees the on-device bytes — they are keyed by content hash and
+  /// so shared with every other entry holding the same bytes, which a delete
+  /// here must leave available offline. Whoever owns the offline selection
+  /// frees them instead, by cleaning the byte store of everything no selected
+  /// record holds.
   Future<void> delete(T file) async {
     firebaseLocation.apply(file);
     // Deleted here, so it must not be carried across the next reconciliation.
@@ -199,7 +216,6 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     final pendingUpload = await _queuedUploadFor(file);
     if (pendingUpload != null) {
       await handler.cancel(pendingUpload);
-      await _storage?.removeFile(file.byteKey);
       await _scheduleRefresh();
       return;
     }

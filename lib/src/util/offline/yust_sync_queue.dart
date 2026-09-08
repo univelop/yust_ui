@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yust/yust.dart';
 
 import 'yust_file_operation.dart';
-import 'yust_offline_storage.dart';
 
 /// A durable list of [YustFileOperation]s — the single route for every file change,
 /// online or offline, both outbound (upload/rename/delete) and inbound
@@ -12,33 +12,34 @@ import 'yust_offline_storage.dart';
 /// It is just a persistent list: [enqueueOperation] appends,
 /// [getPendingOperations] reads oldest-first and [removeOperation] drops one
 /// applied operation by id. Two managers share the one queue, so removal is by
-/// identity — not a head-pop. The list is saved as one JSON blob through
-/// [YustOfflineStorage], next to the bytes it queues work for, so pending
-/// operations survive an app restart.
+/// identity — not a head-pop. The list is saved as one JSON blob in
+/// [SharedPreferencesAsync] under [_preferenceKey], the same place the app keeps
+/// its record offline marks, so pending operations survive an app restart.
 ///
-/// Without a store — web, where the device keeps nothing — the operations are
-/// held in memory instead, as objects rather than as their JSON: a round-trip
-/// drops [YustFile.bytes], and on web those are the file's only copy, so the
-/// upload would find nothing to send.
+/// Without persistence — web, where a round-trip drops [YustFile.bytes] and
+/// those are the file's only copy, so the upload would find nothing to send —
+/// the operations are held in memory instead, as objects rather than as their
+/// JSON.
 class YustSyncQueue {
-  /// Persists the queue through [storage].
-  YustSyncQueue({required YustOfflineStorage storage}) : _storage = storage;
+  /// Persists the queue in shared preferences.
+  YustSyncQueue() : _preferences = SharedPreferencesAsync();
 
-  /// A queue that never reaches a store, for a device that has none. The
-  /// caller decides which of the two it wants from whether
-  /// [YustOfflineStorage.forDevice] returned an instance.
-  YustSyncQueue.inMemory() : _storage = null;
+  /// A queue that is never written out, for a device that keeps no bytes — the
+  /// caller decides which of the two it wants from whether the device has a
+  /// byte store at all.
+  YustSyncQueue.inMemory() : _preferences = null;
 
   /// Where the queue is persisted, or null when it is held in memory. Null is
-  /// the whole of the in-memory mode — with no store there is nothing to read
-  /// or write, so the fallback cannot be reached by mistake.
-  final YustOfflineStorage? _storage;
+  /// the whole of the in-memory mode — with nowhere to write there is nothing
+  /// to read or write, so the fallback cannot be reached by mistake.
+  final SharedPreferencesAsync? _preferences;
 
-  static const _fileName = 'sync_queue.json';
+  /// The preference holding the queue as one JSON array.
+  static const _preferenceKey = 'yustSyncQueue';
 
-  /// The working copy: loaded from storage once, then mutated in place. Storage,
-  /// when present, is written through on each change; without it this is the
-  /// operations' only copy.
+  /// The working copy: read from the preference once, then mutated in place.
+  /// The preference, when present, is written through on each change; without
+  /// it this is the operations' only copy.
   List<YustFileOperation<YustFile>>? _operations;
 
   /// Ensures each operation is fully written before the next one starts
@@ -65,7 +66,7 @@ class YustSyncQueue {
   });
 
   /// The pending operations, oldest first, without removing them. The entries
-  /// are the live objects: mutating one (its [YustFileOperation.failedAttempts])
+  /// are the live objects: mutating one (its [YustFileOperation.failure])
   /// and calling [persist] writes the change back.
   Future<List<YustFileOperation<YustFile>>> getPendingOperations() =>
       _serialized(() async => List.of(await _load()));
@@ -79,15 +80,16 @@ class YustSyncQueue {
         await _persist(operations);
       });
 
-  /// Writes the current operations to storage, after one was mutated in place.
-  /// A no-op without a store, where the working copy is already the only one.
+  /// Writes the current operations to the preference, after one was mutated in
+  /// place.
+  /// A no-op in memory, where the working copy is already the only one.
   Future<void> persist() => _serialized(() async => _persist(await _load()));
 
   Future<List<YustFileOperation<YustFile>>> _load() async =>
       _operations ??= await _readInitial();
 
   Future<List<YustFileOperation<YustFile>>> _readInitial() async {
-    final json = await _storage?.readText(_fileName);
+    final json = await _preferences?.getString(_preferenceKey);
     if (json == null) return [];
     return (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
@@ -107,9 +109,9 @@ class YustSyncQueue {
   }
 
   Future<void> _persist(List<YustFileOperation<YustFile>> operations) async {
-    if (_storage == null) return;
-    await _storage.writeText(
-      _fileName,
+    if (_preferences == null) return;
+    await _preferences.setString(
+      _preferenceKey,
       jsonEncode(operations.map((operation) => operation.toJson()).toList()),
     );
   }

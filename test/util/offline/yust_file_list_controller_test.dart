@@ -3,10 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_list_controller.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_error.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_firebase_file_location.dart';
@@ -16,7 +19,7 @@ import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 /// What being offline throws, as opposed to a failure that counts as permanent.
 const _offline = SocketException('no route to host');
 
-/// A failure no retry can fix, so it spends the operation's failedAttempts.
+/// A failure no retry can fix, so it ends the operation.
 final _permanent = FirebaseException(
   plugin: 'firebase_storage',
   code: 'permission-denied',
@@ -63,8 +66,8 @@ class _FakeManager implements YustFileOperationManager {
 
   bool succeed;
 
-  /// What a failing execute throws — transient by default, so a test only
-  /// spends the operation's failedAttempts when it means to.
+  /// What a failing execute throws — transient by default, so a test only ends
+  /// an operation for good when it means to.
   Object failure = _offline;
   final List<String> executed = [];
 
@@ -125,7 +128,9 @@ void main() {
   setUp(() {
     root = Directory.systemTemp.createTempSync('file_list_controller_test');
     storage = YustOfflineStorage(directoryProvider: () async => root);
-    queue = YustSyncQueue(storage: storage);
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    queue = YustSyncQueue();
     executor = _FakeManager();
     handler = buildHandler();
   });
@@ -199,8 +204,8 @@ void main() {
       await first.settled;
 
       // Simulate a restart: a fresh queue, handler and controller over the same
-      // directory, so the operation is read back from disk.
-      final restartedQueue = YustSyncQueue(storage: storage);
+      // storage, so the operation is read back from the preferences.
+      final restartedQueue = YustSyncQueue();
       final restartedHandler = YustFileOperationHandler(
         manager: _FakeManager(succeed: false),
         queue: restartedQueue,
@@ -496,73 +501,64 @@ void main() {
     });
   });
 
-  group('timed out files', () {
-    test(
-      'a file is timed out once its upload runs out of failedAttempts',
-      () async {
-        executor
-          ..succeed = false
-          ..failure = _permanent;
-        final controller = buildController();
-        await controller.setOnlineFiles([]);
-        final file = _pickedFile('plan.pdf', 'pdf-bytes');
+  group('failed uploads', () {
+    test('one permanent failure ends the upload and keeps it listed', () async {
+      executor
+        ..succeed = false
+        ..failure = _permanent;
+      final controller = buildController();
+      await controller.setOnlineFiles([]);
+      final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
-        await controller.add(file);
-        expect(controller.hasReachedRetryLimit(file), isFalse);
+      await controller.add(file);
+      await handler.processPendingOperations();
+      await controller.settled;
 
-        for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
-          await handler.processPendingOperations();
-        }
-        await controller.settled;
+      expect(
+        controller.failedUploadFor(file)?.failure,
+        YustFileOperationFailureReason.noPermission,
+      );
+      // Still listed and still pending — a failed upload is not lost.
+      expect(controller.isPendingUpload(file), isTrue);
+      expect(controller.files.map((f) => f.name), ['plan.pdf']);
+      expect(controller.onlineFiles, isEmpty);
+    });
 
-        expect(controller.hasReachedRetryLimit(file), isTrue);
-        // Still listed and still pending — timed out is not lost.
-        expect(controller.isPendingUpload(file), isTrue);
-        expect(controller.files.map((f) => f.name), ['plan.pdf']);
-        expect(controller.onlineFiles, isEmpty);
-      },
-    );
-
-    test('a file failing on the connection is never timed out', () async {
+    test('a file failing on the connection never counts as failed', () async {
       executor.succeed = false;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      for (var i = 0; i < YustFileOperation.maxFailedAttempts + 2; i++) {
-        await handler.processPendingOperations();
-      }
+      await handler.processPendingOperations();
+      await handler.processPendingOperations();
       await controller.settled;
 
-      expect(controller.hasReachedRetryLimit(file), isFalse);
+      expect(controller.failedUploadFor(file), isNull);
     });
 
-    test(
-      'retryFailedOperations clears the marker once the operation succeeds',
-      () async {
-        executor
-          ..succeed = false
-          ..failure = _permanent;
-        final controller = buildController();
-        await controller.setOnlineFiles([]);
-        final file = _pickedFile('plan.pdf', 'pdf-bytes');
+    test('discarding drops the operation and the file with it', () async {
+      executor
+        ..succeed = false
+        ..failure = _permanent;
+      final controller = buildController();
+      await controller.setOnlineFiles([]);
+      final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
-        await controller.add(file);
-        for (var i = 0; i < YustFileOperation.maxFailedAttempts; i++) {
-          await handler.processPendingOperations();
-        }
-        await controller.settled;
-        expect(controller.hasReachedRetryLimit(file), isTrue);
+      await controller.add(file);
+      await handler.processPendingOperations();
+      await controller.settled;
+      expect(controller.failedUploadFor(file), isNotNull);
 
-        executor.succeed = true;
-        await handler.retryFailedOperations();
-        await controller.settled;
+      await controller.discardFailedUploadFor(file);
+      await controller.settled;
 
-        expect(controller.hasReachedRetryLimit(file), isFalse);
-        expect(controller.onlineFiles.map((f) => f.name), ['plan.pdf']);
-      },
-    );
+      // The queue is empty, so the display is the document snapshot again.
+      expect(await handler.pending(), isEmpty);
+      expect(controller.failedUploadFor(file), isNull);
+      expect(controller.files, isEmpty);
+    });
   });
 
   group('two unlinked targets do not claim each other\'s operations', () {

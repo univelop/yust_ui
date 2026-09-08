@@ -85,7 +85,7 @@ class YustFileOperationManager {
     await _awaitDocumentWrite(documentWriter?.writeFile(file));
   }
 
-  /// Detaches the file's document entry, then deletes its bytes.
+  /// Detaches the file's document entry, then deletes its Storage object.
   ///
   /// The detach is awaited, not handed off: an array-layout attribute is
   /// rewritten from a read of the document, so the next operation's write would
@@ -93,6 +93,13 @@ class YustFileOperationManager {
   /// has already deleted. Awaiting also means a failed detach retries the whole
   /// operation instead of being logged and lost; re-detaching a detached entry
   /// is a no-op.
+  ///
+  /// The on-device bytes are left where they are. They are keyed by content
+  /// hash, so every entry holding the same bytes shares one key: freeing them
+  /// here would take the offline copy away from the other records holding that
+  /// file, which is the one thing a delete on this record must not do. Whoever
+  /// owns the offline selection frees them instead, by cleaning the byte store
+  /// of everything no selected record holds.
   Future<void> _delete(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     await _awaitDocumentWrite(_documentWriterFor(operation)?.removeFile(file));
@@ -100,7 +107,6 @@ class YustFileOperationManager {
       path: file.storageFolderPath!,
       name: file.name,
     );
-    await _storage?.removeFile(file.byteKey);
   }
 
   /// Re-writes the file's document entry with no byte transfer, e.g. after its
@@ -112,6 +118,15 @@ class YustFileOperationManager {
         _documentWriterFor(operation)?.writeFile(operation.file),
       );
 
+  /// Re-uploads the file's bytes under [YustFileOperation.newName], moves its
+  /// document entry to the new name, and deletes the old Storage object.
+  ///
+  /// Never mutates `operation.file`: the queue hands out its live entries and
+  /// only re-reads them from disk on a cold start, so a mutated name would still
+  /// be there on the next attempt. The retry would then read the new name as the
+  /// old one and delete the object the document entry has just been pointed at.
+  /// Everything after the upload therefore works on [renamed], leaving the
+  /// operation exactly as re-runnable as it was on the first attempt.
   Future<void> _rename(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     final documentWriter = _documentWriterFor(operation);
@@ -142,13 +157,14 @@ class YustFileOperationManager {
       linkedDocAttribute: file.linkedDocAttribute,
       createThumbnail: file.createThumbnail,
     );
-    // The map layout keys both on the same hash, so the old entry goes first.
+    // The array layout matches an entry by name, so the old entry has to be
+    // detached while `file` still carries the old name. The map layout keys both
+    // on the same hash, so the old entry goes first there too.
     await _awaitDocumentWrite(documentWriter?.removeFile(file));
-    file.name = newName;
-    file.path = file.storageFolderPath;
-    // ignore: deprecated_member_use
-    file.url = url;
-    await _awaitDocumentWrite(documentWriter?.writeFile(file));
+    final renamed = file.copyWithUrl(url)
+      ..name = newName
+      ..path = file.storageFolderPath;
+    await _awaitDocumentWrite(documentWriter?.writeFile(renamed));
     await Yust.fileService.deleteFile(
       path: file.storageFolderPath!,
       name: oldName,

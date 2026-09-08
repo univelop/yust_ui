@@ -10,8 +10,6 @@ import 'package:yust/yust.dart';
 /// path. A file's bytes live under [getApplicationSupportDirectory] (durable,
 /// never OS-purged), in a directory named after its
 /// `YustFileOfflineKey.byteKey`: `<app-support>/offline_files/<key>/<name>`.
-/// [readText] and [writeText] keep a plain text file next to those entries, for
-/// the state the offline handling persists besides bytes.
 ///
 /// Native only, and it never pretends otherwise: every method here does real
 /// IO. A device without durable storage has no instance at all — see
@@ -73,15 +71,18 @@ class YustOfflineStorage {
     if (directory.existsSync()) await directory.delete(recursive: true);
   }
 
-  /// The contents of the text file [name] held next to the byte entries.
-  Future<String?> readText(String name) async {
-    final file = File('${await _root()}/$_folder/$name');
-    return file.existsSync() ? file.readAsString() : null;
-  }
-
-  /// Writes [text] to the text file [name] next to the byte entries.
-  Future<void> writeText(String name, String text) async {
-    await File('${(await _folderDirectory()).path}/$name').writeAsString(text);
+  /// The keys of every entry the store holds, empty when nothing is cached yet.
+  Future<List<String>> cachedFileKeys() async {
+    final folder = Directory('${await _root()}/$_folder');
+    if (!folder.existsSync()) return [];
+    return folder
+        .listSync()
+        .whereType<Directory>()
+        // Each entry directory is named after its key, so the key is what is
+        // left once the folder path is taken off. Removed by length rather
+        // than by splitting on a separator, which differs per platform.
+        .map((entry) => entry.path.substring(folder.path.length + 1))
+        .toList();
   }
 
   Future<Directory> _entryDirectory(String key) async =>

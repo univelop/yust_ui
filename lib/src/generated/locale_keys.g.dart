@@ -332,8 +332,15 @@ abstract class LocaleKeys {
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
   static const alertFileNotFound = 'alertFileNotFound';
   static const alertFileRename = 'alertFileRename';
-  static const alertFileSyncFailed = 'alertFileSyncFailed';
+  static const alertFileSyncFailedFileInvalid =
+      'alertFileSyncFailedFileInvalid';
+  static const alertFileSyncFailedFileMissing =
+      'alertFileSyncFailedFileMissing';
+  static const alertFileSyncFailedNoPermission =
+      'alertFileSyncFailedNoPermission';
+  static const alertFileSyncFailedUnknown = 'alertFileSyncFailedUnknown';
   static const alertFileTooBig = 'alertFileTooBig';
+  static const alertFileUploadFailed = 'alertFileUploadFailed';
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowSpecNotFound = 'alertFlowSpecNotFound';
   static const alertFlowSpecNotFoundOrOutdated =
@@ -388,6 +395,8 @@ abstract class LocaleKeys {
   static const alertMoreThanOneResult = 'alertMoreThanOneResult';
   static const alertMoveTileToFolder = 'alertMoveTileToFolder';
   static const alertMovedToTab = 'alertMovedToTab';
+  static const alertMustBeAdminToChangeBrickLock =
+      'alertMustBeAdminToChangeBrickLock';
   static const alertMustBeAdminToCreateForm = 'alertMustBeAdminToCreateForm';
   static const alertMustBeAdminToCreateList = 'alertMustBeAdminToCreateList';
   static const alertNegativeNumber = 'alertNegativeNumber';
@@ -586,7 +595,6 @@ abstract class LocaleKeys {
   static const automaticBilling = 'automaticBilling';
   static const automaticCleanup = 'automaticCleanup';
   static const automaticCleanupExplanation = 'automaticCleanupExplanation';
-  static const availableOffline = 'availableOffline';
   static const back = 'back';
   static const backCamera = 'backCamera';
   static const backToHome = 'backToHome';
@@ -949,6 +957,7 @@ abstract class LocaleKeys {
   static const commentIsTooOld = 'commentIsTooOld';
   static const commentLoopVariableDescription =
       'commentLoopVariableDescription';
+  static const commentMentionDeletedUser = 'commentMentionDeletedUser';
   static const commentNotifyMentioned = 'commentNotifyMentioned';
   static const commentNotifyMentionedHint = 'commentNotifyMentionedHint';
   static const commentTextHint = 'commentTextHint';
@@ -1626,8 +1635,6 @@ abstract class LocaleKeys {
       'exceptionColorValueCannotHaveBothWorkspaceAndCustomColor';
   static const exceptionCommentBodyEmpty = 'exceptionCommentBodyEmpty';
   static const exceptionCommentMentionEmpty = 'exceptionCommentMentionEmpty';
-  static const exceptionCommentMentionWithoutEmail =
-      'exceptionCommentMentionWithoutEmail';
   static const exceptionCorruptFile = 'exceptionCorruptFile';
   static const exceptionCorruptedTemplateFile =
       'exceptionCorruptedTemplateFile';
@@ -2043,6 +2050,7 @@ abstract class LocaleKeys {
   static const fileNamesDescription = 'fileNamesDescription';
   static const fileNoneSelected = 'fileNoneSelected';
   static const filePickerBrickDescription = 'filePickerBrickDescription';
+  static const fileProcessingFailed = 'fileProcessingFailed';
   static const fileRotateHint = 'fileRotateHint';
   static const fileShowList = 'fileShowList';
   static const fileSyncFailed = 'fileSyncFailed';
@@ -2368,6 +2376,8 @@ abstract class LocaleKeys {
   static const flowLogWorkflowWillBeStartedAfterRules =
       'flowLogWorkflowWillBeStartedAfterRules';
   static const flowLogXmlToJsonConverted = 'flowLogXmlToJsonConverted';
+  static const flowLogsAvailableAfterExecution =
+      'flowLogsAvailableAfterExecution';
   static const flowMoreInfo = 'flowMoreInfo';
   static const flowMoreInfoDescription = 'flowMoreInfoDescription';
   static const flowParamsExplanation = 'flowParamsExplanation';
@@ -3210,6 +3220,7 @@ abstract class LocaleKeys {
   static const objectiveDigitalizationLabel = 'objectiveDigitalizationLabel';
   static const objectiveProcessesLabel = 'objectiveProcessesLabel';
   static const objectivesLabel = 'objectivesLabel';
+  static const offlineDownloadStarted = 'offlineDownloadStarted';
   static const offlineLimitReached = 'offlineLimitReached';
   static const ok = 'ok';
   static const oldPassword = 'oldPassword';
@@ -3630,7 +3641,6 @@ abstract class LocaleKeys {
   static const results = 'results';
   static const resumeOnError = 'resumeOnError';
   static const resumeWorkflow = 'resumeWorkflow';
-  static const retry = 'retry';
   static const returnType = 'returnType';
   static const returnValue = 'returnValue';
   static const returnValueStepCanOnlyBeUsedOnce =
@@ -4596,6 +4606,7 @@ abstract class LocaleKeys {
   static const webHookButtonBrickDescription = 'webHookButtonBrickDescription';
   static const webLink = 'webLink';
   static const webRequest = 'webRequest';
+  static const webRequestSettings = 'webRequestSettings';
   static const webRequestStepBodyVariableExplanation =
       'webRequestStepBodyVariableExplanation';
   static const webRequestStepDescription = 'webRequestStepDescription';

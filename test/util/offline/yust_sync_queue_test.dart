@@ -1,11 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
-import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_file_operation_error.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
 final _t1 = DateTime.utc(2026, 1, 1, 10, 0);
@@ -30,18 +32,12 @@ YustFileOperation<YustFile> _operation(
 );
 
 void main() {
-  late Directory root;
   late YustSyncQueue queue;
 
   setUp(() {
-    root = Directory.systemTemp.createTempSync('sync_queue_test');
-    queue = YustSyncQueue(
-      storage: YustOfflineStorage(directoryProvider: () async => root),
-    );
-  });
-
-  tearDown(() {
-    if (root.existsSync()) root.deleteSync(recursive: true);
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    queue = YustSyncQueue();
   });
 
   test('enqueue then pending lists the operations, oldest first', () async {
@@ -146,23 +142,24 @@ void main() {
     expect(await queue.getPendingOperations(), isEmpty);
   });
 
-  test('the queue survives a restart (new instance, same directory)', () async {
-    await queue.enqueueOperation(
-      _operation(
-        YustFileOperationType.rename,
-        name: 'a.pdf',
-        newName: 'b.pdf',
-        createdAt: _t1,
-      ),
-    );
+  test(
+    'the queue survives a restart (new instance, same preferences)',
+    () async {
+      await queue.enqueueOperation(
+        _operation(
+          YustFileOperationType.rename,
+          name: 'a.pdf',
+          newName: 'b.pdf',
+          createdAt: _t1,
+        ),
+      );
 
-    final reopened = YustSyncQueue(
-      storage: YustOfflineStorage(directoryProvider: () async => root),
-    );
-    final operations = await reopened.getPendingOperations();
-    expect(operations.single.type, YustFileOperationType.rename);
-    expect(operations.single.newName, 'b.pdf');
-  });
+      final reopened = YustSyncQueue();
+      final operations = await reopened.getPendingOperations();
+      expect(operations.single.type, YustFileOperationType.rename);
+      expect(operations.single.newName, 'b.pdf');
+    },
+  );
 
   test('concurrent enqueues do not clobber each other (serialised)', () async {
     // Fire many enqueues without awaiting between them, so their load→save
@@ -221,52 +218,64 @@ void main() {
   });
 
   group('persist', () {
-    test(
-      'writes an in-place failedAttempts change, surviving a restart',
-      () async {
-        await queue.enqueueOperation(
-          _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
-        );
-        await queue.enqueueOperation(
-          _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
-        );
+    test('writes an in-place failure change, surviving a restart', () async {
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
+      );
+      await queue.enqueueOperation(
+        _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
+      );
 
-        (await queue.getPendingOperations()).first.failedAttempts++;
-        await queue.persist();
+      (await queue.getPendingOperations()).first.failure =
+          YustFileOperationFailureReason.fileMissing;
+      await queue.persist();
 
-        final reloaded = YustSyncQueue(
-          storage: YustOfflineStorage(directoryProvider: () async => root),
-        );
-        final operations = await reloaded.getPendingOperations();
-        expect(operations.map((operation) => operation.file.name), [
-          'h1.pdf',
-          'h2.pdf',
-        ]);
-        expect(operations.first.failedAttempts, 1);
-      },
-    );
+      final reloaded = YustSyncQueue();
+      final operations = await reloaded.getPendingOperations();
+      expect(operations.map((operation) => operation.file.name), [
+        'h1.pdf',
+        'h2.pdf',
+      ]);
+      expect(
+        operations.first.failure,
+        YustFileOperationFailureReason.fileMissing,
+      );
+      // The untouched one comes back without a failure, not with a default one.
+      expect(operations.last.failure, isNull);
+    });
+
+    test('reads an unknown failure back as none', () async {
+      final storedWithUnknownFailure =
+          _operation(YustFileOperationType.upload).toJson()
+            ..['failure'] = 'sunspots';
+      await SharedPreferencesAsync().setString(
+        'yustSyncQueue',
+        jsonEncode([storedWithUnknownFailure]),
+      );
+
+      final operations = await YustSyncQueue().getPendingOperations();
+
+      expect(operations.single.failure, isNull);
+      expect(operations.single.hasFailed, isFalse);
+    });
   });
 
   test('drops an entry with an unknown type, keeping the rest', () async {
-    // A queue file with one valid upload and one entry whose type this build
+    // A stored queue with one valid upload and one entry whose type this build
     // does not know (e.g. written by a newer app, then downgraded).
     final unknownTypeEntry = _operation(
       YustFileOperationType.upload,
       hash: 'h2',
     ).toJson()..['type'] = 'teleport';
-    await YustOfflineStorage(
-      directoryProvider: () async => root,
-    ).writeText(
-      'sync_queue.json',
+    await SharedPreferencesAsync().setString(
+      'yustSyncQueue',
       jsonEncode([
         _operation(YustFileOperationType.upload, hash: 'h1').toJson(),
         unknownTypeEntry,
       ]),
     );
 
-    final loaded = YustSyncQueue(
-      storage: YustOfflineStorage(directoryProvider: () async => root),
-    );
+    final loaded = YustSyncQueue();
 
     expect(
       (await loaded.getPendingOperations()).map(
@@ -309,14 +318,18 @@ void main() {
         _operation(YustFileOperationType.upload, hash: 'h2', createdAt: _t2),
       );
 
-      (await memoryQueue.getPendingOperations()).first.failedAttempts++;
+      (await memoryQueue.getPendingOperations()).first.failure =
+          YustFileOperationFailureReason.noPermission;
       await memoryQueue.removeOperation(
         (await memoryQueue.getPendingOperations()).last,
       );
 
       final operations = await memoryQueue.getPendingOperations();
       expect(operations.map((operation) => operation.file.name), ['h1.pdf']);
-      expect(operations.single.failedAttempts, 1);
+      expect(
+        operations.single.failure,
+        YustFileOperationFailureReason.noPermission,
+      );
     });
   });
 }

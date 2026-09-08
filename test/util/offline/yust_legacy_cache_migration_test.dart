@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
@@ -25,7 +27,6 @@ class _ParkingManager implements YustFileOperationManager {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late Directory queueRoot;
   late Directory storageRoot;
   late Directory stagingRoot;
   late YustSyncQueue queue;
@@ -33,16 +34,15 @@ void main() {
   late YustFileOperationHandler handler;
 
   setUp(() {
-    queueRoot = Directory.systemTemp.createTempSync('legacy_migration_queue');
     storageRoot = Directory.systemTemp.createTempSync(
       'legacy_migration_storage',
     );
     stagingRoot = Directory.systemTemp.createTempSync(
       'legacy_migration_staging',
     );
-    queue = YustSyncQueue(
-      storage: YustOfflineStorage(directoryProvider: () async => queueRoot),
-    );
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+    queue = YustSyncQueue();
     storage = YustOfflineStorage(directoryProvider: () async => storageRoot);
     handler = YustFileOperationHandler(
       manager: _ParkingManager(),
@@ -53,7 +53,7 @@ void main() {
 
   tearDown(() {
     handler.dispose();
-    for (final root in [queueRoot, storageRoot, stagingRoot]) {
+    for (final root in [storageRoot, stagingRoot]) {
       if (root.existsSync()) root.deleteSync(recursive: true);
     }
   });

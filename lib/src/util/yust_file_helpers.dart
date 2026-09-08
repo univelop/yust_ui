@@ -37,12 +37,26 @@ class YustFileHelpers {
     return url == null ? null : Uri.parse(url);
   }
 
+  /// [file]'s on-device copy, when it is still there. A [YustFile.devicePath]
+  /// can outlive the bytes it points at: the byte store is cleaned of files no
+  /// record marked available offline holds, while a file object already handed
+  /// out keeps the path.
+  File? _deviceFileIfStillPresent(YustFile file) {
+    final devicePath = file.devicePath;
+    if (devicePath == null) return null;
+    final deviceFile = File(devicePath);
+    return deviceFile.existsSync() ? deviceFile : null;
+  }
+
   /// A synchronous [ImageProvider] for [file]: its on-device copy when cached
   /// (requires [YustFile.devicePath] to already be populated), else the network
   /// URL. For async cache resolution to a [Uri], use [getSourceUri].
-  ImageProvider imageProviderFor(YustFile file) => file.cached
-      ? MemoryImage(File(file.devicePath!).readAsBytesSync())
-      : NetworkImage(file.getOriginalUrl() ?? '');
+  ImageProvider imageProviderFor(YustFile file) {
+    final deviceFile = _deviceFileIfStillPresent(file);
+    return deviceFile != null
+        ? MemoryImage(deviceFile.readAsBytesSync())
+        : NetworkImage(file.getOriginalUrl() ?? '');
+  }
 
   /// The URL to fetch [file] from: the configured download-url hook if any,
   /// else its signed original URL. Null when the file is not addressable.
@@ -62,9 +76,9 @@ class YustFileHelpers {
     file.storageFolderPath ??= file.path;
     // The durable copy short-circuits the byte-store lookup; an uploaded file
     // is found through its content key.
-    final cachedPath = file.cached
-        ? file.devicePath
-        : await _offlineStorage?.pathForFile(file.byteKey);
+    final cachedPath =
+        _deviceFileIfStillPresent(file)?.path ??
+        await _offlineStorage?.pathForFile(file.byteKey);
     if (cachedPath != null) return File(cachedPath);
 
     final url = await resolveDownloadUrl(file);

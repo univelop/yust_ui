@@ -12,6 +12,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../util/offline/yust_file_list_controller.dart';
 import '../util/offline/yust_file_operation.dart';
+import '../util/offline/yust_file_operation_error.dart';
 import '../util/offline/yust_firebase_file_location.dart';
 import '../yust_ui.dart';
 import 'yust_dropzone_list_tile.dart';
@@ -406,18 +407,18 @@ abstract class YustFilePickerBaseState<
   @nonVirtual
   bool isAwaitingUpload(T file) => _controller.isPendingUpload(file);
 
-  /// Whether [file]'s sync reached the retry limit and is waiting on the user.
+  /// Whether [file]'s upload failed for good and is waiting on the user.
   @nonVirtual
-  bool hasSyncReachedRetryLimit(T file) =>
-      _controller.hasReachedRetryLimit(file);
+  bool hasFailedUpload(T file) => _controller.failedUploadFor(file) != null;
 
   /// Marker for a file the queue has not sent yet. Amber: waiting to upload,
-  /// already usable locally. Red: retry limit reached, tap to retry. Both non-blocking, and
-  /// tappable because a tooltip alone is unreachable by touch.
+  /// already usable locally. Red: it could not be uploaded, tap to read why.
+  /// Both non-blocking, and tappable because a tooltip alone is unreachable by
+  /// touch.
   @nonVirtual
   Widget buildCachedIndicator(T file) {
     if (!_enabled) return const SizedBox.shrink();
-    if (hasSyncReachedRetryLimit(file)) return _buildSyncFailedIndicator();
+    if (hasFailedUpload(file)) return _buildSyncFailedIndicator(file);
     if (!isAwaitingUpload(file)) return const SizedBox.shrink();
     return IconButton(
       icon: const Icon(Icons.warning_amber_rounded),
@@ -432,21 +433,24 @@ abstract class YustFilePickerBaseState<
     );
   }
 
-  Widget _buildSyncFailedIndicator() => IconButton(
+  Widget _buildSyncFailedIndicator(T file) => IconButton(
     icon: const Icon(Icons.sync_problem),
     color: Theme.of(context).colorScheme.error,
-    tooltip: LocaleKeys.alertFileSyncFailed.tr(),
-    onPressed: () => unawaited(_confirmRetrySync()),
+    tooltip: LocaleKeys.fileProcessingFailed.tr(),
+    onPressed: () => unawaited(_reportAndDiscardFailedUpload(file)),
   );
 
-  Future<void> _confirmRetrySync() async {
-    final retry = await YustUi.alertService.showConfirmation(
-      LocaleKeys.alertFileSyncFailed.tr(),
-      LocaleKeys.retry.tr(),
+  /// Tells the user why the file could not be uploaded, then drops the change.
+  /// There is no retry: the reason is one no attempt gets past.
+  Future<void> _reportAndDiscardFailedUpload(T file) async {
+    final operation = _controller.failedUploadFor(file);
+    if (operation == null) return;
+    await YustUi.alertService.showAlert(
+      LocaleKeys.fileProcessingFailed.tr(),
+      operation.failureMessage,
     );
-    if (retry == true) {
-      await YustUi.fileOperationHandler.retryFailedOperations();
-    }
+    await _controller.discardFailedUploadFor(file);
+    if (mounted) setState(() {});
   }
 
   @nonVirtual

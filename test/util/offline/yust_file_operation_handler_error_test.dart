@@ -11,41 +11,61 @@ FirebaseException _firebase(String code) =>
 
 void main() {
   group('permanent', () {
-    test('a Firebase code that no retry can get past', () {
+    test('a revoked or missing permission', () {
       for (final code in [
         'permission-denied',
         'unauthenticated',
-        'not-found',
-        'object-not-found',
-        'invalid-argument',
+        'unauthorized',
+        'storage/unauthorized',
       ]) {
         expect(
-          YustFileOperationError.isPermanent(_firebase(code)),
-          isTrue,
+          YustFileOperationError.reasonFor(_firebase(code)),
+          YustFileOperationFailureReason.noPermission,
           reason: code,
         );
       }
     });
 
     test('an object that is not in Storage at all', () {
+      for (final code in [
+        'not-found',
+        'object-not-found',
+        'storage/object-not-found',
+      ]) {
+        expect(
+          YustFileOperationError.reasonFor(_firebase(code)),
+          YustFileOperationFailureReason.fileMissing,
+          reason: code,
+        );
+      }
       // A download that comes back empty because the object is gone can never
-      // succeed; without this it retried forever and never timed out.
+      // succeed; without this it retried forever and never gave up.
       expect(
-        YustFileOperationError.isPermanent(
+        YustFileOperationError.reasonFor(
           YustMissingStorageObjectException('gone'),
         ),
-        isTrue,
+        YustFileOperationFailureReason.fileMissing,
       );
+    });
+
+    test('a file the server rejects', () {
+      for (final code in ['invalid-argument', 'storage/invalid-argument']) {
+        expect(
+          YustFileOperationError.reasonFor(_firebase(code)),
+          YustFileOperationFailureReason.fileInvalid,
+          reason: code,
+        );
+      }
     });
 
     test('bad arguments this code produced', () {
       expect(
-        YustFileOperationError.isPermanent(ArgumentError('empty path')),
-        isTrue,
+        YustFileOperationError.reasonFor(ArgumentError('empty path')),
+        YustFileOperationFailureReason.unknown,
       );
       expect(
-        YustFileOperationError.isPermanent(StateError('no executor')),
-        isTrue,
+        YustFileOperationError.reasonFor(StateError('no executor')),
+        YustFileOperationFailureReason.unknown,
       );
     });
   });
@@ -53,20 +73,20 @@ void main() {
   group('transient', () {
     test('connection failures', () {
       expect(
-        YustFileOperationError.isPermanent(const SocketException('no route')),
-        isFalse,
+        YustFileOperationError.reasonFor(const SocketException('no route')),
+        isNull,
       );
       expect(
-        YustFileOperationError.isPermanent(TimeoutException('slow')),
-        isFalse,
+        YustFileOperationError.reasonFor(TimeoutException('slow')),
+        isNull,
       );
       expect(
-        YustFileOperationError.isPermanent(const HttpException('bad gateway')),
-        isFalse,
+        YustFileOperationError.reasonFor(const HttpException('bad gateway')),
+        isNull,
       );
       expect(
-        YustFileOperationError.isPermanent(ClientException('reset')),
-        isFalse,
+        YustFileOperationError.reasonFor(ClientException('reset')),
+        isNull,
       );
     });
 
@@ -78,21 +98,21 @@ void main() {
         'canceled',
       ]) {
         expect(
-          YustFileOperationError.isPermanent(_firebase(code)),
-          isFalse,
+          YustFileOperationError.reasonFor(_firebase(code)),
+          isNull,
           reason: code,
         );
       }
     });
 
     test(
-      'an unrecognised error, so a long offline spell cannot park a file',
+      'an unrecognised error, so a long offline spell cannot end an upload',
       () {
         expect(
-          YustFileOperationError.isPermanent(Exception('something new')),
-          isFalse,
+          YustFileOperationError.reasonFor(Exception('something new')),
+          isNull,
         );
-        expect(YustFileOperationError.isPermanent('a bare string'), isFalse);
+        expect(YustFileOperationError.reasonFor('a bare string'), isNull);
       },
     );
   });

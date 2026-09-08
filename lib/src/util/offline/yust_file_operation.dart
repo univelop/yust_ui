@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yust/yust.dart';
+
+import 'yust_file_operation_error.dart';
 
 /// The keys every offline component addresses a file by: [offlineKey] for the
 /// entry, [byteKey] for its bytes.
@@ -64,17 +67,13 @@ class YustFileOperation<T extends YustFile> {
     required this.type,
     required this.file,
     this.newName,
-    this.failedAttempts = 0,
+    this.failure,
     String? id,
     String? fileKey,
     DateTime? createdAt,
   }) : fileKey = fileKey ?? file.offlineKey,
        createdAt = createdAt ?? DateTime.now(),
        id = id ?? '${DateTime.now().microsecondsSinceEpoch}_${file.offlineKey}';
-
-  /// The permanent failures an operation may collect before it stops retrying
-  /// and waits for the user.
-  static const maxFailedAttempts = 5;
 
   /// Stable identity for the entry, independent of the mutable [file]. A manager
   /// removes an operation by this after applying it (the file may have been mutated,
@@ -97,14 +96,14 @@ class YustFileOperation<T extends YustFile> {
   /// When the operation was enqueued (FIFO ordering).
   final DateTime createdAt;
 
-  /// How often this operation failed for a reason retrying cannot fix. Connection
-  /// failures never count. Mutated in place by the handler, then persisted via
-  /// [YustSyncQueue.persist].
-  int failedAttempts;
+  /// Why this operation failed for a reason retrying cannot fix, or null while
+  /// it is still being attempted. Connection failures never set it. Mutated in
+  /// place by the handler, then persisted via [YustSyncQueue.persist].
+  YustFileOperationFailureReason? failure;
 
-  /// Whether this operation has spent its [maxFailedAttempts] and now waits on
-  /// the user rather than retrying.
-  bool get hasReachedRetryLimit => failedAttempts >= maxFailedAttempts;
+  /// Whether this operation is over: it failed for good and now waits on the
+  /// user rather than retrying.
+  bool get hasFailed => failure != null;
 
   /// The work this operation does, for deduping — see [YustSyncQueue.enqueueOperation].
   ({
@@ -129,7 +128,7 @@ class YustFileOperation<T extends YustFile> {
     'type': type.name,
     'newName': newName,
     'fileKey': fileKey,
-    'failedAttempts': failedAttempts,
+    'failure': failure?.name,
     'createdAt': createdAt.toIso8601String(),
     'file': file.toLocalJson(),
   };
@@ -148,8 +147,15 @@ class YustFileOperation<T extends YustFile> {
       file: file as T,
       newName: json['newName'] as String?,
       fileKey: json['fileKey'] as String?,
-      failedAttempts: json['failedAttempts'] as int? ?? 0,
+      failure: _tryParseFailure(json['failure'] as String?),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 }
+
+/// Reads a stored failure back, or null when this build does not know the name
+/// — an operation written by a newer app is still worth attempting.
+YustFileOperationFailureReason? _tryParseFailure(String? name) =>
+    YustFileOperationFailureReason.values.firstWhereOrNull(
+      (reason) => reason.name == name,
+    );
