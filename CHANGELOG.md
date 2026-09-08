@@ -2,7 +2,7 @@
 
 - Reject uploading a file whose content already exists in the same picker under a different name. Files are stored in a map keyed by their md5 hash, so the second upload used to overwrite the first one's entry and orphan its storage object. `YustFileHandler.addFile` now hashes before uploading and throws a `YustException` with `exceptionDuplicateImageContent` / `exceptionDuplicateFileContent`. Re-uploading the same name with the same content still just replaces the entry.
 - Renaming a file removes the old entry before uploading the new one, so a rename is no longer rejected as a duplicate of itself. A failed upload restores the original instead of losing the file.
-- `YustFilePicker` caps its file size check at `yustMaxFileSizeInBytes` (500 MB) even when no `maximumFileSizeInKiB` is set, so an oversized file is reported before the upload starts instead of failing inside yust.
+- `YustFilePicker` caps its file size check at `Yust.maxFileSizeInBytes` (500 MB) even when no `maximumFileSizeInKiB` is set, so an oversized file is reported before the upload starts instead of failing inside yust.
 - Bump `yust` to 3.35.0
 
 ## 3.32.9 - 2026-08-25
