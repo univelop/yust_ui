@@ -62,12 +62,12 @@ class YustSyncQueue {
       return;
     }
     operations.add(operation);
-    await _persist(operations);
+    await _saveToDisk(operations);
   });
 
   /// The pending operations, oldest first, without removing them. The entries
   /// are the live objects: mutating one (its [YustFileOperation.failure])
-  /// and calling [persist] writes the change back.
+  /// and calling [saveToDisk] writes the change back.
   Future<List<YustFileOperation<YustFile>>> getPendingOperations() =>
       _serialized(() async => List.of(await _load()));
 
@@ -77,13 +77,14 @@ class YustSyncQueue {
       _serialized(() async {
         final operations = await _load();
         operations.removeWhere((entry) => entry.id == operation.id);
-        await _persist(operations);
+        await _saveToDisk(operations);
       });
 
-  /// Writes the current operations to the preference, after one was mutated in
-  /// place.
+  /// Writes the whole queue to the preference, after an operation was mutated
+  /// in place.
   /// A no-op in memory, where the working copy is already the only one.
-  Future<void> persist() => _serialized(() async => _persist(await _load()));
+  Future<void> saveToDisk() =>
+      _serialized(() async => _saveToDisk(await _load()));
 
   Future<List<YustFileOperation<YustFile>>> _load() async =>
       _operations ??= await _readInitial();
@@ -108,7 +109,7 @@ class YustSyncQueue {
     }
   }
 
-  Future<void> _persist(List<YustFileOperation<YustFile>> operations) async {
+  Future<void> _saveToDisk(List<YustFileOperation<YustFile>> operations) async {
     if (_preferences == null) return;
     await _preferences.setString(
       _preferenceKey,

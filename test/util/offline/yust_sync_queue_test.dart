@@ -217,7 +217,7 @@ void main() {
     expect((operations.single.file as YustImage).location?.latitude, 48.1);
   });
 
-  group('persist', () {
+  group('saveToDisk', () {
     test('writes an in-place failure change, surviving a restart', () async {
       await queue.enqueueOperation(
         _operation(YustFileOperationType.upload, hash: 'h1', createdAt: _t1),
@@ -228,7 +228,7 @@ void main() {
 
       (await queue.getPendingOperations()).first.failure =
           YustFileOperationFailureReason.fileMissing;
-      await queue.persist();
+      await queue.saveToDisk();
 
       final reloaded = YustSyncQueue();
       final operations = await reloaded.getPendingOperations();

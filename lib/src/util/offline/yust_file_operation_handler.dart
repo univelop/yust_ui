@@ -314,7 +314,7 @@ class YustFileOperationHandler extends ChangeNotifier {
     if (reason == null) return;
     if (operation.type == YustFileOperationType.upload) {
       operation.failure = reason;
-      await queue.persist();
+      await queue.saveToDisk();
     } else {
       await queue.removeOperation(operation);
     }
