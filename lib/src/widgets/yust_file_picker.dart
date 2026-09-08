@@ -484,8 +484,29 @@ class YustFilePickerState
       if (!fileSizeValid) return;
 
       final newFile = await processFile(name, file, bytes);
+
+      final contentValid = await _checkDuplicateContent(newFile);
+      if (!contentValid) continue;
+
       await uploadFile(file: newFile);
     }
+  }
+
+  /// Reports an already present file with the same content and returns false,
+  /// so the upload is skipped instead of overwriting that file's entry.
+  Future<bool> _checkDuplicateContent(YustFile newFile) async {
+    final duplicate = await fileHandler.findDuplicateContent(newFile);
+    if (duplicate == null) return true;
+
+    unawaited(
+      YustUi.alertService.showAlert(
+        LocaleKeys.fileUpload.tr(),
+        LocaleKeys.exceptionDuplicateFileContent.tr(
+          namedArgs: {'fileName': duplicate.name ?? ''},
+        ),
+      ),
+    );
+    return false;
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {

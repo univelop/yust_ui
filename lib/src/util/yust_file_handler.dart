@@ -179,33 +179,35 @@ class YustFileHandler {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
       throw (LocaleKeys.exceptionMissingNameOrStorageFolderPath.tr());
     }
-    // The hash has to be known before the upload: files are stored in a map
-    // keyed by hash, so uploading the same content under a second name would
-    // overwrite the entry of the first one.
-    await _addFileHash(yustFile);
-    _validateNoDuplicateContent(yustFile);
+    final duplicate = await findDuplicateContent(yustFile);
+    if (duplicate != null) {
+      final namedArgs = {'fileName': duplicate.name ?? ''};
+      throw YustException(
+        yustFile is YustImage
+            ? LocaleKeys.exceptionDuplicateImageContent.tr(namedArgs: namedArgs)
+            : LocaleKeys.exceptionDuplicateFileContent.tr(namedArgs: namedArgs),
+      );
+    }
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
   }
 
-  /// Throws when a file with the same content but a different name is already
-  /// present.
+  /// Computes [yustFile]'s hash and returns an already present file that holds
+  /// the same content under a different name, or null when there is none.
   ///
-  /// Re-uploading the exact same file (same name and content) is allowed and
-  /// simply replaces the existing entry.
-  void _validateNoDuplicateContent(YustFile newFile) {
-    if (newFile.hash.isEmpty) return;
+  /// The hash has to be known before the upload: files are stored in a map
+  /// keyed by hash, so uploading the same content under a second name would
+  /// overwrite the entry of the first one. Re-uploading the exact same file
+  /// (same name and content) is allowed and simply replaces the entry.
+  ///
+  /// Call this before [addFile] to report the clash in the UI; [addFile]
+  /// throws on it as a safety net.
+  Future<YustFile?> findDuplicateContent(YustFile yustFile) async {
+    await _addFileHash(yustFile);
+    if (yustFile.hash.isEmpty) return null;
 
-    final duplicate = _yustFiles.firstWhereOrNull(
-      (file) => file.hash == newFile.hash && file.name != newFile.name,
-    );
-    if (duplicate == null) return;
-
-    final namedArgs = {'fileName': duplicate.name ?? ''};
-    throw YustException(
-      newFile is YustImage
-          ? LocaleKeys.exceptionDuplicateImageContent.tr(namedArgs: namedArgs)
-          : LocaleKeys.exceptionDuplicateFileContent.tr(namedArgs: namedArgs),
+    return _yustFiles.firstWhereOrNull(
+      (file) => file.hash == yustFile.hash && file.name != yustFile.name,
     );
   }
 
