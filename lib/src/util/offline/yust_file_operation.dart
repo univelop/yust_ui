@@ -19,23 +19,15 @@ extension YustFileOfflineKey on YustFile {
   String get offlineKey =>
       md5.convert(utf8.encode('${storageFolderPath ?? path}/$name')).toString();
 
-  /// The key this file's bytes are cached under: the content hash, falling back
-  /// to [offlineKey] for a file that has none.
-  ///
-  /// Content-addressed on purpose. An entry keeps its location when its content
-  /// is replaced — a re-drawn signature is `signature.png` either way — so a
-  /// location-keyed copy would go on being served after the bytes changed
-  /// somewhere else.
-  String get byteKey => hash.isNotEmpty ? hash : offlineKey;
+  /// The key this file's bytes are cached under: the content hash, so a
+  /// re-drawn signature does not go on serving the copy it replaced.
+  String get byteKey => hash;
 
-  /// Computes the md5 [YustFile.hash] from the file's content when it has none,
-  /// so its document key is stable before the upload runs.
+  /// Computes the md5 [YustFile.hash] when the file has none. Call before
+  /// enqueueing: the queue rejects a file without one.
   ///
-  /// Call before enqueueing: a file that stays hashless is keyed in the document
-  /// by name, which cannot be addressed as a single Firestore field once it
-  /// contains a dot.
-  /// Runs on the UI isolate and scales with the file: on web there is no
-  /// isolate to move it to.
+  /// Runs on the UI isolate and scales with the file; web has no isolate to
+  /// move it to.
   Future<void> ensureHash() async {
     if (hash.isNotEmpty) return;
     if (bytes != null) {

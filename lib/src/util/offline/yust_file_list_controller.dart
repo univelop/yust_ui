@@ -312,15 +312,23 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     return _refresh;
   }
 
-  /// Adopts a file whose upload has just been applied into the persisted set,
-  /// covering the gap between it leaving the queue and the document snapshot
-  /// carrying it. The operation's file already has the `path` and `url`.
+  /// Tracks an applied operation into the persisted set, covering the gap
+  /// between it leaving the queue — where the overlay stops accounting for it —
+  /// and the document snapshot carrying the result.
+  ///
+  /// An upload is adopted (its file already has the `path` and `url`); a delete
+  /// drops its entry. Every controller on this location does so, not just the
+  /// one that issued the change: a read-only view of the same brick holds the
+  /// same file and would otherwise keep showing it.
   void _onOperationApplied(YustFileOperation<YustFile> operation) {
     if (_disposed) return;
-    if (operation.type != YustFileOperationType.upload ||
-        !firebaseLocation.owns(operation.file)) {
+    if (!firebaseLocation.owns(operation.file)) return;
+    if (operation.type == YustFileOperationType.delete) {
+      _online.removeWhere((online) => online.offlineKey == operation.fileKey);
+      _recentlyUploaded.remove(operation.fileKey);
       return;
     }
+    if (operation.type != YustFileOperationType.upload) return;
     final file = operation.file as T;
     final key = file.offlineKey;
     final index = _online.indexWhere((online) => online.offlineKey == key);

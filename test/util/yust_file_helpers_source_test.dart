@@ -9,7 +9,7 @@ import 'package:yust_ui/src/util/yust_file_helpers.dart';
 
 YustFile _plan() => YustFile(
   name: 'Plan.pdf',
-  hash: '',
+  hash: 'h1',
   path: 'ws1/rec1/brick1',
   storageFolderPath: 'ws1/rec1/brick1',
   // ignore: deprecated_member_use
@@ -48,7 +48,7 @@ void main() {
     test('prefers the on-device copy once it is cached', () async {
       final plan = _plan();
       await storage.writeBytes(
-        byteKey: plan.offlineKey,
+        byteKey: plan.byteKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
       );
@@ -72,7 +72,7 @@ void main() {
     test('returns the on-device copy when the file is cached', () async {
       final plan = _plan();
       final devicePath = await storage.writeBytes(
-        byteKey: plan.offlineKey,
+        byteKey: plan.byteKey,
         name: plan.name!,
         bytes: Uint8List.fromList([1, 2, 3]),
       );

@@ -54,7 +54,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -78,7 +77,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
@@ -154,7 +152,6 @@ class YustFilePickerState
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
       createThumbnail: widget.thumbnails,
-      linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
     );
   }
@@ -405,7 +402,8 @@ class YustFilePickerState
         return IconButton(
           icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
           color: Theme.of(buttonContext).primaryColor,
-          onPressed: () => unawaited(YustFilePresenter.share(buttonContext, file)),
+          onPressed: () =>
+              unawaited(YustFilePresenter.share(buttonContext, file)),
         );
       },
     );

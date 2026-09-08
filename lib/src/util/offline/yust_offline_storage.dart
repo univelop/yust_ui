@@ -54,7 +54,11 @@ class YustOfflineStorage {
 
   /// The path to the on-device copy of the file stored under [byteKey], or null
   /// when absent.
+  ///
+  /// An empty key addresses the store's own folder, whose first file could be
+  /// the sync queue — so it is nothing, not everything.
   Future<String?> pathForFile(String byteKey) async {
+    if (byteKey.isEmpty) return null;
     final directory = Directory('${await _root()}/$_folder/$byteKey');
     if (!directory.existsSync()) return null;
     final files = directory.listSync().whereType<File>();

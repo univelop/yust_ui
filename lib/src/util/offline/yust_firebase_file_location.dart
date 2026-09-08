@@ -19,7 +19,6 @@ class YustFirebaseFileLocation {
     required this.storageFolderPath,
     this.linkedDocPath,
     this.linkedDocAttribute,
-    this.storesFilesAsMap = false,
   });
 
   /// Storage folder the file bytes live under.
@@ -30,11 +29,6 @@ class YustFirebaseFileLocation {
 
   /// Attribute on [linkedDocPath] holding the files (e.g. `attributes.xyz`).
   final String? linkedDocAttribute;
-
-  /// When true the attribute is a `{hash: file}` map, so a single file can be
-  /// written with a field mask (`attribute.hash`) — conflict-free, no array
-  /// read-modify-write. When false the legacy array layout is used.
-  final bool storesFilesAsMap;
 
   /// True when the location is backed by a Firestore document, so files can be
   /// cached offline and their metadata written back.
@@ -54,16 +48,11 @@ class YustFirebaseFileLocation {
       other is YustFirebaseFileLocation &&
       other.storageFolderPath == storageFolderPath &&
       other.linkedDocPath == linkedDocPath &&
-      other.linkedDocAttribute == linkedDocAttribute &&
-      other.storesFilesAsMap == storesFilesAsMap;
+      other.linkedDocAttribute == linkedDocAttribute;
 
   @override
-  int get hashCode => Object.hash(
-    storageFolderPath,
-    linkedDocPath,
-    linkedDocAttribute,
-    storesFilesAsMap,
-  );
+  int get hashCode =>
+      Object.hash(storageFolderPath, linkedDocPath, linkedDocAttribute);
 
   /// Re-attaches this location's addressing to [file]. The document does not
   /// persist these fields, so a file read back from it needs them stamped on.
@@ -71,6 +60,5 @@ class YustFirebaseFileLocation {
     file.storageFolderPath = storageFolderPath;
     file.linkedDocPath = linkedDocPath;
     file.linkedDocAttribute = linkedDocAttribute;
-    file.linkedDocStoresFilesAsMap = storesFilesAsMap;
   }
 }

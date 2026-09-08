@@ -551,29 +551,33 @@ void main() {
       expect(await queue.getPendingOperations(), isEmpty);
     });
 
-    test('discarding a file drops its failure and the chain behind it', () async {
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') throw _permanent;
-        },
-      );
-      final handler = handlerWith(executor);
+    test(
+      'discarding a file drops its failure and the chain behind it',
+      () async {
+        final executor = _RecordingManager(
+          onExecute: (operation) async {
+            if (operation.file.name == 'h1.pdf') throw _permanent;
+          },
+        );
+        final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
-        _uploadOperation('h1', id: 'failed', contentHash: 'v1'),
-        _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
-        _uploadOperation('h2', id: 'other'),
-      ]);
-      await handler.processPendingOperations();
-      final failedFileKey = (await queue.getPendingOperations()).first.fileKey;
+        await handler.enqueueAll([
+          _uploadOperation('h1', id: 'failed', contentHash: 'v1'),
+          _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
+          _uploadOperation('h2', id: 'other'),
+        ]);
+        await handler.processPendingOperations();
+        final failedFileKey =
+            (await queue.getPendingOperations()).first.fileKey;
 
-      var notifications = 0;
-      handler.addListener(() => notifications++);
-      await handler.discardOperationsForFile(failedFileKey);
+        var notifications = 0;
+        handler.addListener(() => notifications++);
+        await handler.discardOperationsForFile(failedFileKey);
 
-      expect(await queue.getPendingOperations(), isEmpty);
-      expect(notifications, 1);
-    });
+        expect(await queue.getPendingOperations(), isEmpty);
+        expect(notifications, 1);
+      },
+    );
 
     test('discarding leaves another file\'s operations alone', () async {
       final executor = _RecordingManager(
@@ -733,10 +737,8 @@ void main() {
     test(
       'a batch skips its unaddressable operations and keeps the rest',
       () async {
-        // A batch is a whole record's files or a whole legacy cache. Rejecting all
-        // of them over one unaddressable file stopped that record from ever
-        // syncing — and, from the startup migration, took the app's first frame
-        // with it.
+        // Rejecting a whole record's files over one bad file stopped that
+        // record from ever syncing.
         final manager = _RecordingManager();
         final handler = handlerWith(manager);
 

@@ -65,7 +65,6 @@ void main() {
     storageFolderPath: 'workspaces/w1/records/rec1',
     linkedDocPath: 'workspaces/w1/records/rec1',
     linkedDocAttribute: 'brickValues.brick1',
-    linkedDocStoresFilesAsMap: true,
     setCreatedAtToNow: false,
   );
 
@@ -101,7 +100,6 @@ void main() {
       expect(migrated.file.name, 'plan.pdf');
       expect(migrated.file.linkedDocPath, 'workspaces/w1/records/rec1');
       expect(migrated.file.linkedDocAttribute, 'brickValues.brick1');
-      expect(migrated.file.linkedDocStoresFilesAsMap, isTrue);
       expect(migrated.file.storageFolderPath, 'workspaces/w1/records/rec1');
       // Hashed on migration: the local JSON carried none, and the map layout keys
       // the record entry by it.

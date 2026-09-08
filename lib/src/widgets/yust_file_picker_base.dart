@@ -102,12 +102,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// If false, no thumbnails will be created or shown.
   final bool thumbnails;
 
-  /// Whether the linked document stores files as a map with hash and file
-  /// instead of a list e.g. array of files.
-  ///
-  /// This is needed for the offline upload of files.
-  final bool linkedDocStoresFilesAsMap;
-
   /// Controls what happens when a file is tapped.
   final YustFileTapMode tapMode;
 
@@ -134,7 +128,6 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.overwriteSingleFile = false,
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
-    this.linkedDocStoresFilesAsMap = false,
     this.tapMode = YustFileTapMode.preview,
   });
 
@@ -218,7 +211,6 @@ abstract class YustFilePickerBaseState<
         storageFolderPath: widget.storageFolderPath,
         linkedDocPath: widget.linkedDocPath,
         linkedDocAttribute: widget.linkedDocAttribute,
-        storesFilesAsMap: widget.linkedDocStoresFilesAsMap,
       ),
       newestFirst: widget.newestFirst,
       // Only reached for a target with no document behind it; a linked target is

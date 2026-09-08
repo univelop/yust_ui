@@ -95,7 +95,6 @@ class YustImageHelpers {
     YustLocationAppearance watermarkLocationAppearance =
         YustLocationAppearance.decimalDegree,
     bool createThumbnail = false,
-    bool linkedDocStoresFilesAsMap = false,
   }) async {
     final sanitizedPath = _sanitizeFilePath(path);
     final mustTransform =
@@ -204,7 +203,6 @@ class YustImageHelpers {
           : null,
       createdAt: now,
       createThumbnail: createThumbnail,
-      linkedDocStoresFilesAsMap: linkedDocStoresFilesAsMap,
       path: storageFolderPath,
     );
   }

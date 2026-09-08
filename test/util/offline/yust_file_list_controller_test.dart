@@ -29,7 +29,6 @@ const _target = YustFirebaseFileLocation(
   storageFolderPath: 'records/rec1',
   linkedDocPath: 'records/rec1',
   linkedDocAttribute: 'brickValues.brick1',
-  storesFilesAsMap: true,
 );
 
 /// A target with no document behind it — a picker bound to a brick's settings,

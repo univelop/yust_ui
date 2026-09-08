@@ -101,13 +101,11 @@ class YustFileOperationHandler extends ChangeNotifier {
     unawaited(processPendingOperations());
   }
 
-  /// Appends every addressable operation in [operations], then starts one
-  /// drain.
+  /// Appends every addressable operation in [operations], then starts one drain.
   ///
-  /// An operation the executor could not act on is skipped, not thrown on: a
-  /// batch is a whole record's files or a whole legacy cache, and one
-  /// unaddressable file among them must not stop the rest from ever syncing.
-  /// Use [enqueue] where the caller wants to hear about it.
+  /// An unaddressable one is skipped rather than thrown on: a batch is a whole
+  /// record's files, and one bad file must not stop the rest. Use [enqueue] to
+  /// hear about it.
   Future<void> enqueueAll(
     Iterable<YustFileOperation<YustFile>> operations,
   ) async {
@@ -130,6 +128,12 @@ class YustFileOperationHandler extends ChangeNotifier {
     if (!file.hasName) {
       throw ArgumentError('Cannot queue a file without a name.');
     }
+    if (file.hash.isEmpty) {
+      throw ArgumentError(
+        'Cannot queue "${file.name}" without a hash. Call '
+        'YustFileOfflineKey.ensureHash first.',
+      );
+    }
     if (!_isAddressable(operation)) {
       throw ArgumentError(
         'Cannot queue ${operation.type.name} of "${file.name}" without a '
@@ -138,11 +142,12 @@ class YustFileOperationHandler extends ChangeNotifier {
     }
   }
 
-  /// Whether the executor could act on [operation]'s file at all. Writes need
-  /// the Storage folder; a download can read from `path`.
+  /// Whether the executor could act on [operation]'s file: it needs a name, a
+  /// hash and a location. Writes need the Storage folder; a download can read
+  /// from `path`.
   bool _isAddressable(YustFileOperation<YustFile> operation) {
     final file = operation.file;
-    if (!file.hasName) return false;
+    if (!file.hasName || file.hash.isEmpty) return false;
     return operation.type == YustFileOperationType.download
         ? file.hasStorageLocation
         : file.storageFolderPath?.isNotEmpty == true;

@@ -16,7 +16,6 @@ YustFile _file({
   storageFolderPath: 'records/abc/files',
   linkedDocPath: 'records/abc',
   linkedDocAttribute: 'brickValues.xyz',
-  linkedDocStoresFilesAsMap: true,
   setCreatedAtToNow: false,
 );
 
@@ -29,17 +28,6 @@ void main() {
         _file(name: 'first.jpeg', hash: 'same').offlineKey,
         isNot(_file(name: 'second.jpeg', hash: 'same').offlineKey),
       );
-    });
-
-    test('is not the bare name for hashless (array-layout) files', () {
-      // The bare name is not unique across records, so two pinned records each
-      // holding a `Plan.pdf` would share one cache directory.
-      final operation = YustFileOperation<YustFile>(
-        type: YustFileOperationType.delete,
-        file: _file(hash: '', name: 'legacy.pdf'),
-      );
-      expect(operation.fileKey, isNot('legacy.pdf'));
-      expect(operation.fileKey, isNotEmpty);
     });
 
     test('separates same-named files in different folders', () {
@@ -73,20 +61,15 @@ void main() {
       );
     });
 
-    test('byteKey falls back to the location for a hashless file', () {
-      final hashless = _file(name: 'legacy.pdf', hash: '');
-      expect(hashless.byteKey, hashless.offlineKey);
-    });
-
     test('is stable for the same file', () {
       expect(
-        _file(hash: '', name: 'legacy.pdf').offlineKey,
-        _file(hash: '', name: 'legacy.pdf').offlineKey,
+        _file(name: 'plan.pdf', hash: 'h1').offlineKey,
+        _file(name: 'plan.pdf', hash: 'h1').offlineKey,
       );
     });
 
     test('stays frozen when the file is renamed after enqueueing', () {
-      final file = _file(hash: '', name: 'old.pdf');
+      final file = _file(name: 'old.pdf', hash: 'h1');
       final operation = YustFileOperation<YustFile>(
         type: YustFileOperationType.rename,
         file: file,
@@ -139,7 +122,6 @@ void main() {
       expect(restored.file.storageFolderPath, 'records/abc/files');
       expect(restored.file.linkedDocPath, 'records/abc');
       expect(restored.file.linkedDocAttribute, 'brickValues.xyz');
-      expect(restored.file.linkedDocStoresFilesAsMap, isTrue);
     });
 
     test(
@@ -152,7 +134,9 @@ void main() {
           createdAt: _createdAt,
         );
 
-        final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
+        final restored = YustFileOperation.fromJson<YustFile>(
+          operation.toJson(),
+        );
 
         expect(restored.type, YustFileOperationType.rename);
         expect(restored.file.name, 'original.pdf');
@@ -169,7 +153,9 @@ void main() {
           createdAt: _createdAt,
         );
 
-        final restored = YustFileOperation.fromJson<YustFile>(operation.toJson());
+        final restored = YustFileOperation.fromJson<YustFile>(
+          operation.toJson(),
+        );
 
         expect(restored.type, YustFileOperationType.delete);
         expect(restored.file.devicePath, isNull);

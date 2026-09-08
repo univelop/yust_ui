@@ -77,7 +77,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = true,
@@ -109,7 +108,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -189,7 +187,6 @@ class YustImagePickerState
     watermarkPosition: widget.watermarkPosition,
     locale: widget.locale,
     watermarkLocationAppearance: widget.watermarkLocationAppearance,
-    linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
     createThumbnail: widget.thumbnails,
   );
 

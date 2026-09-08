@@ -40,9 +40,8 @@ YustFileOperation<YustFile> _renameOp() => YustFileOperation<YustFile>(
   newName: 'new.pdf',
 );
 
-/// Records which name each document write was asked for, and fails the first
-/// [writeFailures] of them, so a rename can be interrupted after its entry has
-/// already been detached.
+/// Records the name each document write was asked for, failing the first
+/// [writeFailures] of them so a rename can be interrupted mid-way.
 class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
   _RenameRecordingWriter({this.writeFailures = 0});
 
@@ -65,10 +64,8 @@ class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
 
 /// The Storage objects a test cares about, as names under one folder.
 ///
-/// A double rather than `YustFileServiceMocked`: that one's constructor throws
-/// in a Flutter environment, so a widget-side test cannot have it. Only the
-/// members a rename reaches are implemented; anything else is a test that asked
-/// for more than it set up.
+/// Hand-rolled because `YustFileServiceMocked`'s constructor throws in a
+/// Flutter environment. Only the members a rename reaches are implemented.
 class _FakeFileService implements YustFileService {
   final Set<String> objectNames = {};
 
@@ -129,7 +126,7 @@ Future<void> _settle() async {
 }
 
 void main() {
-  group('a rename interrupted after the old entry was detached', () {
+  group('a rename interrupted after its document write', () {
     late Directory root;
     late YustOfflineStorage storage;
     late _FakeFileService fileService;
@@ -152,10 +149,8 @@ void main() {
     });
 
     test('the retry deletes the old object, never the renamed one', () async {
-      // The queue hands out its live entries and re-reads them from disk only on
-      // a cold start, so an executor that renamed `operation.file` in place would
-      // read the new name as the old one on the retry — and delete the object the
-      // document entry has just been pointed at.
+      // An executor that renamed `operation.file` in place would read the new
+      // name as the old one on the retry, deleting the object it just wrote.
       final writer = _RenameRecordingWriter(writeFailures: 1);
       final manager = YustFileOperationManager(
         documentWriterFor: (_) => writer,
@@ -164,13 +159,16 @@ void main() {
       final operation = _renameOp();
 
       await expectLater(manager.execute(operation), throwsA(isA<Exception>()));
-      expect(writer.removals, ['old.pdf'], reason: 'the old entry is detached');
       expect(writer.writes, ['new.pdf'], reason: 'the new entry is attempted');
 
       await manager.execute(operation);
 
-      expect(writer.removals, ['old.pdf', 'old.pdf']);
       expect(writer.writes, ['new.pdf', 'new.pdf']);
+      expect(
+        writer.removals,
+        isEmpty,
+        reason: 'the entry keeps its hash key, so there is nothing to detach',
+      );
       expect(
         fileService.objectNames,
         {'new.pdf'},
