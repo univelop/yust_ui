@@ -179,8 +179,36 @@ class YustFileHandler {
     if (yustFile.name == null || yustFile.storageFolderPath == null) {
       throw (LocaleKeys.exceptionMissingNameOrStorageFolderPath.tr());
     }
+    final duplicate = await findDuplicateContent(yustFile);
+    if (duplicate != null) {
+      final namedArgs = {'fileName': duplicate.name ?? ''};
+      throw YustException(
+        yustFile is YustImage
+            ? LocaleKeys.exceptionDuplicateImageContent.tr(namedArgs: namedArgs)
+            : LocaleKeys.exceptionDuplicateFileContent.tr(namedArgs: namedArgs),
+      );
+    }
     _yustFiles.add(yustFile);
     await _uploadFile(yustFile);
+  }
+
+  /// Computes [yustFile]'s hash and returns an already present file that holds
+  /// the same content under a different name, or null when there is none.
+  ///
+  /// The hash has to be known before the upload: files are stored in a map
+  /// keyed by hash, so uploading the same content under a second name would
+  /// overwrite the entry of the first one. Re-uploading the exact same file
+  /// (same name and content) is allowed and simply replaces the entry.
+  ///
+  /// Call this before [addFile] to report the clash in the UI; [addFile]
+  /// throws on it as a safety net.
+  Future<YustFile?> findDuplicateContent(YustFile yustFile) async {
+    await _addFileHash(yustFile);
+    if (yustFile.hash.isEmpty) return null;
+
+    return _yustFiles.firstWhereOrNull(
+      (file) => file.hash == yustFile.hash && file.name != yustFile.name,
+    );
   }
 
   Future<void> updateFile(
@@ -452,7 +480,7 @@ class YustFileHandler {
     if (yustFile.file != null) {
       yustFile.hash = (await yustFile.file?.openRead().transform(md5).first)
           .toString();
-    } else {
+    } else if (yustFile.bytes != null) {
       yustFile.hash = md5.convert(yustFile.bytes!.toList()).toString();
     }
   }
