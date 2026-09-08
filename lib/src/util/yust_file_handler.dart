@@ -201,11 +201,11 @@ class YustFileHandler {
     );
     if (duplicate == null) return;
 
-    final localeKey = newFile is YustImage
-        ? LocaleKeys.exceptionDuplicateImageContent
-        : LocaleKeys.exceptionDuplicateFileContent;
+    final namedArgs = {'fileName': duplicate.name ?? ''};
     throw YustException(
-      localeKey.tr(namedArgs: {'fileName': duplicate.name ?? ''}),
+      newFile is YustImage
+          ? LocaleKeys.exceptionDuplicateImageContent.tr(namedArgs: namedArgs)
+          : LocaleKeys.exceptionDuplicateFileContent.tr(namedArgs: namedArgs),
     );
   }
 
