@@ -491,7 +491,7 @@ class YustFilePickerState
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
     // The brick's own limit is optional, the yust ceiling always applies.
     final brickMaxSizeKiB = widget.maximumFileSizeInKiB;
-    const ceilingKiB = Yust.maxFileSizeInBytes ~/ 1024;
+    const ceilingKiB = YustFile.maxSizeInBytes ~/ 1024;
     final maxSizeKiB = brickMaxSizeKiB == null
         ? ceilingKiB
         : min(brickMaxSizeKiB, ceilingKiB);
