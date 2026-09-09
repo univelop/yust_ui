@@ -57,8 +57,3 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
-    # Remove this, when yust 3.35.0 is released
-    yust:
-        git:
-            url: https://github.com/univelop/yust.git
-            ref: 7923-reject-same-content-uploads
