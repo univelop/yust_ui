@@ -386,6 +386,8 @@ abstract class LocaleKeys {
   static const alertMoreThanOneResult = 'alertMoreThanOneResult';
   static const alertMoveTileToFolder = 'alertMoveTileToFolder';
   static const alertMovedToTab = 'alertMovedToTab';
+  static const alertMustBeAdminToChangeBrickLock =
+      'alertMustBeAdminToChangeBrickLock';
   static const alertMustBeAdminToCreateForm = 'alertMustBeAdminToCreateForm';
   static const alertMustBeAdminToCreateList = 'alertMustBeAdminToCreateList';
   static const alertNegativeNumber = 'alertNegativeNumber';
@@ -506,6 +508,8 @@ abstract class LocaleKeys {
   static const amountStepsSettingValidator = 'amountStepsSettingValidator';
   static const anErrorOccurred = 'anErrorOccurred';
   static const analysisFirstRows = 'analysisFirstRows';
+  static const analysisFirstRowsProceedQuestion =
+      'analysisFirstRowsProceedQuestion';
   static const analysisFirstRowsWithLockedRecords =
       'analysisFirstRowsWithLockedRecords';
   static const analyzingFirstRows = 'analyzingFirstRows';
@@ -800,6 +804,8 @@ abstract class LocaleKeys {
   static const checkCorruptFilesTokenCorrupt = 'checkCorruptFilesTokenCorrupt';
   static const checkDuplicateTransferFailed = 'checkDuplicateTransferFailed';
   static const checkFailedCyclicTransfers = 'checkFailedCyclicTransfers';
+  static const checkFailedEmptyBrickReference =
+      'checkFailedEmptyBrickReference';
   static const checkFailedFormula = 'checkFailedFormula';
   static const checkFailedFormulaWorkflow = 'checkFailedFormulaWorkflow';
   static const checkFailedInvalidFlowStepTechName =
@@ -853,6 +859,8 @@ abstract class LocaleKeys {
   static const checkout = 'checkout';
   static const checkoutStepDescription = 'checkoutStepDescription';
   static const checksPassedCyclicTransfers = 'checksPassedCyclicTransfers';
+  static const checksPassedEmptyBrickReference =
+      'checksPassedEmptyBrickReference';
   static const checksPassedFormula = 'checksPassedFormula';
   static const checksPassedFormulaWorkflow = 'checksPassedFormulaWorkflow';
   static const checksPassedInvalidFlowVariableName =
@@ -916,6 +924,7 @@ abstract class LocaleKeys {
   static const colorPicker = 'colorPicker';
   static const colorPickerBrickDescription = 'colorPickerBrickDescription';
   static const colors = 'colors';
+  static const column = 'column';
   static const columnCapacityBrick = 'columnCapacityBrick';
   static const columnPlural = 'columnPlural';
   static const columnSumOver = 'columnSumOver';
@@ -927,8 +936,22 @@ abstract class LocaleKeys {
   static const combineDateAndTimeDescription = 'combineDateAndTimeDescription';
   static const comma = 'comma';
   static const comment = 'comment';
+  static const commentAuthorHint = 'commentAuthorHint';
+  static const commentAuthorLabel = 'commentAuthorLabel';
   static const commentCannotBeEdited = 'commentCannotBeEdited';
+  static const commentCreatedAtHint = 'commentCreatedAtHint';
+  static const commentCreatedAtLabel = 'commentCreatedAtLabel';
+  static const commentCreatedFromLabel = 'commentCreatedFromLabel';
+  static const commentCreatedToLabel = 'commentCreatedToLabel';
+  static const commentFilterAuthorLabel = 'commentFilterAuthorLabel';
   static const commentIsTooOld = 'commentIsTooOld';
+  static const commentLoopVariableDescription =
+      'commentLoopVariableDescription';
+  static const commentMentionDeletedUser = 'commentMentionDeletedUser';
+  static const commentNotifyMentioned = 'commentNotifyMentioned';
+  static const commentNotifyMentionedHint = 'commentNotifyMentionedHint';
+  static const commentTextHint = 'commentTextHint';
+  static const commentTextLabel = 'commentTextLabel';
   static const comments = 'comments';
   static const commentsBrickDescription = 'commentsBrickDescription';
   static const company = 'company';
@@ -1034,6 +1057,8 @@ abstract class LocaleKeys {
   static const createAccount = 'createAccount';
   static const createApiKey = 'createApiKey';
   static const createBillingAccount = 'createBillingAccount';
+  static const createCommentStep = 'createCommentStep';
+  static const createCommentStepDescription = 'createCommentStepDescription';
   static const createCustomer = 'createCustomer';
   static const createDraftWSFailed = 'createDraftWSFailed';
   static const createForUser = 'createForUser';
@@ -1135,6 +1160,7 @@ abstract class LocaleKeys {
   static const deactivateOption = 'deactivateOption';
   static const deactivateStatus = 'deactivateStatus';
   static const deactivated = 'deactivated';
+  static const debug = 'debug';
   static const decimalCountSettingValidator = 'decimalCountSettingValidator';
   static const decimalDegreeWithAbbreviation = 'decimalDegreeWithAbbreviation';
   static const decimalRoundDescription = 'decimalRoundDescription';
@@ -1279,6 +1305,8 @@ abstract class LocaleKeys {
   static const dragToReschedule = 'dragToReschedule';
   static const drawing = 'drawing';
   static const drawingAnnotations = 'drawingAnnotations';
+  static const drawingAnnotationsDeleteFileConfirm =
+      'drawingAnnotationsDeleteFileConfirm';
   static const drawingAnnotationsDeletePlan = 'drawingAnnotationsDeletePlan';
   static const drawingAnnotationsDeletePlanConfirm =
       'drawingAnnotationsDeletePlanConfirm';
@@ -1289,6 +1317,7 @@ abstract class LocaleKeys {
       'drawingAnnotationsEnterFullscreen';
   static const drawingAnnotationsExitFullscreen =
       'drawingAnnotationsExitFullscreen';
+  static const drawingAnnotationsFileBrick = 'drawingAnnotationsFileBrick';
   static const drawingAnnotationsHotspots = 'drawingAnnotationsHotspots';
   static const drawingAnnotationsNoPlanSelected =
       'drawingAnnotationsNoPlanSelected';
@@ -1514,6 +1543,8 @@ abstract class LocaleKeys {
       'exceptionBrickDoesNotHaveFileWithThisName';
   static const exceptionBrickDoesNotHaveFiles =
       'exceptionBrickDoesNotHaveFiles';
+  static const exceptionBrickIsNotACommentsBrick =
+      'exceptionBrickIsNotACommentsBrick';
   static const exceptionBrickIsReadOnlyBySystem =
       'exceptionBrickIsReadOnlyBySystem';
   static const exceptionBrickNotFound = 'exceptionBrickNotFound';
@@ -1606,6 +1637,8 @@ abstract class LocaleKeys {
   static const exceptionClientOnly = 'exceptionClientOnly';
   static const exceptionColorValueCannotHaveBothWorkspaceAndCustomColor =
       'exceptionColorValueCannotHaveBothWorkspaceAndCustomColor';
+  static const exceptionCommentBodyEmpty = 'exceptionCommentBodyEmpty';
+  static const exceptionCommentMentionEmpty = 'exceptionCommentMentionEmpty';
   static const exceptionCorruptFile = 'exceptionCorruptFile';
   static const exceptionCorruptedTemplateFile =
       'exceptionCorruptedTemplateFile';
@@ -1613,6 +1646,9 @@ abstract class LocaleKeys {
   static const exceptionDateRangeCannotBeLongerThanMaxDays =
       'exceptionDateRangeCannotBeLongerThanMaxDays';
   static const exceptionDivisionByZero = 'exceptionDivisionByZero';
+  static const exceptionDuplicateFileContent = 'exceptionDuplicateFileContent';
+  static const exceptionDuplicateImageContent =
+      'exceptionDuplicateImageContent';
   static const exceptionEmailCouldNotBeSent = 'exceptionEmailCouldNotBeSent';
   static const exceptionEmailNotValid = 'exceptionEmailNotValid';
   static const exceptionEmailOnFlowError = 'exceptionEmailOnFlowError';
@@ -1650,6 +1686,7 @@ abstract class LocaleKeys {
       'exceptionFileContentMustBeBinary';
   static const exceptionFileContentMustBeYustFile =
       'exceptionFileContentMustBeYustFile';
+  static const exceptionFileExceedsMaxSize = 'exceptionFileExceedsMaxSize';
   static const exceptionFileLimitReached = 'exceptionFileLimitReached';
   static const exceptionFileNameMultipleUsage =
       'exceptionFileNameMultipleUsage';
@@ -1871,6 +1908,7 @@ abstract class LocaleKeys {
   static const exceptionRoleNotFoundByName = 'exceptionRoleNotFoundByName';
   static const exceptionSettingValueNotPossible =
       'exceptionSettingValueNotPossible';
+  static const exceptionSettingWrongType = 'exceptionSettingWrongType';
   static const exceptionSettingsTileAlreadyExists =
       'exceptionSettingsTileAlreadyExists';
   static const exceptionSmtpAuthenticationFailed =
@@ -2006,7 +2044,9 @@ abstract class LocaleKeys {
   static const fileFormatNotSupported = 'fileFormatNotSupported';
   static const fileFormatYustFileExplanation = 'fileFormatYustFileExplanation';
   static const fileHandling = 'fileHandling';
+  static const fileHasNoName = 'fileHasNoName';
   static const fileHashesDescription = 'fileHashesDescription';
+  static const fileHideList = 'fileHideList';
   static const fileLimitWillExceed = 'fileLimitWillExceed';
   static const fileLink = 'fileLink';
   static const fileLinkBrickDescription = 'fileLinkBrickDescription';
@@ -2014,7 +2054,10 @@ abstract class LocaleKeys {
   static const fileNameExpressionExample = 'fileNameExpressionExample';
   static const fileNameWithoutType = 'fileNameWithoutType';
   static const fileNamesDescription = 'fileNamesDescription';
+  static const fileNoneSelected = 'fileNoneSelected';
   static const filePickerBrickDescription = 'filePickerBrickDescription';
+  static const fileRotateHint = 'fileRotateHint';
+  static const fileShowList = 'fileShowList';
   static const fileTapMode = 'fileTapMode';
   static const fileTapModeDefaultApp = 'fileTapModeDefaultApp';
   static const fileTapModePreview = 'fileTapModePreview';
@@ -2236,7 +2279,9 @@ abstract class LocaleKeys {
   static const flowLogChatGptRespondedToPrompt =
       'flowLogChatGptRespondedToPrompt';
   static const flowLogCloseLastPage = 'flowLogCloseLastPage';
+  static const flowLogCommentsFoundPlural = 'flowLogCommentsFoundPlural';
   static const flowLogCreateNewRecord = 'flowLogCreateNewRecord';
+  static const flowLogCreatedComment = 'flowLogCreatedComment';
   static const flowLogCreatedInvitationLink = 'flowLogCreatedInvitationLink';
   static const flowLogCreatedRecord = 'flowLogCreatedRecord';
   static const flowLogCreatedUser = 'flowLogCreatedUser';
@@ -2247,6 +2292,7 @@ abstract class LocaleKeys {
   static const flowLogDuplicatedRecord = 'flowLogDuplicatedRecord';
   static const flowLogErrorBatchMarkingEmailsRead =
       'flowLogErrorBatchMarkingEmailsRead';
+  static const flowLogErrorForComment = 'flowLogErrorForComment';
   static const flowLogErrorForItem = 'flowLogErrorForItem';
   static const flowLogErrorForRecord = 'flowLogErrorForRecord';
   static const flowLogErrorMarkingSomeEmailsRead =
@@ -2517,10 +2563,15 @@ abstract class LocaleKeys {
   static const immediateMailing = 'immediateMailing';
   static const import = 'import';
   static const importErrorForUser = 'importErrorForUser';
+  static const importErrorInvalidSelectionUsedDefault =
+      'importErrorInvalidSelectionUsedDefault';
+  static const importErrorTruncatedNotice = 'importErrorTruncatedNotice';
+  static const importErrorsDownloadReport = 'importErrorsDownloadReport';
   static const importFinished = 'importFinished';
   static const importFinishedAdditionalInfoPlural =
       'importFinishedAdditionalInfoPlural';
   static const importFromExcel = 'importFromExcel';
+  static const importPreview = 'importPreview';
   static const importTable = 'importTable';
   static const importTableStepDescription = 'importTableStepDescription';
   static const importTableStepVariableExplanation =
@@ -2640,8 +2691,10 @@ abstract class LocaleKeys {
   static const invoiceInfo1 = 'invoiceInfo1';
   static const invoiceInfo2 = 'invoiceInfo2';
   static const invoiceReference = 'invoiceReference';
+  static const invoiceReferenceInfo = 'invoiceReferenceInfo';
   static const invoiceReferenceInputHelperText =
       'invoiceReferenceInputHelperText';
+  static const invoiceReferenceSaving = 'invoiceReferenceSaving';
   static const invoiceScreenTitle = 'invoiceScreenTitle';
   static const invoiceTaxConfirmationMessage = 'invoiceTaxConfirmationMessage';
   static const invoiceTaxConfirmationTitle = 'invoiceTaxConfirmationTitle';
@@ -2652,6 +2705,9 @@ abstract class LocaleKeys {
   static const itemBrick = 'itemBrick';
   static const itemScanner = 'itemScanner';
   static const itemScannerBrickDescription = 'itemScannerBrickDescription';
+  static const iterateCommentsStep = 'iterateCommentsStep';
+  static const iterateCommentsStepDescription =
+      'iterateCommentsStepDescription';
   static const iterateList = 'iterateList';
   static const iterateListStepDescription = 'iterateListStepDescription';
   static const iterateListStepExplanation = 'iterateListStepExplanation';
@@ -2785,6 +2841,7 @@ abstract class LocaleKeys {
   static const listSharedByWorkspace = 'listSharedByWorkspace';
   static const listSymmetricDifferenceDescription =
       'listSymmetricDifferenceDescription';
+  static const listTechName = 'listTechName';
   static const listTitle = 'listTitle';
   static const listToTextDescription = 'listToTextDescription';
   static const listUnionDescription = 'listUnionDescription';
@@ -3257,6 +3314,32 @@ abstract class LocaleKeys {
       'pdfMergeCreditUsageExplanation';
   static const pdfMergeExplanation = 'pdfMergeExplanation';
   static const pdfSettingExplanation = 'pdfSettingExplanation';
+  static const pdfTextSelection = 'pdfTextSelection';
+  static const pdfTextSelectionCharEndBrick = 'pdfTextSelectionCharEndBrick';
+  static const pdfTextSelectionCharStartBrick =
+      'pdfTextSelectionCharStartBrick';
+  static const pdfTextSelectionDeleteFileConfirm =
+      'pdfTextSelectionDeleteFileConfirm';
+  static const pdfTextSelectionDescription = 'pdfTextSelectionDescription';
+  static const pdfTextSelectionFileBrick = 'pdfTextSelectionFileBrick';
+  static const pdfTextSelectionLoadError = 'pdfTextSelectionLoadError';
+  static const pdfTextSelectionNoOutline = 'pdfTextSelectionNoOutline';
+  static const pdfTextSelectionNoSelections = 'pdfTextSelectionNoSelections';
+  static const pdfTextSelectionOutlineTitle = 'pdfTextSelectionOutlineTitle';
+  static const pdfTextSelectionOutlineTooltip =
+      'pdfTextSelectionOutlineTooltip';
+  static const pdfTextSelectionPageBrick = 'pdfTextSelectionPageBrick';
+  static const pdfTextSelectionRotateHint = 'pdfTextSelectionRotateHint';
+  static const pdfTextSelectionSearchHint = 'pdfTextSelectionSearchHint';
+  static const pdfTextSelectionSelectHint = 'pdfTextSelectionSelectHint';
+  static const pdfTextSelectionSelections = 'pdfTextSelectionSelections';
+  static const pdfTextSelectionSelectionsTooltip =
+      'pdfTextSelectionSelectionsTooltip';
+  static const pdfTextSelectionSinglePageOnly =
+      'pdfTextSelectionSinglePageOnly';
+  static const pdfTextSelectionStylingBrick = 'pdfTextSelectionStylingBrick';
+  static const pdfTextSelectionTextBrick = 'pdfTextSelectionTextBrick';
+  static const pdfTextSelectionTooLong = 'pdfTextSelectionTooLong';
   static const pending = 'pending';
   static const per = 'per';
   static const permissionsLists = 'permissionsLists';
@@ -3269,6 +3352,10 @@ abstract class LocaleKeys {
   static const plain = 'plain';
   static const planner = 'planner';
   static const plannerDescription = 'plannerDescription';
+  static const plannerModeDayDescription = 'plannerModeDayDescription';
+  static const plannerModeMonthDescription = 'plannerModeMonthDescription';
+  static const plannerModeWeekDescription = 'plannerModeWeekDescription';
+  static const plannerModeYearDescription = 'plannerModeYearDescription';
   static const plannerPreviewExplanation = 'plannerPreviewExplanation';
   static const plannerSetSettings = 'plannerSetSettings';
   static const pleaseConnect = 'pleaseConnect';
@@ -3576,6 +3663,7 @@ abstract class LocaleKeys {
   static const rolesNotExternallySynced = 'rolesNotExternallySynced';
   static const roundDescription = 'roundDescription';
   static const routingError = 'routingError';
+  static const row = 'row';
   static const rowCapacityBrick = 'rowCapacityBrick';
   static const rowPlural = 'rowPlural';
   static const rowSumOver = 'rowSumOver';
@@ -3676,6 +3764,7 @@ abstract class LocaleKeys {
   static const selectApprovalBrick = 'selectApprovalBrick';
   static const selectBrick = 'selectBrick';
   static const selectColor = 'selectColor';
+  static const selectCommentsBrick = 'selectCommentsBrick';
   static const selectDuration = 'selectDuration';
   static const selectFavorites = 'selectFavorites';
   static const selectFlowType = 'selectFlowType';
@@ -3991,6 +4080,8 @@ abstract class LocaleKeys {
   static const statusSettings = 'statusSettings';
   static const stepCreditUsageFree = 'stepCreditUsageFree';
   static const stepCreditUsageGetEmails = 'stepCreditUsageGetEmails';
+  static const stepCreditUsageIterateComments =
+      'stepCreditUsageIterateComments';
   static const stepCreditUsageIterateRecords = 'stepCreditUsageIterateRecords';
   static const stepCreditUsageReplyToEmail = 'stepCreditUsageReplyToEmail';
   static const stepCreditUsageRuleWorkflow = 'stepCreditUsageRuleWorkflow';
@@ -4342,6 +4433,7 @@ abstract class LocaleKeys {
   static const updateBillingCycleFailed = 'updateBillingCycleFailed';
   static const updateTileIndicators = 'updateTileIndicators';
   static const updatingBillingInfo = 'updatingBillingInfo';
+  static const upload = 'upload';
   static const uploadFileToCloudStorage = 'uploadFileToCloudStorage';
   static const uploadFileToCloudStorageConflictBehaviorFail =
       'uploadFileToCloudStorageConflictBehaviorFail';
@@ -4367,6 +4459,7 @@ abstract class LocaleKeys {
   static const useStaticIpExplanation = 'useStaticIpExplanation';
   static const useStaticIpForcedByIntegration =
       'useStaticIpForcedByIntegration';
+  static const useStaticIpProxyExplanation = 'useStaticIpProxyExplanation';
   static const useUnivelopOpenAiIntegration = 'useUnivelopOpenAiIntegration';
   static const used = 'used';
   static const usefulInformation = 'usefulInformation';
@@ -4490,6 +4583,7 @@ abstract class LocaleKeys {
   static const webHookButtonBrickDescription = 'webHookButtonBrickDescription';
   static const webLink = 'webLink';
   static const webRequest = 'webRequest';
+  static const webRequestSettings = 'webRequestSettings';
   static const webRequestStepBodyVariableExplanation =
       'webRequestStepBodyVariableExplanation';
   static const webRequestStepDescription = 'webRequestStepDescription';
