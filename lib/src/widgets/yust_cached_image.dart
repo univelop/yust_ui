@@ -165,10 +165,14 @@ class YustCachedImage extends StatelessWidget {
   }
 
   /// Reads the image from its on-device copy when there is one.
+  ///
+  /// The path is set only from [YustOfflineStorage], so it is null on a device
+  /// that keeps nothing — which is what stops a [File] being built there.
   void _useDeviceCopyIfPresent() {
     final devicePath = file.devicePath;
-    if (kIsWeb || file.file != null || file.bytes != null) return;
-    if (devicePath == null || !File(devicePath).existsSync()) return;
+    if (devicePath == null) return;
+    if (file.file != null || file.bytes != null) return;
+    if (!File(devicePath).existsSync()) return;
     file.file = File(devicePath);
   }
 }

@@ -118,6 +118,10 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// [YustFileOfflineKey.offlineKey]. A pending add or replace contributes its
   /// local bytes; a pending delete drops its entry. A rename or metadata update
   /// is already on the online instance, so neither needs an entry.
+  ///
+  /// A pending detach drops nothing, unlike a delete: it names the entry a
+  /// replace superseded, which shares its key with the replacing file that is
+  /// queued ahead of it.
   List<T> _currentFilesIncludingPendingChanges() {
     final fileByOfflineKey = <String, T>{
       for (final file in _online) file.offlineKey: file,
@@ -128,6 +132,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
           fileByOfflineKey[operation.fileKey] = operation.file as T;
         case YustFileOperationType.delete:
           fileByOfflineKey.remove(operation.fileKey);
+        case YustFileOperationType.detach:
         case YustFileOperationType.rename:
         case YustFileOperationType.updateMetadata:
         case YustFileOperationType.download:
@@ -193,11 +198,34 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
 
   /// Replaces [file]'s bytes (e.g. a re-drawn signature/image) and re-uploads.
   /// Clearing the hash makes [add] recompute it for the new content.
-  Future<void> replaceBytes(T file, Uint8List bytes) {
+  ///
+  /// A document entry is keyed by content, so new bytes mean a new key: the
+  /// upload writes the new entry and a [YustFileOperationType.detach] queued
+  /// behind it drops the superseded one, leaving every byte in place. In that
+  /// order, so no snapshot can show the file missing — both operations carry the
+  /// file's [YustFileOfflineKey.offlineKey], which the queue applies in order.
+  ///
+  /// The superseded entry is snapshotted before the bytes change, since it is
+  /// the old content's key that has to go.
+  Future<void> replaceBytes(T file, Uint8List bytes) async {
+    firebaseLocation.apply(file);
+    final supersededFile = file.copyWithUrl(null);
+    final hadPendingUpload = _pendingUploadFor(file) != null;
     file
       ..bytes = bytes
       ..hash = '';
-    return add(file);
+    await add(file);
+    // Nothing to detach: an upload still queued has written no entry — it is
+    // the one now carrying the new bytes — and a file that never had a hash was
+    // never keyed by content either.
+    if (hadPendingUpload || supersededFile.hash.isEmpty) return;
+    await handler.enqueue(
+      YustFileOperation<YustFile>(
+        type: YustFileOperationType.detach,
+        file: supersededFile,
+      ),
+    );
+    await _scheduleRefresh();
   }
 
   /// Deletes [file]: a file still queued for upload is dropped from the queue

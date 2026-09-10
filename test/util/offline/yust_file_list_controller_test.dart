@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:test/test.dart';
@@ -419,6 +420,64 @@ void main() {
       // current when it returns — not only once the operation is applied.
       expect(emitted.last, ['new.pdf']);
     });
+  });
+
+  group('replaceBytes', () {
+    /// The bytes a re-drawn file is saved with, and the content hash the queue
+    /// keys them by.
+    final redrawnBytes = Uint8List.fromList('redrawn'.codeUnits);
+    final redrawnHash = md5.convert(redrawnBytes).toString();
+
+    test('queues the upload of the new content, then a detach of the old '
+        'entry', () async {
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
+
+      await controller.replaceBytes(controller.files.single, redrawnBytes);
+
+      final pending = await queue.getPendingOperations();
+      expect(
+        pending.map((operation) => operation.type),
+        [YustFileOperationType.upload, YustFileOperationType.detach],
+      );
+      expect(pending.first.file.hash, redrawnHash);
+      // The superseded key, which is the whole point of the detach: the entry
+      // is keyed by content, so the new bytes cannot overwrite it.
+      expect(pending.last.file.hash, 'h-a');
+    });
+
+    test('shows the new content only, while both operations are '
+        'pending', () async {
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
+
+      await controller.replaceBytes(controller.files.single, redrawnBytes);
+
+      // A detach must not read as a delete: it shares the replacing file's key.
+      expect(controller.files.single.hash, redrawnHash);
+    });
+
+    test(
+      'detaches nothing when the replaced upload was still queued',
+      () async {
+        executor.succeed = false;
+        final controller = buildController();
+        await controller.setOnlineFiles([]);
+        await controller.add(_pickedFile('drawing.png', 'first-draw'));
+
+        await controller.replaceBytes(controller.files.single, redrawnBytes);
+
+        // That upload never wrote an entry, and it is the one now carrying the
+        // new bytes.
+        final pending = await queue.getPendingOperations();
+        expect(pending.map((operation) => operation.type), [
+          YustFileOperationType.upload,
+        ]);
+        expect(pending.single.file.hash, redrawnHash);
+      },
+    );
   });
 
   group('a snapshot that predates the upload does not drop the file', () {

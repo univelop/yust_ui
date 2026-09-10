@@ -29,6 +29,16 @@ YustFileOperation<YustFile> _deleteOp() => YustFileOperation<YustFile>(
   ),
 );
 
+YustFileOperation<YustFile> _detachOp() => YustFileOperation<YustFile>(
+  type: YustFileOperationType.detach,
+  file: YustFile(
+    name: 'drawing.png',
+    hash: 'h1',
+    storageFolderPath: 'records/rec1',
+    setCreatedAtToNow: false,
+  ),
+);
+
 YustFileOperation<YustFile> _renameOp() => YustFileOperation<YustFile>(
   type: YustFileOperationType.rename,
   file: YustFile(
@@ -206,6 +216,20 @@ void main() {
         expect(manager.execute(_metadataOp()), completes);
       },
     );
+  });
+
+  test('a detach drops the entry and leaves the Storage object', () async {
+    // The object under this name holds the replacing file's bytes now, so
+    // deleting it — as a delete would — would lose the file just uploaded.
+    final writer = _RenameRecordingWriter();
+    final fileService = _FakeFileService()..objectNames.add('drawing.png');
+    Yust.fileService = fileService;
+    final manager = YustFileOperationManager(documentWriterFor: (_) => writer);
+
+    await manager.execute(_detachOp());
+
+    expect(writer.removals, ['drawing.png']);
+    expect(fileService.objectNames, contains('drawing.png'));
   });
 
   test('a delete waits for the record entry to be detached', () async {

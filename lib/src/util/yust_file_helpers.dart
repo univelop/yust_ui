@@ -23,8 +23,7 @@ class YustFileHelpers {
 
   final YustOfflineStorage? _offlineStorage;
 
-  /// Under Firefox only one BroadcastStream can be used for the
-  /// connectivity result. Therefore, use this stream instance
+  /// The one connectivity stream every file component listens to.
   static final connectivityStream = Connectivity().onConnectivityChanged
       .asBroadcastStream();
 
@@ -246,13 +245,14 @@ class YustFileHelpers {
   }
 
   /// Whether [file] cannot be opened from anywhere.
+  ///
+  /// A [YustFile.devicePath] is only ever set from [YustOfflineStorage], which a
+  /// device without durable storage does not have, so it is already null there.
   static bool isFileBroken(YustFile file) {
     final name = file.name;
     if (name == null || name.isEmpty) return true;
     if (file.isValid()) return false;
-    return file.bytes == null &&
-        file.file == null &&
-        (kIsWeb || file.devicePath == null);
+    return file.bytes == null && file.file == null && file.devicePath == null;
   }
 
   bool isValidFileName(String filename) {

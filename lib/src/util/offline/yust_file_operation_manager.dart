@@ -22,10 +22,10 @@ abstract interface class YustOfflineFileDocumentWriter {
 }
 
 /// Carries out every kind of file operation: the outbound work (upload, rename,
-/// delete, metadata update) that pushes to Storage and writes metadata back
-/// through a [YustOfflineFileDocumentWriter], and the inbound work (download)
-/// that fetches bytes into [YustOfflineStorage]. Queueing, retries and
-/// connectivity are the [YustFileOperationHandler]'s job.
+/// delete, detach, metadata update) that pushes to Storage and writes metadata
+/// back through a [YustOfflineFileDocumentWriter], and the inbound work
+/// (download) that fetches bytes into [YustOfflineStorage]. Queueing, retries
+/// and connectivity are the [YustFileOperationHandler]'s job.
 ///
 /// The document writer is resolved per operation via [documentWriterFor] from
 /// the file's own `linkedDocPath` / `linkedDocAttribute`. It may return null: a
@@ -57,6 +57,7 @@ class YustFileOperationManager {
         YustFileOperationType.upload => _upload(operation),
         YustFileOperationType.rename => _rename(operation),
         YustFileOperationType.delete => _delete(operation),
+        YustFileOperationType.detach => _detach(operation),
         YustFileOperationType.updateMetadata => _updateMetadata(operation),
         YustFileOperationType.download => _download(operation),
       };
@@ -85,11 +86,11 @@ class YustFileOperationManager {
     await _awaitDocumentWrite(documentWriter?.writeFile(file));
   }
 
-  /// Detaches the file's document entry, then deletes its Storage object.
+  /// Removes the file's document entry, then deletes its Storage object.
   ///
-  /// The detach is awaited: until it lands the document points at bytes this
-  /// operation is about to delete, and a failed detach retries the whole
-  /// operation rather than being lost. Re-detaching is a no-op.
+  /// The document write is awaited: until it lands the document points at bytes
+  /// this operation is about to delete, and a failed write retries the whole
+  /// operation rather than being lost. Removing an absent entry is a no-op.
   ///
   /// The on-device bytes stay: they are keyed by content hash, so freeing them
   /// here would take the offline copy from every other record holding the same
@@ -102,6 +103,18 @@ class YustFileOperationManager {
       name: file.name,
     );
   }
+
+  /// Drops the file's document entry and leaves every byte in place — [_delete]
+  /// without the Storage delete.
+  ///
+  /// For an entry that was superseded rather than a file that is gone: the
+  /// Storage object under this name now holds the replacing file's bytes, and
+  /// the device copy is keyed by content and shared with every other entry
+  /// holding it. Re-detaching is a no-op.
+  Future<void> _detach(YustFileOperation<YustFile> operation) =>
+      _awaitDocumentWrite(
+        _documentWriterFor(operation)?.removeFile(operation.file),
+      );
 
   /// Re-writes the file's document entry with no byte transfer, e.g. after its
   /// favorite flag changed. Queued behind any upload of the same file, so it

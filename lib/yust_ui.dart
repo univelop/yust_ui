@@ -14,7 +14,6 @@ export 'src/util/offline/yust_file_operation_error.dart';
 export 'src/util/offline/yust_file_operation_handler.dart';
 export 'src/util/offline/yust_file_operation_manager.dart';
 export 'src/util/offline/yust_file_presenter.dart';
-export 'src/util/offline/yust_legacy_cache_migration.dart';
 export 'src/util/offline/yust_firebase_file_location.dart';
 export 'src/util/offline/yust_offline_storage.dart';
 export 'src/util/offline/yust_sync_queue.dart';

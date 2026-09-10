@@ -38,7 +38,7 @@ extension YustFileOfflineKey on YustFile {
   }
 }
 
-/// What a [YustFileOperation] does. The first four are outbound (local change →
+/// What a [YustFileOperation] does. The first five are outbound (local change →
 /// server); [download] is inbound (server → local cache). The
 /// YustFileOperationManager carries out all of them, and all flow through the
 /// one queue.
@@ -47,7 +47,20 @@ extension YustFileOfflineKey on YustFile {
 /// linked document (e.g. after its favorite flag changed). It exists so that a
 /// metadata-only change is queued and field-masked like every other change,
 /// instead of the picker saving its whole file list back over the document.
-enum YustFileOperationType { upload, rename, delete, updateMetadata, download }
+///
+/// [detach] drops a file's entry from the linked document and touches no bytes:
+/// the Storage object stays, because the replace that superseded the entry has
+/// already overwritten it under the same name, and the device copy stays
+/// because it is keyed by content and shared. It is what a re-keyed entry
+/// leaves behind — see `YustFileListController.replaceBytes`.
+enum YustFileOperationType {
+  upload,
+  rename,
+  delete,
+  detach,
+  updateMetadata,
+  download,
+}
 
 /// A single file change queued for sync — the queue's entry type.
 ///
