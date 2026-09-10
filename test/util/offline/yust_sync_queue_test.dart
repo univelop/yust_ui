@@ -245,9 +245,9 @@ void main() {
     });
 
     test('reads an unknown failure back as none', () async {
-      final storedWithUnknownFailure =
-          _operation(YustFileOperationType.upload).toJson()
-            ..['failure'] = 'sunspots';
+      final storedWithUnknownFailure = _operation(
+        YustFileOperationType.upload,
+      ).toJson()..['failure'] = 'sunspots';
       await SharedPreferencesAsync().setString(
         'yustSyncQueue',
         jsonEncode([storedWithUnknownFailure]),

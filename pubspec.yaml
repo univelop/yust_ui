@@ -64,12 +64,8 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
-    # LOCAL DEV ONLY (#7710) — points at the sibling yust checkout so the
-    # offline file representation can be developed and tested across both
-    # repos. Restore the git ref below before pushing:
-    #     yust:
-    #         git:
-    #             url: https://github.com/univelop/yust.git
-    #             ref: 7710-offline-file-handler
+    # #7710: offline file representation. Restore to master once merged.
     yust:
-        path: ../yust
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 7710-offline-file-handler

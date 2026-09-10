@@ -371,7 +371,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         ? _buildDrawButton(context, image)
         : null;
     final buttons = <Widget>[
-      if (drawButton != null) drawButton,
+      ?drawButton,
       if (widget.onDelete != null) _buildDeleteButton(context, image),
       if (widget.onToggleFavorite != null) _buildFavoriteButton(context, image),
       if (widget.allowShare) _buildShareButton(context, image),

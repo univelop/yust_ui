@@ -99,13 +99,9 @@ abstract final class YustFileOperationError {
 extension YustFileOperationFailureText on YustFileOperation<YustFile> {
   String get failureMessage =>
       '${LocaleKeys.alertFileUploadFailed.tr()} ${switch (failure) {
-        YustFileOperationFailureReason.noPermission =>
-          LocaleKeys.alertFileSyncFailedNoPermission.tr(),
-        YustFileOperationFailureReason.fileMissing =>
-          LocaleKeys.alertFileSyncFailedFileMissing.tr(),
-        YustFileOperationFailureReason.fileInvalid =>
-          LocaleKeys.alertFileSyncFailedFileInvalid.tr(),
-        YustFileOperationFailureReason.unknown ||
-        null => LocaleKeys.alertFileSyncFailedUnknown.tr(),
+        YustFileOperationFailureReason.noPermission => LocaleKeys.alertFileSyncFailedNoPermission.tr(),
+        YustFileOperationFailureReason.fileMissing => LocaleKeys.alertFileSyncFailedFileMissing.tr(),
+        YustFileOperationFailureReason.fileInvalid => LocaleKeys.alertFileSyncFailedFileInvalid.tr(),
+        YustFileOperationFailureReason.unknown || null => LocaleKeys.alertFileSyncFailedUnknown.tr(),
       }}';
 }
