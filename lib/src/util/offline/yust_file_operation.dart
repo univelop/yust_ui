@@ -38,7 +38,7 @@ extension YustFileOfflineKey on YustFile {
   }
 }
 
-/// What a [YustFileOperation] does. The first five are outbound (local change →
+/// What a [YustFileOperation] does. The first four are outbound (local change →
 /// server); [download] is inbound (server → local cache). The
 /// YustFileOperationManager carries out all of them, and all flow through the
 /// one queue.
@@ -48,16 +48,11 @@ extension YustFileOfflineKey on YustFile {
 /// metadata-only change is queued and field-masked like every other change,
 /// instead of the picker saving its whole file list back over the document.
 ///
-/// [detach] drops a file's entry from the linked document and touches no bytes:
-/// the Storage object stays, because the replace that superseded the entry has
-/// already overwritten it under the same name, and the device copy stays
-/// because it is keyed by content and shared. It is what a re-keyed entry
-/// leaves behind — see `YustFileListController.replaceBytes`.
+/// [upload] also drops the entry its bytes supersede — see [supersededHash].
 enum YustFileOperationType {
   upload,
   rename,
   delete,
-  detach,
   updateMetadata,
   download,
 }
@@ -72,6 +67,7 @@ class YustFileOperation<T extends YustFile> {
     required this.type,
     required this.file,
     this.newName,
+    this.supersededHash,
     this.failure,
     String? id,
     String? fileKey,
@@ -93,6 +89,15 @@ class YustFileOperation<T extends YustFile> {
 
   /// The new name for a [YustFileOperationType.rename]; null otherwise.
   final String? newName;
+
+  /// The content hash of the entry this upload supersedes, or null when it
+  /// supersedes none.
+  ///
+  /// A document entry is keyed by content, so re-drawn bytes land under a new
+  /// key and leave the old entry behind. Carrying the old key on the upload
+  /// lets the same operation write the new entry and drop the old one, so no
+  /// snapshot ever shows the file twice — see `YustFileListController.replaceBytes`.
+  final String? supersededHash;
 
   /// The [YustFileOfflineKey.offlineKey] of [file], frozen at enqueue time so a
   /// rename cannot move the operation's bytes out from under it.
@@ -132,6 +137,7 @@ class YustFileOperation<T extends YustFile> {
     'id': id,
     'type': type.name,
     'newName': newName,
+    'supersededHash': supersededHash,
     'fileKey': fileKey,
     'failure': failure?.name,
     'createdAt': createdAt.toIso8601String(),
@@ -151,6 +157,7 @@ class YustFileOperation<T extends YustFile> {
       type: YustFileOperationType.values.byName(json['type'] as String),
       file: file as T,
       newName: json['newName'] as String?,
+      supersededHash: json['supersededHash'] as String?,
       fileKey: json['fileKey'] as String?,
       failure: _tryParseFailure(json['failure'] as String?),
       createdAt: DateTime.parse(json['createdAt'] as String),

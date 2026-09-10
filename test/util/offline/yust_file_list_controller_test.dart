@@ -428,39 +428,51 @@ void main() {
     final redrawnBytes = Uint8List.fromList('redrawn'.codeUnits);
     final redrawnHash = md5.convert(redrawnBytes).toString();
 
-    test('queues the upload of the new content, then a detach of the old '
-        'entry', () async {
+    test('queues one upload, carrying the superseded key', () async {
       executor.succeed = false;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
 
       await controller.replaceBytes(controller.files.single, redrawnBytes);
 
+      // One operation, so the two document writes cannot be split by a
+      // snapshot showing the file under both keys.
       final pending = await queue.getPendingOperations();
-      expect(
-        pending.map((operation) => operation.type),
-        [YustFileOperationType.upload, YustFileOperationType.detach],
-      );
-      expect(pending.first.file.hash, redrawnHash);
-      // The superseded key, which is the whole point of the detach: the entry
-      // is keyed by content, so the new bytes cannot overwrite it.
-      expect(pending.last.file.hash, 'h-a');
+      expect(pending.map((operation) => operation.type), [
+        YustFileOperationType.upload,
+      ]);
+      expect(pending.single.file.hash, redrawnHash);
+      // The entry is keyed by content, so the new bytes cannot overwrite it.
+      expect(pending.single.supersededHash, 'h-a');
     });
 
-    test('shows the new content only, while both operations are '
-        'pending', () async {
+    test('shows the new content only, while the upload is pending', () async {
       executor.succeed = false;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
 
       await controller.replaceBytes(controller.files.single, redrawnBytes);
 
-      // A detach must not read as a delete: it shares the replacing file's key.
       expect(controller.files.single.hash, redrawnHash);
     });
 
+    test('supersedes nothing when the entry carries no hash', () async {
+      // A legacy entry was never keyed by content, so no key of it can be
+      // dropped — and dropping the whole attribute would lose the file.
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('drawing.png', '')]);
+
+      await controller.replaceBytes(controller.files.single, redrawnBytes);
+
+      expect(
+        (await queue.getPendingOperations()).single.supersededHash,
+        isNull,
+      );
+    });
+
     test(
-      'detaches nothing when the replaced upload was still queued',
+      'supersedes nothing when the replaced upload was still queued',
       () async {
         executor.succeed = false;
         final controller = buildController();
@@ -469,13 +481,14 @@ void main() {
 
         await controller.replaceBytes(controller.files.single, redrawnBytes);
 
-        // That upload never wrote an entry, and it is the one now carrying the
-        // new bytes.
+        // The queue holds the live file, so that upload is the one now carrying
+        // the new bytes — it wrote no entry there is anything to supersede.
         final pending = await queue.getPendingOperations();
         expect(pending.map((operation) => operation.type), [
           YustFileOperationType.upload,
         ]);
         expect(pending.single.file.hash, redrawnHash);
+        expect(pending.single.supersededHash, isNull);
       },
     );
   });

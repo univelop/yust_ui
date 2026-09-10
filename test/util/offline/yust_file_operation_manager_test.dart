@@ -29,14 +29,16 @@ YustFileOperation<YustFile> _deleteOp() => YustFileOperation<YustFile>(
   ),
 );
 
-YustFileOperation<YustFile> _detachOp() => YustFileOperation<YustFile>(
-  type: YustFileOperationType.detach,
+YustFileOperation<YustFile> _replacingUploadOp() => YustFileOperation<YustFile>(
+  type: YustFileOperationType.upload,
   file: YustFile(
     name: 'drawing.png',
-    hash: 'h1',
+    hash: 'h-redrawn',
+    bytes: Uint8List.fromList('redrawn'.codeUnits),
     storageFolderPath: 'records/rec1',
     setCreatedAtToNow: false,
   ),
+  supersededHash: 'h1',
 );
 
 YustFileOperation<YustFile> _renameOp() => YustFileOperation<YustFile>(
@@ -57,6 +59,7 @@ class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
 
   final List<String> writes = [];
   final List<String> removals = [];
+  final List<String> removedHashes = [];
   int writeFailures;
 
   @override
@@ -69,7 +72,10 @@ class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
   }
 
   @override
-  Future<void> removeFile(YustFile file) async => removals.add(file.name!);
+  Future<void> removeFile(YustFile file) async {
+    removals.add(file.name!);
+    removedHashes.add(file.hash);
+  }
 }
 
 /// The Storage objects a test cares about, as names under one folder.
@@ -112,19 +118,19 @@ class _FakeFileService implements YustFileService {
 /// Records the order of the steps a delete runs, and holds the record write
 /// open until the test releases it.
 class _RecordingWriter implements YustOfflineFileDocumentWriter {
-  _RecordingWriter(this.steps, this.detached);
+  _RecordingWriter(this.steps, this.entryRemoved);
 
   final List<String> steps;
-  final Completer<void> detached;
+  final Completer<void> entryRemoved;
 
   @override
   Future<void> writeFile(YustFile file) async => steps.add('write');
 
   @override
   Future<void> removeFile(YustFile file) async {
-    steps.add('detach started');
-    await detached.future;
-    steps.add('detach done');
+    steps.add('removal started');
+    await entryRemoved.future;
+    steps.add('removal done');
   }
 }
 
@@ -177,7 +183,7 @@ void main() {
       expect(
         writer.removals,
         isEmpty,
-        reason: 'the entry keeps its hash key, so there is nothing to detach',
+        reason: 'the entry keeps its hash key, so it replaces itself',
       );
       expect(
         fileService.objectNames,
@@ -218,33 +224,80 @@ void main() {
     );
   });
 
-  test('a detach drops the entry and leaves the Storage object', () async {
-    // The object under this name holds the replacing file's bytes now, so
-    // deleting it — as a delete would — would lose the file just uploaded.
-    final writer = _RenameRecordingWriter();
-    final fileService = _FakeFileService()..objectNames.add('drawing.png');
-    Yust.fileService = fileService;
-    final manager = YustFileOperationManager(documentWriterFor: (_) => writer);
+  group('an upload that supersedes an entry', () {
+    late Directory root;
+    late YustOfflineStorage storage;
+    late _FakeFileService fileService;
+    late _RenameRecordingWriter writer;
+    late YustFileOperationManager manager;
 
-    await manager.execute(_detachOp());
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('superseded_entry_test');
+      storage = YustOfflineStorage(directoryProvider: () async => root);
+      fileService = _FakeFileService();
+      Yust.fileService = fileService;
+      writer = _RenameRecordingWriter();
+      manager = YustFileOperationManager(
+        documentWriterFor: (_) => writer,
+        storage: storage,
+      );
+    });
 
-    expect(writer.removals, ['drawing.png']);
-    expect(fileService.objectNames, contains('drawing.png'));
+    tearDown(() {
+      if (root.existsSync()) root.deleteSync(recursive: true);
+    });
+
+    test('writes the new entry, then drops the superseded one', () async {
+      // One operation, so no snapshot falls between the two writes and shows
+      // the file under both keys — which is what a follow-up operation exposed.
+      await manager.execute(_replacingUploadOp());
+
+      expect(writer.writes, ['drawing.png']);
+      expect(writer.removedHashes, ['h1']);
+    });
+
+    test('leaves the Storage object, which now holds the new bytes', () async {
+      // The object under this name holds the replacing file's bytes now, so
+      // deleting it — as a delete would — would lose the file just uploaded.
+      await manager.execute(_replacingUploadOp());
+
+      expect(fileService.objectNames, contains('drawing.png'));
+    });
+
+    test('drops nothing when the bytes landed on the same key', () async {
+      // Re-saving unchanged bytes supersedes the entry with itself; removing
+      // it would drop the entry the upload just wrote.
+      final operation = YustFileOperation<YustFile>(
+        type: YustFileOperationType.upload,
+        file: YustFile(
+          name: 'drawing.png',
+          hash: 'h1',
+          bytes: Uint8List.fromList('unchanged'.codeUnits),
+          storageFolderPath: 'records/rec1',
+          setCreatedAtToNow: false,
+        ),
+        supersededHash: 'h1',
+      );
+
+      await manager.execute(operation);
+
+      expect(writer.removals, isEmpty);
+    });
   });
 
-  test('a delete waits for the record entry to be detached', () async {
+  test('a delete waits for the record entry to be removed', () async {
     // The array layout rewrites the whole attribute from a read of the record,
-    // so an operation running while the detach is still in flight reads the
+    // so an operation running while the removal is still in flight reads the
     // deleted file back in — and it then points at bytes that are gone.
     final steps = <String>[];
-    final detached = Completer<void>();
+    final entryRemoved = Completer<void>();
     final manager = YustFileOperationManager(
-      documentWriterFor: (_) => _RecordingWriter(steps, detached),
+      documentWriterFor: (_) => _RecordingWriter(steps, entryRemoved),
     );
 
     // No file service is configured here, so the byte delete that follows the
-    // detach fails at once — which is what makes "the operation got past the
-    // detach" observable.
+    // removal fails at once — which is what makes "the operation got past the
+    // removal" observable.
     var settled = false;
     unawaited(
       manager
@@ -254,12 +307,12 @@ void main() {
     );
 
     await _settle();
-    expect(steps, ['detach started']);
-    expect(settled, isFalse, reason: 'the delete must wait for the detach');
+    expect(steps, ['removal started']);
+    expect(settled, isFalse, reason: 'the delete must wait for the removal');
 
-    detached.complete();
+    entryRemoved.complete();
     await _settle();
-    expect(steps, ['detach started', 'detach done']);
+    expect(steps, ['removal started', 'removal done']);
     expect(settled, isTrue);
   });
 }

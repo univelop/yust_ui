@@ -22,7 +22,7 @@ abstract interface class YustOfflineFileDocumentWriter {
 }
 
 /// Carries out every kind of file operation: the outbound work (upload, rename,
-/// delete, detach, metadata update) that pushes to Storage and writes metadata
+/// delete, metadata update) that pushes to Storage and writes metadata
 /// back through a [YustOfflineFileDocumentWriter], and the inbound work
 /// (download) that fetches bytes into [YustOfflineStorage]. Queueing, retries
 /// and connectivity are the [YustFileOperationHandler]'s job.
@@ -57,7 +57,6 @@ class YustFileOperationManager {
         YustFileOperationType.upload => _upload(operation),
         YustFileOperationType.rename => _rename(operation),
         YustFileOperationType.delete => _delete(operation),
-        YustFileOperationType.detach => _detach(operation),
         YustFileOperationType.updateMetadata => _updateMetadata(operation),
         YustFileOperationType.download => _download(operation),
       };
@@ -67,6 +66,11 @@ class YustFileOperationManager {
   final Duration _documentWriteTimeout;
   final YustOfflineStorage? _storage;
 
+  /// Pushes the bytes to Storage, writes the entry, then drops the entry these
+  /// bytes supersede ([YustFileOperation.supersededHash]).
+  ///
+  /// Both document writes happen here, in this order, so the document never
+  /// holds two entries for the one file and never holds none.
   Future<void> _upload(YustFileOperation<YustFile> operation) async {
     final file = operation.file;
     final documentWriter = _documentWriterFor(operation);
@@ -84,6 +88,27 @@ class YustFileOperationManager {
     // ignore: deprecated_member_use
     file.url = url;
     await _awaitDocumentWrite(documentWriter?.writeFile(file));
+    await _removeSupersededEntry(operation, documentWriter);
+  }
+
+  /// Drops the entry [operation]'s bytes superseded, leaving every byte in
+  /// place — [_delete] without the Storage delete.
+  ///
+  /// The Storage object under this name now holds the replacing bytes, and the
+  /// device copy is keyed by content and shared with every other entry holding
+  /// it. Nothing to do when the upload superseded no entry or landed on the
+  /// same key, which would drop the entry just written. Removing an absent
+  /// entry is a no-op, so a retry is safe.
+  Future<void> _removeSupersededEntry(
+    YustFileOperation<YustFile> operation,
+    YustOfflineFileDocumentWriter? documentWriter,
+  ) async {
+    final supersededHash = operation.supersededHash;
+    final file = operation.file;
+    if (supersededHash == null || supersededHash == file.hash) return;
+    await _awaitDocumentWrite(
+      documentWriter?.removeFile(file.copyWithUrl(null)..hash = supersededHash),
+    );
   }
 
   /// Removes the file's document entry, then deletes its Storage object.
@@ -104,18 +129,6 @@ class YustFileOperationManager {
     );
   }
 
-  /// Drops the file's document entry and leaves every byte in place — [_delete]
-  /// without the Storage delete.
-  ///
-  /// For an entry that was superseded rather than a file that is gone: the
-  /// Storage object under this name now holds the replacing file's bytes, and
-  /// the device copy is keyed by content and shared with every other entry
-  /// holding it. Re-detaching is a no-op.
-  Future<void> _detach(YustFileOperation<YustFile> operation) =>
-      _awaitDocumentWrite(
-        _documentWriterFor(operation)?.removeFile(operation.file),
-      );
-
   /// Re-writes the file's document entry with no byte transfer, e.g. after its
   /// favorite flag changed. Queued behind any upload of the same file, so it
   /// lands on an entry that exists, and awaited like every other document write
@@ -128,8 +141,8 @@ class YustFileOperationManager {
   /// Re-uploads the bytes under [YustFileOperation.newName], points the
   /// document entry at it, and deletes the old Storage object.
   ///
-  /// One write, no detach: the entry is keyed by content hash, which a rename
-  /// leaves alone, so it replaces itself.
+  /// One write: the entry is keyed by content hash, which a rename leaves
+  /// alone, so it replaces itself.
   ///
   /// Works on [renamed], never on `operation.file`: the queue hands out live
   /// entries, so a mutated name would survive into the retry, which would then
@@ -148,7 +161,7 @@ class YustFileOperationManager {
           )
         : null;
     // A failed download comes back as empty bytes, not an error. Uploading them
-    // would write a 0-byte object and detach the old entry — losing the file.
+    // would write a 0-byte object over the file — losing it.
     if (localPath == null && (bytes == null || bytes.isEmpty)) {
       throw await YustFileOperationError.missingOrUnreachable(
         file.storageFolderPath!,
