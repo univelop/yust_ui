@@ -78,6 +78,10 @@ class YustCachedImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        // A re-drawn file hands over a new byte list, which is a new image
+        // provider: without this the widget blanks for the frames the new
+        // bytes take to decode.
+        gaplessPlayback: true,
       );
       // ignore: deprecated_member_use
     } else if (file.url != null) {
@@ -102,6 +106,7 @@ class YustCachedImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
+          gaplessPlayback: true,
           cacheHeight: resizeInCache == true ? 300 : null,
           cacheWidth: resizeInCache == true ? 300 : null,
           frameBuilder: (context, child, frame, sync) {
