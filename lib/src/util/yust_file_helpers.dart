@@ -47,10 +47,18 @@ class YustFileHelpers {
     return deviceFile.existsSync() ? deviceFile : null;
   }
 
-  /// A synchronous [ImageProvider] for [file]: its on-device copy when cached
-  /// (requires [YustFile.devicePath] to already be populated), else the network
-  /// URL. For async cache resolution to a [Uri], use [getSourceUri].
+  /// A synchronous [ImageProvider] for [file]: its loaded bytes, else its
+  /// on-device copy when cached (requires [YustFile.devicePath] to already be
+  /// populated), else the network URL. For async cache resolution to a [Uri],
+  /// use [getSourceUri].
+  ///
+  /// The bytes come first because they are the file's freshest content, and
+  /// the only source a replace has set by the time its caller rebuilds: the
+  /// device copy is keyed by content, so until [YustFile.devicePath] is
+  /// re-pointed the old path goes on serving the image that was replaced.
   ImageProvider imageProviderFor(YustFile file) {
+    final bytes = file.bytes;
+    if (bytes != null) return MemoryImage(bytes);
     final deviceFile = _deviceFileIfStillPresent(file);
     return deviceFile != null
         ? MemoryImage(deviceFile.readAsBytesSync())

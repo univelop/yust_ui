@@ -446,6 +446,21 @@ void main() {
       expect(pending.single.supersededHash, 'h-a');
     });
 
+    test('drops the source file, which still holds the old image', () async {
+      // The device copy is keyed by content, so the replaced image stays at
+      // the old path forever. A reader preferring the source file over the
+      // bytes — the fullscreen viewer does — would go on showing it.
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
+      final drawing = controller.files.single..file = File('${root.path}/old');
+
+      await controller.replaceBytes(drawing, redrawnBytes);
+
+      expect(drawing.file, isNull);
+      expect(drawing.bytes, redrawnBytes);
+    });
+
     test('shows the new content only, while the upload is pending', () async {
       executor.succeed = false;
       final controller = buildController();

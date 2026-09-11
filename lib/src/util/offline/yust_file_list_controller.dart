@@ -195,10 +195,15 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// A file whose upload is still queued needs no special case: the queue holds
   /// the live file, so mutating it here re-keys that very operation and the
   /// queue drops this one as a duplicate, keeping the key it already supersedes.
+  ///
+  /// [bytes] become the file's only content: the source file is dropped, since
+  /// it still holds the image that was replaced and every reader that prefers
+  /// it over the bytes would go on showing that one.
   Future<void> replaceBytes(T file, Uint8List bytes) {
     final supersededHash = file.hash;
     file
       ..bytes = bytes
+      ..file = null
       ..hash = '';
     return _enqueueUpload(
       file,
