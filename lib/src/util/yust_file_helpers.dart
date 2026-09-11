@@ -18,10 +18,15 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 
 class YustFileHelpers {
-  YustFileHelpers({YustOfflineStorage? offlineStorage})
-    : _offlineStorage = offlineStorage ?? YustOfflineStorage.forDevice();
+  YustFileHelpers({
+    YustOfflineStorage? offlineStorage,
+    Future<bool> Function()? checkIsOffline,
+  }) : _offlineStorage = offlineStorage ?? YustOfflineStorage.forDevice(),
+       _checkIsOffline = checkIsOffline ?? _deviceIsOffline;
 
   final YustOfflineStorage? _offlineStorage;
+
+  final Future<bool> Function() _checkIsOffline;
 
   /// The one connectivity stream every file component listens to.
   static final connectivityStream = Connectivity().onConnectivityChanged
@@ -65,6 +70,19 @@ class YustFileHelpers {
         : NetworkImage(file.getOriginalUrl() ?? '');
   }
 
+  /// Whether the device has no network connection right now.
+  Future<bool> isOffline() => _checkIsOffline();
+
+  static Future<bool> _deviceIsOffline() async =>
+      (await Connectivity().checkConnectivity()).every(
+        (result) => result == ConnectivityResult.none,
+      );
+
+  /// Whether [imageProviderFor] can serve [file] without a network connection:
+  /// its bytes are loaded, or its on-device copy is still there.
+  bool hasLocalImageBytes(YustFile file) =>
+      file.bytes != null || _deviceFileIfStillPresent(file) != null;
+
   /// The URL to fetch [file] from: the configured download-url hook if any,
   /// else its signed original URL. Null when the file is not addressable.
   Future<String?> resolveDownloadUrl(YustFile file) async {
@@ -78,7 +96,7 @@ class YustFileHelpers {
   /// A local [File] for [file]: the on-device copy when cached, otherwise the
   /// file downloaded to a namespaced temp path. Native only — web has no local
   /// file. Throws [YustException] when the file is neither cached nor
-  /// addressable.
+  /// addressable, and when it would have to be downloaded while offline.
   Future<File> resolveToLocalFile(YustFile file) async {
     file.storageFolderPath ??= file.path;
     // The durable copy short-circuits the byte-store lookup; an uploaded file
@@ -87,6 +105,10 @@ class YustFileHelpers {
         _deviceFileIfStillPresent(file)?.path ??
         await _offlineStorage?.pathForFile(file.byteKey);
     if (cachedPath != null) return File(cachedPath);
+
+    if (await isOffline()) {
+      throw YustException(LocaleKeys.alertFileNotAvailableOffline.tr());
+    }
 
     final url = await resolveDownloadUrl(file);
     if (url == null) throw YustException(LocaleKeys.exceptionFileNotFound.tr());

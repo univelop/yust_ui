@@ -420,6 +420,36 @@ void main() {
       // current when it returns — not only once the operation is applied.
       expect(emitted.last, ['new.pdf']);
     });
+
+    test('a delete queued behind it lands in the same chain', () async {
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('old.pdf', 'h-a')]);
+
+      await controller.rename(controller.files.single, 'new.pdf');
+      await controller.delete(controller.files.single);
+
+      // The rename puts the new name on the displayed entry, which moves its
+      // offlineKey. Sharing one key keeps the two in one FIFO, so a failing
+      // rename cannot be passed by the delete and then write the entry back.
+      final pending = await queue.getPendingOperations();
+      expect(pending.map((operation) => operation.type), [
+        YustFileOperationType.rename,
+        YustFileOperationType.delete,
+      ]);
+      expect(pending.first.fileKey, pending.last.fileKey);
+    });
+
+    test('the file a queued delete removes is hidden', () async {
+      executor.succeed = false;
+      final controller = buildController();
+      await controller.setOnlineFiles([_persistedFile('old.pdf', 'h-a')]);
+
+      await controller.rename(controller.files.single, 'new.pdf');
+      await controller.delete(controller.files.single);
+
+      expect(controller.files, isEmpty);
+    });
   });
 
   group('replaceBytes', () {

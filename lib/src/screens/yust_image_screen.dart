@@ -426,18 +426,18 @@ class _YustImageScreenState extends State<YustImageScreen> {
     }
     return _actionButton(
       icon: Icons.draw_outlined,
-      onPressed: () {
-        YustImageDrawingScreen.navigateToScreen(
+      onPressed: () => unawaited(
+        YustImageDrawingScreen.navigateToFile(
           context: context,
-          image: YustUi.fileHelpers.imageProviderFor(image),
-          onSave: (imageBytes) async {
+          file: image,
+          onSave: (imageBytes) {
             if (imageBytes != null) {
               widget.onSave!(image, imageBytes);
               setState(() {});
             }
           },
-        );
-      },
+        ),
+      ),
     );
   }
 

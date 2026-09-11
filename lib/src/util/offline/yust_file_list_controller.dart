@@ -127,7 +127,10 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
         case YustFileOperationType.upload:
           fileByOfflineKey[operation.fileKey] = operation.file as T;
         case YustFileOperationType.delete:
-          fileByOfflineKey.remove(operation.fileKey);
+          // The operation's own file, not its key: the key is the chain it was
+          // queued into, which a rename queued before it froze under the old
+          // name.
+          fileByOfflineKey.remove(operation.file.offlineKey);
         case YustFileOperationType.rename:
         case YustFileOperationType.updateMetadata:
         case YustFileOperationType.download:
@@ -252,6 +255,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
         YustFileOperation<YustFile>(
           type: YustFileOperationType.delete,
           file: file,
+          fileKey: await _queuedFileKeyFor(file),
         ),
       );
     }
@@ -284,6 +288,23 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     return null;
   }
 
+  /// The key the queue already addresses [file]'s operations by, so one queued
+  /// now joins that chain instead of opening a second one for the same file.
+  ///
+  /// [YustFileOfflineKey.offlineKey] digests the name, and a pending rename has
+  /// already put the new name on the displayed entry — the queue still holds the
+  /// old one. The Storage folder and the content hash a rename leaves alone, so
+  /// the entry is recognised by those.
+  Future<String> _queuedFileKeyFor(T file) async {
+    for (final operation in await handler.pending()) {
+      if (operation.file.storageFolderPath == file.storageFolderPath &&
+          operation.file.hash == file.hash) {
+        return operation.fileKey;
+      }
+    }
+    return file.offlineKey;
+  }
+
   /// Renames [file] to [newName]. The operation carries an old-name snapshot so
   /// the executor can still fetch the original bytes; the display picks up the
   /// new name from the queued rename on the next refresh.
@@ -294,6 +315,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
         type: YustFileOperationType.rename,
         file: snapshot,
         newName: newName,
+        fileKey: await _queuedFileKeyFor(file),
       ),
     );
     await _scheduleRefresh();
@@ -309,6 +331,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
         YustFileOperation<YustFile>(
           type: YustFileOperationType.updateMetadata,
           file: file,
+          fileKey: await _queuedFileKeyFor(file),
         ),
       );
     }

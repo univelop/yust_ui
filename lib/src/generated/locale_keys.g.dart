@@ -330,6 +330,7 @@ abstract class LocaleKeys {
       'alertFeatureOnlySupportedOnLargeScreens';
   static const alertFileAlreadyExists = 'alertFileAlreadyExists';
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
+  static const alertFileNotAvailableOffline = 'alertFileNotAvailableOffline';
   static const alertFileNotFound = 'alertFileNotFound';
   static const alertFileRename = 'alertFileRename';
   static const alertFileSyncFailedFileInvalid =
@@ -380,9 +381,9 @@ abstract class LocaleKeys {
   static const alertMissingConnection = 'alertMissingConnection';
   static const alertMissingConnectionAddImages =
       'alertMissingConnectionAddImages';
-  static const alertMissingConnectionDrawing = 'alertMissingConnectionDrawing';
   static const alertMissingConnectionPrintOut =
       'alertMissingConnectionPrintOut';
+  static const alertMissingConnectionShare = 'alertMissingConnectionShare';
   static const alertMissingMemberTile = 'alertMissingMemberTile';
   static const alertMissingNewPassword = 'alertMissingNewPassword';
   static const alertMissingOldPassword = 'alertMissingOldPassword';

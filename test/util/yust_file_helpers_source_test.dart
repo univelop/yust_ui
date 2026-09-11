@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:yust/yust.dart';
+import 'package:yust_ui/src/generated/locale_keys.g.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/yust_file_helpers.dart';
@@ -31,7 +32,10 @@ void main() {
     );
     root = Directory.systemTemp.createTempSync('file_source_test');
     storage = YustOfflineStorage(directoryProvider: () async => root);
-    helpers = YustFileHelpers(offlineStorage: storage);
+    helpers = YustFileHelpers(
+      offlineStorage: storage,
+      checkIsOffline: () async => false,
+    );
   });
 
   tearDown(() {
@@ -105,6 +109,24 @@ void main() {
       expect(
         () => helpers.resolveToLocalFile(gone),
         throwsA(isA<YustException>()),
+      );
+    });
+
+    test('tells the user to mark the record offline when not cached', () async {
+      final offlineHelpers = YustFileHelpers(
+        offlineStorage: storage,
+        checkIsOffline: () async => true,
+      );
+
+      expect(
+        () => offlineHelpers.resolveToLocalFile(_plan()),
+        throwsA(
+          isA<YustException>().having(
+            (exception) => exception.message,
+            'message',
+            LocaleKeys.alertFileNotAvailableOffline,
+          ),
+        ),
       );
     });
   });
