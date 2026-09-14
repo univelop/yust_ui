@@ -12,7 +12,7 @@ import '../../generated/locale_keys.g.dart';
 import '../../yust_ui.dart';
 
 /// Presents a [YustFile] to the user — the single entry point for opening,
-/// opening in the default app, downloading, and sharing.
+/// opening in the default app, and sharing.
 ///
 /// The only file component that touches a [BuildContext], so the offline
 /// managers stay UI-free and testable. Every verb resolves the file through
@@ -76,45 +76,6 @@ class YustFilePresenter {
         file: localFile,
       );
     });
-  }
-
-  /// Downloads [file] to the device: the browser saves it on web, the
-  /// platform's browser fetches the signed URL on native. [fileName] overrides
-  /// the saved name on web, else the file's own name is used.
-  ///
-  /// Downloading needs a connection: the URL is signed by the backend, so a
-  /// file the queue has not uploaded yet cannot be fetched.
-  static Future<void> download(
-    BuildContext context,
-    YustFile file, {
-    String? fileName,
-  }) async {
-    if (await YustUi.fileHelpers.isOffline()) {
-      await YustUi.alertService.showAlert(
-        LocaleKeys.missingConnection.tr(),
-        LocaleKeys.alertMissingConnection.tr(),
-      );
-      return;
-    }
-    final url = await YustUi.fileHelpers.resolveDownloadUrl(file);
-    if (url == null) {
-      await _showError(LocaleKeys.alertCannotOpenFile.tr());
-      return;
-    }
-    if (kIsWeb) {
-      if (!context.mounted) return;
-      await YustUi.fileHelpers.downloadAndLaunchFile(
-        context: context,
-        url: url,
-        name: fileName ?? file.name!,
-      );
-      return;
-    }
-    final launched = await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    );
-    if (!launched) await _showError(LocaleKeys.alertCannotOpenFile.tr());
   }
 
   static Future<void> _openLocal(

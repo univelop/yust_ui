@@ -341,7 +341,7 @@ class YustFilePickerState
       onSelected: (action) {
         switch (action) {
           case _FileMenuAction.download:
-            unawaited(YustFilePresenter.download(context, file));
+            unawaited(YustFilePresenter.share(context, file));
           case _FileMenuAction.rename:
             unawaited(_renameFile(file));
           case _FileMenuAction.delete:
@@ -352,8 +352,8 @@ class YustFilePickerState
         if (showDownload)
           _buildMenuItem(
             _FileMenuAction.download,
-            Icons.download,
-            LocaleKeys.download.tr(),
+            kIsWeb ? Icons.download : Icons.share,
+            kIsWeb ? LocaleKeys.download.tr() : LocaleKeys.share.tr(),
           ),
         if (showRename)
           _buildMenuItem(
