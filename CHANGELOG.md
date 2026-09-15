@@ -1,3 +1,8 @@
+## 3.33.0 - 2026-09-15
+
+- Add `YustFileScanIndicator`, showing a file's virus scan verdict, and render it in `YustFilePicker` (next to the file name) and `YustImagePicker` (bottom-left of the thumbnail). A `clean` verdict is shown as a visible mark rather than as nothing, because that is what makes its absence on an unscanned file mean something; a file with no verdict at all shows nothing, since in a workspace without scanning every file is in that state.
+- Bump `yust` to 3.36.0 for `YustFile.scan`
+
 ## 3.32.9 - 2026-08-25
 
 - Bump `yust` to 3.33.5

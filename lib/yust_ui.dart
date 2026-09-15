@@ -18,6 +18,7 @@ export 'src/widgets/yust_date_picker.dart';
 export 'src/widgets/yust_doc_builder.dart';
 export 'src/widgets/yust_docs_builder.dart';
 export 'src/widgets/yust_file_picker.dart';
+export 'src/widgets/yust_file_scan_indicator.dart';
 export 'src/widgets/yust_file_picker_base.dart';
 export 'src/widgets/yust_file_tap_mode.dart';
 export 'src/widgets/yust_file_grid_view.dart';

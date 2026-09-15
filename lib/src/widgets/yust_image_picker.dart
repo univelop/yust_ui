@@ -78,6 +78,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.markScanPending = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = true,
@@ -110,6 +111,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.markScanPending = false,
     super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -171,7 +173,30 @@ class YustImagePickerState
   Future<YustImage> processFile(String name, File? file, Uint8List? bytes) =>
       _createImageObject(name, file, bytes);
 
+  /// Builds the image and, where scanning is on, marks it as awaiting a
+  /// verdict. Every creation path goes through here, so a camera capture is
+  /// marked the same way a picked file is.
   Future<YustImage> _createImageObject(
+    String name,
+    File? file,
+    Uint8List? bytes, {
+    bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+  }) async {
+    final image = await _processImage(
+      name,
+      file,
+      bytes,
+      setGPSToLocation: setGPSToLocation,
+      addGpsWatermark: addGpsWatermark,
+      addTimestampWatermark: addTimestampWatermark,
+    );
+    if (widget.markScanPending) image.scan = YustFileScan.pending();
+    return image;
+  }
+
+  Future<YustImage> _processImage(
     String name,
     File? file,
     Uint8List? bytes, {
@@ -300,7 +325,27 @@ class YustImagePickerState
         else
           _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
+        if (file != null) _buildScanIndicator(file),
       ],
+    );
+  }
+
+  /// Scan verdict, bottom-left — the one free corner: the top-right holds the
+  /// favorite star or the remove button, the top-left the selection checkbox.
+  ///
+  /// On the dark scrim so it stays legible over a light image, and rendered for
+  /// every verdict including `clean`: a visible mark on scanned images is what
+  /// makes its absence on unscanned ones mean anything.
+  Widget _buildScanIndicator(YustImage file) {
+    if (file.scan == null) return const SizedBox.shrink();
+    return Positioned(
+      bottom: YustFilePickerBase.thumbnailOverlayInset,
+      left: YustFilePickerBase.thumbnailOverlayInset,
+      child: CircleAvatar(
+        radius: YustFilePickerBase.thumbnailOverlayRadius,
+        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
+        child: YustFileScanIndicator(scan: file.scan),
+      ),
     );
   }
 

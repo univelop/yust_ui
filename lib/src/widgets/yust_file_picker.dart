@@ -10,6 +10,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
+import 'yust_file_scan_indicator.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_tap_mode.dart';
 
@@ -53,6 +54,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.markScanPending = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -77,6 +79,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.markScanPending = false,
     super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
@@ -151,6 +154,9 @@ class YustFilePickerState
       createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
+      // Written once, here, as part of creating the entry the backend will
+      // later annotate. See YustFilePickerBase.markScanPending.
+      scan: widget.markScanPending ? YustFileScan.pending() : null,
     );
   }
 
@@ -257,6 +263,7 @@ class YustFilePickerState
                     overflow: TextOverflow.ellipsis,
                   ),
           ),
+          YustFileScanIndicator(scan: file.scan),
           buildCachedIndicator(file),
         ],
       ),
