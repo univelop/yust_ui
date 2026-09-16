@@ -174,8 +174,7 @@ class YustImagePickerState
       _createImageObject(name, file, bytes);
 
   /// Builds the image and, where scanning is on, marks it as awaiting a
-  /// verdict. Every creation path goes through here, so a camera capture is
-  /// marked the same way a picked file is.
+  /// verdict. Every creation path goes through here, camera capture included.
   Future<YustImage> _createImageObject(
     String name,
     File? file,
@@ -330,12 +329,9 @@ class YustImagePickerState
     );
   }
 
-  /// Scan verdict, bottom-left — the one free corner: the top-right holds the
-  /// favorite star or the remove button, the top-left the selection checkbox.
-  ///
-  /// On the dark scrim so it stays legible over a light image, and rendered for
-  /// every verdict including `clean`: a visible mark on scanned images is what
-  /// makes its absence on unscanned ones mean anything.
+  /// Scan verdict, bottom-left — the one free corner (top-right holds the
+  /// favorite star or remove button, top-left the selection checkbox). On the
+  /// dark scrim so it stays legible over a light image.
   Widget _buildScanIndicator(YustImage file) {
     if (file.scan == null) return const SizedBox.shrink();
     return Positioned(

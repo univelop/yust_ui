@@ -155,8 +155,7 @@ class YustFilePickerState
       createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
-      // Written once, here, as part of creating the entry the backend will
-      // later annotate. See YustFilePickerBase.markScanPending.
+      // Written only here, on create. See markScanPending.
       scan: widget.markScanPending ? YustFileScan.pending() : null,
     );
   }

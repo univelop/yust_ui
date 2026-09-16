@@ -6,18 +6,13 @@ import '../generated/locale_keys.g.dart';
 
 /// Shows what is known about a file's virus scan.
 ///
-/// The rule this widget exists to enforce: **a file with no verdict is not a
-/// safe file.** It is a file nobody has looked at — uploaded before scanning
-/// was switched on, or in a workspace that does not have it. So the only state
-/// that renders a reassuring mark is [YustFileScanStatus.clean], and it renders
-/// one *visibly*, because a checkmark on scanned files is what makes its
-/// absence on unscanned ones mean something. Rendering nothing for both would
-/// make "checked and fine" and "never checked" look identical, which is the one
-/// outcome worth designing against.
+/// Only [YustFileScanStatus.clean] gets a reassuring mark, and it gets a
+/// *visible* one: a check on scanned files is what makes its absence on
+/// unscanned ones mean something. Rendering nothing for both would make
+/// "checked and fine" and "never checked" look identical.
 ///
-/// Files that were never scanned show nothing at all: in a workspace without
-/// scanning every file is in that state, and a permanent row of grey question
-/// marks is noise, not information.
+/// A file with no verdict at all renders nothing — in a workspace without
+/// scanning every file is in that state, and a row of grey marks is noise.
 class YustFileScanIndicator extends StatelessWidget {
   const YustFileScanIndicator({super.key, required this.scan, this.size = 20});
 
@@ -67,15 +62,13 @@ class YustFileScanIndicator extends StatelessWidget {
         icon,
         size: size,
         color: color,
-        // Screen readers get the same sentence the tooltip shows, rather than
-        // an unlabelled icon.
+        // Screen readers get the tooltip sentence, not an unlabelled icon.
         semanticLabel: tooltip,
       ),
     );
   }
 
-  /// The signature is a vendor string and is never translated, so it is
-  /// interpolated rather than described.
+  /// The signature is a vendor string, so it is interpolated, never translated.
   String _infectedTooltip(YustFileScan scan) {
     final signature = scan.signature;
     if (signature == null || signature.isEmpty) {
@@ -86,8 +79,8 @@ class YustFileScanIndicator extends StatelessWidget {
     );
   }
 
-  /// Skipped without a reason still says "could not be checked" rather than
-  /// falling back to anything reassuring.
+  /// A missing reason still says "could not be checked", never anything
+  /// reassuring.
   String _skippedTooltip(YustFileScan scan) => switch (scan.reason) {
     YustFileScanReason.tooLarge => LocaleKeys.fileScanSkippedTooLarge.tr(),
     YustFileScanReason.encrypted => LocaleKeys.fileScanSkippedEncrypted.tr(),

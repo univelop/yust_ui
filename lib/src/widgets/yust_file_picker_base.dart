@@ -105,16 +105,13 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This is needed for the offline upload of files.
   final bool linkedDocStoresFilesAsMap;
 
-  /// Whether newly picked files should be marked as awaiting a virus scan.
+  /// Whether newly picked files are marked as awaiting a virus scan.
   ///
-  /// The verdict itself is written by the backend, which annotates the file's
-  /// existing entry in the linked document — it cannot write one before the
-  /// entry exists. So the client stamps [YustFileScanStatus.pending] as part of
-  /// creating the entry, and only then: writing it on *update* would let a
-  /// stale client push a real verdict back to "scanning…".
+  /// The backend annotates an entry that already exists, so the client stamps
+  /// [YustFileScanStatus.pending] when it creates one — and only then.
   ///
-  /// Set this only where scanning is actually switched on. Marking a file
-  /// pending in a workspace that never scans leaves it pending forever.
+  /// Set this only where scanning is actually on: marking a file pending in a
+  /// workspace that never scans leaves it pending forever.
   final bool markScanPending;
 
   /// Controls what happens when a file is tapped.
