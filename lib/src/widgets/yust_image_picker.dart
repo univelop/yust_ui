@@ -57,6 +57,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   const YustImagePicker({
     super.key,
     super.label,
+    super.showFileCount,
     required super.storageFolderPath,
     required List<YustImage> images,
     super.linkedDocPath,
@@ -94,6 +95,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   const YustImagePicker.single({
     super.key,
     super.label,
+    super.showFileCount,
     required super.storageFolderPath,
     required List<YustImage> images,
     super.linkedDocPath,

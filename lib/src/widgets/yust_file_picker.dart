@@ -35,6 +35,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   const YustFilePicker({
     super.key,
     super.label,
+    super.showFileCount,
     required super.files,
     required super.storageFolderPath,
     super.linkedDocPath,
@@ -64,6 +65,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   const YustFilePicker.single({
     super.key,
     super.label,
+    super.showFileCount,
     required super.files,
     required super.storageFolderPath,
     super.linkedDocPath,

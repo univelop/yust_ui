@@ -31,6 +31,10 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Label for the file picker.
   final String? label;
 
+  /// Whether [label] carries the number of files shown. Counted off the
+  /// queue-merged list, which only this widget holds.
+  final bool showFileCount;
+
   /// Files to display.
   final List<T> files;
 
@@ -108,6 +112,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   const YustFilePickerBase({
     super.key,
     this.label,
+    this.showFileCount = false,
     required this.files,
     required this.storageFolderPath,
     this.linkedDocPath,
@@ -519,11 +524,18 @@ abstract class YustFilePickerBaseState<
     }
   }
 
+  /// The label as shown, with the file count appended when asked for. Counted
+  /// off the tracked files, so a file added offline is included before the
+  /// document carries it.
+  String? get _label => widget.label == null || !widget.showFileCount
+      ? widget.label
+      : '${widget.label} (${sourceFiles.length} ${LocaleKeys.files.tr()})';
+
   Widget _buildFilePicker(BuildContext context) {
     if (kIsWeb && widget.enableDropzone && _enabled && !_selecting) {
       return YustDropzoneListTile(
         suffixChild: _buildSuffixChild(context),
-        label: widget.label,
+        label: _label,
         prefixIcon: widget.prefixIcon,
         below: buildFileDisplay(context),
         divider: widget.divider,
@@ -539,7 +551,7 @@ abstract class YustFilePickerBaseState<
       );
     } else {
       return YustListTile(
-        label: widget.label,
+        label: _label,
         suffixChild: _buildSuffixChild(context),
         prefixIcon: widget.prefixIcon,
         below: buildFileDisplay(context),
