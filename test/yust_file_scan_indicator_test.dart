@@ -35,7 +35,7 @@ void main() {
     // absence on unscanned ones mean anything.
     await pump(tester, YustFileScan(status: YustFileScanStatus.clean));
 
-    expect(find.byIcon(Icons.verified_user_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.verified_user), findsOneWidget);
     expect(tooltip(tester).message, LocaleKeys.fileScanClean);
   });
 
@@ -85,16 +85,18 @@ void main() {
   testWidgets('shows pending as in progress', (tester) async {
     await pump(tester, YustFileScan.pending());
 
-    expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
+    expect(find.byIcon(Icons.hourglass_top), findsOneWidget);
     expect(tooltip(tester).message, LocaleKeys.fileScanPending);
   });
 
   testWidgets('shows error as unchecked, never as safe', (tester) async {
     await pump(tester, YustFileScan(status: YustFileScanStatus.error));
 
-    expect(find.byIcon(Icons.verified_user_outlined), findsNothing);
+    expect(find.byIcon(Icons.verified_user), findsNothing);
     expect(tooltip(tester).message, LocaleKeys.fileScanError);
   });
+
+  group('YustFileScanBadgedIcon', badgeTests);
 
   testWidgets('labels the icon for screen readers', (tester) async {
     await pump(tester, YustFileScan(status: YustFileScanStatus.clean));
@@ -103,5 +105,78 @@ void main() {
       tester.widget<Icon>(find.byType(Icon)).semanticLabel,
       LocaleKeys.fileScanClean,
     );
+  });
+}
+
+/// The badge form used in file lists: the verdict hangs off the file's own
+/// icon instead of taking a column of its own.
+void badgeTests() {
+  Future<void> pumpBadge(WidgetTester tester, YustFileScan? scan) =>
+      tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: YustFileScanBadgedIcon(
+              icon: Icons.insert_drive_file,
+              scan: scan,
+            ),
+          ),
+        ),
+      );
+
+  testWidgets('is just the file icon when there is no verdict', (tester) async {
+    // A list in a workspace without scanning must not shift its layout the
+    // moment one file gains a badge.
+    await pumpBadge(tester, null);
+
+    expect(find.byIcon(Icons.insert_drive_file), findsOneWidget);
+    expect(find.byType(Tooltip), findsNothing);
+    // Exactly the footprint of the bare icon, so nothing reflows when a file
+    // later gains a verdict.
+    expect(
+      tester.getSize(find.byType(YustFileScanBadgedIcon)),
+      const Size(
+        YustFilePickerBase.fileIconSize,
+        YustFilePickerBase.fileIconSize,
+      ),
+    );
+  });
+
+  testWidgets('keeps the file icon and adds the verdict beside it', (
+    tester,
+  ) async {
+    await pumpBadge(tester, YustFileScan(status: YustFileScanStatus.infected));
+
+    expect(find.byIcon(Icons.insert_drive_file), findsOneWidget);
+    expect(find.byIcon(Icons.gpp_bad), findsOneWidget);
+  });
+
+  testWidgets('puts the tooltip on the whole group, not just the badge', (
+    tester,
+  ) async {
+    // A 20 px target is too small to hit, and the file and its verdict are one
+    // thing to ask about.
+    await pumpBadge(tester, YustFileScan(status: YustFileScanStatus.clean));
+
+    final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
+    expect(tooltip.message, LocaleKeys.fileScanClean);
+    expect(
+      find.descendant(
+        of: find.byType(Tooltip),
+        matching: find.byIcon(Icons.insert_drive_file),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('does not make the badge wider than its own footprint', (
+    tester,
+  ) async {
+    // The badge overhangs the file icon, so the box has to be sized to hold it
+    // rather than let it reach into the file name beside it.
+    await pumpBadge(tester, YustFileScan(status: YustFileScanStatus.clean));
+
+    final size = tester.getSize(find.byType(YustFileScanBadgedIcon));
+    expect(size.width, lessThanOrEqualTo(32));
+    expect(size.height, lessThanOrEqualTo(32));
   });
 }

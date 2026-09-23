@@ -239,7 +239,12 @@ class YustFilePickerState
               value: selectedFiles.contains(file),
               onChanged: (_) => toggleFileSelection(file),
             ),
-          Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
+          YustFileScanBadgedIcon(
+            icon: !isBroken ? Icons.insert_drive_file : Icons.dangerous,
+            // A broken file has nothing to say about a scan, and the two
+            // warnings would sit on top of each other.
+            scan: isBroken ? null : file.scan,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: shouldShowDate
@@ -263,7 +268,6 @@ class YustFilePickerState
                     overflow: TextOverflow.ellipsis,
                   ),
           ),
-          YustFileScanIndicator(scan: file.scan),
           buildCachedIndicator(file),
         ],
       ),

@@ -1,6 +1,7 @@
 ## 3.34.0 - 2026-09-15
 
-- Add `YustFileScanIndicator`, showing a file's virus scan verdict, and render it in `YustFilePicker` (next to the file name) and `YustImagePicker` (bottom-left of the thumbnail). A `clean` verdict is shown as a visible mark rather than as nothing, because that is what makes its absence on an unscanned file mean something; a file with no verdict at all shows nothing, since in a workspace without scanning every file is in that state.
+- Add `YustFileScanIndicator`, showing a file's virus scan verdict. `YustFilePicker` renders it through `YustFileScanBadgedIcon`, as a badge on the file's own icon rather than as a separate column, so the trailing slot stays free for actions; `YustImagePicker` renders it bottom-left of the thumbnail. A `clean` verdict is shown as a visible mark rather than as nothing, because that is what makes its absence on an unscanned file mean something; a file with no verdict at all shows nothing, since in a workspace without scanning every file is in that state.
+- Declare `uses-material-design: true`. The package is built entirely from Material widgets and icons and `flutter_painter` declares the same, so without it a widget test in this package cannot build an asset bundle at all.
 - Bump `yust` to 3.36.0 for `YustFile.scan`
 
 ## 3.33.0 - 2026-09-08

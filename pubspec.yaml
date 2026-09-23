@@ -70,3 +70,9 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
+
+flutter:
+    # This package is built entirely from Material widgets and Material icons,
+    # and flutter_painter declares the same. Without it a widget test here
+    # cannot build an asset bundle at all.
+    uses-material-design: true
