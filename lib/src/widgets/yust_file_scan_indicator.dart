@@ -3,6 +3,7 @@ import 'package:yust/yust.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import 'yust_file_picker_base.dart';
 
 /// Shows what is known about a file's virus scan.
 ///
@@ -14,7 +15,11 @@ import '../generated/locale_keys.g.dart';
 /// A file with no verdict at all renders nothing — in a workspace without
 /// scanning every file is in that state, and a row of grey marks is noise.
 class YustFileScanIndicator extends StatelessWidget {
-  const YustFileScanIndicator({super.key, required this.scan, this.size = 20});
+  const YustFileScanIndicator({
+    super.key,
+    required this.scan,
+    this.size = YustFilePickerBase.indicatorIconSize,
+  });
 
   /// The verdict, or null when the file has none.
   final YustFileScan? scan;

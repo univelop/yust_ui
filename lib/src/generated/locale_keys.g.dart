@@ -2055,7 +2055,6 @@ abstract class LocaleKeys {
   static const fileScanError = 'fileScanError';
   static const fileScanInfected = 'fileScanInfected';
   static const fileScanInfectedDetail = 'fileScanInfectedDetail';
-  static const fileScanNotChecked = 'fileScanNotChecked';
   static const fileScanPending = 'fileScanPending';
   static const fileScanSkipped = 'fileScanSkipped';
   static const fileScanSkippedEncrypted = 'fileScanSkippedEncrypted';

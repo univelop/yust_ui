@@ -172,6 +172,9 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Radius of the circular scrim behind a thumbnail overlay button.
   static const double thumbnailOverlayRadius = 20;
 
+  /// Size of an indicator icon shown beside a file name or on a thumbnail.
+  static const double indicatorIconSize = 20;
+
   /// Star icon reflecting [isFavorite]. [inactiveColor] tints the non-favorite
   /// glyph (e.g. white on a dark thumbnail); the active star is always gold.
   static Icon favoriteStarIcon(bool isFavorite, {Color? inactiveColor}) => Icon(
