@@ -44,14 +44,23 @@ dependencies:
 
 dev_dependencies:
     flutter_lints: ^6.0.0
+    flutter_test:
+        sdk: flutter
     test: ^1.25.15
     build_runner: ^2.4.7
 
 dependency_overrides:
     # YustFile.scan, the virus scan verdict this package renders.
-    # Remove once yust 3.36.0 is published.
+    #
+    # A git ref, not `path: ../yust`: a path override resolves against whatever
+    # happens to be checked out next to this repo, so CI and anyone without a
+    # sibling clone cannot `pub get` at all.
+    #
+    # Remove once yust 3.36.0 is published (univelop/yust#430).
     yust:
-        path: ../yust
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 7939-file-scan-verdict
     # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
