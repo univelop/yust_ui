@@ -11,12 +11,9 @@ typedef YustFileScanVisuals = ({IconData icon, Color color, String tooltip});
 
 /// Resolves a verdict to what is drawn for it.
 ///
-/// Shared by [YustFileScanIndicator] and [YustFileScanBadgedIcon] so a file
-/// cannot look one way beside its name and another on its thumbnail.
-///
-/// The glyphs are the filled shields rather than the outlined ones: at badge
-/// size an outline loses its fill colour to the icon behind it, and the colour
-/// is what carries the meaning at a glance.
+/// Shared, so a file cannot look one way beside its name and another on its
+/// thumbnail. Filled shields rather than outlined: at badge size an outline
+/// loses its fill colour to the icon behind it.
 YustFileScanVisuals yustFileScanVisuals(
   BuildContext context,
   YustFileScan scan,
@@ -77,15 +74,10 @@ String _skippedTooltip(YustFileScan scan) => switch (scan.reason) {
 ///
 /// Only [YustFileScanStatus.clean] gets a reassuring mark, and it gets a
 /// *visible* one: a check on scanned files is what makes its absence on
-/// unscanned ones mean something. Rendering nothing for both would make
-/// "checked and fine" and "never checked" look identical.
+/// unscanned ones mean something. A file with no verdict renders nothing — in
+/// a workspace without scanning every file is in that state.
 ///
-/// A file with no verdict at all renders nothing — in a workspace without
-/// scanning every file is in that state, and a row of grey marks is noise.
-///
-/// Used where the verdict has a place of its own, such as the corner of an
-/// image thumbnail. In a file list it hangs off the file icon instead — see
-/// [YustFileScanBadgedIcon].
+/// For a file list, see [YustFileScanBadgedIcon].
 class YustFileScanIndicator extends StatelessWidget {
   const YustFileScanIndicator({
     super.key,
@@ -120,18 +112,14 @@ class YustFileScanIndicator extends StatelessWidget {
 
 /// A file's icon with its scan verdict hanging off the bottom-right corner.
 ///
-/// The verdict belongs on the file rather than beside it: a row already spends
-/// its trailing space on actions, and a status column would grow every list by
-/// a column that is empty for most workspaces. Here the two are one object, and
-/// the badge sits where the eye already starts reading the row.
+/// On the file rather than beside it: a row already spends its trailing space
+/// on actions, and a status column would be empty in most workspaces.
 ///
-/// The badge is drawn on a disc of [backgroundColor] so it stays legible over
-/// the glyph behind it. That disc has to match what the row is actually painted
-/// on — the default is `colorScheme.surface`, which is right for an ordinary
-/// list; pass the real colour for a tinted or selected row.
+/// The badge sits on a disc of [backgroundColor] so it stays legible over the
+/// glyph behind it; that has to match what the row is painted on, so pass the
+/// real colour for a tinted or selected row.
 ///
-/// With no verdict this is exactly [icon] and nothing else, at the same size
-/// and in the same place, so a list in a workspace without scanning does not
+/// With no verdict this is exactly [icon], at the same size, so a list does not
 /// shift when one file gains a badge.
 class YustFileScanBadgedIcon extends StatelessWidget {
   const YustFileScanBadgedIcon({
@@ -166,14 +154,12 @@ class YustFileScanBadgedIcon extends StatelessWidget {
     final visuals = yustFileScanVisuals(context, scan);
 
     return Tooltip(
-      // On the whole group, not just the badge: a 20 px target is too small to
-      // hit, and the file and its verdict are one thing to ask about.
+      // On the whole group: a 20 px target is too small to hit.
       message: visuals.tooltip,
       child: SizedBox(
         width: YustFilePickerBase.fileIconSize + _badgeOverhangX,
         height: YustFilePickerBase.fileIconSize + _badgeOverhangY,
-        // Sized to hold the overhang rather than clipping it, so the badge
-        // cannot reach into the file name beside it.
+        // Sized to hold the overhang, so it cannot reach into the file name.
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -208,12 +194,12 @@ class YustFileScanBadgedIcon extends StatelessWidget {
   /// Glyph size of the badge itself.
   static const double _badgeIconSize = 16;
 
-  /// Diameter of the disc behind the badge. Larger than the glyph, so the
-  /// badge keeps a ring of background between it and the file icon.
+  /// Diameter of the disc behind the badge, leaving a ring of background
+  /// between it and the file icon.
   static const double _badgeDiscSize = 20;
 
-  /// How far the badge disc reaches past the file icon. Kept small enough that
-  /// the file icon is still recognisable underneath.
+  /// How far the disc reaches past the file icon, kept small enough that the
+  /// file icon stays recognisable underneath.
   static const double _badgeOverhangX = 6;
   static const double _badgeOverhangY = 4;
 }
