@@ -206,7 +206,7 @@ class YustFileHelpers {
   /// Use either [file] or [data].
   ///
   /// Generic launcher for arbitrary bytes or files (generated exports, scripts,
-  /// logs). For a `YustFile`, use `YustFilePresenter` instead — it resolves the
+  /// logs). For a `YustFile`, use `YustFileLaunchHelper` instead — it resolves the
   /// on-device cache and signed URL, which this does not.
   Future<void> launchFile({
     required BuildContext context,
@@ -230,7 +230,7 @@ class YustFileHelpers {
   /// For the browser starts the file download.
   ///
   /// Generic launcher for an arbitrary URL. For a `YustFile`, use
-  /// `YustFilePresenter` instead — it resolves the on-device cache and signed URL,
+  /// `YustFileLaunchHelper` instead — it resolves the on-device cache and signed URL,
   /// which this does not.
   Future<void> downloadAndLaunchFile({
     required BuildContext context,

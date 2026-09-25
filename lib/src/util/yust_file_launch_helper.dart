@@ -7,9 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_open_file_x/yust_open_file_x.dart';
 
-import '../../extensions/string_translate_extension.dart';
-import '../../generated/locale_keys.g.dart';
-import '../../yust_ui.dart';
+import '../extensions/string_translate_extension.dart';
+import '../generated/locale_keys.g.dart';
+import '../yust_ui.dart';
 
 /// Presents a [YustFile] to the user — the single entry point for opening,
 /// opening in the default app, and sharing.
@@ -19,19 +19,22 @@ import '../../yust_ui.dart';
 /// [YustFileHelpers.resolveToLocalFile] (native) or
 /// [YustFileHelpers.resolveDownloadUrl] (web), so one cache-and-URL policy sits
 /// behind all of them.
-class YustFilePresenter {
+class YustFileLaunchHelper {
   /// Opens [file] in the built-in preview — the on-device copy if cached,
   /// otherwise downloaded — falling back to the browser. Opens the browser
   /// directly on web.
-  static Future<void> open(BuildContext context, YustFile file) {
+  static Future<void> openFile(BuildContext context, YustFile file) {
     if (kIsWeb) return _launchBrowser(file);
     return _openLocal(file, useDefaultApp: false);
   }
 
   /// Opens [file] in the user's default app (iOS 26+), else the built-in
   /// preview. On web, shares (downloads) the file.
-  static Future<void> openInDefaultApp(BuildContext context, YustFile file) {
-    if (kIsWeb) return share(context, file);
+  static Future<void> openFileInDefaultApp(
+    BuildContext context,
+    YustFile file,
+  ) {
+    if (kIsWeb) return shareFile(context, file);
     return _openLocal(file, useDefaultApp: true);
   }
 
@@ -41,7 +44,7 @@ class YustFilePresenter {
   ///
   /// Sharing needs a connection: a file the queue has not uploaded yet has no
   /// URL to hand out, so the user is told to try again online instead.
-  static Future<void> share(
+  static Future<void> shareFile(
     BuildContext context,
     YustFile file, {
     String? fileName,
