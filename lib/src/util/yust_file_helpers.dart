@@ -16,6 +16,7 @@ import 'package:yust/yust.dart';
 import '../../yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import 'yust_file_scan_guard.dart';
 
 class YustFileHelpers {
   YustFileHelpers();
@@ -134,6 +135,9 @@ class YustFileHelpers {
     required YustFile file,
   }) async {
     if (!file.isValid()) return;
+    // The chokepoint for downloads: the file picker's share and multi-select
+    // actions and the image screen's share all land here.
+    if (!await confirmIfInfected(file)) return;
 
     // ignore: deprecated_member_use
     String? url = file.url;

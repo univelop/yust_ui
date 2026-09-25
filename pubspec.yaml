@@ -50,7 +50,7 @@ dev_dependencies:
     build_runner: ^2.4.7
 
 dependency_overrides:
-    # YustFile.scan, the virus scan verdict this package renders.
+    # YustFile.virusScanResult, the verdict this package renders.
     #
     # A git ref, not `path: ../yust`: a path override resolves against whatever
     # happens to be checked out next to this repo, so CI and anyone without a

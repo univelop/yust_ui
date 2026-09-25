@@ -105,14 +105,13 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This is needed for the offline upload of files.
   final bool linkedDocStoresFilesAsMap;
 
-  /// Whether newly picked files are marked as awaiting a virus scan.
+  /// Whether this workspace virus scans uploaded files.
   ///
-  /// The backend annotates an entry that already exists, so the client stamps
-  /// [YustFileScanStatus.pending] when it creates one — and only then.
-  ///
-  /// Set this only where scanning is actually on: marking a file pending in a
-  /// workspace that never scans leaves it pending forever.
-  final bool markScanPending;
+  /// New files start with no verdict; when this is on they start
+  /// [YustFileScanStatus.pending] instead, because the backend can only
+  /// annotate an entry that already exists. Turning it on where scanning does
+  /// not actually run leaves every file pending forever.
+  final bool enableVirusScanning;
 
   /// Controls what happens when a file is tapped.
   final YustFileTapMode tapMode;
@@ -141,7 +140,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
-    this.markScanPending = false,
+    this.enableVirusScanning = false,
     this.tapMode = YustFileTapMode.preview,
   });
 

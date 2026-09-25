@@ -78,7 +78,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
-    super.markScanPending = false,
+    super.enableVirusScanning = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = true,
@@ -111,7 +111,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
-    super.markScanPending = false,
+    super.enableVirusScanning = false,
     super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -191,7 +191,8 @@ class YustImagePickerState
       addGpsWatermark: addGpsWatermark,
       addTimestampWatermark: addTimestampWatermark,
     );
-    if (widget.markScanPending) image.scan = YustFileScan.pending();
+    if (widget.enableVirusScanning)
+      image.virusScanResult = YustFileScan.pending();
     return image;
   }
 
@@ -329,18 +330,22 @@ class YustImagePickerState
     );
   }
 
-  /// Scan verdict, bottom-left — the one free corner (top-right holds the
-  /// favorite star or remove button, top-left the selection checkbox). On the
-  /// dark scrim so it stays legible over a light image.
+  /// Infection warning, bottom-left — the one free corner (top-right holds
+  /// the favorite star or remove button, top-left the selection checkbox). On
+  /// the dark scrim so it stays legible over a light image.
+  ///
+  /// Only infections show here. A thumbnail grid is read at a glance and its
+  /// subject is the picture; a mark on every image would bury the one that
+  /// matters. The full status is in [YustImageScreen], a tap away.
   Widget _buildScanIndicator(YustImage file) {
-    if (file.scan == null) return const SizedBox.shrink();
+    if (!file.isScannedInfected) return const SizedBox.shrink();
     return Positioned(
       bottom: YustFilePickerBase.thumbnailOverlayInset,
       left: YustFilePickerBase.thumbnailOverlayInset,
       child: CircleAvatar(
         radius: YustFilePickerBase.thumbnailOverlayRadius,
         backgroundColor: YustFilePickerBase.thumbnailScrimColor,
-        child: YustFileScanIndicator(scan: file.scan),
+        child: YustFileScanIndicator(scan: file.virusScanResult),
       ),
     );
   }
@@ -778,6 +783,7 @@ class YustImagePickerState
       ),
       allowDrawing: !widget.readOnly,
       allowShare: widget.allowSharing,
+      enableVirusScanning: widget.enableVirusScanning,
       onToggleFavorite: widget.allowFavorites && enabled
           ? (image) => unawaited(toggleFavorite(image))
           : null,

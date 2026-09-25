@@ -2055,6 +2055,10 @@ abstract class LocaleKeys {
   static const fileScanError = 'fileScanError';
   static const fileScanInfected = 'fileScanInfected';
   static const fileScanInfectedDetail = 'fileScanInfectedDetail';
+  static const fileScanInfectedOpenConfirm = 'fileScanInfectedOpenConfirm';
+  static const fileScanInfectedOpenWarning = 'fileScanInfectedOpenWarning';
+  static const fileScanInfectedOpenWarningDetail =
+      'fileScanInfectedOpenWarningDetail';
   static const fileScanPending = 'fileScanPending';
   static const fileScanSkipped = 'fileScanSkipped';
   static const fileScanSkippedEncrypted = 'fileScanSkippedEncrypted';

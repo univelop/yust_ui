@@ -55,7 +55,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
-    super.markScanPending = false,
+    super.enableVirusScanning = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -80,7 +80,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
-    super.markScanPending = false,
+    super.enableVirusScanning = false,
     super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
@@ -155,8 +155,10 @@ class YustFilePickerState
       createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
-      // Written only here, on create. See markScanPending.
-      scan: widget.markScanPending ? YustFileScan.pending() : null,
+      // Written only here, on create. See enableVirusScanning.
+      virusScanResult: widget.enableVirusScanning
+          ? YustFileScan.pending()
+          : null,
     );
   }
 
@@ -243,7 +245,7 @@ class YustFilePickerState
             icon: !isBroken ? Icons.insert_drive_file : Icons.dangerous,
             // A broken file has nothing to say about a scan, and the two
             // warnings would sit on top of each other.
-            scan: isBroken ? null : file.scan,
+            scan: isBroken ? null : file.virusScanResult,
           ),
           const SizedBox(width: 8),
           Expanded(
