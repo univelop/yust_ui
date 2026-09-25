@@ -78,6 +78,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.enableVirusScanning = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = true,
@@ -110,6 +111,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.enableVirusScanning = false,
     super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -171,7 +173,30 @@ class YustImagePickerState
   Future<YustImage> processFile(String name, File? file, Uint8List? bytes) =>
       _createImageObject(name, file, bytes);
 
+  /// Builds the image and, where scanning is on, marks it as awaiting a
+  /// verdict. Every creation path goes through here, camera capture included.
   Future<YustImage> _createImageObject(
+    String name,
+    File? file,
+    Uint8List? bytes, {
+    bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+  }) async {
+    final image = await _processImage(
+      name,
+      file,
+      bytes,
+      setGPSToLocation: setGPSToLocation,
+      addGpsWatermark: addGpsWatermark,
+      addTimestampWatermark: addTimestampWatermark,
+    );
+    if (widget.enableVirusScanning)
+      image.virusScanResult = YustFileScan.pending();
+    return image;
+  }
+
+  Future<YustImage> _processImage(
     String name,
     File? file,
     Uint8List? bytes, {
@@ -300,7 +325,28 @@ class YustImagePickerState
         else
           _buildRemoveButton(context, file),
         if (file != null) buildCachedIndicator(file),
+        if (file != null) _buildScanIndicator(file),
       ],
+    );
+  }
+
+  /// Infection warning, bottom-left — the one free corner (top-right holds
+  /// the favorite star or remove button, top-left the selection checkbox). On
+  /// the dark scrim so it stays legible over a light image.
+  ///
+  /// Only infections show here. A thumbnail grid is read at a glance and its
+  /// subject is the picture; a mark on every image would bury the one that
+  /// matters. The full status is in [YustImageScreen], a tap away.
+  Widget _buildScanIndicator(YustImage file) {
+    if (!file.isScannedInfected) return const SizedBox.shrink();
+    return Positioned(
+      bottom: YustFilePickerBase.thumbnailOverlayInset,
+      left: YustFilePickerBase.thumbnailOverlayInset,
+      child: CircleAvatar(
+        radius: YustFilePickerBase.thumbnailOverlayRadius,
+        backgroundColor: YustFilePickerBase.thumbnailScrimColor,
+        child: YustFileScanIndicator(scan: file.virusScanResult),
+      ),
     );
   }
 
@@ -737,6 +783,7 @@ class YustImagePickerState
       ),
       allowDrawing: !widget.readOnly,
       allowShare: widget.allowSharing,
+      enableVirusScanning: widget.enableVirusScanning,
       onToggleFavorite: widget.allowFavorites && enabled
           ? (image) => unawaited(toggleFavorite(image))
           : null,

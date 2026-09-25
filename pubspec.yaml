@@ -1,6 +1,6 @@
 name: yust_ui
 description: Awesome UI widgets for yust.
-version: 3.33.0
+version: 3.34.0
 homepage: https://github.com/univelop/yust_ui
 
 environment:
@@ -9,7 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
-    yust: ^3.35.0
+    yust: ^3.36.0
     cached_network_image: ^3.4.1
     cloud_firestore: ^6.0.0
     collection: ^1.19.1
@@ -44,10 +44,23 @@ dependencies:
 
 dev_dependencies:
     flutter_lints: ^6.0.0
+    flutter_test:
+        sdk: flutter
     test: ^1.25.15
     build_runner: ^2.4.7
 
 dependency_overrides:
+    # YustFile.virusScanResult, the verdict this package renders.
+    #
+    # A git ref, not `path: ../yust`: a path override resolves against whatever
+    # happens to be checked out next to this repo, so CI and anyone without a
+    # sibling clone cannot `pub get` at all.
+    #
+    # Remove once yust 3.36.0 is published (univelop/yust#430).
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 7939-file-scan-verdict
     # See https://github.com/omarhurani/flutter_painter/pull/59
     flutter_painter:
         git:
@@ -57,3 +70,9 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
+
+flutter:
+    # This package is built entirely from Material widgets and Material icons,
+    # and flutter_painter declares the same. Without it a widget test here
+    # cannot build an asset bundle at all.
+    uses-material-design: true

@@ -20,6 +20,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_file_helpers.dart';
+import 'yust_file_scan_guard.dart';
 
 class YustFileHandler {
   /// Path to the storage folder.
@@ -297,6 +298,7 @@ class YustFileHandler {
   }
 
   Future<void> showFile(BuildContext context, YustFile yustFile) async {
+    if (!await confirmIfInfected(yustFile)) return;
     await EasyLoading.show(status: LocaleKeys.loadingFile.tr());
     try {
       if (!kIsWeb) {
@@ -348,6 +350,8 @@ class YustFileHandler {
     BuildContext context,
     YustFile yustFile,
   ) async {
+    // Before the web branch too, which downloads rather than previews.
+    if (!await confirmIfInfected(yustFile)) return;
     if (kIsWeb) {
       await YustUi.fileHelpers.downloadAndLaunchYustFile(
         context: context,
