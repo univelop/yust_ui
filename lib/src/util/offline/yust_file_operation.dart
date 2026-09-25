@@ -14,8 +14,8 @@ extension YustFileOfflineKey on YustFile {
   /// is — never the bare name, which is not unique across documents, and never the
   /// content hash, which two entries holding the same bytes share.
   ///
-  /// Not `FileHandlingHelper.fileMapKey` (uni_core): that keys the Firestore
-  /// entry and must keep matching existing documents.
+  /// Not [YustFile.hash]: that keys the Firestore entry and must keep matching
+  /// existing documents.
   String get offlineKey =>
       md5.convert(utf8.encode('${storageFolderPath ?? path}/$name')).toString();
 
