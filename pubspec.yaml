@@ -50,13 +50,7 @@ dev_dependencies:
     build_runner: ^2.4.7
 
 dependency_overrides:
-    # YustFile.virusScanResult, the verdict this package renders.
-    #
-    # A git ref, not `path: ../yust`: a path override resolves against whatever
-    # happens to be checked out next to this repo, so CI and anyone without a
-    # sibling clone cannot `pub get` at all.
-    #
-    # Remove once yust 3.36.0 is published (univelop/yust#430).
+    # #7939: drop once yust 3.36.0 is published.
     yust:
         git:
             url: https://github.com/univelop/yust.git
