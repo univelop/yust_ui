@@ -1,74 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yust/yust.dart';
 
-import '../extensions/string_translate_extension.dart';
-import '../generated/locale_keys.g.dart';
+import '../util/yust_file_scan_helpers.dart';
 import 'yust_file_picker_base.dart';
-
-/// How one verdict looks: the glyph, its colour, and the sentence that explains
-/// it — which is also the screen reader label.
-typedef YustFileScanVisuals = ({IconData icon, Color color, String tooltip});
-
-/// Resolves a verdict to what is drawn for it.
-///
-/// Shared, so a file cannot look one way beside its name and another on its
-/// thumbnail. Filled shields rather than outlined: at badge size an outline
-/// loses its fill colour to the icon behind it.
-YustFileScanVisuals yustFileScanVisuals(
-  BuildContext context,
-  YustFileScan scan,
-) {
-  final colors = Theme.of(context).colorScheme;
-
-  return switch (scan.status) {
-    YustFileScanStatus.clean => (
-      icon: Icons.verified_user,
-      color: colors.primary,
-      tooltip: LocaleKeys.fileScanClean.tr(),
-    ),
-    YustFileScanStatus.infected => (
-      icon: Icons.gpp_bad,
-      color: colors.error,
-      tooltip: _infectedTooltip(scan),
-    ),
-    YustFileScanStatus.pending => (
-      icon: Icons.hourglass_top,
-      color: colors.outline,
-      tooltip: LocaleKeys.fileScanPending.tr(),
-    ),
-    YustFileScanStatus.skipped => (
-      icon: Icons.gpp_maybe,
-      color: colors.tertiary,
-      tooltip: _skippedTooltip(scan),
-    ),
-    YustFileScanStatus.error => (
-      icon: Icons.gpp_maybe,
-      color: colors.outline,
-      tooltip: LocaleKeys.fileScanError.tr(),
-    ),
-  };
-}
-
-/// The signature is a vendor string, so it is interpolated, never translated.
-String _infectedTooltip(YustFileScan scan) {
-  final signature = scan.signature;
-  if (signature == null || signature.isEmpty) {
-    return LocaleKeys.fileScanInfected.tr();
-  }
-  return LocaleKeys.fileScanInfectedDetail.tr(
-    namedArgs: {'signature': signature},
-  );
-}
-
-/// A missing reason still says "could not be checked", never anything
-/// reassuring.
-String _skippedTooltip(YustFileScan scan) => switch (scan.reason) {
-  YustFileScanReason.tooLarge => LocaleKeys.fileScanSkippedTooLarge.tr(),
-  YustFileScanReason.encrypted => LocaleKeys.fileScanSkippedEncrypted.tr(),
-  YustFileScanReason.limitsExceeded =>
-    LocaleKeys.fileScanSkippedLimitsExceeded.tr(),
-  null => LocaleKeys.fileScanSkipped.tr(),
-};
 
 /// Shows what is known about a file's virus scan, as a standalone icon.
 ///
@@ -95,7 +29,7 @@ class YustFileScanIndicator extends StatelessWidget {
     final scan = this.scan;
     if (scan == null) return const SizedBox.shrink();
 
-    final visuals = yustFileScanVisuals(context, scan);
+    final visuals = YustFileScanHelpers.visualsFor(context, scan);
 
     return Tooltip(
       message: visuals.tooltip,
@@ -103,7 +37,6 @@ class YustFileScanIndicator extends StatelessWidget {
         visuals.icon,
         size: size,
         color: visuals.color,
-        // Screen readers get the tooltip sentence, not an unlabelled icon.
         semanticLabel: visuals.tooltip,
       ),
     );
@@ -151,7 +84,7 @@ class YustFileScanBadgedIcon extends StatelessWidget {
     );
     if (scan == null) return fileIcon;
 
-    final visuals = yustFileScanVisuals(context, scan);
+    final visuals = YustFileScanHelpers.visualsFor(context, scan);
 
     return Tooltip(
       // On the whole group: a 20 px target is too small to hit.

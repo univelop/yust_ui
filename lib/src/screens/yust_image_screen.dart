@@ -9,7 +9,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 import 'package:yust_ui/src/widgets/yust_file_picker_base.dart';
-import 'package:yust_ui/src/widgets/yust_file_scan_indicator.dart';
+import 'package:yust_ui/src/util/yust_file_scan_helpers.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
@@ -44,11 +44,8 @@ class YustImageScreen extends StatefulWidget {
   /// Keep native resolution of the image
   final bool keepNativeResolution;
 
-  /// Whether this workspace virus scans uploaded files.
-  ///
-  /// Unlike the thumbnail grid, which only flags infections, the full-screen
-  /// view shows the verdict whatever it is: there is room for it here, and
-  /// this is where someone decides to share or download the image.
+  /// Whether this workspace virus scans uploaded files. When on, the verdict
+  /// is shown for every status, not just infections as the grid does.
   final bool enableVirusScanning;
 
   const YustImageScreen({
@@ -377,19 +374,16 @@ class _YustImageScreenState extends State<YustImageScreen> {
   /// Top-right bar bundling all image actions (draw, delete, favorite, share)
   /// plus the web close button, laid out as a single row so buttons never
   /// overlap regardless of which ones are enabled.
-  /// The verdict, bottom-left, on the black backdrop the screen already has.
-  ///
-  /// Shown for every status rather than infections only: the grid behind this
-  /// screen deliberately shows nothing for a clean or pending image, so this
-  /// is the only place the distinction between "checked and fine" and "never
-  /// checked" is visible.
+  /// The verdict, bottom-left. Shown for every status: the grid behind this
+  /// screen shows nothing for a clean or pending image, so this is the only
+  /// place "checked and fine" is distinguishable from "never checked".
   Widget _buildScanStatus(BuildContext context, YustImage image) {
     final scan = image.virusScanResult;
     if (!widget.enableVirusScanning || scan == null) {
       return const SizedBox.shrink();
     }
 
-    final visuals = yustFileScanVisuals(context, scan);
+    final visuals = YustFileScanHelpers.visualsFor(context, scan);
     return Positioned(
       left: 20,
       bottom: 20,
@@ -405,8 +399,6 @@ class _YustImageScreenState extends State<YustImageScreen> {
             children: [
               Icon(visuals.icon, color: visuals.color, size: 20),
               const SizedBox(width: 8),
-              // The tooltip text is the label here: this screen has room for
-              // the sentence, and hovering is not a gesture on a phone.
               Flexible(
                 child: Text(
                   visuals.tooltip,

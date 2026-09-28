@@ -330,13 +330,9 @@ class YustImagePickerState
     );
   }
 
-  /// Infection warning, bottom-left — the one free corner (top-right holds
-  /// the favorite star or remove button, top-left the selection checkbox). On
-  /// the dark scrim so it stays legible over a light image.
-  ///
-  /// Only infections show here. A thumbnail grid is read at a glance and its
-  /// subject is the picture; a mark on every image would bury the one that
-  /// matters. The full status is in [YustImageScreen], a tap away.
+  /// Infection warning, bottom-left — the one free corner. Only infections:
+  /// a grid is read at a glance and a mark on every image would bury the one
+  /// that matters. The full status is in [YustImageScreen], a tap away.
   Widget _buildScanIndicator(YustImage file) {
     if (!file.isScannedInfected) return const SizedBox.shrink();
     return Positioned(
