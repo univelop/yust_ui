@@ -4,10 +4,12 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
+import 'package:yust/yust.dart';
 import 'package:yust_ui/src/widgets/yust_image_drawable.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../yust_ui.dart';
 
 class YustImageDrawingScreen extends StatefulWidget {
   final ImageProvider image;
@@ -33,6 +35,34 @@ class YustImageDrawingScreen extends StatefulWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Opens the drawing screen on [file], the single entry point for every
+  /// drawable image.
+  ///
+  /// The canvas needs the image itself, so a file whose bytes would have to be
+  /// fetched while offline is refused with an explanation instead of opening on
+  /// an empty canvas. The saved drawing goes through the file queue, which is
+  /// why editing an already uploaded image works offline.
+  static Future<void> navigateToFile({
+    required BuildContext context,
+    required YustFile file,
+    required void Function(Uint8List? image) onSave,
+  }) async {
+    if (!YustUi.fileHelpers.hasLocalImageBytes(file) &&
+        await YustUi.fileHelpers.isOffline()) {
+      await YustUi.alertService.showAlert(
+        LocaleKeys.missingConnection.tr(),
+        LocaleKeys.alertFileNotAvailableOffline.tr(),
+      );
+      return;
+    }
+    if (!context.mounted) return;
+    navigateToScreen(
+      context: context,
+      image: YustUi.fileHelpers.imageProviderFor(file),
+      onSave: onSave,
     );
   }
 

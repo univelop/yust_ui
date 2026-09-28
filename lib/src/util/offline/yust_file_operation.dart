@@ -1,0 +1,173 @@
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
+import 'package:crypto/crypto.dart';
+import 'package:yust/yust.dart';
+
+import 'yust_file_operation_error.dart';
+
+/// The keys every offline component addresses a file by: [offlineKey] for the
+/// entry, [byteKey] for its bytes.
+extension YustFileOfflineKey on YustFile {
+  /// This file's identity as one entry of a list: overlay entry, queue matching,
+  /// download dedupe. A digest of the Storage location, which is what an entry
+  /// is — never the bare name, which is not unique across documents, and never the
+  /// content hash, which two entries holding the same bytes share.
+  ///
+  /// Not [YustFile.hash]: that keys the Firestore entry and must keep matching
+  /// existing documents.
+  String get offlineKey =>
+      md5.convert(utf8.encode('${storageFolderPath ?? path}/$name')).toString();
+
+  /// The key this file's bytes are cached under: the content hash, so a
+  /// re-drawn signature does not go on serving the copy it replaced.
+  String get byteKey => hash;
+
+  /// Computes the md5 [YustFile.hash] when the file has none. Call before
+  /// enqueueing: the queue rejects a file without one.
+  ///
+  /// Runs on the UI isolate and scales with the file; web has no isolate to
+  /// move it to.
+  Future<void> ensureHash() async {
+    if (hash.isNotEmpty) return;
+    if (bytes != null) {
+      hash = md5.convert(bytes!).toString();
+    } else if (file != null) {
+      hash = (await file!.openRead().transform(md5).first).toString();
+    }
+  }
+}
+
+/// What a [YustFileOperation] does. The first four are outbound (local change →
+/// server); [download] is inbound (server → local cache). The
+/// YustFileOperationManager carries out all of them, and all flow through the
+/// one queue.
+///
+/// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
+/// linked document (e.g. after its favorite flag changed). It exists so that a
+/// metadata-only change is queued and field-masked like every other change,
+/// instead of the picker saving its whole file list back over the document.
+///
+/// [upload] also drops the entry its bytes supersede — see [supersededHash].
+enum YustFileOperationType {
+  upload,
+  rename,
+  delete,
+  updateMetadata,
+  download,
+}
+
+/// A single file change queued for sync — the queue's entry type.
+///
+/// Generic over [T] so [YustFile] and [YustImage] share the queue; the image's
+/// extra fields round-trip via the polymorphic [YustFile.toJson] and the factory
+/// in [fromJson].
+class YustFileOperation<T extends YustFile> {
+  YustFileOperation({
+    required this.type,
+    required this.file,
+    this.newName,
+    this.supersededHash,
+    this.failure,
+    String? id,
+    String? fileKey,
+    DateTime? createdAt,
+  }) : fileKey = fileKey ?? file.offlineKey,
+       createdAt = createdAt ?? DateTime.now(),
+       id = id ?? '${DateTime.now().microsecondsSinceEpoch}_${file.offlineKey}';
+
+  /// Stable identity for the entry, independent of the mutable [file]. A manager
+  /// removes an operation by this after applying it (the file may have been mutated,
+  /// e.g. renamed, by then).
+  final String id;
+
+  /// What this operation does.
+  final YustFileOperationType type;
+
+  /// The file the operation acts on, in its current state.
+  final T file;
+
+  /// The new name for a [YustFileOperationType.rename]; null otherwise.
+  final String? newName;
+
+  /// The content hash of the entry this upload supersedes, or null when it
+  /// supersedes none.
+  ///
+  /// A document entry is keyed by content, so re-drawn bytes land under a new
+  /// key and leave the old entry behind. Carrying the old key on the upload
+  /// lets the same operation write the new entry and drop the old one, so no
+  /// snapshot ever shows the file twice — see `YustFileListController.replaceBytes`.
+  final String? supersededHash;
+
+  /// The [YustFileOfflineKey.offlineKey] of [file], frozen at enqueue time so a
+  /// rename cannot move the operation's bytes out from under it.
+  final String fileKey;
+
+  /// When the operation was enqueued (FIFO ordering).
+  final DateTime createdAt;
+
+  /// Why this operation failed for a reason retrying cannot fix, or null while
+  /// it is still being attempted. Connection failures never set it. Mutated in
+  /// place by the handler, then persisted via [YustSyncQueue.persist].
+  YustFileOperationFailureReason? failure;
+
+  /// Whether this operation is over: it failed for good and now waits on the
+  /// user rather than retrying.
+  bool get hasFailed => failure != null;
+
+  /// The work this operation does, for deduping — see [YustSyncQueue.enqueueOperation].
+  ({
+    YustFileOperationType type,
+    String fileKey,
+    String? newName,
+    String byteKey,
+  })
+  get identity => (
+    type: type,
+    fileKey: fileKey,
+    newName: newName,
+    byteKey: file.byteKey,
+  );
+
+  /// Serialises the operation, the file via [YustFile.toLocalJson].
+  ///
+  /// `type` appears at both levels — the operation's here, the file's subtype
+  /// nested. Flattening the map would collide them.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type.name,
+    'newName': newName,
+    'supersededHash': supersededHash,
+    'fileKey': fileKey,
+    'failure': failure?.name,
+    'createdAt': createdAt.toIso8601String(),
+    'file': file.toLocalJson(),
+  };
+
+  /// Rebuilds an operation, taking the file's subtype from its own `type`.
+  static YustFileOperation<T> fromJson<T extends YustFile>(
+    Map<String, dynamic> json,
+  ) {
+    final fileJson = Map<String, dynamic>.from(json['file'] as Map);
+    final file = fileJson['type'] == YustImage.type
+        ? YustImage.fromLocalJson(fileJson)
+        : YustFile.fromLocalJson(fileJson);
+    return YustFileOperation<T>(
+      id: json['id'] as String?,
+      type: YustFileOperationType.values.byName(json['type'] as String),
+      file: file as T,
+      newName: json['newName'] as String?,
+      supersededHash: json['supersededHash'] as String?,
+      fileKey: json['fileKey'] as String?,
+      failure: _tryParseFailure(json['failure'] as String?),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}
+
+/// Reads a stored failure back, or null when this build does not know the name
+/// — an operation written by a newer app is still worth attempting.
+YustFileOperationFailureReason? _tryParseFailure(String? name) =>
+    YustFileOperationFailureReason.values.firstWhereOrNull(
+      (reason) => reason.name == name,
+    );

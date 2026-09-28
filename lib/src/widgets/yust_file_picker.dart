@@ -9,6 +9,8 @@ import 'package:yust/yust.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../util/yust_file_launch_helper.dart';
+import '../util/yust_file_helpers.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
 import 'yust_file_list_view.dart';
@@ -34,6 +36,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   const YustFilePicker({
     super.key,
     super.label,
+    super.showFileCount,
     required super.files,
     required super.storageFolderPath,
     super.linkedDocPath,
@@ -53,7 +56,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -64,6 +66,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
   const YustFilePicker.single({
     super.key,
     super.label,
+    super.showFileCount,
     required super.files,
     required super.storageFolderPath,
     super.linkedDocPath,
@@ -77,7 +80,6 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
@@ -106,7 +108,10 @@ class YustFilePickerState
       files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildFile(context, file),
       loadMoreButton: buildLoadMoreButton(context),
-      totalFileCount: widget.files.length,
+      // Counted off the tracked files, not the ones handed in: those are the
+      // record's, so a file deleted offline would still be counted and the
+      // picker would offer to load a file it is no longer showing.
+      totalFileCount: sourceFiles.length,
     );
   }
 
@@ -150,7 +155,6 @@ class YustFilePickerState
       linkedDocPath: widget.linkedDocPath,
       linkedDocAttribute: widget.linkedDocAttribute,
       createThumbnail: widget.thumbnails,
-      linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
     );
   }
@@ -214,14 +218,7 @@ class YustFilePickerState
   }
 
   Widget _buildFile(BuildContext context, YustFile file) {
-    final isBroken =
-        file.name == null ||
-        (file.cached &&
-            file.bytes == null &&
-            file.file == null &&
-            file.devicePath == null) ||
-        // ignore: deprecated_member_use
-        (kIsWeb && file.url == null && file.bytes == null && file.file == null);
+    final isBroken = YustFileHelpers.isFileBroken(file);
     final shouldShowDate =
         !isBroken && widget.showModifiedAt && file.modifiedAt != null;
 
@@ -275,11 +272,13 @@ class YustFilePickerState
         if (!isBroken) {
           switch (widget.tapMode) {
             case YustFileTapMode.preview:
-              fileHandler.showFile(context, file);
+              unawaited(YustFileLaunchHelper.openFile(context, file));
             case YustFileTapMode.defaultApp:
-              fileHandler.showFileInDefaultApp(context, file);
+              unawaited(
+                YustFileLaunchHelper.openFileInDefaultApp(context, file),
+              );
             case YustFileTapMode.share:
-              unawaited(fileHandler.shareFile(context, file));
+              unawaited(YustFileLaunchHelper.shareFile(context, file));
           }
         }
       },
@@ -339,18 +338,15 @@ class YustFilePickerState
       );
     }
     final showDownload = widget.tapMode != YustFileTapMode.share;
-    final showRename = enabled && !file.cached;
+    // Waits for the upload, not for the on-device copy: that copy is durable, so
+    // gating on `cached` would hide the action for ever.
+    final showRename = enabled && !isAwaitingUpload(file);
     return PopupMenuButton<_FileMenuAction>(
       icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
       onSelected: (action) {
         switch (action) {
           case _FileMenuAction.download:
-            unawaited(
-              YustUi.fileHelpers.downloadAndLaunchYustFile(
-                context: context,
-                file: file,
-              ),
-            );
+            unawaited(YustFileLaunchHelper.shareFile(context, file));
           case _FileMenuAction.rename:
             unawaited(_renameFile(file));
           case _FileMenuAction.delete:
@@ -411,12 +407,8 @@ class YustFilePickerState
         return IconButton(
           icon: (kIsWeb) ? const Icon(Icons.download) : const Icon(Icons.share),
           color: Theme.of(buttonContext).primaryColor,
-          onPressed: () => unawaited(
-            YustUi.fileHelpers.downloadAndLaunchYustFile(
-              context: buttonContext,
-              file: file,
-            ),
-          ),
+          onPressed: () =>
+              unawaited(YustFileLaunchHelper.shareFile(buttonContext, file)),
         );
       },
     );
@@ -432,7 +424,9 @@ class YustFilePickerState
     return IconButton(
       icon: const Icon(Icons.edit),
       color: Theme.of(context).colorScheme.primary,
-      onPressed: enabled && !file.cached ? () => _renameFile(file) : null,
+      onPressed: enabled && !isAwaitingUpload(file)
+          ? () => _renameFile(file)
+          : null,
     );
   }
 
@@ -485,28 +479,11 @@ class YustFilePickerState
 
       final newFile = await processFile(name, file, bytes);
 
-      final contentValid = await _checkDuplicateContent(newFile);
+      final contentValid = await checkDuplicateContent(newFile);
       if (!contentValid) continue;
 
       await uploadFile(file: newFile);
     }
-  }
-
-  /// Reports an already present file with the same content and returns false,
-  /// so the upload is skipped instead of overwriting that file's entry.
-  Future<bool> _checkDuplicateContent(YustFile newFile) async {
-    final duplicate = await fileHandler.findDuplicateContent(newFile);
-    if (duplicate == null) return true;
-
-    unawaited(
-      YustUi.alertService.showAlert(
-        LocaleKeys.fileUpload.tr(),
-        LocaleKeys.exceptionDuplicateFileContent.tr(
-          namedArgs: {'fileName': duplicate.name ?? ''},
-        ),
-      ),
-    );
-    return false;
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
@@ -561,24 +538,24 @@ class YustFilePickerState
   }
 
   Future<bool> _checkExistingFileNames(String fileName) async {
-    if (fileHandler.getFiles().any((file) => file.name == fileName)) {
+    if (sourceFiles.any((file) => file.name == fileName)) {
       final confirmed = await YustUi.alertService.showConfirmation(
         LocaleKeys.alertFileAlreadyExists.tr(namedArgs: {'fileName': fileName}),
         LocaleKeys.continue_.tr(),
       );
       if (confirmed != true) return false;
 
-      final fileToDelete = fileHandler.getFiles().firstWhere(
+      final fileToDelete = sourceFiles.firstWhere(
         (file) => file.name == fileName,
         orElse: () => YustFile(),
       );
-      await fileHandler.deleteFile(fileToDelete);
+      await deleteSourceFile(fileToDelete);
     }
     return true;
   }
 
   bool fileExists(String? fileName) =>
-      fileHandler.getFiles().any((file) => file.name == fileName);
+      sourceFiles.any((file) => file.name == fileName);
 
   Future<void> _deleteFileWithConfirmation(YustFile yustFile) async {
     YustUi.helpers.unfocusCurrent();
@@ -588,7 +565,7 @@ class YustFilePickerState
     );
     if (confirmed == true) {
       try {
-        await _deleteFileAndCallOnChanged(yustFile);
+        await deleteSourceFile(yustFile);
         if (mounted) {
           setState(() {});
         }
@@ -600,13 +577,6 @@ class YustFilePickerState
           ),
         );
       }
-    }
-  }
-
-  Future<void> _deleteFileAndCallOnChanged(YustFile yustFile) async {
-    await fileHandler.deleteFile(yustFile);
-    if (!yustFile.cached) {
-      widget.onChanged!(fileHandler.getOnlineFiles());
     }
   }
 
@@ -632,38 +602,10 @@ class YustFilePickerState
     final newFileNameWithExtension =
         '$newFileName.${yustFile.getFilenameExtension()}';
 
-    await _reuploadFileForRename(yustFile, newFileNameWithExtension);
+    await renameSourceFile(yustFile, newFileNameWithExtension);
 
     clearFileProcessing(yustFile);
     setState(() {});
-  }
-
-  /// Renames [yustFile] by storing its content under [newFileName].
-  ///
-  /// The old entry is removed before the new one is uploaded: files are keyed
-  /// by their hash, so the identical content cannot be stored twice. A failed
-  /// upload restores the original instead of losing the file.
-  Future<void> _reuploadFileForRename(
-    YustFile yustFile,
-    String newFileName,
-  ) async {
-    final oldFileName = yustFile.name ?? '';
-    final bytes = await Yust.fileService.downloadFile(
-      path: yustFile.storageFolderPath ?? '',
-      name: oldFileName,
-    );
-
-    final newFile = await processFile(newFileName, yustFile.file, bytes);
-    await _deleteFileAndCallOnChanged(yustFile);
-
-    try {
-      await uploadFile(file: newFile);
-    } catch (_) {
-      await uploadFile(
-        file: await processFile(oldFileName, yustFile.file, bytes),
-      );
-      rethrow;
-    }
   }
 
   bool _isNewFileNameValid(String? filename, YustFile oldFile) {

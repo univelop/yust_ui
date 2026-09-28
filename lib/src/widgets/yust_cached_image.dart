@@ -66,6 +66,8 @@ class YustCachedImage extends StatelessWidget {
       child: const Icon(Icons.question_mark),
     );
 
+    _useDeviceCopyIfPresent();
+
     if (file.file != null && file.bytes == null) {
       file.bytes = file.file!.readAsBytesSync();
     }
@@ -76,6 +78,10 @@ class YustCachedImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        // A re-drawn file hands over a new byte list, which is a new image
+        // provider: without this the widget blanks for the frames the new
+        // bytes take to decode.
+        gaplessPlayback: true,
       );
       // ignore: deprecated_member_use
     } else if (file.url != null) {
@@ -100,6 +106,7 @@ class YustCachedImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
+          gaplessPlayback: true,
           cacheHeight: resizeInCache == true ? 300 : null,
           cacheWidth: resizeInCache == true ? 300 : null,
           frameBuilder: (context, child, frame, sync) {
@@ -160,5 +167,17 @@ class YustCachedImage extends StatelessWidget {
     }
 
     return preview;
+  }
+
+  /// Reads the image from its on-device copy when there is one.
+  ///
+  /// The path is set only from [YustOfflineStorage], so it is null on a device
+  /// that keeps nothing — which is what stops a [File] being built there.
+  void _useDeviceCopyIfPresent() {
+    final devicePath = file.devicePath;
+    if (devicePath == null) return;
+    if (file.file != null || file.bytes != null) return;
+    if (!File(devicePath).existsSync()) return;
+    file.file = File(devicePath);
   }
 }

@@ -57,6 +57,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   const YustImagePicker({
     super.key,
     super.label,
+    super.showFileCount,
     required super.storageFolderPath,
     required List<YustImage> images,
     super.linkedDocPath,
@@ -77,7 +78,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     this.convertToJPEG = true,
     this.zoomable = false,
     this.allowSharing = true,
@@ -95,6 +95,7 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
   const YustImagePicker.single({
     super.key,
     super.label,
+    super.showFileCount,
     required super.storageFolderPath,
     required List<YustImage> images,
     super.linkedDocPath,
@@ -109,7 +110,6 @@ class YustImagePicker extends YustFilePickerBase<YustImage> {
     super.wrapSuffixChild = false,
     super.overwriteSingleFile = false,
     super.thumbnails = false,
-    super.linkedDocStoresFilesAsMap = false,
     super.allowFavorites = false,
     this.convertToJPEG = true,
     this.zoomable = false,
@@ -150,12 +150,7 @@ class YustImagePickerState
         ? _buildGallery(context)
         : Padding(
             padding: const EdgeInsets.only(bottom: 2.0),
-            child: _buildSingleImage(
-              context,
-              fileHandler.getFiles().firstOrNull != null
-                  ? YustImage.fromYustFile(fileHandler.getFiles().first)
-                  : null,
-            ),
+            child: _buildSingleImage(context, sourceFiles.firstOrNull),
           );
   }
 
@@ -194,7 +189,6 @@ class YustImagePickerState
     watermarkPosition: widget.watermarkPosition,
     locale: widget.locale,
     watermarkLocationAppearance: widget.watermarkLocationAppearance,
-    linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
     createThumbnail: widget.thumbnails,
   );
 
@@ -203,12 +197,12 @@ class YustImagePickerState
         (widget.showPreview &&
             // ignore: deprecated_member_use_from_same_package
             widget.numberOfFiles == 1 &&
-            fileHandler.getFiles().firstOrNull != null &&
+            sourceFiles.firstOrNull != null &&
             !widget.overwriteSingleFile)) {
       return [];
     }
 
-    final pictureFiles = [...fileHandler.getFiles()];
+    final pictureFiles = [...sourceFiles];
     final canAddMore =
         pictureFiles.length < widget.numberOfFiles ||
         (widget.numberOfFiles == 1 && widget.overwriteSingleFile);
@@ -229,11 +223,8 @@ class YustImagePickerState
             if (confirmed == true) {
               try {
                 for (final yustFile in pictureFiles) {
-                  await fileHandler.deleteFile(yustFile);
+                  await deleteSourceFile(yustFile);
                 }
-                widget.onChanged!(
-                  YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-                );
                 if (mounted) {
                   setState(() {});
                 }
@@ -264,7 +255,7 @@ class YustImagePickerState
   }
 
   Widget _buildGallery(BuildContext context) {
-    if (fileHandler.getFiles().isEmpty) {
+    if (sourceFiles.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -272,7 +263,10 @@ class YustImagePickerState
       files: getVisibleFiles(),
       itemBuilder: (context, file) => _buildSingleImage(context, file),
       loadMoreButton: buildLoadMoreButton(context),
-      totalFileCount: widget.files.length,
+      // Counted off the tracked files, not the ones handed in: those are the
+      // record's, so an image deleted offline would still be counted and the
+      // picker would offer to load an image it is no longer showing.
+      totalFileCount: sourceFiles.length,
     );
   }
 
@@ -528,12 +522,7 @@ class YustImagePickerState
     );
     if (confirmed != true) return false;
     try {
-      await fileHandler.deleteFile(yustFile);
-      if (!yustFile.cached) {
-        widget.onChanged!(
-          YustImage.fromYustFiles(fileHandler.getOnlineFiles()),
-        );
-      }
+      await deleteSourceFile(yustFile);
       if (mounted) {
         setState(() {});
       }
@@ -588,7 +577,7 @@ class YustImagePickerState
       return;
     }
 
-    final pictureFiles = List<YustImage>.from(fileHandler.getFiles());
+    final pictureFiles = List<YustImage>.from(sourceFiles);
 
     final willOverwrite =
         widget.numberOfFiles == 1 &&
@@ -660,19 +649,7 @@ class YustImagePickerState
         addTimestampWatermark: addTimestampWatermark,
       );
 
-      // Images are stored in a map keyed by their hash, so uploading the same
-      // content again would overwrite the existing entry.
-      final duplicate = await fileHandler.findDuplicateContent(newImage);
-      if (duplicate != null) {
-        await EasyLoading.dismiss();
-        await YustUi.alertService.showAlert(
-          LocaleKeys.fileUpload.tr(),
-          LocaleKeys.exceptionDuplicateImageContent.tr(
-            namedArgs: {'fileName': duplicate.name ?? ''},
-          ),
-        );
-        continue;
-      }
+      if (!await checkDuplicateContent(newImage)) continue;
 
       await uploadFile(file: newImage);
     }
@@ -746,7 +723,7 @@ class YustImagePickerState
         file.linkedDocPath = widget.linkedDocPath;
         file.linkedDocAttribute = widget.linkedDocAttribute;
 
-        fileHandler.updateFile(file, bytes: newImage);
+        unawaited(replaceSourceFileBytes(file, newImage));
 
         if (mounted) {
           setState(() {});

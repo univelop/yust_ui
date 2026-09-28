@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:yust_ui/src/widgets/yust_file_picker_base.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import '../util/yust_file_launch_helper.dart';
 import '../yust_ui.dart';
 
 class YustImageScreen extends StatefulWidget {
@@ -270,7 +270,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
 
   PhotoView _getScaledUpPhotoView(YustImage image) {
     return PhotoView(
-      imageProvider: _loadImage(image),
+      imageProvider: YustUi.fileHelpers.imageProviderFor(image),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
         tag: _getImageTag(image),
@@ -292,7 +292,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
     YustImage currentImage,
   ) {
     return PhotoViewGalleryPageOptions(
-      imageProvider: _loadImage(currentImage),
+      imageProvider: YustUi.fileHelpers.imageProviderFor(currentImage),
       minScale: PhotoViewComputedScale.contained,
       heroAttributes: PhotoViewHeroAttributes(
         tag: _getImageTag(currentImage),
@@ -314,7 +314,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
       onTapUp: (context, details, controllerValue) {
         Navigator.pop(context);
       },
-      child: _buildScalableImage(_loadImage(image)),
+      child: _buildScalableImage(YustUi.fileHelpers.imageProviderFor(image)),
     );
   }
 
@@ -323,7 +323,9 @@ class _YustImageScreenState extends State<YustImageScreen> {
     int index,
   ) {
     return PhotoViewGalleryPageOptions.customChild(
-      child: _buildScalableImage(_loadImage(currentImage)),
+      child: _buildScalableImage(
+        YustUi.fileHelpers.imageProviderFor(currentImage),
+      ),
       initialScale: PhotoViewComputedScale.contained,
       minScale: PhotoViewComputedScale.contained,
       maxScale: PhotoViewComputedScale.covered * 2.0,
@@ -369,7 +371,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
         ? _buildDrawButton(context, image)
         : null;
     final buttons = <Widget>[
-      if (drawButton != null) drawButton,
+      ?drawButton,
       if (widget.onDelete != null) _buildDeleteButton(context, image),
       if (widget.onToggleFavorite != null) _buildFavoriteButton(context, image),
       if (widget.allowShare) _buildShareButton(context, image),
@@ -424,18 +426,18 @@ class _YustImageScreenState extends State<YustImageScreen> {
     }
     return _actionButton(
       icon: Icons.draw_outlined,
-      onPressed: () {
-        YustImageDrawingScreen.navigateToScreen(
+      onPressed: () => unawaited(
+        YustImageDrawingScreen.navigateToFile(
           context: context,
-          image: _loadImage(image),
-          onSave: (imageBytes) async {
+          file: image,
+          onSave: (imageBytes) {
             if (imageBytes != null) {
               widget.onSave!(image, imageBytes);
               setState(() {});
             }
           },
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -470,24 +472,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
   Widget _buildShareButton(BuildContext context, YustImage image) {
     return _actionButton(
       icon: kIsWeb ? Icons.download : Icons.share,
-      onPressed: () => unawaited(
-        YustUi.fileHelpers.downloadAndLaunchYustFile(
-          context: context,
-          file: image,
-        ),
-      ),
+      onPressed: () => unawaited(YustFileLaunchHelper.shareFile(context, image)),
     );
-  }
-
-  /// because of the offline cache the file could be a stored online or on device
-  ImageProvider<Object> _loadImage(YustImage image) {
-    if (image.cached) {
-      var imageFile = File(image.devicePath!);
-      return MemoryImage(Uint8List.fromList(imageFile.readAsBytesSync()));
-    } else {
-      return NetworkImage(
-        image.getOriginalUrl()!,
-      );
-    }
   }
 }

@@ -92,6 +92,7 @@ abstract class LocaleKeys {
   static const addressBrickDescription = 'addressBrickDescription';
   static const addressValueImportError = 'addressValueImportError';
   static const adjust = 'adjust';
+  static const adjustPaymentMethod = 'adjustPaymentMethod';
   static const adjustPosition = 'adjustPosition';
   static const admin = 'admin';
   static const adminCenter = 'adminCenter';
@@ -329,9 +330,18 @@ abstract class LocaleKeys {
       'alertFeatureOnlySupportedOnLargeScreens';
   static const alertFileAlreadyExists = 'alertFileAlreadyExists';
   static const alertFileFormatNotSupported = 'alertFileFormatNotSupported';
+  static const alertFileNotAvailableOffline = 'alertFileNotAvailableOffline';
   static const alertFileNotFound = 'alertFileNotFound';
   static const alertFileRename = 'alertFileRename';
+  static const alertFileSyncFailedFileInvalid =
+      'alertFileSyncFailedFileInvalid';
+  static const alertFileSyncFailedFileMissing =
+      'alertFileSyncFailedFileMissing';
+  static const alertFileSyncFailedNoPermission =
+      'alertFileSyncFailedNoPermission';
+  static const alertFileSyncFailedUnknown = 'alertFileSyncFailedUnknown';
   static const alertFileTooBig = 'alertFileTooBig';
+  static const alertFileUploadFailed = 'alertFileUploadFailed';
   static const alertFilteredList = 'alertFilteredList';
   static const alertFlowSpecNotFound = 'alertFlowSpecNotFound';
   static const alertFlowSpecNotFoundOrOutdated =
@@ -374,6 +384,7 @@ abstract class LocaleKeys {
   static const alertMissingConnectionDrawing = 'alertMissingConnectionDrawing';
   static const alertMissingConnectionPrintOut =
       'alertMissingConnectionPrintOut';
+  static const alertMissingConnectionShare = 'alertMissingConnectionShare';
   static const alertMissingMemberTile = 'alertMissingMemberTile';
   static const alertMissingNewPassword = 'alertMissingNewPassword';
   static const alertMissingOldPassword = 'alertMissingOldPassword';
@@ -501,6 +512,7 @@ abstract class LocaleKeys {
   static const amazonSesAccessKey = 'amazonSesAccessKey';
   static const amazonSesRegion = 'amazonSesRegion';
   static const amazonSesSecretKey = 'amazonSesSecretKey';
+  static const amount = 'amount';
   static const amountOfDaysMustBeLessThanLimit =
       'amountOfDaysMustBeLessThanLimit';
   static const amountOfDaysMustBePositive = 'amountOfDaysMustBePositive';
@@ -1962,6 +1974,8 @@ abstract class LocaleKeys {
       'exceptionUserIsMissingEnabledRole';
   static const exceptionUserNotFound = 'exceptionUserNotFound';
   static const exceptionUserNotFoundByEmail = 'exceptionUserNotFoundByEmail';
+  static const exceptionUserNotFoundByReference =
+      'exceptionUserNotFoundByReference';
   static const exceptionUserNotFoundByValue = 'exceptionUserNotFoundByValue';
   static const exceptionUserWithIdAlreadyExists =
       'exceptionUserWithIdAlreadyExists';
@@ -2056,8 +2070,10 @@ abstract class LocaleKeys {
   static const fileNamesDescription = 'fileNamesDescription';
   static const fileNoneSelected = 'fileNoneSelected';
   static const filePickerBrickDescription = 'filePickerBrickDescription';
+  static const fileProcessingFailed = 'fileProcessingFailed';
   static const fileRotateHint = 'fileRotateHint';
   static const fileShowList = 'fileShowList';
+  static const fileSyncFailed = 'fileSyncFailed';
   static const fileTapMode = 'fileTapMode';
   static const fileTapModeDefaultApp = 'fileTapModeDefaultApp';
   static const fileTapModePreview = 'fileTapModePreview';
@@ -2380,6 +2396,8 @@ abstract class LocaleKeys {
   static const flowLogWorkflowWillBeStartedAfterRules =
       'flowLogWorkflowWillBeStartedAfterRules';
   static const flowLogXmlToJsonConverted = 'flowLogXmlToJsonConverted';
+  static const flowLogsAvailableAfterExecution =
+      'flowLogsAvailableAfterExecution';
   static const flowMoreInfo = 'flowMoreInfo';
   static const flowMoreInfoDescription = 'flowMoreInfoDescription';
   static const flowParamsExplanation = 'flowParamsExplanation';
@@ -2687,17 +2705,30 @@ abstract class LocaleKeys {
   static const invited = 'invited';
   static const invitedToWorkspace = 'invitedToWorkspace';
   static const invoice = 'invoice';
+  static const invoiceAutomaticCollectionInfo =
+      'invoiceAutomaticCollectionInfo';
   static const invoiceBilling = 'invoiceBilling';
+  static const invoiceDueDate = 'invoiceDueDate';
   static const invoiceInfo1 = 'invoiceInfo1';
   static const invoiceInfo2 = 'invoiceInfo2';
+  static const invoiceInfo3 = 'invoiceInfo3';
   static const invoiceReference = 'invoiceReference';
+  static const invoiceReferenceEmpty = 'invoiceReferenceEmpty';
   static const invoiceReferenceInfo = 'invoiceReferenceInfo';
   static const invoiceReferenceInputHelperText =
       'invoiceReferenceInputHelperText';
+  static const invoiceReferenceSaved = 'invoiceReferenceSaved';
   static const invoiceReferenceSaving = 'invoiceReferenceSaving';
   static const invoiceScreenTitle = 'invoiceScreenTitle';
+  static const invoiceStatusDraft = 'invoiceStatusDraft';
+  static const invoiceStatusOpen = 'invoiceStatusOpen';
+  static const invoiceStatusPaid = 'invoiceStatusPaid';
+  static const invoiceStatusUncollectible = 'invoiceStatusUncollectible';
+  static const invoiceStatusVoid = 'invoiceStatusVoid';
+  static const invoiceSupportLink = 'invoiceSupportLink';
   static const invoiceTaxConfirmationMessage = 'invoiceTaxConfirmationMessage';
   static const invoiceTaxConfirmationTitle = 'invoiceTaxConfirmationTitle';
+  static const invoices = 'invoices';
   static const isDependencyOfPublished = 'isDependencyOfPublished';
   static const isDependencyOfPublishedDetail = 'isDependencyOfPublishedDetail';
   static const isDuplicate = 'isDuplicate';
@@ -2887,6 +2918,7 @@ abstract class LocaleKeys {
   static const lookOnly = 'lookOnly';
   static const low = 'low';
   static const mailbox = 'mailbox';
+  static const makeAvailableOffline = 'makeAvailableOffline';
   static const manageBillingAdmins = 'manageBillingAdmins';
   static const manageInvitations = 'manageInvitations';
   static const manageLabels = 'manageLabels';
@@ -3107,6 +3139,7 @@ abstract class LocaleKeys {
   static const noLicensesBooked = 'noLicensesBooked';
   static const noLicensesChanged = 'noLicensesChanged';
   static const noLicensesChangedDescription = 'noLicensesChangedDescription';
+  static const noLinkForDrafts = 'noLinkForDrafts';
   static const noLogs = 'noLogs';
   static const noMandatoryFields = 'noMandatoryFields';
   static const noMemberOfWorkspace = 'noMemberOfWorkspace';
@@ -3136,6 +3169,7 @@ abstract class LocaleKeys {
   static const noSolutionFound = 'noSolutionFound';
   static const noSolutions = 'noSolutions';
   static const noSolutionsToUpdate = 'noSolutionsToUpdate';
+  static const noStatus = 'noStatus';
   static const noStyle = 'noStyle';
   static const noTasks = 'noTasks';
   static const noTaxId = 'noTaxId';
@@ -3206,9 +3240,12 @@ abstract class LocaleKeys {
   static const objectiveDigitalizationLabel = 'objectiveDigitalizationLabel';
   static const objectiveProcessesLabel = 'objectiveProcessesLabel';
   static const objectivesLabel = 'objectivesLabel';
+  static const offlineDownloadStarted = 'offlineDownloadStarted';
+  static const offlineLimitReached = 'offlineLimitReached';
   static const ok = 'ok';
   static const oldPassword = 'oldPassword';
   static const oldValue = 'oldValue';
+  static const olderInvoices = 'olderInvoices';
   static const onSpecificDate = 'onSpecificDate';
   static const onboardingAssignCustomerSupportContact =
       'onboardingAssignCustomerSupportContact';
@@ -3309,6 +3346,8 @@ abstract class LocaleKeys {
   static const paused = 'paused';
   static const payDirectly = 'payDirectly';
   static const payInvoice = 'payInvoice';
+  static const paymentManagement = 'paymentManagement';
+  static const paymentMethod = 'paymentMethod';
   static const pdfMerge = 'pdfMerge';
   static const pdfMergeCreditUsageExplanation =
       'pdfMergeCreditUsageExplanation';
@@ -3405,6 +3444,7 @@ abstract class LocaleKeys {
   static const previewInvoiceError = 'previewInvoiceError';
   static const previewLimit = 'previewLimit';
   static const previewLoading = 'previewLoading';
+  static const previewMinimum = 'previewMinimum';
   static const previewNotAvailable = 'previewNotAvailable';
   static const previewNotAvailableForReduction =
       'previewNotAvailableForReduction';
@@ -3557,6 +3597,7 @@ abstract class LocaleKeys {
   static const removeFollowingRoles = 'removeFollowingRoles';
   static const removeFromFavorites = 'removeFromFavorites';
   static const removeFromListDescription = 'removeFromListDescription';
+  static const removeFromOffline = 'removeFromOffline';
   static const removeMember = 'removeMember';
   static const removeProfilePicture = 'removeProfilePicture';
   static const removeReadAccess = 'removeReadAccess';
@@ -3564,6 +3605,7 @@ abstract class LocaleKeys {
   static const removeUserStepDescription = 'removeUserStepDescription';
   static const removeValue = 'removeValue';
   static const removeWriteAccess = 'removeWriteAccess';
+  static const removedFromOffline = 'removedFromOffline';
   static const removedInvalidRoleConfigurations =
       'removedInvalidRoleConfigurations';
   static const removingUser = 'removingUser';
@@ -4116,6 +4158,7 @@ abstract class LocaleKeys {
       'stripeInvoicePreviewFailedDetails';
   static const stripeLaunchBillingAccountSessionFailed =
       'stripeLaunchBillingAccountSessionFailed';
+  static const stripeLink = 'stripeLink';
   static const stripeNotSupported = 'stripeNotSupported';
   static const stripePortal = 'stripePortal';
   static const strokeWidth = 'strokeWidth';
@@ -4423,6 +4466,7 @@ abstract class LocaleKeys {
   static const unlockPermissions = 'unlockPermissions';
   static const unlockRecord = 'unlockRecord';
   static const unlockingRecord = 'unlockingRecord';
+  static const unpaidInvoice = 'unpaidInvoice';
   static const unsupportedLink = 'unsupportedLink';
   static const until = 'until';
   static const updateAllSolutions = 'updateAllSolutions';

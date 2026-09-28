@@ -26,6 +26,9 @@ dependencies:
     image: ^4.5.2
     intl: ^0.20.2
     mask_text_input_formatter: ^2.9.0
+    # The univelop/open_filex fork, published under its own name: it and
+    # open_filex both ship the com.crazecoder.openfile Android package, which
+    # broke dex merging when both were resolved side by side.
     yust_open_file_x: ^4.7.1
     path_provider: ^2.1.5
     photo_view: ^0.15.0
@@ -44,7 +47,11 @@ dependencies:
 
 dev_dependencies:
     flutter_lints: ^6.0.0
+    # The in-memory SharedPreferencesAsync store the offline tests run against.
+    shared_preferences_platform_interface: ^2.4.1
     test: ^1.25.15
+    flutter_test:
+        sdk: flutter
     build_runner: ^2.4.7
 
 dependency_overrides:
@@ -57,3 +64,8 @@ dependency_overrides:
         git:
             url: https://github.com/univelop/keyboard_name.git
             ref: master
+    # #7710: offline file representation. Restore to master once merged.
+    yust:
+        git:
+            url: https://github.com/univelop/yust.git
+            ref: 7710-offline-file-handler
