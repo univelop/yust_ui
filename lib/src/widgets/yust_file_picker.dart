@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -273,7 +274,9 @@ class YustFilePickerState
             case YustFileTapMode.preview:
               unawaited(YustFileLaunchHelper.openFile(context, file));
             case YustFileTapMode.defaultApp:
-              unawaited(YustFileLaunchHelper.openFileInDefaultApp(context, file));
+              unawaited(
+                YustFileLaunchHelper.openFileInDefaultApp(context, file),
+              );
             case YustFileTapMode.share:
               unawaited(YustFileLaunchHelper.shareFile(context, file));
           }
@@ -475,13 +478,20 @@ class YustFilePickerState
       if (!fileSizeValid) return;
 
       final newFile = await processFile(name, file, bytes);
+
+      final contentValid = await checkDuplicateContent(newFile);
+      if (!contentValid) continue;
+
       await uploadFile(file: newFile);
     }
   }
 
   Future<bool> _checkFileSize(String name, File? file, Uint8List? bytes) async {
-    final maxSizeKiB = widget.maximumFileSizeInKiB;
-    if (maxSizeKiB == null) return true;
+    const ceilingKiB = YustFile.maxSizeInBytes ~/ 1024;
+    final configuredMaxSizeKiB = widget.maximumFileSizeInKiB;
+    final maxSizeKiB = configuredMaxSizeKiB == null
+        ? ceilingKiB
+        : min(configuredMaxSizeKiB, ceilingKiB);
 
     final int fileSizeInKiB = file != null
         ? await file.length() ~/ 1024

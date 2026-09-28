@@ -552,9 +552,28 @@ class YustImagePickerState
     bool addTimestampWatermark = false,
   }) async {
     await EasyLoading.show(status: LocaleKeys.addingImages.tr());
-
-    if (!await checkConnectivity()) {
+    try {
+      await _uploadImages(
+        images,
+        imageDataExtractor,
+        setGPSToLocation: setGPSToLocation,
+        addGpsWatermark: addGpsWatermark,
+        addTimestampWatermark: addTimestampWatermark,
+      );
+    } finally {
+      // Without this an error would leave the loading overlay up forever.
       await EasyLoading.dismiss();
+    }
+  }
+
+  Future<void> _uploadImages<T>(
+    List<T> images,
+    Future<(String, File?, Uint8List?)> Function(T) imageDataExtractor, {
+    bool setGPSToLocation = false,
+    bool addGpsWatermark = false,
+    bool addTimestampWatermark = false,
+  }) async {
+    if (!await checkConnectivity()) {
       return;
     }
 
@@ -630,13 +649,13 @@ class YustImagePickerState
         addTimestampWatermark: addTimestampWatermark,
       );
 
+      if (!await checkDuplicateContent(newImage)) continue;
+
       await uploadFile(file: newImage);
     }
     if (widget.numberOfFiles == 1 && widget.overwriteSingleFile) {
       await deleteFiles(pictureFiles);
     }
-
-    await EasyLoading.dismiss();
   }
 
   Future<void> _pickImages(ImageSource imageSource) async {

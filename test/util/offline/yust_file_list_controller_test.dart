@@ -322,6 +322,35 @@ void main() {
     });
   });
 
+  group('content already held under another name', () {
+    test('is found and refused by add', () async {
+      final controller = buildController();
+      await controller.setOnlineFiles([]);
+      await controller.add(_pickedFile('first.pdf', 'same-bytes'));
+      final duplicate = _pickedFile('second.pdf', 'same-bytes');
+
+      final fileWithSameContent = await controller.findFileWithSameContent(
+        duplicate,
+      );
+
+      expect(fileWithSameContent?.name, 'first.pdf');
+      await expectLater(controller.add(duplicate), throwsStateError);
+      expect(controller.files.map((file) => file.name), ['first.pdf']);
+    });
+
+    test('is not reported for the same name', () async {
+      final controller = buildController();
+      await controller.setOnlineFiles([]);
+      await controller.add(_pickedFile('plan.pdf', 'same-bytes'));
+
+      final fileWithSameContent = await controller.findFileWithSameContent(
+        _pickedFile('plan.pdf', 'same-bytes'),
+      );
+
+      expect(fileWithSameContent, isNull);
+    });
+  });
+
   group('a mutation returns with the overlay already current', () {
     test('add: the new file is not reported online on return', () async {
       executor.succeed = false;

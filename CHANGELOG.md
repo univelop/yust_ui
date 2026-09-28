@@ -1,3 +1,28 @@
+## 3.33.0 - 2026-09-08
+
+- Reject uploading a file whose content already exists in the same picker under a different name. Files are stored in a map keyed by their md5 hash, so the second upload used to overwrite the first one's entry and orphan its storage object. `YustFileHandler.findDuplicateContent` computes the hash and reports the clash; both pickers show `exceptionDuplicateImageContent` / `exceptionDuplicateFileContent` and skip that file, and `YustFileHandler.addFile` throws a `YustException` as a safety net for direct callers. Re-uploading the same name with the same content still just replaces the entry.
+- Renaming a file removes the old entry before uploading the new one, so a rename is no longer rejected as a duplicate of itself. A failed upload restores the original instead of losing the file.
+- `YustFilePicker` caps its file size check at `YustFile.maxSizeInBytes` (500 MB) even when no `maximumFileSizeInKiB` is set, so an oversized file is reported before the upload starts instead of failing inside yust.
+- `YustImagePicker` dismisses its loading overlay in a `finally`. An error while adding images previously left the overlay up forever.
+- Bump `yust` to 3.35.0
+
+## 3.32.9 - 2026-08-25
+
+- Bump `yust` to 3.33.5
+
+## 3.32.8 - 2026-07-28
+
+- Add favorite support to `YustFilePicker`, `YustImagePicker` and the image screen (mark files/images as favorites, incl. read-only display)
+
+## 3.32.7 - 2026-07-23
+
+- Replace `open_filex` git dependency with published `yust_open_file_x` (Univelop fork of `open_filex` including iOS 26 default-app support). Unblocks pub.dev publishing of yust_ui.
+
+## 3.32.6 - 2026-07-23
+
+- Add tap mode options to `YustFilePicker` (preview, open in default app, or share)
+- Fix empty options dialog height in `YustSelect`
+
 ## 3.32.5 - 2026-04-21
 
 - Allow zooming in single images and disable sharing for them in YustImagePicker

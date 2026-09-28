@@ -178,10 +178,31 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     await _refreshPending();
   }
 
+  /// The file in [files] holding [file]'s content under another name, or null.
+  /// Entries are keyed by content hash, so adding [file] would overwrite it.
+  Future<T?> findFileWithSameContent(T file) async {
+    await file.ensureHash();
+    if (file.hash.isEmpty) return null;
+    return files.firstWhereOrNull(
+      (existingFile) =>
+          existingFile.hash == file.hash && existingFile.name != file.name,
+    );
+  }
+
   /// Adds [file]: writes its bytes to the device, then enqueues the upload.
   /// Returns once the pending overlay reflects the new operation, which is what
   /// the caller reads [onlineFiles] against.
-  Future<void> add(T file) => _enqueueUpload(file);
+  ///
+  /// Throws a [StateError] when [findFileWithSameContent] finds a file.
+  Future<void> add(T file) async {
+    final fileWithSameContent = await findFileWithSameContent(file);
+    if (fileWithSameContent != null) {
+      throw StateError(
+        '"${file.name}" has the same content as "${fileWithSameContent.name}".',
+      );
+    }
+    await _enqueueUpload(file);
+  }
 
   /// Replaces [file]'s bytes (e.g. a re-drawn signature/image) and re-uploads.
   /// Clearing the hash makes [_enqueueUpload] recompute it for the new content.

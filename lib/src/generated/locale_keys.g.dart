@@ -381,6 +381,7 @@ abstract class LocaleKeys {
   static const alertMissingConnection = 'alertMissingConnection';
   static const alertMissingConnectionAddImages =
       'alertMissingConnectionAddImages';
+  static const alertMissingConnectionDrawing = 'alertMissingConnectionDrawing';
   static const alertMissingConnectionPrintOut =
       'alertMissingConnectionPrintOut';
   static const alertMissingConnectionShare = 'alertMissingConnectionShare';
@@ -1318,13 +1319,27 @@ abstract class LocaleKeys {
   static const drawingAnnotations = 'drawingAnnotations';
   static const drawingAnnotationsDeleteFileConfirm =
       'drawingAnnotationsDeleteFileConfirm';
+  static const drawingAnnotationsDeletePlan = 'drawingAnnotationsDeletePlan';
+  static const drawingAnnotationsDeletePlanConfirm =
+      'drawingAnnotationsDeletePlanConfirm';
   static const drawingAnnotationsDescription = 'drawingAnnotationsDescription';
+  static const drawingAnnotationsDownloadPlan =
+      'drawingAnnotationsDownloadPlan';
+  static const drawingAnnotationsEnterFullscreen =
+      'drawingAnnotationsEnterFullscreen';
+  static const drawingAnnotationsExitFullscreen =
+      'drawingAnnotationsExitFullscreen';
   static const drawingAnnotationsFileBrick = 'drawingAnnotationsFileBrick';
   static const drawingAnnotationsHotspots = 'drawingAnnotationsHotspots';
+  static const drawingAnnotationsNoPlanSelected =
+      'drawingAnnotationsNoPlanSelected';
   static const drawingAnnotationsPinCreateHint =
       'drawingAnnotationsPinCreateHint';
+  static const drawingAnnotationsPlanBrick = 'drawingAnnotationsPlanBrick';
+  static const drawingAnnotationsRotateHint = 'drawingAnnotationsRotateHint';
   static const drawingAnnotationsStylingBrick =
       'drawingAnnotationsStylingBrick';
+  static const drawingAnnotationsUploadPlan = 'drawingAnnotationsUploadPlan';
   static const drawingAnnotationsXBrick = 'drawingAnnotationsXBrick';
   static const drawingAnnotationsYBrick = 'drawingAnnotationsYBrick';
   static const drawingBrickDescription = 'drawingBrickDescription';
@@ -1643,6 +1658,9 @@ abstract class LocaleKeys {
   static const exceptionDateRangeCannotBeLongerThanMaxDays =
       'exceptionDateRangeCannotBeLongerThanMaxDays';
   static const exceptionDivisionByZero = 'exceptionDivisionByZero';
+  static const exceptionDuplicateFileContent = 'exceptionDuplicateFileContent';
+  static const exceptionDuplicateImageContent =
+      'exceptionDuplicateImageContent';
   static const exceptionEmailCouldNotBeSent = 'exceptionEmailCouldNotBeSent';
   static const exceptionEmailNotValid = 'exceptionEmailNotValid';
   static const exceptionEmailOnFlowError = 'exceptionEmailOnFlowError';
@@ -1680,6 +1698,7 @@ abstract class LocaleKeys {
       'exceptionFileContentMustBeBinary';
   static const exceptionFileContentMustBeYustFile =
       'exceptionFileContentMustBeYustFile';
+  static const exceptionFileExceedsMaxSize = 'exceptionFileExceedsMaxSize';
   static const exceptionFileLimitReached = 'exceptionFileLimitReached';
   static const exceptionFileNameMultipleUsage =
       'exceptionFileNameMultipleUsage';
@@ -3642,6 +3661,7 @@ abstract class LocaleKeys {
   static const results = 'results';
   static const resumeOnError = 'resumeOnError';
   static const resumeWorkflow = 'resumeWorkflow';
+  static const retry = 'retry';
   static const returnType = 'returnType';
   static const returnValue = 'returnValue';
   static const returnValueStepCanOnlyBeUsedOnce =

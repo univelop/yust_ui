@@ -241,6 +241,23 @@ abstract class YustFilePickerBaseState<
   /// Adds and uploads [file].
   Future<void> addSourceFile(T file) => _controller.add(file);
 
+  /// Shows an alert and returns false when a file under another name already
+  /// holds [file]'s content; returns true otherwise.
+  Future<bool> checkDuplicateContent(T file) async {
+    final fileWithSameContent = await _controller.findFileWithSameContent(file);
+    if (fileWithSameContent == null) return true;
+
+    await EasyLoading.dismiss();
+    final namedArgs = {'fileName': fileWithSameContent.name ?? ''};
+    await YustUi.alertService.showAlert(
+      LocaleKeys.fileUpload.tr(),
+      file is YustImage
+          ? LocaleKeys.exceptionDuplicateImageContent.tr(namedArgs: namedArgs)
+          : LocaleKeys.exceptionDuplicateFileContent.tr(namedArgs: namedArgs),
+    );
+    return false;
+  }
+
   /// Deletes [file].
   Future<void> deleteSourceFile(T file) => _controller.delete(file);
 
