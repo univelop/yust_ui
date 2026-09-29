@@ -31,8 +31,8 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// Label for the file picker.
   final String? label;
 
-  /// Whether [label] carries the number of files shown. Counted off the
-  /// queue-merged list, which only this widget holds.
+  /// Whether [label] carries the number of files shown — the displayed list,
+  /// which includes a file still queued for upload.
   final bool showFileCount;
 
   /// Files to display.
@@ -541,9 +541,6 @@ abstract class YustFilePickerBaseState<
     }
   }
 
-  /// The label as shown, with the file count appended when asked for. Counted
-  /// off the tracked files, so a file added offline is included before the
-  /// document carries it.
   String? get _label => widget.label == null || !widget.showFileCount
       ? widget.label
       : '${widget.label} (${sourceFiles.length} ${LocaleKeys.files.tr()})';

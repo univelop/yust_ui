@@ -31,6 +31,7 @@ abstract class LocaleKeys {
   static const actionDefinitionExplanation = 'actionDefinitionExplanation';
   static const actionType = 'actionType';
   static const active = 'active';
+  static const activeFrom = 'activeFrom';
   static const activeRole = 'activeRole';
   static const activeRoleWhenReplacingRequired =
       'activeRoleWhenReplacingRequired';
@@ -670,6 +671,10 @@ abstract class LocaleKeys {
   static const billingAddress = 'billingAddress';
   static const billingAdmin = 'billingAdmin';
   static const billingCycle = 'billingCycle';
+  static const billingCycleCancellationScheduledHint =
+      'billingCycleCancellationScheduledHint';
+  static const billingCycleSubscriptionChangesHint =
+      'billingCycleSubscriptionChangesHint';
   static const billingLinkedCustomerDisclaimer =
       'billingLinkedCustomerDisclaimer';
   static const billingOptions = 'billingOptions';
@@ -722,7 +727,15 @@ abstract class LocaleKeys {
   static const camera = 'camera';
   static const canEnter = 'canEnter';
   static const cancel = 'cancel';
+  static const cancelSubscription = 'cancelSubscription';
+  static const cancelSubscriptionConfirmation =
+      'cancelSubscriptionConfirmation';
+  static const cancelSubscriptionPlannedChangesHint =
+      'cancelSubscriptionPlannedChangesHint';
+  static const cancelSubscriptionSuccess = 'cancelSubscriptionSuccess';
   static const canceled = 'canceled';
+  static const cannotAddLicensesWithScheduledReduction =
+      'cannotAddLicensesWithScheduledReduction';
   static const cannotChangeBillingAccountName =
       'cannotChangeBillingAccountName';
   static const cannotChangeLicense = 'cannotChangeLicense';
@@ -771,6 +784,7 @@ abstract class LocaleKeys {
   static const changePassword = 'changePassword';
   static const changeStripeData = 'changeStripeData';
   static const changeWorkspace = 'changeWorkspace';
+  static const changeWorkspaceMembership = 'changeWorkspaceMembership';
   static const changedEmail = 'changedEmail';
   static const changedPassword = 'changedPassword';
   static const changelog = 'changelog';
@@ -906,6 +920,8 @@ abstract class LocaleKeys {
   static const chooseFittingColor = 'chooseFittingColor';
   static const chooseFromManySolutions = 'chooseFromManySolutions';
   static const chooseLicense = 'chooseLicense';
+  static const chooseLicenseForAllWorkspaces = 'chooseLicenseForAllWorkspaces';
+  static const chooseLicenseForUser = 'chooseLicenseForUser';
   static const choosePaths = 'choosePaths';
   static const chooseProfilePicture = 'chooseProfilePicture';
   static const chooseRecord = 'chooseRecord';
@@ -1143,6 +1159,8 @@ abstract class LocaleKeys {
   static const currentWeekDescription = 'currentWeekDescription';
   static const currentWorkspaceIdDescription = 'currentWorkspaceIdDescription';
   static const currentYearDescription = 'currentYearDescription';
+  static const currentlyActive = 'currentlyActive';
+  static const currentlyAssigned = 'currentlyAssigned';
   static const custom = 'custom';
   static const customColors = 'customColors';
   static const customColumnWidth = 'customColumnWidth';
@@ -2812,10 +2830,13 @@ abstract class LocaleKeys {
   static const licenseLightPartTime = 'licenseLightPartTime';
   static const licenseLightS = 'licenseLightS';
   static const licenseLightXS = 'licenseLightXS';
+  static const licenseMismatch = 'licenseMismatch';
+  static const licenseMismatchWarning = 'licenseMismatchWarning';
   static const licenseName = 'licenseName';
   static const licensePartner = 'licensePartner';
   static const licensePro = 'licensePro';
   static const licenseReductionNotAllowed = 'licenseReductionNotAllowed';
+  static const licenseReductionScheduled = 'licenseReductionScheduled';
   static const licenseTest = 'licenseTest';
   static const licensed = 'licensed';
   static const licenses = 'licenses';
@@ -3273,6 +3294,7 @@ abstract class LocaleKeys {
   static const oneWeek = 'oneWeek';
   static const onlyChangeableByBillingAccountOwnerOrAdmin =
       'onlyChangeableByBillingAccountOwnerOrAdmin';
+  static const onlyChangeableByBillingAdmin = 'onlyChangeableByBillingAdmin';
   static const onlyChangeableByOwner = 'onlyChangeableByOwner';
   static const onlyOneInteractiveElementPerSlot =
       'onlyOneInteractiveElementPerSlot';
@@ -3282,6 +3304,7 @@ abstract class LocaleKeys {
   static const onlyVisibleFiles = 'onlyVisibleFiles';
   static const oops = 'oops';
   static const open = 'open';
+  static const openAction = 'openAction';
   static const openAi = 'openAi';
   static const openAsDialog = 'openAsDialog';
   static const openDocs = 'openDocs';
@@ -3317,6 +3340,7 @@ abstract class LocaleKeys {
   static const overOrganization = 'overOrganization';
   static const overallHistory = 'overallHistory';
   static const overlapInMinutesDescription = 'overlapInMinutesDescription';
+  static const overview = 'overview';
   static const overwriteGlobalSettings = 'overwriteGlobalSettings';
   static const overwriteSingleFile = 'overwriteSingleFile';
   static const owner = 'owner';
@@ -3671,6 +3695,13 @@ abstract class LocaleKeys {
   static const returnValues = 'returnValues';
   static const returnValuesExplanation = 'returnValuesExplanation';
   static const reverseTax = 'reverseTax';
+  static const revertCancellation = 'revertCancellation';
+  static const revertCancellationConfirmation =
+      'revertCancellationConfirmation';
+  static const revertLicenseReduction = 'revertLicenseReduction';
+  static const revertLicenseReductionConfirmation =
+      'revertLicenseReductionConfirmation';
+  static const revertingLicenseReduction = 'revertingLicenseReduction';
   static const richTextHint = 'richTextHint';
   static const richTextHintDescription = 'richTextHintDescription';
   static const richTextHintLineCountExceeded = 'richTextHintLineCountExceeded';
@@ -3763,6 +3794,7 @@ abstract class LocaleKeys {
       'scannerStepVariableExplanation';
   static const scannerValue = 'scannerValue';
   static const scheduledAt = 'scheduledAt';
+  static const scheduledChanges = 'scheduledChanges';
   static const scheduledJobFound = 'scheduledJobFound';
   static const scheduler = 'scheduler';
   static const schedulerBrickDescription = 'schedulerBrickDescription';
@@ -4174,6 +4206,15 @@ abstract class LocaleKeys {
   static const submitButtonLabel = 'submitButtonLabel';
   static const submitIcon = 'submitIcon';
   static const subscribeToNewsletter = 'subscribeToNewsletter';
+  static const subscriptionCancellationNotPossible =
+      'subscriptionCancellationNotPossible';
+  static const subscriptionCancellationScheduledHint =
+      'subscriptionCancellationScheduledHint';
+  static const subscriptionCancellationSystemPricingHint =
+      'subscriptionCancellationSystemPricingHint';
+  static const subscriptionCancelledOn = 'subscriptionCancelledOn';
+  static const subscriptionChangesScheduledHint =
+      'subscriptionChangesScheduledHint';
   static const subscriptionUpdateSuccessful = 'subscriptionUpdateSuccessful';
   static const substringDescription = 'substringDescription';
   static const subtractDaysDescription = 'subtractDaysDescription';
@@ -4373,9 +4414,12 @@ abstract class LocaleKeys {
   static const tooltip = 'tooltip';
   static const tooltipAllowedExtensions = 'tooltipAllowedExtensions';
   static const tooltipLicenseFiltering = 'tooltipLicenseFiltering';
+  static const tooltipLicenseMismatchFiltering =
+      'tooltipLicenseMismatchFiltering';
   static const tooltipMaxFileSize = 'tooltipMaxFileSize';
   static const tooltipNoAllowedExtensions = 'tooltipNoAllowedExtensions';
   static const tooltipRoleFiltering = 'tooltipRoleFiltering';
+  static const tooltipWorkspaceFiltering = 'tooltipWorkspaceFiltering';
   static const topLeft = 'topLeft';
   static const topRight = 'topRight';
   static const total = 'total';
@@ -4676,6 +4720,7 @@ abstract class LocaleKeys {
   static const workflowSteps = 'workflowSteps';
   static const workflowTechNameExplanation = 'workflowTechNameExplanation';
   static const workflows = 'workflows';
+  static const workspace = 'workspace';
   static const workspaceAiBuilderIntegrationReference =
       'workspaceAiBuilderIntegrationReference';
   static const workspaceBanner = 'workspaceBanner';
