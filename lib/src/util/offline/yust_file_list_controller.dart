@@ -5,31 +5,31 @@ import 'package:flutter/foundation.dart';
 import 'package:yust/yust.dart';
 
 import 'yust_file_operation.dart';
-import 'yust_file_operation_handler.dart';
+import 'yust_file_operation_manager.dart';
 import 'yust_firebase_file_location.dart';
 import 'yust_offline_storage.dart';
 
 /// Widget-facing model for a host's file list.
 ///
 /// Shows the document's persisted files overlaid with the pending operations in
-/// the shared [YustFileOperationHandler]'s queue: a pending add shows from its
+/// the shared [YustFileOperationManager]'s queue: a pending add shows from its
 /// on-device bytes, a pending delete is hidden, a pending rename shows the new
 /// name. Every change is a command (write local bytes, enqueue an operation);
 /// the display is derived from the queue.
 class YustFileListController<T extends YustFile> extends ChangeNotifier {
   YustFileListController({
-    required this.handler,
+    required this.manager,
     required this.firebaseLocation,
     YustOfflineStorage? storage,
     this.newestFirst = false,
     this.onOnlineFilesChanged,
   }) : _storage = storage ?? YustOfflineStorage.forDevice() {
-    handler.addListener(_onQueueChanged);
-    _appliedSub = handler.applied.listen(_onOperationApplied);
+    manager.addListener(_onQueueChanged);
+    _appliedSub = manager.applied.listen(_onOperationApplied);
   }
 
-  /// The one app-scoped handler every file change flows through.
-  final YustFileOperationHandler handler;
+  /// The one app-scoped manager every file change flows through.
+  final YustFileOperationManager manager;
 
   /// Where this host's files live (stamps files, filters pending operations).
   final YustFirebaseFileLocation firebaseLocation;
@@ -90,7 +90,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// "could not be uploaded" marker and the alert behind it.
   ///
   /// Only an upload is ever kept for the user — see
-  /// [YustFileOperationHandler.discardOperationsForFile].
+  /// [YustFileOperationManager.discardOperationsForFile].
   YustFileOperation<YustFile>? failedUploadFor(T file) =>
       _pendingOperations.firstWhereOrNull(
         (operation) =>
@@ -101,7 +101,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// the failure. The display falls back to the document snapshot, which is the
   /// server's state.
   Future<void> discardFailedUploadFor(T file) async {
-    await handler.discardOperationsForFile(file.offlineKey);
+    await manager.discardOperationsForFile(file.offlineKey);
     await _scheduleRefresh();
   }
 
@@ -241,7 +241,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     firebaseLocation.apply(file);
     await file.ensureHash();
     await _writeBytes(file);
-    await handler.enqueue(
+    await manager.enqueue(
       YustFileOperation<YustFile>(
         type: YustFileOperationType.upload,
         file: file,
@@ -266,13 +266,13 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
     _recentlyUploaded.remove(file.offlineKey);
     final pendingUpload = await _queuedUploadFor(file);
     if (pendingUpload != null) {
-      await handler.cancel(pendingUpload);
+      await manager.cancel(pendingUpload);
       await _scheduleRefresh();
       return;
     }
     // ignore: deprecated_member_use
     if (file.path != null || file.url != null) {
-      await handler.enqueue(
+      await manager.enqueue(
         YustFileOperation<YustFile>(
           type: YustFileOperationType.delete,
           file: file,
@@ -300,7 +300,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// cached overlay so a host that only issues commands (no online list) can
   /// still cancel a not-yet-applied upload.
   Future<YustFileOperation<YustFile>?> _queuedUploadFor(T file) async {
-    for (final operation in await handler.pending()) {
+    for (final operation in await manager.pending()) {
       if (operation.type == YustFileOperationType.upload &&
           operation.fileKey == file.offlineKey) {
         return operation;
@@ -317,7 +317,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// old one. The Storage folder and the content hash a rename leaves alone, so
   /// the entry is recognised by those.
   Future<String> _queuedFileKeyFor(T file) async {
-    for (final operation in await handler.pending()) {
+    for (final operation in await manager.pending()) {
       if (operation.file.storageFolderPath == file.storageFolderPath &&
           operation.file.hash == file.hash) {
         return operation.fileKey;
@@ -331,7 +331,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// new name from the queued rename on the next refresh.
   Future<void> rename(T file, String newName) async {
     final snapshot = file.copyWithUrl(null);
-    await handler.enqueue(
+    await manager.enqueue(
       YustFileOperation<YustFile>(
         type: YustFileOperationType.rename,
         file: snapshot,
@@ -348,7 +348,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   Future<void> updateMetadata(T file) async {
     firebaseLocation.apply(file);
     if (_pendingUploadFor(file) == null) {
-      await handler.enqueue(
+      await manager.enqueue(
         YustFileOperation<YustFile>(
           type: YustFileOperationType.updateMetadata,
           file: file,
@@ -366,7 +366,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    handler.removeListener(_onQueueChanged);
+    manager.removeListener(_onQueueChanged);
     unawaited(_appliedSub.cancel());
     super.dispose();
   }
@@ -415,7 +415,7 @@ class YustFileListController<T extends YustFile> extends ChangeNotifier {
   /// both sides of the await, since the host can be torn down mid-read.
   Future<void> _refreshPending() async {
     if (_disposed) return;
-    final allOperations = await handler.pending();
+    final allOperations = await manager.pending();
     if (_disposed) return;
     _pendingOperations = allOperations
         .where((operation) => firebaseLocation.owns(operation.file))

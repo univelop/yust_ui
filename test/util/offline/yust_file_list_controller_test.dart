@@ -11,11 +11,12 @@ import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_list_controller.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_error.dart';
-import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_firebase_file_location.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
+
+import 'fake_file_service.dart';
 
 /// What being offline throws, as opposed to a failure that counts as permanent.
 const _offline = SocketException('no route to host');
@@ -57,31 +58,6 @@ YustFile _pickedFileFor(YustFirebaseFileLocation target, String name) =>
       setCreatedAtToNow: false,
     );
 
-/// Stands in for the real `YustFileOperationManager`: when [succeed] it mutates
-/// the operation's file the way an upload does — stamping `path` and `url` —
-/// before reporting success, so the controller sees the same post-upload state
-/// it would in production.
-class _FakeManager implements YustFileOperationManager {
-  _FakeManager({this.succeed = true});
-
-  bool succeed;
-
-  /// What a failing execute throws — transient by default, so a test only ends
-  /// an operation for good when it means to.
-  Object failure = _offline;
-  final List<String> executed = [];
-
-  @override
-  Future<void> execute(YustFileOperation<YustFile> operation) async {
-    if (!succeed) throw failure;
-    operation.file
-      ..path = operation.file.storageFolderPath
-      // ignore: deprecated_member_use
-      ..url = 'https://cdn.test/${operation.file.name}';
-    executed.add(operation.fileKey);
-  }
-}
-
 /// A file as the pickers actually construct one: `path` is stamped at pick
 /// time, before any upload has happened (yust_file_picker.dart `processFile`
 /// and yust_image_helpers.dart `processImage` both do this).
@@ -109,15 +85,17 @@ void main() {
   late Directory root;
   late YustSyncQueue queue;
   late YustOfflineStorage storage;
-  late _FakeManager executor;
-  late YustFileOperationHandler handler;
+  late FakeFileService fileService;
+  late YustFileOperationManager manager;
 
-  /// A handler whose retry never fires, so a failed operation stays pending for the
-  /// duration of a test instead of churning in the background.
-  YustFileOperationHandler buildHandler([YustFileOperationManager? which]) {
-    final built = YustFileOperationHandler(
-      manager: which ?? executor,
-      queue: queue,
+  /// A manager over [queue] whose retry never fires, so a failed operation
+  /// stays pending for the duration of a test instead of churning in the
+  /// background. Its transfers run through [fileService].
+  YustFileOperationManager buildManager(YustSyncQueue managerQueue) {
+    final built = YustFileOperationManager(
+      queue: managerQueue,
+      documentWriterFor: (_) => null,
+      storage: storage,
       connectivityStream: const Stream<bool>.empty(),
       delay: (_) => Completer<void>().future,
     );
@@ -131,8 +109,9 @@ void main() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
     queue = YustSyncQueue();
-    executor = _FakeManager();
-    handler = buildHandler();
+    fileService = FakeFileService();
+    Yust.fileService = fileService;
+    manager = buildManager(queue);
   });
 
   tearDown(() {
@@ -140,12 +119,12 @@ void main() {
   });
 
   YustFileListController<YustFile> buildController({
-    YustFileOperationHandler? on,
+    YustFileOperationManager? on,
     YustFirebaseFileLocation target = _target,
     void Function(List<YustFile>)? onOnlineFilesChanged,
   }) {
     final controller = YustFileListController<YustFile>(
-      handler: on ?? handler,
+      manager: on ?? manager,
       firebaseLocation: target,
       storage: storage,
       onOnlineFilesChanged: onOnlineFilesChanged,
@@ -156,12 +135,12 @@ void main() {
 
   group('classification of pending vs. uploaded files', () {
     test('a picked file whose upload is still queued is not online', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // `path` is set at pick time, so it alone cannot mean "persisted".
@@ -169,12 +148,12 @@ void main() {
     });
 
     test('a picked file whose upload is still queued is displayed', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       expect(controller.files.map((file) => file.name), ['plan.pdf']);
@@ -187,7 +166,7 @@ void main() {
         await controller.setOnlineFiles([]);
 
         await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-        await handler.processPendingOperations();
+        await manager.processPendingOperations();
         await controller.settled;
 
         expect(controller.onlineFiles.map((file) => file.name), ['plan.pdf']);
@@ -196,24 +175,18 @@ void main() {
     );
 
     test('a file restored from the persisted queue is still pending', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final first = buildController();
       await first.setOnlineFiles([]);
       await first.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await first.settled;
 
-      // Simulate a restart: a fresh queue, handler and controller over the same
+      // Simulate a restart: a fresh queue, manager and controller over the same
       // storage, so the operation is read back from the preferences.
       final restartedQueue = YustSyncQueue();
-      final restartedHandler = YustFileOperationHandler(
-        manager: _FakeManager(succeed: false),
-        queue: restartedQueue,
-        connectivityStream: const Stream<bool>.empty(),
-        delay: (_) => Completer<void>().future,
-      );
-      addTearDown(restartedHandler.dispose);
-      final restored = buildController(on: restartedHandler);
+      final restartedManager = buildManager(restartedQueue);
+      final restored = buildController(on: restartedManager);
       await restored.setOnlineFiles([]);
       await restored.settled;
 
@@ -253,7 +226,7 @@ void main() {
       await controller.setOnlineFiles([]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // The operation has left the queue, so the pending overlay no longer carries it;
@@ -267,7 +240,7 @@ void main() {
       await controller.setOnlineFiles([]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       final promoted = controller.onlineFiles.single;
@@ -280,7 +253,7 @@ void main() {
       final controller = buildController();
       await controller.setOnlineFiles([]);
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       final uploaded = controller.onlineFiles.single;
@@ -291,12 +264,12 @@ void main() {
     });
 
     test('a failed upload is not promoted', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       expect(controller.onlineFiles, isEmpty);
@@ -304,12 +277,12 @@ void main() {
     });
 
     test('a cancelled upload is not promoted', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
       await controller.add(file);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // Deleting a file that is still queued drops its operation rather than applying
@@ -353,7 +326,7 @@ void main() {
 
   group('a mutation returns with the overlay already current', () {
     test('add: the new file is not reported online on return', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
 
@@ -367,7 +340,7 @@ void main() {
     });
 
     test('delete: the file is gone from the overlay on return', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
@@ -390,7 +363,7 @@ void main() {
       await controller.setOnlineFiles([_persistedFile('a.pdf', 'h-a')]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // The host uses this to refresh its in-memory value; it must eventually
@@ -408,7 +381,7 @@ void main() {
       await controller.setOnlineFiles([_persistedFile('a.pdf', 'h-a')]);
 
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // The queue's own document writer persists the file, and the host reads
@@ -434,7 +407,7 @@ void main() {
 
   group('rename', () {
     test('reports the updated list to the host', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final emitted = <List<String>>[];
       final controller = buildController(
         target: _unlinkedTarget,
@@ -451,7 +424,7 @@ void main() {
     });
 
     test('a delete queued behind it lands in the same chain', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('old.pdf', 'h-a')]);
 
@@ -470,7 +443,7 @@ void main() {
     });
 
     test('the file a queued delete removes is hidden', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('old.pdf', 'h-a')]);
 
@@ -488,7 +461,7 @@ void main() {
     final redrawnHash = md5.convert(redrawnBytes).toString();
 
     test('queues one upload, carrying the superseded key', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
 
@@ -509,7 +482,7 @@ void main() {
       // The device copy is keyed by content, so the replaced image stays at
       // the old path forever. A reader preferring the source file over the
       // bytes — the fullscreen viewer does — would go on showing it.
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
       final drawing = controller.files.single..file = File('${root.path}/old');
@@ -521,7 +494,7 @@ void main() {
     });
 
     test('shows the new content only, while the upload is pending', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', 'h-a')]);
 
@@ -533,7 +506,7 @@ void main() {
     test('supersedes nothing when the entry carries no hash', () async {
       // A legacy entry was never keyed by content, so no key of it can be
       // dropped — and dropping the whole attribute would lose the file.
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('drawing.png', '')]);
 
@@ -548,7 +521,7 @@ void main() {
     test(
       'supersedes nothing when the replaced upload was still queued',
       () async {
-        executor.succeed = false;
+        fileService.onStep = (_) async => throw _offline;
         final controller = buildController();
         await controller.setOnlineFiles([]);
         await controller.add(_pickedFile('drawing.png', 'first-draw'));
@@ -572,7 +545,7 @@ void main() {
       final controller = buildController();
       await controller.setOnlineFiles([_persistedFile('a.pdf', 'h-a')]);
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // The record stream emits a snapshot taken before the doc write landed.
@@ -589,7 +562,7 @@ void main() {
       final controller = buildController();
       await controller.setOnlineFiles([]);
       await controller.add(_pickedFile('plan.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // First stale snapshot: carried. Second: the file is genuinely gone —
@@ -607,11 +580,11 @@ void main() {
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
       await controller.add(file);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       await controller.delete(file);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
       await controller.setOnlineFiles([]);
       await controller.settled;
@@ -622,7 +595,7 @@ void main() {
 
   group('regression: the #7710 record clobber', () {
     test('the emitted online set never gains a queued file', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final emitted = <List<String>>[];
       final controller = buildController(
         target: _unlinkedTarget,
@@ -633,7 +606,7 @@ void main() {
       await controller.settled;
 
       await controller.add(_pickedFile('offline.pdf', 'pdf-bytes'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       // Every emission is what would be written to `brickValues.<brickId>`.
@@ -648,15 +621,13 @@ void main() {
 
   group('failed uploads', () {
     test('one permanent failure ends the upload and keeps it listed', () async {
-      executor
-        ..succeed = false
-        ..failure = _permanent;
+      fileService.onStep = (_) async => throw _permanent;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       expect(
@@ -670,29 +641,27 @@ void main() {
     });
 
     test('a file failing on the connection never counts as failed', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      await handler.processPendingOperations();
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
 
       expect(controller.failedUploadFor(file), isNull);
     });
 
     test('discarding drops the operation and the file with it', () async {
-      executor
-        ..succeed = false
-        ..failure = _permanent;
+      fileService.onStep = (_) async => throw _permanent;
       final controller = buildController();
       await controller.setOnlineFiles([]);
       final file = _pickedFile('plan.pdf', 'pdf-bytes');
 
       await controller.add(file);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await controller.settled;
       expect(controller.failedUploadFor(file), isNotNull);
 
@@ -700,7 +669,7 @@ void main() {
       await controller.settled;
 
       // The queue is empty, so the display is the document snapshot again.
-      expect(await handler.pending(), isEmpty);
+      expect(await manager.pending(), isEmpty);
       expect(controller.failedUploadFor(file), isNull);
       expect(controller.files, isEmpty);
     });
@@ -708,14 +677,14 @@ void main() {
 
   group('two unlinked targets do not claim each other\'s operations', () {
     test('a pending upload shows only in the picker that made it', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final owner = buildController(target: _unlinkedTarget);
       final other = buildController(target: _otherUnlinkedTarget);
       await owner.setOnlineFiles([]);
       await other.setOnlineFiles([]);
 
       await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await owner.settled;
       await other.settled;
 
@@ -730,7 +699,7 @@ void main() {
       await other.setOnlineFiles([]);
 
       await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await owner.settled;
       await other.settled;
 
@@ -755,7 +724,7 @@ void main() {
       await other.setOnlineFiles([]);
 
       await owner.add(_pickedFileFor(_unlinkedTarget, 'own.pdf'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await owner.settled;
       await other.settled;
 
@@ -765,14 +734,14 @@ void main() {
     });
 
     test('two controllers on the same target still share', () async {
-      executor.succeed = false;
+      fileService.onStep = (_) async => throw _offline;
       final first = buildController(target: _unlinkedTarget);
       final second = buildController(target: _unlinkedTarget);
       await first.setOnlineFiles([]);
       await second.setOnlineFiles([]);
 
       await first.add(_pickedFileFor(_unlinkedTarget, 'shared.pdf'));
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       await first.settled;
       await second.settled;
 

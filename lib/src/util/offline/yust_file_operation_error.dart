@@ -6,16 +6,6 @@ import '../../extensions/string_translate_extension.dart';
 import '../../generated/locale_keys.g.dart';
 import 'yust_file_operation.dart';
 
-/// The bytes an operation needs are not in Storage at all.
-///
-/// Raised where the file service reports a failed transfer as empty bytes
-/// rather than throwing, so the queue can tell "the object is gone" — which no
-/// retry fixes — apart from "the server was unreachable", which every retry
-/// might.
-class YustMissingStorageObjectException extends YustException {
-  YustMissingStorageObjectException(super.message);
-}
-
 /// Why an operation failed in a way no retry can fix, in the terms the user is
 /// told about. Not a taxonomy of Firebase codes — four outcomes, because that is
 /// how many distinct things there are to say.
@@ -61,7 +51,7 @@ abstract final class YustFileOperationError {
   /// transient and the backoff should keep retrying. Only the cases below are
   /// permanent; an unrecognised error retries.
   static YustFileOperationFailureReason? reasonFor(Object error) {
-    if (error is YustMissingStorageObjectException) {
+    if (error is YustNotFoundException) {
       return YustFileOperationFailureReason.fileMissing;
     }
     if (error is ArgumentError || error is StateError) {
@@ -72,20 +62,6 @@ abstract final class YustFileOperationError {
       if (codes.contains(error.code)) return reason;
     }
     return null;
-  }
-
-  /// The error a failed transfer of [name] under [path] should be reported as:
-  /// permanent when Storage holds no such object, transient otherwise.
-  static Future<Exception> missingOrUnreachable(
-    String path,
-    String name,
-  ) async {
-    if (await Yust.fileService.fileExist(path: path, name: name)) {
-      return YustException(LocaleKeys.exceptionFileNotFound.tr());
-    }
-    return YustMissingStorageObjectException(
-      LocaleKeys.exceptionFileNotFound.tr(),
-    );
   }
 }
 

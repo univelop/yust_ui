@@ -11,7 +11,6 @@ export 'src/services/yust_alert_service.dart';
 export 'src/util/offline/yust_file_list_controller.dart';
 export 'src/util/offline/yust_file_operation.dart';
 export 'src/util/offline/yust_file_operation_error.dart';
-export 'src/util/offline/yust_file_operation_handler.dart';
 export 'src/util/offline/yust_file_operation_manager.dart';
 export 'src/util/yust_file_launch_helper.dart';
 export 'src/util/offline/yust_firebase_file_location.dart';

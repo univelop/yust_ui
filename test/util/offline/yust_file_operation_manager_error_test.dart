@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart';
 import 'package:test/test.dart';
+import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_error.dart';
 
 FirebaseException _firebase(String code) =>
@@ -38,11 +39,10 @@ void main() {
           reason: code,
         );
       }
-      // A download that comes back empty because the object is gone can never
-      // succeed; without this it retried forever and never gave up.
+      // A download of an object that is gone can never succeed.
       expect(
         YustFileOperationError.reasonFor(
-          YustMissingStorageObjectException('gone'),
+          YustNotFoundException('gone'),
         ),
         YustFileOperationFailureReason.fileMissing,
       );

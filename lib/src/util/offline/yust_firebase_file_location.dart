@@ -8,11 +8,10 @@ import 'package:yust/yust.dart';
 /// remote location only — the on-device copy is addressed separately, via
 /// `YustFileOfflineKey` and `YustOfflineStorage`.
 ///
-/// These three fields used to live directly on the per-host file handler. Once
-/// the handler became a single app-scoped [YustFileOperationHandler] whose queue
-/// carries every host's files, the address had to become its own value: each
-/// [YustFileListController] holds one to stamp its files ([apply]) and to pick its
-/// own operations back out of the shared queue ([owns]).
+/// The app-scoped [YustFileOperationManager]'s queue carries every host's
+/// files, so each [YustFileListController] holds one location to stamp its
+/// files ([apply]) and to pick its own operations back out of that queue
+/// ([owns]).
 @immutable
 class YustFirebaseFileLocation {
   const YustFirebaseFileLocation({

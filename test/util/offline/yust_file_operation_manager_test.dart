@@ -3,11 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:test/test.dart';
-import 'package:yust/src/services/yust_file_service.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
 import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
+import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
+
+import 'fake_file_service.dart';
 
 YustFileOperation<YustFile> _metadataOp() => YustFileOperation<YustFile>(
   type: YustFileOperationType.updateMetadata,
@@ -52,6 +54,18 @@ YustFileOperation<YustFile> _renameOp() => YustFileOperation<YustFile>(
   newName: 'new.pdf',
 );
 
+YustFileOperation<YustFile> _downloadOp() => YustFileOperation<YustFile>(
+  type: YustFileOperationType.download,
+  file: YustFile(
+    name: 'plan.pdf',
+    hash: 'h-download',
+    storageFolderPath: 'records/rec1',
+    setCreatedAtToNow: false,
+  ),
+);
+
+const _offline = SocketException('no route to host');
+
 /// Records the name each document write was asked for, failing the first
 /// [writeFailures] of them so a rename can be interrupted mid-way.
 class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
@@ -78,43 +92,6 @@ class _RenameRecordingWriter implements YustOfflineFileDocumentWriter {
   }
 }
 
-/// The Storage objects a test cares about, as names under one folder.
-///
-/// Hand-rolled because `YustFileServiceMocked`'s constructor throws in a
-/// Flutter environment. Only the members a rename reaches are implemented.
-class _FakeFileService implements YustFileService {
-  final Set<String> objectNames = {};
-
-  @override
-  Future<String> uploadFile({
-    required String path,
-    required String name,
-    File? file,
-    Uint8List? bytes,
-    Map<String, String>? metadata,
-    String? contentDisposition,
-    String? bucketName,
-    bool? createThumbnail,
-    String? linkedDocPath,
-    String? linkedDocAttribute,
-  }) async {
-    objectNames.add(name);
-    return 'https://storage.test/$path/$name';
-  }
-
-  @override
-  Future<void> deleteFile({
-    required String path,
-    String? name,
-    String? bucketName,
-  }) async {
-    objectNames.remove(name);
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
 /// Records the order of the steps a delete runs, and holds the record write
 /// open until the test releases it.
 class _RecordingWriter implements YustOfflineFileDocumentWriter {
@@ -134,29 +111,55 @@ class _RecordingWriter implements YustOfflineFileDocumentWriter {
   }
 }
 
-/// Lets an unawaited execute reach its next suspension point.
+/// Lets an unawaited drain reach its next suspension point.
 Future<void> _settle() async {
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < 10; i++) {
     await Future<void>.delayed(Duration.zero);
   }
 }
 
 void main() {
+  late YustSyncQueue queue;
+  late FakeFileService fileService;
+
+  setUp(() {
+    queue = YustSyncQueue.inMemory();
+    fileService = FakeFileService();
+    Yust.fileService = fileService;
+  });
+
+  /// A manager whose retry never fires, so a failed operation stays queued for
+  /// the rest of the test.
+  YustFileOperationManager buildManager({
+    required YustOfflineFileDocumentWriter? Function(
+      YustFileOperation<YustFile>,
+    )
+    documentWriterFor,
+    YustOfflineStorage? storage,
+  }) {
+    final manager = YustFileOperationManager(
+      queue: queue,
+      documentWriterFor: documentWriterFor,
+      storage: storage,
+      connectivityStream: const Stream<bool>.empty(),
+      delay: (_) => Completer<void>().future,
+    );
+    addTearDown(manager.dispose);
+    return manager;
+  }
+
   group('a rename interrupted after its document write', () {
     late Directory root;
     late YustOfflineStorage storage;
-    late _FakeFileService fileService;
 
     const folder = 'records/rec-rename';
 
     setUp(() async {
       root = Directory.systemTemp.createTempSync('rename_retry_test');
       storage = YustOfflineStorage(directoryProvider: () async => root);
-      fileService = _FakeFileService();
-      Yust.fileService = fileService;
       final bytes = Uint8List.fromList('pdf-bytes'.codeUnits);
       await fileService.uploadFile(path: folder, name: 'old.pdf', bytes: bytes);
-      // The cached copy is what the rename re-uploads from, so no download runs.
+      // The cached copy is what the rename re-uploads from, so no copy runs.
       await storage.writeBytes(byteKey: 'h1', name: 'old.pdf', bytes: bytes);
     });
 
@@ -165,19 +168,20 @@ void main() {
     });
 
     test('the retry deletes the old object, never the renamed one', () async {
-      // An executor that renamed `operation.file` in place would read the new
+      // A manager that renamed `operation.file` in place would read the new
       // name as the old one on the retry, deleting the object it just wrote.
       final writer = _RenameRecordingWriter(writeFailures: 1);
-      final manager = YustFileOperationManager(
+      final manager = buildManager(
         documentWriterFor: (_) => writer,
         storage: storage,
       );
-      final operation = _renameOp();
 
-      await expectLater(manager.execute(operation), throwsA(isA<Exception>()));
+      await queue.enqueueOperation(_renameOp());
+      await manager.processPendingOperations();
       expect(writer.writes, ['new.pdf'], reason: 'the new entry is attempted');
+      expect(await queue.getPendingOperations(), hasLength(1));
 
-      await manager.execute(operation);
+      await manager.processPendingOperations();
 
       expect(writer.writes, ['new.pdf', 'new.pdf']);
       expect(
@@ -194,52 +198,89 @@ void main() {
     });
 
     test('the queued operation keeps its original name', () async {
-      final manager = YustFileOperationManager(
+      final manager = buildManager(
         documentWriterFor: (_) => _RenameRecordingWriter(writeFailures: 1),
         storage: storage,
       );
-      final operation = _renameOp();
 
-      await expectLater(manager.execute(operation), throwsA(isA<Exception>()));
+      await queue.enqueueOperation(_renameOp());
+      await manager.processPendingOperations();
 
-      expect(operation.file.name, 'old.pdf');
-      expect(operation.newName, 'new.pdf');
+      final queued = (await queue.getPendingOperations()).single;
+      expect(queued.file.name, 'old.pdf');
+      expect(queued.newName, 'new.pdf');
     });
+
+    test('uploads the device copy instead of copying in Storage', () async {
+      final manager = buildManager(
+        documentWriterFor: (_) => null,
+        storage: storage,
+      );
+
+      await queue.enqueueOperation(_renameOp());
+      await manager.processPendingOperations();
+
+      expect(
+        fileService.steps.map((step) => step.kind),
+        isNot(contains(FakeFileStepKind.copy)),
+      );
+      expect(fileService.objectNames, {'new.pdf'});
+    });
+  });
+
+  test('a rename without a device copy copies in Storage', () async {
+    final root = Directory.systemTemp.createTempSync('rename_copy_test');
+    addTearDown(() => root.deleteSync(recursive: true));
+    final manager = buildManager(
+      documentWriterFor: (_) => null,
+      storage: YustOfflineStorage(directoryProvider: () async => root),
+    );
+    await fileService.uploadFile(
+      path: 'records/rec-rename',
+      name: 'old.pdf',
+      bytes: Uint8List.fromList('pdf-bytes'.codeUnits),
+    );
+
+    await queue.enqueueOperation(_renameOp());
+    await manager.processPendingOperations();
+
+    expect(
+      fileService.steps.map((step) => step.kind),
+      contains(FakeFileStepKind.copy),
+    );
+    expect(fileService.objectNames, {'new.pdf'});
+    expect(await queue.getPendingOperations(), isEmpty);
   });
 
   group('unaddressable files', () {
     test(
       'a metadata operation with no document writer applies instead of throwing',
-      () {
+      () async {
         // A picker bound to a brick's settings rather than to a record has no
-        // document to write back to. Before the document writer could be null the app
-        // built one from an empty path, which threw on every attempt and kept the
-        // operation queued forever.
-        final manager = YustFileOperationManager(
-          documentWriterFor: (operation) => null,
-        );
+        // document to write back to. Before the document writer could be null
+        // the app built one from an empty path, which threw on every attempt
+        // and kept the operation queued forever.
+        final manager = buildManager(documentWriterFor: (operation) => null);
 
-        expect(manager.execute(_metadataOp()), completes);
+        await queue.enqueueOperation(_metadataOp());
+        await manager.processPendingOperations();
+
+        expect(await queue.getPendingOperations(), isEmpty);
       },
     );
   });
 
   group('an upload that supersedes an entry', () {
     late Directory root;
-    late YustOfflineStorage storage;
-    late _FakeFileService fileService;
     late _RenameRecordingWriter writer;
     late YustFileOperationManager manager;
 
     setUp(() {
       root = Directory.systemTemp.createTempSync('superseded_entry_test');
-      storage = YustOfflineStorage(directoryProvider: () async => root);
-      fileService = _FakeFileService();
-      Yust.fileService = fileService;
       writer = _RenameRecordingWriter();
-      manager = YustFileOperationManager(
+      manager = buildManager(
         documentWriterFor: (_) => writer,
-        storage: storage,
+        storage: YustOfflineStorage(directoryProvider: () async => root),
       );
     });
 
@@ -250,7 +291,8 @@ void main() {
     test('writes the new entry, then drops the superseded one', () async {
       // One operation, so no snapshot falls between the two writes and shows
       // the file under both keys — which is what a follow-up operation exposed.
-      await manager.execute(_replacingUploadOp());
+      await queue.enqueueOperation(_replacingUploadOp());
+      await manager.processPendingOperations();
 
       expect(writer.writes, ['drawing.png']);
       expect(writer.removedHashes, ['h1']);
@@ -259,7 +301,8 @@ void main() {
     test('leaves the Storage object, which now holds the new bytes', () async {
       // The object under this name holds the replacing file's bytes now, so
       // deleting it — as a delete would — would lose the file just uploaded.
-      await manager.execute(_replacingUploadOp());
+      await queue.enqueueOperation(_replacingUploadOp());
+      await manager.processPendingOperations();
 
       expect(fileService.objectNames, contains('drawing.png'));
     });
@@ -279,7 +322,8 @@ void main() {
         supersededHash: 'h1',
       );
 
-      await manager.execute(operation);
+      await queue.enqueueOperation(operation);
+      await manager.processPendingOperations();
 
       expect(writer.removals, isEmpty);
     });
@@ -291,19 +335,17 @@ void main() {
     // deleted file back in — and it then points at bytes that are gone.
     final steps = <String>[];
     final entryRemoved = Completer<void>();
-    final manager = YustFileOperationManager(
+    final manager = buildManager(
       documentWriterFor: (_) => _RecordingWriter(steps, entryRemoved),
     );
+    fileService.onStep = (step) async {
+      if (step.kind == FakeFileStepKind.delete) steps.add('object deleted');
+    };
 
-    // No file service is configured here, so the byte delete that follows the
-    // removal fails at once — which is what makes "the operation got past the
-    // removal" observable.
+    await queue.enqueueOperation(_deleteOp());
     var settled = false;
     unawaited(
-      manager
-          .execute(_deleteOp())
-          .then<void>((_) => settled = true)
-          .catchError((Object _) => settled = true),
+      manager.processPendingOperations().then<void>((_) => settled = true),
     );
 
     await _settle();
@@ -312,7 +354,44 @@ void main() {
 
     entryRemoved.complete();
     await _settle();
-    expect(steps, ['removal started', 'removal done']);
+    expect(steps, ['removal started', 'removal done', 'object deleted']);
     expect(settled, isTrue);
+  });
+
+  group('a download', () {
+    late Directory root;
+    late YustFileOperationManager manager;
+
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('download_test');
+      manager = buildManager(
+        documentWriterFor: (_) => null,
+        storage: YustOfflineStorage(directoryProvider: () async => root),
+      );
+    });
+
+    tearDown(() {
+      if (root.existsSync()) root.deleteSync(recursive: true);
+    });
+
+    test('of a missing object is dropped as permanent', () async {
+      fileService.onStep = (_) async =>
+          throw YustNotFoundException('The file does not exist.');
+
+      await queue.enqueueOperation(_downloadOp());
+      await manager.processPendingOperations();
+
+      expect(await queue.getPendingOperations(), isEmpty);
+    });
+
+    test('while Storage is unreachable stays queued', () async {
+      fileService.onStep = (_) async => throw _offline;
+
+      await queue.enqueueOperation(_downloadOp());
+      await manager.processPendingOperations();
+
+      final queued = (await queue.getPendingOperations()).single;
+      expect(queued.failure, isNull);
+    });
   });
 }

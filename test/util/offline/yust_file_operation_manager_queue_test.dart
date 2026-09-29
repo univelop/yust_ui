@@ -9,25 +9,11 @@ import 'package:test/test.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_error.dart';
-import 'package:yust_ui/src/util/offline/yust_file_operation_handler.dart';
 import 'package:yust_ui/src/util/offline/yust_file_operation_manager.dart';
+import 'package:yust_ui/src/util/offline/yust_offline_storage.dart';
 import 'package:yust_ui/src/util/offline/yust_sync_queue.dart';
 
-/// Records the name of every operation it is handed; an optional [onExecute]
-/// runs first so a test can enqueue more work mid-pass, park the pass, or force
-/// a failure.
-class _RecordingManager implements YustFileOperationManager {
-  _RecordingManager({this.onExecute});
-
-  final Future<void> Function(YustFileOperation<YustFile> operation)? onExecute;
-  final List<String> executed = [];
-
-  @override
-  Future<void> execute(YustFileOperation<YustFile> operation) async {
-    await onExecute?.call(operation);
-    executed.add(operation.file.name!);
-  }
-}
+import 'fake_file_service.dart';
 
 /// [fileName] fixes the file's identity (its `fileKey`); [contentHash] fixes
 /// its bytes (its `byteKey`) and defaults to [fileName]. Pass a distinct
@@ -83,65 +69,83 @@ Future<void> _settle() async {
 
 void main() {
   late YustSyncQueue queue;
+  late FakeFileService fileService;
+  late Directory root;
+  late YustOfflineStorage storage;
+  late List<String> executed;
 
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
     queue = YustSyncQueue();
+    fileService = FakeFileService();
+    Yust.fileService = fileService;
+    root = Directory.systemTemp.createTempSync('file_operation_queue_test');
+    storage = YustOfflineStorage(directoryProvider: () async => root);
+    executed = [];
   });
 
-  /// A handler whose backoff never fires, so a test observes exactly the passes
-  /// it triggers itself. [delays] collects what the backoff asked for.
-  YustFileOperationHandler handlerWith(
-    YustFileOperationManager executor, {
+  tearDown(() {
+    if (root.existsSync()) root.deleteSync(recursive: true);
+  });
+
+  /// A manager whose Storage transfers and document writes run through
+  /// [fileService], awaiting [onStep] before each; every applied operation's
+  /// file name lands in [executed]. Its retry never fires.
+  YustFileOperationManager managerWith({
+    Future<void> Function(FakeFileStep step)? onStep,
     Stream<bool>? connectivityStream,
     List<Duration>? delays,
   }) {
-    final handler = YustFileOperationHandler(
-      manager: executor,
+    fileService.onStep = onStep;
+    final manager = YustFileOperationManager(
       queue: queue,
+      documentWriterFor: (_) => fileService.documentWriter,
+      storage: storage,
       connectivityStream: connectivityStream ?? const Stream<bool>.empty(),
       delay: (duration) {
         delays?.add(duration);
         return Completer<void>().future;
       },
     );
-    addTearDown(handler.dispose);
-    return handler;
+    final appliedSubscription = manager.applied.listen(
+      (operation) => executed.add(operation.file.name!),
+    );
+    addTearDown(appliedSubscription.cancel);
+    addTearDown(manager.dispose);
+    return manager;
   }
 
   group('draining', () {
     test('applies every pending operation and empties the queue', () async {
-      final executor = _RecordingManager();
-      final handler = handlerWith(executor);
+      final manager = managerWith();
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _uploadOperation('h2'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
+      expect(executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.getPendingOperations(), isEmpty);
     });
 
     test('an operation enqueued mid-pass is applied in the same run', () async {
-      late YustFileOperationHandler handler;
+      late YustFileOperationManager manager;
       var injected = false;
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf' && !injected) {
+      manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf' && !injected) {
             injected = true;
-            await handler.enqueue(_uploadOperation('h2'));
+            await manager.enqueue(_uploadOperation('h2'));
           }
         },
       );
-      handler = handlerWith(executor);
 
-      await handler.enqueue(_uploadOperation('h1'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h1'));
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
+      expect(executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.getPendingOperations(), isEmpty);
     });
   });
@@ -149,14 +153,13 @@ void main() {
   group('enqueue does not wait on the network', () {
     test('enqueue returns while the executor is still in flight', () async {
       final gate = Completer<void>();
-      final executor = _RecordingManager(onExecute: (_) => gate.future);
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) => gate.future);
 
       // Offline this is the real upload retrying for minutes. The picker awaits
       // enqueue, so it must return as soon as the operation is durably queued.
-      await handler.enqueue(_uploadOperation('h1'));
+      await manager.enqueue(_uploadOperation('h1'));
 
-      expect(executor.executed, isEmpty);
+      expect(executed, isEmpty);
       expect(
         (await queue.getPendingOperations()).map(
           (operation) => operation.file.name,
@@ -167,18 +170,15 @@ void main() {
       );
 
       gate.complete();
-      await handler.processPendingOperations();
-      expect(executor.executed, ['h1.pdf']);
+      await manager.processPendingOperations();
+      expect(executed, ['h1.pdf']);
     });
 
     test('a failing executor does not surface out of enqueue', () async {
-      final executor = _RecordingManager(
-        onExecute: (_) async => throw _offline,
-      );
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) async => throw _offline);
 
-      await handler.enqueue(_uploadOperation('h1'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h1'));
+      await manager.processPendingOperations();
 
       expect(await queue.getPendingOperations(), hasLength(1));
     });
@@ -186,20 +186,19 @@ void main() {
 
   group('a failing operation does not strand the operations behind it', () {
     test('the operations behind a failing one are still applied', () async {
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') throw _offline;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf') throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _uploadOperation('h2'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h2.pdf']);
+      expect(executed, ['h2.pdf']);
       expect(
         (await queue.getPendingOperations()).map(
           (operation) => operation.file.name,
@@ -213,37 +212,33 @@ void main() {
     test('a failing upload does not block a queued download', () async {
       // The reported bug: a stuck upload sat at the head of the queue and the
       // pinned record's downloads behind it never ran.
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.type == YustFileOperationType.upload) throw _offline;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.kind == FakeFileStepKind.upload) throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _downloadOperation('h2'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h2.pdf']);
+      expect(executed, ['h2.pdf']);
     });
 
     test('a pass in which everything fails stops rather than spins', () async {
-      final executor = _RecordingManager(
-        onExecute: (_) async => throw _offline,
-      );
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) async => throw _offline);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _uploadOperation('h2'),
       ]);
-      await handler.processPendingOperations().timeout(
+      await manager.processPendingOperations().timeout(
         const Duration(seconds: 5),
       );
 
-      expect(executor.executed, isEmpty);
+      expect(executed, isEmpty);
       expect(await queue.getPendingOperations(), hasLength(2));
     });
   });
@@ -254,17 +249,17 @@ void main() {
       addTearDown(online.close);
       final gate = Completer<void>();
       var failedAttempts = 0;
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') return gate.future;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf') return gate.future;
           failedAttempts++;
           // Fails on its one try of the first pass, succeeds afterwards.
           if (failedAttempts <= 1) throw _offline;
         },
+        connectivityStream: online.stream,
       );
-      final handler = handlerWith(executor, connectivityStream: online.stream);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _uploadOperation('h2'),
       ]);
@@ -273,10 +268,10 @@ void main() {
       online.add(true);
       await _settle(); // the reconnect lands while the pass is still running
       gate.complete();
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
       // Backoff never fires here, so only a honoured reconnect can drain h2.
-      expect(executor.executed, ['h1.pdf', 'h2.pdf']);
+      expect(executed, ['h1.pdf', 'h2.pdf']);
       expect(await queue.getPendingOperations(), isEmpty);
     });
 
@@ -285,16 +280,16 @@ void main() {
       addTearDown(online.close);
       final gate = Completer<void>();
       var failedAttempts = 0;
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') return gate.future;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf') return gate.future;
           failedAttempts++;
           throw _offline;
         },
+        connectivityStream: online.stream,
       );
-      final handler = handlerWith(executor, connectivityStream: online.stream);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1'),
         _uploadOperation('h2'),
       ]);
@@ -306,7 +301,7 @@ void main() {
         ..add(true);
       await _settle();
       gate.complete();
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
       // One try in the first pass, one in the single coalesced follow-up.
       expect(failedAttempts, 2);
@@ -315,13 +310,12 @@ void main() {
     test('a reconnect with an empty queue is a no-op', () async {
       final online = StreamController<bool>.broadcast();
       addTearDown(online.close);
-      final executor = _RecordingManager();
-      handlerWith(executor, connectivityStream: online.stream);
+      managerWith(connectivityStream: online.stream);
 
       online.add(true);
       await _settle();
 
-      expect(executor.executed, isEmpty);
+      expect(executed, isEmpty);
     });
   });
 
@@ -329,44 +323,44 @@ void main() {
     test('a retry is scheduled only when an operation failed', () async {
       final delays = <Duration>[];
       var shouldFail = false;
-      final executor = _RecordingManager(
-        onExecute: (_) async {
+      final manager = managerWith(
+        onStep: (_) async {
           if (shouldFail) throw StateError('offline');
         },
+        delays: delays,
       );
-      final handler = handlerWith(executor, delays: delays);
 
-      await handler.enqueue(_uploadOperation('h1'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h1'));
+      await manager.processPendingOperations();
       expect(delays, isEmpty);
 
       shouldFail = true;
-      await handler.enqueue(_uploadOperation('h2'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h2'));
+      await manager.processPendingOperations();
       expect(delays, isNotEmpty);
     });
 
     test('backoff resets once the queue fully drains', () async {
       final delays = <Duration>[];
       var shouldFail = true;
-      final executor = _RecordingManager(
-        onExecute: (_) async {
+      final manager = managerWith(
+        onStep: (_) async {
           if (shouldFail) throw StateError('offline');
         },
+        delays: delays,
       );
-      final handler = handlerWith(executor, delays: delays);
 
-      await handler.enqueue(_uploadOperation('h1'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h1'));
+      await manager.processPendingOperations();
       final firstDelay = delays.single;
 
       // Drain cleanly, then fail again: the delay must start from the base
       // again rather than continuing to grow.
       shouldFail = false;
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       shouldFail = true;
-      await handler.enqueue(_uploadOperation('h2'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h2'));
+      await manager.processPendingOperations();
 
       expect(delays.last, firstDelay);
     });
@@ -374,20 +368,19 @@ void main() {
 
   group('one FIFO per file', () {
     test('a file\'s later operation waits behind its failing head', () async {
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.id == 'first') throw _offline;
+      final manager = managerWith(
+        onStep: (step) async {
+          throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1', id: 'first', contentHash: 'v1'),
         _uploadOperation('h1', id: 'second', contentHash: 'v2'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, isEmpty);
+      expect(executed, isEmpty);
       expect(
         (await queue.getPendingOperations()).map((operation) => operation.id),
         [
@@ -398,48 +391,46 @@ void main() {
     });
 
     test('another file passes the failing one in the same pass', () async {
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') throw _offline;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf') throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1', id: 'blocked', contentHash: 'v1'),
         _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
         _uploadOperation('h2', id: 'other'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h2.pdf']);
+      expect(executed, ['h2.pdf']);
     });
 
     test('the held operation runs once its head succeeds', () async {
       var failFirst = true;
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.id == 'first' && failFirst) throw _offline;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (failFirst) throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1', id: 'first', contentHash: 'v1'),
         _uploadOperation('h1', id: 'second', contentHash: 'v2'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       failFirst = false;
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h1.pdf', 'h1.pdf']);
+      expect(executed, ['h1.pdf', 'h1.pdf']);
       expect(await queue.getPendingOperations(), isEmpty);
     });
   });
 
   group('permanent failures', () {
     /// One operation of [type] on [fileName], so a test can fail one of each
-    /// kind and watch what the handler does with it.
+    /// kind and watch what the manager does with it.
     YustFileOperation<YustFile> operationOf(
       YustFileOperationType type, {
       String fileName = 'h1',
@@ -458,18 +449,17 @@ void main() {
 
     test('a connection failure records nothing and is attempted again', () async {
       var attempts = 0;
-      final executor = _RecordingManager(
-        onExecute: (_) async {
+      final manager = managerWith(
+        onStep: (_) async {
           attempts++;
           throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
       // Seeded directly so exactly the passes below run; enqueue starts its own.
       await queue.enqueueOperation(_uploadOperation('h1', id: 'operation'));
-      await handler.processPendingOperations();
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
+      await manager.processPendingOperations();
 
       expect(attempts, 2);
       expect(
@@ -480,18 +470,17 @@ void main() {
 
     test('one permanent failure ends the upload and is persisted', () async {
       var attempts = 0;
-      final executor = _RecordingManager(
-        onExecute: (_) async {
+      final manager = managerWith(
+        onStep: (_) async {
           attempts++;
           throw _permanent;
         },
       );
-      final handler = handlerWith(executor);
 
       await queue.enqueueOperation(_uploadOperation('h1', id: 'operation'));
-      await handler.processPendingOperations();
-      await handler.processPendingOperations();
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
+      await manager.processPendingOperations();
+      await manager.processPendingOperations();
 
       // Attempted once, not once per pass and not five times.
       expect(attempts, 1);
@@ -509,21 +498,20 @@ void main() {
     });
 
     test('a failed upload holds its own file but not another', () async {
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name == 'h1.pdf') throw _permanent;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName == 'h1.pdf') throw _permanent;
         },
       );
-      final handler = handlerWith(executor);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1', id: 'failed', contentHash: 'v1'),
         _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
       ]);
-      await handler.enqueue(_uploadOperation('h2', id: 'other'));
-      await handler.processPendingOperations();
+      await manager.enqueue(_uploadOperation('h2', id: 'other'));
+      await manager.processPendingOperations();
 
-      expect(executor.executed, ['h2.pdf']);
+      expect(executed, ['h2.pdf']);
       expect(
         (await queue.getPendingOperations()).map((operation) => operation.id),
         ['failed', 'behind'],
@@ -531,19 +519,16 @@ void main() {
     });
 
     test('an operation that is not an upload is dropped instead', () async {
-      final executor = _RecordingManager(
-        onExecute: (_) async => throw _permanent,
-      );
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) async => throw _permanent);
 
       // One file each, so all four are eligible in the same sweep.
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         operationOf(YustFileOperationType.rename, fileName: 'h1'),
         operationOf(YustFileOperationType.delete, fileName: 'h2'),
         operationOf(YustFileOperationType.updateMetadata, fileName: 'h3'),
         operationOf(YustFileOperationType.download, fileName: 'h4'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
       // Nothing kept and nothing to acknowledge: the change simply did not
       // happen, and the display is the document snapshot overlaid with this
@@ -554,25 +539,24 @@ void main() {
     test(
       'discarding a file drops its failure and the chain behind it',
       () async {
-        final executor = _RecordingManager(
-          onExecute: (operation) async {
-            if (operation.file.name == 'h1.pdf') throw _permanent;
+        final manager = managerWith(
+          onStep: (step) async {
+            if (step.fileName == 'h1.pdf') throw _permanent;
           },
         );
-        final handler = handlerWith(executor);
 
-        await handler.enqueueAll([
+        await manager.enqueueAll([
           _uploadOperation('h1', id: 'failed', contentHash: 'v1'),
           _uploadOperation('h1', id: 'behind', contentHash: 'v2'),
           _uploadOperation('h2', id: 'other'),
         ]);
-        await handler.processPendingOperations();
+        await manager.processPendingOperations();
         final failedFileKey =
             (await queue.getPendingOperations()).first.fileKey;
 
         var notifications = 0;
-        handler.addListener(() => notifications++);
-        await handler.discardOperationsForFile(failedFileKey);
+        manager.addListener(() => notifications++);
+        await manager.discardOperationsForFile(failedFileKey);
 
         expect(await queue.getPendingOperations(), isEmpty);
         expect(notifications, 1);
@@ -580,22 +564,19 @@ void main() {
     );
 
     test('discarding leaves another file\'s operations alone', () async {
-      final executor = _RecordingManager(
-        onExecute: (_) async => throw _offline,
-      );
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) async => throw _offline);
 
-      await handler.enqueueAll([
+      await manager.enqueueAll([
         _uploadOperation('h1', id: 'discarded'),
         _uploadOperation('h2', id: 'kept'),
       ]);
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
       final discardedFileKey = _queued(
         await queue.getPendingOperations(),
         'discarded',
       )!.fileKey;
 
-      await handler.discardOperationsForFile(discardedFileKey);
+      await manager.discardOperationsForFile(discardedFileKey);
 
       expect(
         (await queue.getPendingOperations()).map((operation) => operation.id),
@@ -605,14 +586,13 @@ void main() {
 
     test('an operation is attempted once per pass, not once per sweep', () async {
       var attempts = 0;
-      final executor = _RecordingManager(
-        onExecute: (operation) async {
-          if (operation.file.name != 'bad.pdf') return;
+      final manager = managerWith(
+        onStep: (step) async {
+          if (step.fileName != 'bad.pdf') return;
           attempts++;
           throw _offline;
         },
       );
-      final handler = handlerWith(executor);
 
       // The healthy operations keep the pass sweeping; the failing one must not be
       // retried on every sweep. Seeded directly so exactly one pass runs.
@@ -624,61 +604,55 @@ void main() {
       ]) {
         await queue.enqueueOperation(operation);
       }
-      await handler.processPendingOperations();
+      await manager.processPendingOperations();
 
       expect(attempts, 1);
-      expect(executor.executed, ['ok1.pdf', 'ok2.pdf', 'ok3.pdf']);
+      expect(executed, ['ok1.pdf', 'ok2.pdf', 'ok3.pdf']);
     });
   });
 
   group('isUploading', () {
     test('is true while the upload is queued, false once applied', () async {
-      final executor = _RecordingManager();
-      final handler = handlerWith(executor);
+      final manager = managerWith();
       final operation = _uploadOperation('h1');
 
-      await handler.enqueue(operation);
-      expect(handler.isUploading(operation.file), isTrue);
+      await manager.enqueue(operation);
+      expect(manager.isUploading(operation.file), isTrue);
 
-      await handler.processPendingOperations();
-      expect(handler.isUploading(operation.file), isFalse);
+      await manager.processPendingOperations();
+      expect(manager.isUploading(operation.file), isFalse);
     });
 
     test('stays true while the upload keeps failing', () async {
-      final executor = _RecordingManager(
-        onExecute: (_) => throw _offline,
-      );
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) => throw _offline);
       final operation = _uploadOperation('h1');
 
-      await handler.enqueue(operation);
-      await handler.processPendingOperations();
+      await manager.enqueue(operation);
+      await manager.processPendingOperations();
 
-      expect(handler.isUploading(operation.file), isTrue);
+      expect(manager.isUploading(operation.file), isTrue);
     });
 
     test('is false once the upload has failed for good', () async {
-      final executor = _RecordingManager(onExecute: (_) => throw _permanent);
-      final handler = handlerWith(executor);
+      final manager = managerWith(onStep: (_) => throw _permanent);
       final operation = _uploadOperation('h1');
 
-      await handler.enqueue(operation);
-      await handler.processPendingOperations();
+      await manager.enqueue(operation);
+      await manager.processPendingOperations();
 
       // A failed upload stays queued, waiting for the user. Any progress
       // indicator asking this would otherwise never stop spinning.
-      expect(await handler.pending(), hasLength(1));
-      expect(handler.isUploading(operation.file), isFalse);
+      expect(await manager.pending(), hasLength(1));
+      expect(manager.isUploading(operation.file), isFalse);
     });
 
     test('ignores operations that are not uploads', () async {
-      final executor = _RecordingManager();
-      final handler = handlerWith(executor);
+      final manager = managerWith();
       final operation = _downloadOperation('h1');
 
-      await handler.enqueue(operation);
+      await manager.enqueue(operation);
 
-      expect(handler.isUploading(operation.file), isFalse);
+      expect(manager.isUploading(operation.file), isFalse);
     });
   });
 
@@ -689,7 +663,7 @@ void main() {
     ) => YustFileOperation<YustFile>(type: type, file: file);
 
     test('an upload with no storage folder', () async {
-      final handler = handlerWith(_RecordingManager());
+      final manager = managerWith();
       final operation = operationOn(
         YustFileOperationType.upload,
         YustFile(name: 'a.pdf', hash: 'h1', setCreatedAtToNow: false),
@@ -697,28 +671,28 @@ void main() {
 
       // Otherwise `storageFolderPath!` throws a transient TypeError forever.
       await expectLater(
-        handler.enqueue(operation),
+        manager.enqueue(operation),
         throwsA(isA<ArgumentError>()),
       );
-      expect(await handler.pending(), isEmpty);
+      expect(await manager.pending(), isEmpty);
     });
 
     test('a file with no name', () async {
-      final handler = handlerWith(_RecordingManager());
+      final manager = managerWith();
       final operation = operationOn(
         YustFileOperationType.upload,
         YustFile(storageFolderPath: 'records/rec1', setCreatedAtToNow: false),
       );
 
       await expectLater(
-        handler.enqueue(operation),
+        manager.enqueue(operation),
         throwsA(isA<ArgumentError>()),
       );
-      expect(await handler.pending(), isEmpty);
+      expect(await manager.pending(), isEmpty);
     });
 
     test('but accepts a download addressed only by path', () async {
-      final handler = handlerWith(_RecordingManager());
+      final manager = managerWith();
       final operation = operationOn(
         YustFileOperationType.download,
         YustFile(
@@ -729,9 +703,9 @@ void main() {
         ),
       );
 
-      await handler.enqueue(operation);
+      await manager.enqueue(operation);
 
-      expect(await handler.pending(), hasLength(1));
+      expect(await manager.pending(), hasLength(1));
     });
 
     test(
@@ -739,20 +713,19 @@ void main() {
       () async {
         // Rejecting a whole record's files over one bad file stopped that
         // record from ever syncing.
-        final manager = _RecordingManager();
-        final handler = handlerWith(manager);
+        final manager = managerWith();
 
-        await handler.enqueueAll([
+        await manager.enqueueAll([
           _uploadOperation('h1'),
           operationOn(
             YustFileOperationType.upload,
             YustFile(name: 'a.pdf', hash: 'h2', setCreatedAtToNow: false),
           ),
         ]);
-        await handler.processPendingOperations();
+        await manager.processPendingOperations();
 
-        expect(manager.executed, ['h1.pdf']);
-        expect(await handler.pending(), isEmpty);
+        expect(executed, ['h1.pdf']);
+        expect(await manager.pending(), isEmpty);
       },
     );
   });

@@ -40,8 +40,7 @@ extension YustFileOfflineKey on YustFile {
 
 /// What a [YustFileOperation] does. The first four are outbound (local change →
 /// server); [download] is inbound (server → local cache). The
-/// YustFileOperationManager carries out all of them, and all flow through the
-/// one queue.
+/// YustFileOperationManager carries out all of them through its one queue.
 ///
 /// [updateMetadata] touches no bytes: it re-writes the file's own entry in the
 /// linked document (e.g. after its favorite flag changed). It exists so that a
@@ -108,7 +107,7 @@ class YustFileOperation<T extends YustFile> {
 
   /// Why this operation failed for a reason retrying cannot fix, or null while
   /// it is still being attempted. Connection failures never set it. Mutated in
-  /// place by the handler, then persisted via [YustSyncQueue.persist].
+  /// place by the manager, then persisted via [YustSyncQueue.persist].
   YustFileOperationFailureReason? failure;
 
   /// Whether this operation is over: it failed for good and now waits on the

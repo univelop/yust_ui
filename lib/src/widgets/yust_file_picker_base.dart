@@ -211,7 +211,7 @@ abstract class YustFilePickerBaseState<
     currentDisplayCount = widget.previewCount;
 
     _controller = YustFileListController<T>(
-      handler: YustUi.fileOperationHandler,
+      manager: YustUi.fileOperationManager,
       firebaseLocation: YustFirebaseFileLocation(
         storageFolderPath: widget.storageFolderPath,
         linkedDocPath: widget.linkedDocPath,
