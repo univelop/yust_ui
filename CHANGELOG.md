@@ -1,3 +1,11 @@
+## 3.33.1 - 2026-09-29
+
+- Add `enableVirusScanning` to `YustFilePicker`, `YustImagePicker` and `YustImageScreen`. New files and images start as `YustFileScan.pending()` so the backend can annotate them
+- Show the scan verdict: a badge on the file icon in `YustFilePicker`, a warning on infected thumbnails in `YustImagePicker`, and the full status in `YustImageScreen`
+- Ask for confirmation before opening or downloading an infected file
+- Add `YustFileScanIndicator`, `YustFileScanBadgedIcon` and `YustFileScanHelpers`
+- Bump `yust` to 3.35.1
+
 ## 3.33.0 - 2026-09-08
 
 - Reject uploading a file whose content already exists in the same picker under a different name. Files are stored in a map keyed by their md5 hash, so the second upload used to overwrite the first one's entry and orphan its storage object. `YustFileHandler.findDuplicateContent` computes the hash and reports the clash; both pickers show `exceptionDuplicateImageContent` / `exceptionDuplicateFileContent` and skip that file, and `YustFileHandler.addFile` throws a `YustException` as a safety net for direct callers. Re-uploading the same name with the same content still just replaces the entry.
