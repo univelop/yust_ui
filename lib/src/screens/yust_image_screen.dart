@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:yust/yust.dart';
 import 'package:yust_ui/src/screens/yust_image_drawing_screen.dart';
 import 'package:yust_ui/src/widgets/yust_file_picker_base.dart';
+import 'package:yust_ui/src/util/yust_file_scan_helpers.dart';
 
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
@@ -43,6 +44,10 @@ class YustImageScreen extends StatefulWidget {
   /// Keep native resolution of the image
   final bool keepNativeResolution;
 
+  /// Whether this workspace virus scans uploaded files. When on, the verdict
+  /// is shown for every status, not just infections as the grid does.
+  final bool enableVirusScanning;
+
   const YustImageScreen({
     super.key,
     required this.images,
@@ -53,6 +58,7 @@ class YustImageScreen extends StatefulWidget {
     this.onToggleFavorite,
     this.onDelete,
     this.keepNativeResolution = false,
+    this.enableVirusScanning = false,
   });
 
   static void navigateToScreen({
@@ -62,6 +68,7 @@ class YustImageScreen extends StatefulWidget {
     bool allowDrawing = false,
     bool allowShare = true,
     bool keepNativeResolution = false,
+    bool enableVirusScanning = false,
     void Function(YustImage image)? onToggleFavorite,
     Future<bool> Function(YustImage image)? onDelete,
     void Function(YustImage image, Uint8List newImage)? onSave,
@@ -76,6 +83,7 @@ class YustImageScreen extends StatefulWidget {
             keepNativeResolution: keepNativeResolution,
             allowDrawing: allowDrawing,
             allowShare: allowShare,
+            enableVirusScanning: enableVirusScanning,
             onToggleFavorite: onToggleFavorite,
             onDelete: onDelete,
           ),
@@ -190,6 +198,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
             ? _getNativeResolutionPhotoView(image)
             : _getScaledUpPhotoView(image),
         _buildActionBar(context, image),
+        _buildScanStatus(context, image),
       ],
     );
   }
@@ -264,6 +273,7 @@ class _YustImageScreenState extends State<YustImageScreen> {
             ),
           ),
         _buildActionBar(context, _images[activeImageIndex]),
+        _buildScanStatus(context, _images[activeImageIndex]),
       ],
     );
   }
@@ -364,6 +374,44 @@ class _YustImageScreenState extends State<YustImageScreen> {
   /// Top-right bar bundling all image actions (draw, delete, favorite, share)
   /// plus the web close button, laid out as a single row so buttons never
   /// overlap regardless of which ones are enabled.
+  /// The verdict, bottom-left. Shown for every status: the grid behind this
+  /// screen shows nothing for a clean or pending image, so this is the only
+  /// place "checked and fine" is distinguishable from "never checked".
+  Widget _buildScanStatus(BuildContext context, YustImage image) {
+    final scan = image.virusScanResult;
+    if (!widget.enableVirusScanning || scan == null) {
+      return const SizedBox.shrink();
+    }
+
+    final visuals = YustFileScanHelpers.visualsFor(context, scan);
+    return Positioned(
+      left: 20,
+      bottom: 20,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: YustFilePickerBase.thumbnailScrimColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(visuals.icon, color: visuals.color, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  visuals.tooltip,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionBar(BuildContext context, YustImage image) {
     final drawButton = (!kIsWeb && widget.allowDrawing && widget.onSave != null)
         ? _buildDrawButton(context, image)

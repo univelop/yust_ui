@@ -16,6 +16,7 @@ import 'package:yust/yust.dart';
 import '../../yust_ui.dart';
 import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
+import 'yust_file_scan_helpers.dart';
 
 class YustFileHelpers {
   YustFileHelpers();
@@ -134,6 +135,7 @@ class YustFileHelpers {
     required YustFile file,
   }) async {
     if (!file.isValid()) return;
+    if (!await YustFileScanHelpers.confirmIfInfected(file)) return;
 
     // ignore: deprecated_member_use
     String? url = file.url;

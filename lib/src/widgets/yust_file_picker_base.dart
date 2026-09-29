@@ -105,6 +105,14 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
   /// This is needed for the offline upload of files.
   final bool linkedDocStoresFilesAsMap;
 
+  /// Whether this workspace virus scans uploaded files.
+  ///
+  /// New files start with no verdict; when this is on they start
+  /// [YustFileScanStatus.pending] instead, because the backend can only
+  /// annotate an entry that already exists. Turning it on where scanning does
+  /// not actually run leaves every file pending forever.
+  final bool enableVirusScanning;
+
   /// Controls what happens when a file is tapped.
   final YustFileTapMode tapMode;
 
@@ -132,6 +140,7 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
     this.previewCount = defaultPreviewCount,
     this.thumbnails = false,
     this.linkedDocStoresFilesAsMap = false,
+    this.enableVirusScanning = false,
     this.tapMode = YustFileTapMode.preview,
   });
 
@@ -161,6 +170,12 @@ abstract class YustFilePickerBase<T extends YustFile> extends StatefulWidget {
 
   /// Radius of the circular scrim behind a thumbnail overlay button.
   static const double thumbnailOverlayRadius = 20;
+
+  /// Size of an indicator icon shown beside a file name or on a thumbnail.
+  static const double indicatorIconSize = 20;
+
+  /// Size of the file type icon leading a row in a file list.
+  static const double fileIconSize = 24;
 
   /// Star icon reflecting [isFavorite]. [inactiveColor] tints the non-favorite
   /// glyph (e.g. white on a dark thumbnail); the active star is always gold.

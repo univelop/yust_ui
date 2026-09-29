@@ -11,6 +11,7 @@ import '../extensions/string_translate_extension.dart';
 import '../generated/locale_keys.g.dart';
 import '../yust_ui.dart';
 import 'yust_file_picker_base.dart';
+import 'yust_file_scan_indicator.dart';
 import 'yust_file_list_view.dart';
 import 'yust_file_tap_mode.dart';
 
@@ -54,6 +55,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.previewCount = YustFilePickerBase.defaultPreviewCount,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.enableVirusScanning = false,
     super.tapMode,
     this.showModifiedAt = false,
     this.allowedExtensions,
@@ -78,6 +80,7 @@ class YustFilePicker extends YustFilePickerBase<YustFile> {
     super.overwriteSingleFile = false,
     super.thumbnails = false,
     super.linkedDocStoresFilesAsMap = false,
+    super.enableVirusScanning = false,
     super.allowFavorites = false,
     super.tapMode,
     this.showModifiedAt = false,
@@ -152,6 +155,10 @@ class YustFilePickerState
       createThumbnail: widget.thumbnails,
       linkedDocStoresFilesAsMap: widget.linkedDocStoresFilesAsMap,
       path: widget.storageFolderPath,
+      // Written only here, on create. See enableVirusScanning.
+      virusScanResult: widget.enableVirusScanning
+          ? YustFileScan.pending()
+          : null,
     );
   }
 
@@ -234,7 +241,12 @@ class YustFilePickerState
               value: selectedFiles.contains(file),
               onChanged: (_) => toggleFileSelection(file),
             ),
-          Icon(!isBroken ? Icons.insert_drive_file : Icons.dangerous),
+          YustFileScanBadgedIcon(
+            icon: !isBroken ? Icons.insert_drive_file : Icons.dangerous,
+            // A broken file has nothing to say about a scan, and the two
+            // warnings would sit on top of each other.
+            scan: isBroken ? null : file.virusScanResult,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: shouldShowDate
