@@ -78,7 +78,7 @@ class YustCachedImage extends StatelessWidget {
         fit: fit,
       );
       // ignore: deprecated_member_use
-    } else if (file.url != null) {
+    } else if (file.url != null || file.path != null) {
       final showThumbnail =
           (mode == YustCachedImageMode.preferThumbnail ||
               mode == YustCachedImageMode.thumbnailOnly) &&
@@ -88,77 +88,94 @@ class YustCachedImage extends StatelessWidget {
         return preview;
       }
 
-      final url = showThumbnail
-          ? file.getThumbnailUrl()
+      final thumbnailUrl = showThumbnail ? file.getThumbnailUrl() : null;
+      final originalUrl = mode == YustCachedImageMode.thumbnailOnly
+          ? null
           : file.getOriginalUrl();
+      final url = thumbnailUrl ?? originalUrl;
 
       if (url == null) return preview;
 
-      if (kIsWeb) {
-        return Image.network(
-          url,
-          width: width,
-          height: height,
-          fit: fit,
-          cacheHeight: resizeInCache == true ? 300 : null,
-          cacheWidth: resizeInCache == true ? 300 : null,
-          frameBuilder: (context, child, frame, sync) {
-            if (frame != null) return child;
+      final fallbackUrl = url == thumbnailUrl ? originalUrl : null;
+      if (kIsWeb) return _buildWebImage(url, fallbackUrl: fallbackUrl);
 
-            return const Center(
-              child: SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(),
-              ),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-
-            return const Center(
-              child: SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(),
-              ),
-            );
-          },
-        );
-      }
-
-      preview = CachedNetworkImage(
-        width: width,
-        height: height,
-        imageUrl: url,
-        maxWidthDiskCache: !kIsWeb && (Platform.isAndroid || Platform.isIOS)
-            ? 300
-            : null,
-        maxHeightDiskCache: !kIsWeb && (Platform.isAndroid || Platform.isIOS)
-            ? 300
-            : null,
-        imageBuilder: (context, image) {
-          return Image(
-            image: image,
-            fit: fit,
-          );
-        },
-        errorWidget: (context, _, _) => Image.asset(
-          placeholder ?? YustUi.imagePlaceholderPath!,
-          fit: BoxFit.cover,
-        ),
-        progressIndicatorBuilder: (context, url, downloadProgress) => Container(
-          margin: const EdgeInsets.all(50),
-          child: Center(
-            child: CircularProgressIndicator(
-              value: downloadProgress.progress,
-            ),
-          ),
-        ),
-        fit: fit,
+      preview = _buildCachedImage(
+        url,
+        cacheKey: _cacheKey(thumbnail: url == thumbnailUrl),
+        fallbackUrl: fallbackUrl,
       );
     }
 
     return preview;
+  }
+
+  /// Keeps the cache entry stable when the signed part of the url rotates.
+  String? _cacheKey({required bool thumbnail}) {
+    if (file.path == null) return null;
+    final size = thumbnail ? YustFileThumbnailSize.normal.name : 'original';
+    return '${file.path}/${file.name}#${file.hash}@$size';
+  }
+
+  Widget _buildWebImage(String url, {String? fallbackUrl}) => Image.network(
+    url,
+    width: width,
+    height: height,
+    fit: fit,
+    cacheHeight: resizeInCache == true ? 300 : null,
+    cacheWidth: resizeInCache == true ? 300 : null,
+    frameBuilder: (context, child, frame, sync) =>
+        frame != null ? child : _buildLoadingIndicator(),
+    loadingBuilder: (context, child, loadingProgress) =>
+        loadingProgress == null ? child : _buildLoadingIndicator(),
+    errorBuilder: fallbackUrl == null
+        ? null
+        : (context, _, _) => _buildWebImage(fallbackUrl),
+  );
+
+  Widget _buildLoadingIndicator() => const Center(
+    child: SizedBox(
+      width: 50,
+      height: 50,
+      child: CircularProgressIndicator(),
+    ),
+  );
+
+  Widget _buildCachedImage(
+    String url, {
+    String? cacheKey,
+    String? fallbackUrl,
+  }) {
+    final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+    return CachedNetworkImage(
+      width: width,
+      height: height,
+      imageUrl: url,
+      cacheKey: cacheKey,
+      maxWidthDiskCache: isMobile ? 300 : null,
+      maxHeightDiskCache: isMobile ? 300 : null,
+      imageBuilder: (context, image) => Image(
+        image: image,
+        fit: fit,
+      ),
+      errorWidget: (context, _, _) => fallbackUrl == null
+          ? Image.asset(
+              placeholder ?? YustUi.imagePlaceholderPath!,
+              fit: BoxFit.cover,
+            )
+          : _buildCachedImage(
+              fallbackUrl,
+              cacheKey: _cacheKey(thumbnail: false),
+            ),
+      progressIndicatorBuilder: (context, url, downloadProgress) => Container(
+        margin: const EdgeInsets.all(50),
+        child: Center(
+          child: CircularProgressIndicator(
+            value: downloadProgress.progress,
+          ),
+        ),
+      ),
+      fit: fit,
+    );
   }
 }
