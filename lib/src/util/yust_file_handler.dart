@@ -537,7 +537,7 @@ class YustFileHandler {
     if (cachedFile.linkedDocStoresFilesAsMap == true &&
         yustFileOrYustFiles is Map) {
       result = yustFileOrYustFiles.values.firstWhereOrNull(
-        (value) => value['name'] == cachedFile.name!,
+        (value) => value is Map && value['name'] == cachedFile.name!,
       );
     } else if (yustFileOrYustFiles is Map) {
       result = yustFileOrYustFiles;
