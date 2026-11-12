@@ -7,7 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide mergeSort;
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:yust_open_file_x/yust_open_file_x.dart';
@@ -59,8 +59,29 @@ class YustFileHandler {
     this.newestFirst = false,
   });
 
+  /// Returns all files sorted by date: oldest first, or newest first if
+  /// [newestFirst] is set.
+  ///
+  /// Files are sorted by [YustFile.createdAt], falling back to
+  /// [YustFile.modifiedAt]. Files without any date count as oldest and keep
+  /// their relative order. Sorting here (instead of relying on the order in
+  /// which files were merged or added) keeps the displayed order correct on
+  /// first load, after uploads and after syncs, whatever order the caller
+  /// passes the files in.
   List<YustFile> getFiles() {
-    return _reverseListIfNewestFirst(_yustFiles);
+    final sorted = List<YustFile>.of(_yustFiles);
+    mergeSort(sorted, compare: _compareByDate);
+    return _reverseListIfNewestFirst(sorted);
+  }
+
+  static int _compareByDate(YustFile a, YustFile b) {
+    final aDate = a.createdAt ?? a.modifiedAt;
+    final bDate = b.createdAt ?? b.modifiedAt;
+    if (aDate == null || bDate == null) {
+      if (aDate == bDate) return 0;
+      return aDate == null ? -1 : 1;
+    }
+    return aDate.compareTo(bDate);
   }
 
   List<YustFile> getOnlineFiles() {
