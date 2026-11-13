@@ -82,6 +82,49 @@ void main() {
     );
   });
 
+  test('re-sorts loaded files when newestFirst changes', () async {
+    final handler = YustFileHandler(storageFolderPath: 'images');
+    await handler.updateFiles([middle, newest, oldest]);
+
+    handler.newestFirst = true;
+    expect(
+      handler.getFiles().map((file) => file.name),
+      equals(['newest.jpg', 'middle.jpg', 'oldest.jpg']),
+    );
+
+    handler.newestFirst = false;
+    expect(
+      handler.getFiles().map((file) => file.name),
+      equals(['oldest.jpg', 'middle.jpg', 'newest.jpg']),
+    );
+  });
+
+  test('re-sorts when a sync changes the date of a loaded file', () async {
+    final handler = YustFileHandler(storageFolderPath: 'images');
+    await handler.updateFiles([
+      image('a.jpg', DateTime.utc(2026, 1, 1)),
+      image('b.jpg', DateTime.utc(2026, 2, 1)),
+    ]);
+
+    await handler.updateFiles([
+      image('a.jpg', DateTime.utc(2026, 3, 1)),
+      image('b.jpg', DateTime.utc(2026, 2, 1)),
+    ]);
+
+    expect(
+      handler.getFiles().map((file) => file.name),
+      equals(['b.jpg', 'a.jpg']),
+    );
+  });
+
+  test('keeps the order of many undated files', () async {
+    final undated = [for (var i = 0; i < 100; i++) image('u$i.jpg', null)];
+    expect(
+      await displayedNames(newestFirst: true, files: undated),
+      equals(undated.map((file) => file.name)),
+    );
+  });
+
   test(
     'falls back to modifiedAt and keeps undated files in their order',
     () async {

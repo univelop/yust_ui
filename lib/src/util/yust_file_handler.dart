@@ -32,7 +32,18 @@ class YustFileHandler {
   /// Attribute of the Firebase document.
   final String? linkedDocAttribute;
 
-  bool newestFirst;
+  bool _newestFirst;
+
+  /// Whether files are sorted newest first instead of oldest first.
+  bool get newestFirst => _newestFirst;
+
+  /// Changing the sort direction re-sorts the already loaded files, so a
+  /// reused handler (see [YustFileHandlerManager]) follows the new setting.
+  set newestFirst(bool value) {
+    if (value == _newestFirst) return;
+    _newestFirst = value;
+    _sortFiles(_yustFiles);
+  }
 
   /// shows if the _uploadFiles-process is currently running
   bool _uploadingCachedFiles = false;
@@ -56,32 +67,29 @@ class YustFileHandler {
     this.linkedDocAttribute,
     this.linkedDocPath,
     this.onFileUploaded,
-    this.newestFirst = false,
-  });
+    bool newestFirst = false,
+  }) : _newestFirst = newestFirst;
 
   /// Returns all files sorted by date: oldest first, or newest first if
   /// [newestFirst] is set.
-  ///
-  /// Files are sorted by [YustFile.createdAt], falling back to
-  /// [YustFile.modifiedAt]. Files without any date count as oldest and keep
-  /// their relative order. Sorting here (instead of relying on the order in
-  /// which files were merged or added) keeps the displayed order correct on
-  /// first load, after uploads and after syncs, whatever order the caller
-  /// passes the files in.
-  List<YustFile> getFiles() {
-    final sorted = List<YustFile>.of(_yustFiles);
-    mergeSort(sorted, compare: _compareByDate);
-    return _reverseListIfNewestFirst(sorted);
-  }
+  List<YustFile> getFiles() => UnmodifiableListView(_yustFiles);
 
-  static int _compareByDate(YustFile a, YustFile b) {
-    final aDate = a.createdAt ?? a.modifiedAt;
-    final bDate = b.createdAt ?? b.modifiedAt;
+  /// Sort key of a file: [YustFile.createdAt], falling back to
+  /// [YustFile.modifiedAt].
+  static DateTime? _fileDate(YustFile file) =>
+      file.createdAt ?? file.modifiedAt;
+
+  /// Compares two file dates, ascending or descending depending on
+  /// [newestFirst]. Files without a date always count as oldest.
+  int _compareByDate(DateTime? aDate, DateTime? bDate) {
+    final int result;
     if (aDate == null || bDate == null) {
       if (aDate == bDate) return 0;
-      return aDate == null ? -1 : 1;
+      result = aDate == null ? -1 : 1;
+    } else {
+      result = aDate.compareTo(bDate);
     }
-    return aDate.compareTo(bDate);
+    return newestFirst ? -result : result;
   }
 
   List<YustFile> getOnlineFiles() {
@@ -93,8 +101,13 @@ class YustFileHandler {
     return _yustFiles.where((f) => f.cached == true).toList();
   }
 
-  List<YustFile> _reverseListIfNewestFirst(List<YustFile> list) {
-    return newestFirst ? list.reversed.toList() : list;
+  /// Sorts [files] by date in place. Uses a stable sort, so files with equal
+  /// or missing dates keep their relative order.
+  void _sortFiles(List<YustFile> files) {
+    mergeSort(
+      files,
+      compare: (a, b) => _compareByDate(_fileDate(a), _fileDate(b)),
+    );
   }
 
   Future<void> updateFiles(
@@ -107,6 +120,10 @@ class YustFileHandler {
 
     _mergeOnlineFiles(_yustFiles, copyOnlineFiles, storageFolderPath);
     await _mergeCachedFiles(_yustFiles, linkedDocPath, linkedDocAttribute);
+    // Sort after merging, not only when files were added: merging also
+    // updates existing files (see [YustFile.update]), which can change their
+    // dates.
+    _sortFiles(_yustFiles);
 
     if (loadFiles) _loadFiles();
   }
@@ -211,6 +228,7 @@ class YustFileHandler {
       );
     }
     _yustFiles.add(yustFile);
+    _sortFiles(_yustFiles);
     await _uploadFile(yustFile);
   }
 
