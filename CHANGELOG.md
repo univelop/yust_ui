@@ -1,4 +1,4 @@
-## 3.33.2 - 2026-11-16
+## 3.33.3 - 2026-11-16
 
 - `YustButtonTile.onPressed` may now return a `Future`. With `allowDoubleClick: false` the button stays disabled until that Future completes, so work that takes a round trip (saving, starting a workflow) cannot be started twice by a second tap. Previously `allowDoubleClick: false` disabled the button permanently after the first tap, which is why nothing used it. Existing `void` callbacks are unaffected.
 
