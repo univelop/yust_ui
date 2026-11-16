@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /// Button styles for [YustButtonTile].
@@ -26,7 +28,13 @@ class YustButtonTile extends StatelessWidget {
   final Color? color;
   final Color? textColor;
   final Widget? icon;
-  final void Function()? onPressed;
+
+  /// Called when the button is pressed.
+  ///
+  /// May return a [Future]. Together with [allowDoubleClick] set to false the
+  /// button then stays disabled until that Future completes, so the work it
+  /// starts cannot be started a second time while it is still running.
+  final FutureOr<void> Function()? onPressed;
   final Widget? above;
   final Widget? below;
   final bool divider;
@@ -36,6 +44,13 @@ class YustButtonTile extends StatelessWidget {
   final String? tooltipMessage;
   final double? maxWidth;
   final YustButtonStyle buttonStyle;
+
+  /// Whether the button accepts a press while a previous press is still
+  /// being handled.
+  ///
+  /// Only has an effect when [onPressed] returns a [Future]: while it is
+  /// pending the button is disabled. A synchronous callback has finished by
+  /// the time the next press can arrive, so there is nothing to guard.
   final bool allowDoubleClick;
 
   const YustButtonTile({
@@ -132,7 +147,7 @@ class _StyledButtonTile extends StatefulWidget {
   final Color? color;
   final Color? textColor;
   final Widget? icon;
-  final void Function()? onPressed;
+  final FutureOr<void> Function()? onPressed;
   final YustButtonStyle buttonStyle;
   final bool allowDoubleClick;
 
@@ -151,7 +166,8 @@ class _StyledButtonTile extends StatefulWidget {
 }
 
 class _StyledButtonTileState extends State<_StyledButtonTile> {
-  bool buttonPressed = false;
+  /// Whether a Future returned by [onPressed] is still pending.
+  bool _busy = false;
 
   @override
   Widget build(BuildContext context) {
@@ -205,29 +221,36 @@ class _StyledButtonTileState extends State<_StyledButtonTile> {
   }
 
   VoidCallback? onPressed() {
-    try {
-      if (!widget.allowDoubleClick && buttonPressed) {
-        return null;
-      }
+    final callback = widget.onPressed;
+    if (callback == null) return null;
+    if (_busy && !widget.allowDoubleClick) return null;
 
-      if (widget.onPressed == null) {
-        return null;
-      }
+    return () {
+      final result = callback();
+      if (result is! Future<void> || widget.allowDoubleClick) return;
 
-      return () {
-        doIfDoubleClickNotAllowed(() => buttonPressed = true);
-        widget.onPressed!();
-      };
-    } finally {
-      doIfDoubleClickNotAllowed(() => buttonPressed = false);
-    }
-  }
-
-  void doIfDoubleClickNotAllowed(Function() action) {
-    if (!widget.allowDoubleClick) {
-      setState(() {
-        action();
-      });
-    }
+      setState(() => _busy = true);
+      result
+          .then<void>(
+            (_) {},
+            // The error is the callback's, not the button's: surface it the
+            // same way an unhandled async error would be, but keep going so
+            // the button is released below.
+            onError: (Object error, StackTrace stack) =>
+                FlutterError.reportError(
+                  FlutterErrorDetails(
+                    exception: error,
+                    stack: stack,
+                    library: 'yust_ui',
+                    context: ErrorDescription(
+                      'while running the onPressed callback of a YustButtonTile',
+                    ),
+                  ),
+                ),
+          )
+          .whenComplete(() {
+            if (mounted) setState(() => _busy = false);
+          });
+    };
   }
 }
