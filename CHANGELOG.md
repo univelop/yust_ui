@@ -1,7 +1,3 @@
-## 3.33.2 - 2026-11-16
-
-- Require `cloud_firestore` ^6.10.2, the 6.x backport of the Firestore security fix for the compromised eMudhra intermediate certificates (Firebase iOS SDK 12.19.3). Apps depending on yust_ui can no longer resolve an unpatched Firestore SDK.
-
 ## 3.33.1 - 2026-09-29
 
 - Add `enableVirusScanning` to `YustFilePicker`, `YustImagePicker` and `YustImageScreen`. New files and images start as `YustFileScan.pending()` so the backend can annotate them
